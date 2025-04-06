@@ -28,6 +28,7 @@ def get_youtube_service():
 def get_channel_id(youtube, input_channel):
     if input_channel.startswith("UC"):
         return input_channel
+    # Will increase API query, NOT recommend
     if input_channel.startswith("@"):
         username = input_channel[1:]
     else:
@@ -106,8 +107,9 @@ def convert_duration_to_hms(duration):
 def get_video_publish_date(video):
     dt = datetime.datetime.fromisoformat(video['snippet']['publishedAt'][:-1])
     local_dt = dt.astimezone(pytz.timezone("Asia/Taipei"))
-    weekdays = ['一', '二', '三', '四', '五', '六', '日']
-    return local_dt.strftime(f"%Y/%m/%d ({weekdays[local_dt.weekday()]})")
+    #weekdays = ['一', '二', '三', '四', '五', '六', '日']
+    #return local_dt.strftime(f"%Y/%m/%d ({weekdays[local_dt.weekday()]})")
+    return local_dt.strftime(f"%Y/%m/%d")
 
 
 # 🎥 判斷影片類型：影片、Shorts 或直播檔
@@ -126,19 +128,22 @@ def get_video_type(video):
 def load_date_ranges():
     if not os.path.exists('video_date_ranges.conf'):
         return None
+
     with open('video_date_ranges.conf', encoding='utf-8') as f:
-        months = [line.strip() for line in f if line.strip()]
-    date_ranges = []
-    for m in months:
-        year, month = map(int, m.split('/'))
-        start = datetime.datetime(year, month, 1)
-        if month == 12:
-            end = datetime.datetime(year + 1, 1, 1)
-        else:
-            end = datetime.datetime(year, month + 1, 1)
+        lines = [line.strip() for line in f if line.strip()]
+
+    if len(lines) != 2:
+        print("❌ video_date_ranges.conf 檔案格式錯誤，應包含開始與結束兩個日期")
+        return None
+
+    try:
+        start_date = datetime.datetime.strptime(lines[0], "%Y/%m/%d")
+        end_date = datetime.datetime.strptime(lines[1], "%Y/%m/%d")
         tz = pytz.timezone("Asia/Taipei")
-        date_ranges.append((tz.localize(start), tz.localize(end)))
-    return date_ranges
+        return [(tz.localize(start_date), tz.localize(end_date))]
+    except Exception as e:
+        print(f"❌ 日期格式錯誤，請使用 YYYY/MM/DD 格式：{e}")
+        return None
 
 
 # 🎥 主程式
