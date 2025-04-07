@@ -4,49 +4,7 @@
   <meta charset="UTF-8" />
   <title>YouTube Video Info</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      background-color: #f9f9f9;
-      margin: 0;
-      padding: 2rem;
-      color: #333;
-    }
-    h1 {
-      font-size: 1.5rem;
-      margin-bottom: 1rem;
-    }
-    #controls {
-      margin-bottom: 1rem;
-    }
-    #controls input, #controls button {
-      margin-right: 0.5rem;
-      padding: 0.4rem;
-      font-size: 1rem;
-    }
-    #refresh-btn {
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-    #refresh-btn:hover {
-      background: #0056b3;
-    }
-    ul {
-      list-style: none;
-      padding: 0;
-      margin-top: 1.5rem;
-    }
-    li {
-      background: white;
-      margin-bottom: 1rem;
-      padding: 1rem;
-      border-radius: 8px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    }
-  </style>
+  <link rel="stylesheet" href="style.css" />
 </head>
 <body>
   <h1>🎬 影片清單</h1>
@@ -54,64 +12,19 @@
     <label>起始日期: <input type="date" id="start-date"></label>
     <label>結束日期: <input type="date" id="end-date"></label>
     <button id="refresh-btn">🔁 依日期更新快取</button>
+    <button id="download-json">⬇️ 下載 JSON</button>
+    <button id="download-csv">⬇️ 下載 CSV</button>
   </div>
+
+  <div id="tabs">
+    <button class="tab-button active" data-type="影片">🎥 影片</button>
+    <button class="tab-button" data-type="Shorts">📱 Shorts</button>
+    <button class="tab-button" data-type="直播檔">📺 直播檔</button>
+  </div>
+
   <p id="status"></p>
   <ul id="video-list"></ul>
 
-  <script>
-    const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
-
-    function fetchVideos() {
-      document.getElementById("status").textContent = "📦 載入中...";
-      fetch(apiBase + "/videos")
-        .then(res => res.json())
-        .then(data => {
-          const list = document.getElementById("video-list");
-          list.innerHTML = "";
-          if (!data || data.length === 0) {
-            document.getElementById("status").textContent = "⚠️ 尚無快取資料，請先更新。";
-            return;
-          }
-          document.getElementById("status").textContent = "";
-          data.forEach(video => {
-            const li = document.createElement("li");
-            li.innerHTML = `
-              <strong>${video.發布日期}</strong>｜${video.影片類型}<br>
-              <strong>${video.標題}</strong><br>
-              ⏱️ ${video.影片時長}｜📂 類別：${video.類別}
-            `;
-            list.appendChild(li);
-          });
-        })
-        .catch(err => {
-          console.error("❌ API 錯誤:", err);
-          document.getElementById("status").textContent = "❌ 讀取失敗";
-        });
-    }
-
-    document.getElementById("refresh-btn").addEventListener("click", () => {
-      const start = document.getElementById("start-date").value;
-      const end = document.getElementById("end-date").value;
-      if (!start || !end) {
-        alert("請選擇起始與結束日期！");
-        return;
-      }
-
-      document.getElementById("status").textContent = "🔄 正在更新快取...";
-      fetch(`${apiBase}/refresh-cache?start=${start}&end=${end}`)
-        .then(res => res.json())
-        .then(result => {
-          document.getElementById("status").textContent = result.message || "✅ 已更新";
-          fetchVideos();
-        })
-        .catch(err => {
-          console.error("❌ 快取更新失敗:", err);
-          document.getElementById("status").textContent = "❌ 快取更新失敗";
-        });
-    });
-
-    // 預設載入
-    fetchVideos();
-  </script>
+  <script src="app.js"></script>
 </body>
 </html>
