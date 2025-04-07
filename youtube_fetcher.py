@@ -146,9 +146,8 @@ def load_date_ranges():
         return None
 
 
-# 🎥 主程式
-def main():
-    args = parse_args()
+# 新增這個函式，把 main() 的邏輯包進來
+def get_video_data(output_mode='console'):
     youtube = get_youtube_service()
     channel_id = get_channel_id(youtube, INPUT_CHANNEL)
     playlist_id = get_uploads_playlist_id(youtube, channel_id)
@@ -185,30 +184,4 @@ def main():
             "影片類型": video_type
         })
 
-    # 輸出結果
-    if args.output == 'console':
-        for r in results:
-            print(f"標題: {r['標題']}")
-            print(f"影片ID: {r['影片ID']}")
-            print(f"發布日期: {r['發布日期']}")
-            print(f"影片時長: {r['影片時長']}")
-            print(f"總分鐘數: {r['總分鐘數']}")
-            print(f"類別: {r['類別']}")
-            print(f"影片類型: {r['影片類型']}")
-            print("-" * 40)
-
-    elif args.output == 'csv':
-        with open("output.csv", "w", encoding='utf-8-sig', newline='') as f:
-            writer = csv.DictWriter(f, fieldnames=results[0].keys())
-            writer.writeheader()
-            writer.writerows(results)
-        print("✅ 已輸出為 output.csv")
-
-    elif args.output == 'json':
-        with open("output.json", "w", encoding='utf-8') as f:
-            json.dump(results, f, ensure_ascii=False, indent=2)
-        print("✅ 已輸出為 output.json")
-
-
-if __name__ == "__main__":
-    main()
+    return results  # 不寫檔案，直接回傳資料
