@@ -14,6 +14,7 @@ function fetchVideos() {
         return;
       }
       document.getElementById("status").textContent = "";
+      console.log("🎯 選擇影片類型:", currentType);
       renderVideos(currentType);
       renderCharts(currentType);
       setDefaultDates();
@@ -28,7 +29,7 @@ function renderVideos(type) {
   const countLabel = document.getElementById("status");
   const list = document.getElementById("video-list");
   list.innerHTML = "";
-  const filtered = allVideos.filter(video => video.影片類型 === type);
+  const filtered = allVideos.filter(video => video.影片類型?.toLowerCase() === type.toLowerCase());
   if (filtered.length === 0) {
     countLabel.textContent = `📊 ${type}：0 筆`;
     list.innerHTML = "<li>🚫 沒有符合的資料。</li>";
@@ -53,7 +54,7 @@ function renderCharts(type) {
   const categoryCount = {};
   const categoryDuration = {};
 
-  allVideos.filter(video => video.影片類型 === type).forEach(video => {
+  allVideos.filter(video => video.影片類型?.toLowerCase() === type.toLowerCase()).forEach(video => {
     const category = video["類別"];
     const duration = parseInt(video["總分鐘數"]) || 0;
 
@@ -149,7 +150,8 @@ document.querySelectorAll(".tab-button").forEach(btn => {
     document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentType = btn.dataset.type;
-    renderVideos(currentType);
+    console.log("🎯 選擇影片類型:", currentType);
+      renderVideos(currentType);
     renderCharts(currentType);
       setDefaultDates();
   });
