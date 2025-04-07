@@ -1,3 +1,4 @@
+.firebase/
 config.py
 output.*
 .env

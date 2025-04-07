@@ -1,7 +1,7 @@
 
 const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
 let allVideos = [];
-let currentType = "影片";
+let currentType = "直播檔";
 
 function fetchVideos() {
   document.getElementById("status").textContent = "📦 載入中...";
