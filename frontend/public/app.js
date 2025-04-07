@@ -16,6 +16,7 @@ function fetchVideos() {
       document.getElementById("status").textContent = "";
       renderVideos(currentType);
       renderCharts(currentType);
+      setDefaultDates();
     })
     .catch(err => {
       console.error("❌ API 錯誤:", err);
@@ -150,6 +151,7 @@ document.querySelectorAll(".tab-button").forEach(btn => {
     currentType = btn.dataset.type;
     renderVideos(currentType);
     renderCharts(currentType);
+      setDefaultDates();
   });
 });
 
@@ -183,3 +185,21 @@ document.getElementById("download-csv").addEventListener("click", () => {
 });
 
 fetchVideos();
+
+function setDefaultDates() {
+  const today = new Date();
+  const endStr = today.toISOString().split("T")[0];
+  document.getElementById("end-date").value = endStr;
+
+  if (allVideos.length > 0) {
+    const sortedDates = allVideos
+      .map(v => v.發布日期.replaceAll("/", "-"))
+      .sort()
+    const lastDate = sortedDates[sortedDates.length - 1];
+    document.getElementById("start-date").value = lastDate;
+  } else {
+    const weekAgo = new Date(Date.now() - 7 * 86400000);
+    const startStr = weekAgo.toISOString().split("T")[0];
+    document.getElementById("start-date").value = startStr;
+  }
+}
