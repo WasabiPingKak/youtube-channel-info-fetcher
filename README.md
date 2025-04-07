@@ -44,3 +44,17 @@ firebase deploy --only hosting
 ```
 https://你的專案-id.web.app
 ```
+
+### 3. 維護頁切換
+
+切換維護模式：
+```bash
+cp frontend/public/index.maintenance.html frontend/public/index.html
+firebase deploy --only hosting
+```
+
+切換回正式網站：
+```bash
+git checkout main -- frontend/public/index.html
+firebase deploy --only hosting
+```
