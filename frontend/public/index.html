@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8" />
+  <title>YouTube Video Info</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f5f5f5;
+      padding: 2rem;
+    }
+    h1 {
+      text-align: center;
+      margin-bottom: 1.5rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+    th, td {
+      padding: 0.8rem 1rem;
+      border-bottom: 1px solid #e0e0e0;
+      text-align: left;
+    }
+    th {
+      background-color: #f0f0f0;
+    }
+    tr:hover {
+      background-color: #f9f9f9;
+    }
+    .category {
+      font-weight: bold;
+      color: #3f51b5;
+    }
+  </style>
+</head>
+<body>
+  <h1>🎬 YouTube 頻道影片清單</h1>
+  <table>
+    <thead>
+      <tr>
+        <th>發布日期</th>
+        <th>標題</th>
+        <th>影片時長</th>
+        <th>影片類型</th>
+        <th>分類</th>
+      </tr>
+    </thead>
+    <tbody id="video-list"></tbody>
+  </table>
+
+  <script>
+    const apiUrl = "https://youtube-api-service-260305364477.asia-east1.run.app/videos";
+
+    fetch(apiUrl)
+      .then(res => res.json())
+      .then(data => {
+        const list = document.getElementById("video-list");
+        data.forEach(video => {
+          const row = document.createElement("tr");
+          row.innerHTML = `
+            <td>${video.發布日期}</td>
+            <td>${video.標題}</td>
+            <td>${video.影片時長}</td>
+            <td>${video.影片類型}</td>
+            <td class="category">${video.類別}</td>
+          `;
+          list.appendChild(row);
+        });
+      })
+      .catch(err => {
+        console.error("❌ API 錯誤:", err);
+      });
+  </script>
+</body>
+</html>

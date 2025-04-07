@@ -1,0 +1,16 @@
+# ✅ Cloud Run Build & Deploy
+
+cd backend
+gcloud builds submit --tag gcr.io/yt-channel-info-456010/youtube-api-service .
+
+gcloud run deploy youtube-api-service \
+  --image gcr.io/yt-channel-info-456010/youtube-api-service \
+  --region asia-east1 \
+  --platform managed \
+  --allow-unauthenticated \
+  --set-env-vars "API_KEY=你的API金鑰,INPUT_CHANNEL=頻道ID或@帳號"
+
+# ✅ Firebase Deploy
+
+cd frontend
+firebase deploy --only hosting

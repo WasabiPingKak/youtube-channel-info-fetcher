@@ -1,4 +1,5 @@
 google-api-python-client
 isodate
 pytz
-Flask
+flask
+flask-cors

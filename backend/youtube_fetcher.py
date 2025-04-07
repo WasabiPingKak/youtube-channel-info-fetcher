@@ -1,23 +1,12 @@
 import os
-import csv
-import json
-import argparse
 import datetime
 import pytz
 import isodate
 import googleapiclient.discovery
 import googleapiclient.errors
 
-from config import API_KEY, INPUT_CHANNEL
-
-
-# 🎥 CLI 參數處理
-def parse_args():
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--output', choices=['console', 'csv', 'json'], default='console',
-                        help='輸出方式：console（預設）、csv、json')
-    return parser.parse_args()
-
+API_KEY = os.getenv("API_KEY")
+INPUT_CHANNEL = os.getenv("INPUT_CHANNEL")
 
 # 🎥 設定 API 服務
 def get_youtube_service():
@@ -147,7 +136,7 @@ def load_date_ranges():
 
 
 # 新增這個函式，把 main() 的邏輯包進來
-def get_video_data(output_mode='console'):
+def get_video_data():
     youtube = get_youtube_service()
     channel_id = get_channel_id(youtube, INPUT_CHANNEL)
     playlist_id = get_uploads_playlist_id(youtube, channel_id)
