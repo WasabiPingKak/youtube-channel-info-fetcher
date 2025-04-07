@@ -1,30 +1,34 @@
+
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="UTF-8" />
-  <title>YouTube Video Info</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="style.css" />
+  <meta charset="UTF-8">
+  <title>YouTube 分類統計圖表</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="app.js" defer></script>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>🎬 影片清單</h1>
-  <div id="controls">
-    <label>起始日期: <input type="date" id="start-date"></label>
-    <label>結束日期: <input type="date" id="end-date"></label>
-    <button id="refresh-btn">🔁 依日期更新快取</button>
-    <button id="download-json">⬇️ 下載 JSON</button>
-    <button id="download-csv">⬇️ 下載 CSV</button>
+  <h1>YouTube 類別分析</h1>
+
+  <div>
+    起始日期：<input type="date" id="start-date">
+    結束日期：<input type="date" id="end-date">
+    <button id="refresh-btn">更新快取</button>
+    <button id="download-json">下載 JSON</button>
+    <button id="download-csv">下載 CSV</button>
   </div>
 
-  <div id="tabs">
-    <button class="tab-button active" data-type="影片">🎥 影片</button>
-    <button class="tab-button" data-type="Shorts">📱 Shorts</button>
+  <div>
+    <button class="tab-button active" data-type="shorts">🎞 Shorts</button>
+    <button class="tab-button" data-type="影片">🎬 影片</button>
     <button class="tab-button" data-type="直播檔">📺 直播檔</button>
   </div>
 
-  <p id="status"></p>
-  <ul id="video-list"></ul>
+  <div id="status" class="status-label"></div>
 
-  <script src="app.js"></script>
+  <div id="chart-area" class="charts-wrapper"></div>
+
+  <ul id="video-list"></ul>
 </body>
 </html>

@@ -1,59 +1,39 @@
 
 body {
-  font-family: "Segoe UI", sans-serif;
-  background-color: #f9f9f9;
-  margin: 0;
-  padding: 2rem;
-  color: #333;
-}
-h1 {
-  font-size: 1.5rem;
-  margin-bottom: 1rem;
-}
-#controls {
-  margin-bottom: 1rem;
-}
-#controls input, #controls button {
-  margin-right: 0.5rem;
-  padding: 0.4rem;
-  font-size: 1rem;
-}
-#refresh-btn {
-  background: #007bff;
-  color: white;
-  border: none;
-  border-radius: 6px;
-  cursor: pointer;
-}
-#refresh-btn:hover {
-  background: #0056b3;
-}
-ul {
-  list-style: none;
-  padding: 0;
-  margin-top: 1.5rem;
-}
-li {
-  background: white;
-  margin-bottom: 1rem;
-  padding: 1rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  font-family: Arial, sans-serif;
+  margin: 20px;
 }
 
-#tabs {
-  margin-top: 1rem;
-  margin-bottom: 1rem;
+button {
+  margin: 5px;
+  padding: 5px 10px;
 }
-.tab-button {
-  background: #eee;
-  border: none;
-  padding: 0.5rem 1rem;
-  margin-right: 0.5rem;
-  border-radius: 5px;
-  cursor: pointer;
+
+.status-label {
+  margin-top: 10px;
+  font-weight: bold;
 }
+
 .tab-button.active {
-  background: #007bff;
+  background-color: #007bff;
   color: white;
+}
+
+ul#video-list {
+  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.charts-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.chart-container {
+  width: 45%;
+  min-width: 300px;
 }

@@ -1,3 +1,4 @@
+
 const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
 let allVideos = [];
 let currentType = "影片";
@@ -14,6 +15,7 @@ function fetchVideos() {
       }
       document.getElementById("status").textContent = "";
       renderVideos(currentType);
+      renderCharts(currentType);
     })
     .catch(err => {
       console.error("❌ API 錯誤:", err);
@@ -28,7 +30,7 @@ function renderVideos(type) {
   const filtered = allVideos.filter(video => video.影片類型 === type);
   if (filtered.length === 0) {
     countLabel.textContent = `📊 ${type}：0 筆`;
-  list.innerHTML = "<li>🚫 沒有符合的資料。</li>";
+    list.innerHTML = "<li>🚫 沒有符合的資料。</li>";
     return;
   }
   countLabel.textContent = `📊 ${type}：${filtered.length} 筆`;
@@ -40,6 +42,80 @@ function renderVideos(type) {
       ⏱️ ${video.影片時長}｜📂 類別：${video.類別}
     `;
     list.appendChild(li);
+  });
+}
+
+function renderCharts(type) {
+  const chartArea = document.getElementById("chart-area");
+  chartArea.innerHTML = "";
+
+  const categoryCount = {};
+  const categoryDuration = {};
+
+  allVideos.filter(video => video.影片類型 === type).forEach(video => {
+    const category = video["類別"];
+    const duration = parseInt(video["總分鐘數"]) || 0;
+
+    if (!categoryCount[category]) {
+      categoryCount[category] = 0;
+      categoryDuration[category] = 0;
+    }
+
+    categoryCount[category]++;
+    categoryDuration[category] += duration;
+  });
+
+  const labels = Object.keys(categoryCount);
+  const videoCounts = labels.map(label => categoryCount[label]);
+  const durations = labels.map(label => categoryDuration[label]);
+
+  chartArea.innerHTML = `
+    <div class="chart-container">
+      <canvas id="chart-videos"></canvas>
+    </div>
+    <div class="chart-container">
+      <canvas id="chart-duration"></canvas>
+    </div>
+  `;
+
+  const ctx1 = document.getElementById("chart-videos").getContext("2d");
+  new Chart(ctx1, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '影片數量',
+        data: videoCounts,
+        backgroundColor: 'rgba(54, 162, 235, 0.6)',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: '各類別影片數量' }
+      }
+    }
+  });
+
+  const ctx2 = document.getElementById("chart-duration").getContext("2d");
+  new Chart(ctx2, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: '總分鐘數',
+        data: durations,
+        backgroundColor: 'rgba(255, 99, 132, 0.6)',
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        title: { display: true, text: '各類別影片總時長（分鐘）' }
+      }
+    }
   });
 }
 
@@ -64,36 +140,16 @@ document.getElementById("refresh-btn").addEventListener("click", () => {
     });
 });
 
-// Tab 切換事件
 document.querySelectorAll(".tab-button").forEach(btn => {
   btn.addEventListener("click", () => {
     document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
     btn.classList.add("active");
     currentType = btn.dataset.type;
     renderVideos(currentType);
+    renderCharts(currentType);
   });
 });
 
-fetchVideos();
-
-
-function setDefaultDates() {
-  const today = new Date();
-  const endStr = today.toISOString().split("T")[0];
-  document.getElementById("end-date").value = endStr;
-
-  if (allVideos.length > 0) {
-    const dates = allVideos.map(v => v.發布日期).sort();
-    const lastDate = dates[dates.length - 1].replaceAll("/", "-");
-    document.getElementById("start-date").value = lastDate;
-  } else {
-    const weekAgo = new Date(Date.now() - 7 * 86400000);
-    const startStr = weekAgo.toISOString().split("T")[0];
-    document.getElementById("start-date").value = startStr;
-  }
-}
-
-// 下載 JSON 檔案
 document.getElementById("download-json").addEventListener("click", () => {
   if (!allVideos.length) {
     alert("⚠️ 尚無資料可下載");
@@ -106,7 +162,6 @@ document.getElementById("download-json").addEventListener("click", () => {
   link.click();
 });
 
-// 下載 CSV 檔案
 document.getElementById("download-csv").addEventListener("click", () => {
   if (!allVideos.length) {
     alert("⚠️ 尚無資料可下載");
@@ -114,7 +169,7 @@ document.getElementById("download-csv").addEventListener("click", () => {
   }
   const headers = Object.keys(allVideos[0]);
   const csvRows = [
-    headers.join(","), // 標題列
+    headers.join(","), 
     ...allVideos.map(row => headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`).join(","))
   ];
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
