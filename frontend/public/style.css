@@ -37,3 +37,14 @@ ul#video-list {
   width: 45%;
   min-width: 300px;
 }
+
+ul#video-list li {
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+ul#video-list li:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+ul#video-list li:nth-child(even) {
+  background-color: #ffffff;
+}

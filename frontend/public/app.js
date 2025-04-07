@@ -65,9 +65,12 @@ function renderCharts(type) {
     categoryDuration[category] += duration;
   });
 
-  const labels = Object.keys(categoryCount);
-  const videoCounts = labels.map(label => categoryCount[label]);
-  const durations = labels.map(label => categoryDuration[label]);
+  
+  const labelsCountSorted = Object.keys(categoryCount).sort((a, b) => categoryCount[b] - categoryCount[a]);
+  const labelsDurationSorted = Object.keys(categoryDuration).sort((a, b) => categoryDuration[b] - categoryDuration[a]);
+
+    const videoCounts = labelsCountSorted.map(label => categoryCount[label]);
+    const durations = labelsDurationSorted.map(label => categoryDuration[label]);
 
   chartArea.innerHTML = `
     <div class="chart-container">
@@ -82,7 +85,7 @@ function renderCharts(type) {
   new Chart(ctx1, {
     type: 'bar',
     data: {
-      labels: labels,
+      labels: labelsCountSorted,
       datasets: [{
         label: '影片數量',
         data: videoCounts,
@@ -102,7 +105,7 @@ function renderCharts(type) {
   new Chart(ctx2, {
     type: 'bar',
     data: {
-      labels: labels,
+      labels: labelsCountSorted,
       datasets: [{
         label: '總分鐘數',
         data: durations,
