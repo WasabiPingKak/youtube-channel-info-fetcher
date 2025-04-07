@@ -113,36 +113,13 @@ def get_video_type(video):
     return "影片"
 
 
-# 🎥 讀取 video_date_ranges.conf
-def load_date_ranges():
-    if not os.path.exists('video_date_ranges.conf'):
-        return None
-
-    with open('video_date_ranges.conf', encoding='utf-8') as f:
-        lines = [line.strip() for line in f if line.strip()]
-
-    if len(lines) != 2:
-        print("❌ video_date_ranges.conf 檔案格式錯誤，應包含開始與結束兩個日期")
-        return None
-
-    try:
-        start_date = datetime.datetime.strptime(lines[0], "%Y/%m/%d")
-        end_date = datetime.datetime.strptime(lines[1], "%Y/%m/%d")
-        tz = pytz.timezone("Asia/Taipei")
-        return [(tz.localize(start_date), tz.localize(end_date))]
-    except Exception as e:
-        print(f"❌ 日期格式錯誤，請使用 YYYY/MM/DD 格式：{e}")
-        return None
-
-
 # 新增這個函式，把 main() 的邏輯包進來
-def get_video_data():
+def get_video_data(date_ranges=None):
     youtube = get_youtube_service()
     channel_id = get_channel_id(youtube, INPUT_CHANNEL)
     playlist_id = get_uploads_playlist_id(youtube, channel_id)
     video_ids = get_video_ids_from_playlist(youtube, playlist_id)
     all_videos = fetch_video_details(youtube, video_ids)
-    date_ranges = load_date_ranges()
 
     results = []
     for video in all_videos:

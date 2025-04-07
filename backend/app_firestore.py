@@ -5,6 +5,10 @@ import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
+from flask import Flask, jsonify, request
+import datetime
+import pytz
+
 
 # ✅ 設定 logging，會輸出到 Cloud Run logs
 logging.basicConfig(level=logging.INFO)
@@ -47,7 +51,21 @@ def videos():
 @app.route("/refresh-cache")
 def refresh_cache():
     try:
-        data = get_video_data()
+        start = request.args.get("start")
+        end = request.args.get("end")
+
+        tz = pytz.timezone("Asia/Taipei")
+        date_ranges = None
+        if start and end:
+            try:
+                start_dt = tz.localize(datetime.datetime.strptime(start, "%Y-%m-%d"))
+                end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d"))
+                date_ranges = [(start_dt, end_dt)]
+                logging.info(f"📆 使用前端指定日期範圍：{start} ~ {end}")
+            except Exception as e:
+                logging.warning(f"❌ 日期格式錯誤：{e}")
+
+        data = get_video_data(date_ranges=date_ranges)
         db.collection("videos").document("latest").set({"data": data})
         logging.info(f"✅ 快取已更新，共 {len(data)} 筆")
         return jsonify({"message": "✅ 快取已更新", "count": len(data)})

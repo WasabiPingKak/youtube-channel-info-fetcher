@@ -16,14 +16,20 @@
       font-size: 1.5rem;
       margin-bottom: 1rem;
     }
+    #controls {
+      margin-bottom: 1rem;
+    }
+    #controls input, #controls button {
+      margin-right: 0.5rem;
+      padding: 0.4rem;
+      font-size: 1rem;
+    }
     #refresh-btn {
       background: #007bff;
       color: white;
       border: none;
-      padding: 0.5rem 1rem;
       border-radius: 6px;
       cursor: pointer;
-      font-size: 1rem;
     }
     #refresh-btn:hover {
       background: #0056b3;
@@ -44,7 +50,11 @@
 </head>
 <body>
   <h1>🎬 影片清單</h1>
-  <button id="refresh-btn">🔁 更新快取</button>
+  <div id="controls">
+    <label>起始日期: <input type="date" id="start-date"></label>
+    <label>結束日期: <input type="date" id="end-date"></label>
+    <button id="refresh-btn">🔁 依日期更新快取</button>
+  </div>
   <p id="status"></p>
   <ul id="video-list"></ul>
 
@@ -80,8 +90,15 @@
     }
 
     document.getElementById("refresh-btn").addEventListener("click", () => {
+      const start = document.getElementById("start-date").value;
+      const end = document.getElementById("end-date").value;
+      if (!start || !end) {
+        alert("請選擇起始與結束日期！");
+        return;
+      }
+
       document.getElementById("status").textContent = "🔄 正在更新快取...";
-      fetch(apiBase + "/refresh-cache")
+      fetch(`${apiBase}/refresh-cache?start=${start}&end=${end}`)
         .then(res => res.json())
         .then(result => {
           document.getElementById("status").textContent = result.message || "✅ 已更新";
