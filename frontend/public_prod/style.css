@@ -1,0 +1,50 @@
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+button {
+  margin: 5px;
+  padding: 5px 10px;
+}
+
+.status-label {
+  margin-top: 10px;
+  font-weight: bold;
+}
+
+.tab-button.active {
+  background-color: #007bff;
+  color: white;
+}
+
+ul#video-list {
+  margin-top: 10px;
+  list-style: none;
+  padding: 0;
+}
+
+.charts-wrapper {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.chart-container {
+  width: 45%;
+  min-width: 300px;
+}
+
+ul#video-list li {
+  padding: 8px;
+  border-bottom: 1px solid #ccc;
+}
+ul#video-list li:nth-child(odd) {
+  background-color: #f9f9f9;
+}
+ul#video-list li:nth-child(even) {
+  background-color: #ffffff;
+}
