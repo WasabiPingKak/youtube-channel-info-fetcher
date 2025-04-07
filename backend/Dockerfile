@@ -14,4 +14,5 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8080
 
 # 設定啟動指令
-CMD ["python", "app.py"]
+#CMD ["python", "app.py"]
+CMD ["python", "app_firestore.py"]

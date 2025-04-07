@@ -1,5 +1,8 @@
-google-api-python-client
-isodate
-pytz
 flask
 flask-cors
+isodate
+pytz
+google-api-python-client
+requests
+firebase-admin
+google-cloud-firestore

@@ -3,76 +3,98 @@
 <head>
   <meta charset="UTF-8" />
   <title>YouTube Video Info</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background: #f5f5f5;
+      background-color: #f9f9f9;
+      margin: 0;
       padding: 2rem;
+      color: #333;
     }
     h1 {
-      text-align: center;
-      margin-bottom: 1.5rem;
+      font-size: 1.5rem;
+      margin-bottom: 1rem;
     }
-    table {
-      width: 100%;
-      border-collapse: collapse;
+    #refresh-btn {
+      background: #007bff;
+      color: white;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
+    #refresh-btn:hover {
+      background: #0056b3;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+      margin-top: 1.5rem;
+    }
+    li {
       background: white;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-    th, td {
-      padding: 0.8rem 1rem;
-      border-bottom: 1px solid #e0e0e0;
-      text-align: left;
-    }
-    th {
-      background-color: #f0f0f0;
-    }
-    tr:hover {
-      background-color: #f9f9f9;
-    }
-    .category {
-      font-weight: bold;
-      color: #3f51b5;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.05);
     }
   </style>
 </head>
 <body>
-  <h1>🎬 YouTube 頻道影片清單</h1>
-  <table>
-    <thead>
-      <tr>
-        <th>發布日期</th>
-        <th>標題</th>
-        <th>影片時長</th>
-        <th>影片類型</th>
-        <th>分類</th>
-      </tr>
-    </thead>
-    <tbody id="video-list"></tbody>
-  </table>
+  <h1>🎬 影片清單</h1>
+  <button id="refresh-btn">🔁 更新快取</button>
+  <p id="status"></p>
+  <ul id="video-list"></ul>
 
   <script>
-    const apiUrl = "https://youtube-api-service-260305364477.asia-east1.run.app/videos";
+    const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
 
-    fetch(apiUrl)
-      .then(res => res.json())
-      .then(data => {
-        const list = document.getElementById("video-list");
-        data.forEach(video => {
-          const row = document.createElement("tr");
-          row.innerHTML = `
-            <td>${video.發布日期}</td>
-            <td>${video.標題}</td>
-            <td>${video.影片時長}</td>
-            <td>${video.影片類型}</td>
-            <td class="category">${video.類別}</td>
-          `;
-          list.appendChild(row);
+    function fetchVideos() {
+      document.getElementById("status").textContent = "📦 載入中...";
+      fetch(apiBase + "/videos")
+        .then(res => res.json())
+        .then(data => {
+          const list = document.getElementById("video-list");
+          list.innerHTML = "";
+          if (!data || data.length === 0) {
+            document.getElementById("status").textContent = "⚠️ 尚無快取資料，請先更新。";
+            return;
+          }
+          document.getElementById("status").textContent = "";
+          data.forEach(video => {
+            const li = document.createElement("li");
+            li.innerHTML = `
+              <strong>${video.發布日期}</strong>｜${video.影片類型}<br>
+              <strong>${video.標題}</strong><br>
+              ⏱️ ${video.影片時長}｜📂 類別：${video.類別}
+            `;
+            list.appendChild(li);
+          });
+        })
+        .catch(err => {
+          console.error("❌ API 錯誤:", err);
+          document.getElementById("status").textContent = "❌ 讀取失敗";
         });
-      })
-      .catch(err => {
-        console.error("❌ API 錯誤:", err);
-      });
+    }
+
+    document.getElementById("refresh-btn").addEventListener("click", () => {
+      document.getElementById("status").textContent = "🔄 正在更新快取...";
+      fetch(apiBase + "/refresh-cache")
+        .then(res => res.json())
+        .then(result => {
+          document.getElementById("status").textContent = result.message || "✅ 已更新";
+          fetchVideos();
+        })
+        .catch(err => {
+          console.error("❌ 快取更新失敗:", err);
+          document.getElementById("status").textContent = "❌ 快取更新失敗";
+        });
+    });
+
+    // 預設載入
+    fetchVideos();
   </script>
 </body>
 </html>

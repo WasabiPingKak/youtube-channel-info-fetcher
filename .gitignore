@@ -1,3 +1,4 @@
 config.py
 output.*
 .env
+firebase-key.json
