@@ -1,5 +1,5 @@
 import logging
-from youtube_fetcher import get_video_data
+from services.youtube.fetcher import get_video_data
 
 def get_latest_cache(db):
     try:
