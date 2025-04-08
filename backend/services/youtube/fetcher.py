@@ -16,8 +16,6 @@ def get_video_data(date_ranges=None, api_key=None, input_channel=None):
     if not input_channel:
         raise EnvironmentError("❌ 未設定 INPUT_CHANNEL 環境變數")
 
-    logging.info(f"🔑 使用 API_KEY: {api_key[:5]}..., 頻道輸入: {input_channel}")
-
     youtube = get_youtube_service(api_key)
     if youtube is None:
         logging.error("🔥 無法建立 YouTube API 服務，結束執行")
