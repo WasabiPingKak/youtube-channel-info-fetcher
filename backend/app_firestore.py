@@ -63,12 +63,64 @@ def refresh_cache():
             except Exception as e:
                 logging.warning(f"❌ 日期格式錯誤：{e}")
 
-        data = get_video_data(date_ranges=date_ranges)
-        db.collection("videos").document("latest").set({"data": data})
-        logging.info(f"✅ 快取已更新，共 {len(data)} 筆")
-        return jsonify({"message": "✅ 快取已更新", "count": len(data)})
+        # 🔹 取得新的影片資料
+        new_data = get_video_data(date_ranges=date_ranges)
+
+        # 🔹 取得舊的快取資料
+        old_doc = db.collection("videos").document("latest").get()
+        old_data = old_doc.to_dict().get("data", []) if old_doc.exists else []
+
+        # 🔹 合併去重（依 videoId）
+        combined = {v["videoId"]: v for v in old_data}
+        for item in new_data:
+            combined[item["videoId"]] = item  # 新的會覆蓋舊的（或新增）
+
+        merged_data = list(combined.values())
+        db.collection("videos").document("latest").set({"data": merged_data})
+
+        logging.info(f"✅ 快取已合併更新，總共 {len(merged_data)} 筆（新增 {len(new_data)} 筆）")
+        return jsonify({
+            "message": "✅ 快取已合併更新",
+            "total": len(merged_data),
+            "new_added": len(new_data)
+        })
+
     except Exception as e:
         logging.error("🔥 /refresh-cache 發生例外錯誤", exc_info=True)
+        return jsonify({"error": "Internal Server Error"}), 500
+
+@app.route("/api/cache/overwrite", methods=["POST"])
+def overwrite_cache():
+    try:
+        data = request.get_json()
+        start = data.get("start")
+        end = data.get("end")
+
+        if not start or not end:
+            return jsonify({"error": "請提供 start 與 end 日期"}), 400
+
+        tz = pytz.timezone("Asia/Taipei")
+        try:
+            start_dt = tz.localize(datetime.datetime.strptime(start, "%Y-%m-%d"))
+            end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d"))
+            date_ranges = [(start_dt, end_dt)]
+            logging.info(f"🧨 強制快取覆寫：{start} ~ {end}")
+        except Exception as e:
+            logging.warning(f"❌ 日期格式錯誤：{e}")
+            return jsonify({"error": "日期格式錯誤，請使用 YYYY-MM-DD"}), 400
+
+        # 取得新資料並直接覆寫
+        new_data = get_video_data(date_ranges=date_ranges)
+        db.collection("videos").document("latest").set({"data": new_data})
+
+        logging.info(f"🧨 快取已覆寫，共 {len(new_data)} 筆")
+        return jsonify({
+            "message": "🧨 快取已強制覆寫",
+            "count": len(new_data)
+        })
+
+    except Exception as e:
+        logging.error("🔥 /api/cache/overwrite 發生例外錯誤", exc_info=True)
         return jsonify({"error": "Internal Server Error"}), 500
 
 # 🔹 GET: 取得所有分類
