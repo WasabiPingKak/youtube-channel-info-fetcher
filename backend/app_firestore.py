@@ -1,14 +1,12 @@
-from flask import Flask, jsonify
+from flask import Flask, request, jsonify
 from flask_cors import CORS
-from youtube_fetcher import get_video_data
-import os
 import firebase_admin
 from firebase_admin import credentials, firestore
 import logging
-from flask import Flask, jsonify, request
+import os
 import datetime
 import pytz
-
+from youtube_fetcher import get_video_data
 
 # ✅ 設定 logging，會輸出到 Cloud Run logs
 logging.basicConfig(level=logging.INFO)
@@ -72,6 +70,69 @@ def refresh_cache():
     except Exception as e:
         logging.error("🔥 /refresh-cache 發生例外錯誤", exc_info=True)
         return jsonify({"error": "Internal Server Error"}), 500
+
+# 🔹 GET: 取得所有分類
+@app.route("/api/categories", methods=["GET"])
+def get_categories():
+    categories_ref = db.collection("categories").stream()
+    categories = [{"id": cat.id, **cat.to_dict()} for cat in categories_ref]
+    return jsonify(categories)
+
+# 🔁 POST: 同步分類與關鍵字（支援 sync 與 replace 模式）
+@app.route("/api/categories/sync", methods=["POST"])
+def sync_categories():
+    incoming_data = request.get_json()
+    if not isinstance(incoming_data, list):
+        return jsonify({"error": "請傳入分類陣列"}), 400
+
+    for item in incoming_data:
+        name = item.get("name")
+        keywords = item.get("keywords", [])
+        mode = item.get("mode", "sync")  # 預設為 sync 模式
+
+        if not name or not isinstance(keywords, list):
+            continue  # 跳過不合法資料
+
+        existing = db.collection("categories").where("name", "==", name).get()
+        if existing:
+            doc = existing[0]
+            if mode == "replace":
+                db.collection("categories").document(doc.id).update({
+                    "keywords": keywords
+                })
+            else:  # sync 模式
+                data = doc.to_dict()
+                current_keywords = set(data.get("keywords", []))
+                new_keywords = set(keywords)
+                merged_keywords = list(current_keywords.union(new_keywords))
+
+                if merged_keywords != current_keywords:
+                    db.collection("categories").document(doc.id).update({
+                        "keywords": merged_keywords
+                    })
+        else:
+            db.collection("categories").add({
+                "name": name,
+                "keywords": keywords
+            })
+
+    return jsonify({"message": "同步完成"}), 200
+
+# 🧠 自動分類影片標題（根據分類關鍵字）
+def categorize_title_by_keywords(title):
+    categories_ref = db.collection("categories").stream()
+    matched = []
+
+    for doc in categories_ref:
+        cat = doc.to_dict()
+        name = cat.get("name")
+        keywords = cat.get("keywords", [])
+        for kw in keywords:
+            if kw in title:
+                matched.append(name)
+                break
+
+    return matched
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
