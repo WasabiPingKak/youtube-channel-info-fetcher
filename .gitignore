@@ -1,5 +1,5 @@
 .firebase/
 config.py
 output.*
-.env
+.env.deploy
 firebase-key.json
