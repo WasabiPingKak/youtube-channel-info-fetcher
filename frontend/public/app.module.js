@@ -1,12 +1,12 @@
+import { fetchVideos as fetchVideoData, refreshCache, syncCategories, loadCategoryList as loadCategoryData } from "./videoService.js";
+import { renderCharts } from "./chartRenderer.js";
 
-const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
 let allVideos = [];
 let currentType = "直播檔";
 
 function fetchVideos() {
   document.getElementById("status").textContent = "📦 載入中...";
-  fetch(apiBase + "/videos")
-    .then(res => res.json())
+  fetchVideoData()
     .then(data => {
       allVideos = data || [];
       if (allVideos.length === 0) {
@@ -16,7 +16,7 @@ function fetchVideos() {
       document.getElementById("status").textContent = "";
       console.log("🎯 選擇影片類型:", currentType);
       renderVideos(currentType);
-      renderCharts(currentType);
+      renderCharts(currentType, allVideos);
       setDefaultDates();
     })
     .catch(err => {
@@ -47,82 +47,6 @@ function renderVideos(type) {
   });
 }
 
-function renderCharts(type) {
-  const chartArea = document.getElementById("chart-area");
-  chartArea.innerHTML = "";
-
-  const categoryCount = {};
-  const categoryDuration = {};
-
-  allVideos.filter(video => video.影片類型?.toLowerCase() === type.toLowerCase()).forEach(video => {
-    const category = video["類別"];
-    const duration = parseInt(video["總分鐘數"]) || 0;
-
-    if (!categoryCount[category]) {
-      categoryCount[category] = 0;
-      categoryDuration[category] = 0;
-    }
-
-    categoryCount[category]++;
-    categoryDuration[category] += duration;
-  });
-
-  const labelsCountSorted = Object.keys(categoryCount).sort((a, b) => categoryCount[b] - categoryCount[a]);
-  const labelsDurationSorted = Object.keys(categoryDuration).sort((a, b) => categoryDuration[b] - categoryDuration[a]);
-
-  const videoCounts = labelsCountSorted.map(label => categoryCount[label]);
-  const durations = labelsDurationSorted.map(label => categoryDuration[label]);
-
-  chartArea.innerHTML = `
-    <div class="chart-container">
-      <canvas id="chart-videos"></canvas>
-    </div>
-    <div class="chart-container">
-      <canvas id="chart-duration"></canvas>
-    </div>
-  `;
-
-  const ctx1 = document.getElementById("chart-videos").getContext("2d");
-  new Chart(ctx1, {
-    type: 'bar',
-    data: {
-      labels: labelsCountSorted,
-      datasets: [{
-        label: '影片數量',
-        data: videoCounts,
-        backgroundColor: 'rgba(54, 162, 235, 0.6)',
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: '各類別影片數量' }
-      }
-    }
-  });
-
-  const ctx2 = document.getElementById("chart-duration").getContext("2d");
-  new Chart(ctx2, {
-    type: 'bar',
-    data: {
-      labels: labelsDurationSorted,
-      datasets: [{
-        label: '總分鐘數',
-        data: durations,
-        backgroundColor: 'rgba(255, 99, 132, 0.6)',
-      }]
-    },
-    options: {
-      responsive: true,
-      plugins: {
-        legend: { display: false },
-        title: { display: true, text: '各類別影片總時長（分鐘）' }
-      }
-    }
-  });
-}
-
 const refreshBtn = document.getElementById("refresh-btn");
 if (refreshBtn) {
   refreshBtn.addEventListener("click", () => {
@@ -134,8 +58,7 @@ if (refreshBtn) {
     }
 
     document.getElementById("status").textContent = "🔄 正在更新快取...";
-    fetch(`${apiBase}/refresh-cache?start=${start}&end=${end}`)
-      .then(res => res.json())
+    refreshCache(start, end)
       .then(result => {
         document.getElementById("status").textContent = result.message || "✅ 已更新";
         fetchVideos();
@@ -154,7 +77,7 @@ document.querySelectorAll(".tab-button").forEach(btn => {
     currentType = btn.dataset.type;
     console.log("🎯 選擇影片類型:", currentType);
     renderVideos(currentType);
-    renderCharts(currentType);
+    renderCharts(currentType, allVideos);
     setDefaultDates();
   });
 });
@@ -211,8 +134,6 @@ function setDefaultDates() {
 
 fetchVideos();
 
-
-
 document.getElementById("sync-category").addEventListener("click", () => {
   const name = document.getElementById("category-name").value.trim();
   const keywords = document.getElementById("category-keywords").value.split(",").map(k => k.trim()).filter(Boolean);
@@ -225,18 +146,13 @@ document.getElementById("sync-category").addEventListener("click", () => {
 
   document.getElementById("category-sync-result").textContent = "🔄 同步中...";
 
-  fetch(apiBase + "/api/categories/sync", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify([{ name, keywords, mode }])
-  })
-    .then(res => res.json())
+  syncCategories(name, keywords, mode)
     .then(data => {
       if (data.message) {
         document.getElementById("category-sync-result").textContent = "✅ " + data.message;
         document.getElementById("category-name").value = "";
         document.getElementById("category-keywords").value = "";
-        loadCategoryList(); // 🔁 同步後重新載入
+        loadCategories();
       } else if (data.error) {
         document.getElementById("category-sync-result").textContent = "❌ " + data.error;
       } else {
@@ -249,13 +165,12 @@ document.getElementById("sync-category").addEventListener("click", () => {
     });
 });
 
-async function loadCategoryList() {
+async function loadCategories() {
   const container = document.getElementById("category-list");
   container.innerHTML = "載入中...";
 
   try {
-    const res = await fetch("https://youtube-api-service-260305364477.asia-east1.run.app/api/categories");
-    const data = await res.json();
+    const data = await loadCategoryData();
 
     container.innerHTML = "";
 
@@ -270,7 +185,7 @@ async function loadCategoryList() {
 
       const title = document.createElement("h3");
       title.textContent = `📂 ${cat.name}`;
-    title.style.cursor = "pointer";
+      title.style.cursor = "pointer";
       wrapper.appendChild(title);
 
       if (cat.keywords && cat.keywords.length > 0) {
@@ -281,10 +196,10 @@ async function loadCategoryList() {
           ul.appendChild(li);
         });
         ul.classList.add("collapsed");
-    title.addEventListener("click", () => {
-      ul.classList.toggle("collapsed");
-    });
-    wrapper.appendChild(ul);
+        title.addEventListener("click", () => {
+          ul.classList.toggle("collapsed");
+        });
+        wrapper.appendChild(ul);
       } else {
         const note = document.createElement("p");
         note.textContent = "（無關鍵字）";
@@ -299,4 +214,4 @@ async function loadCategoryList() {
   }
 }
 
-loadCategoryList();
+loadCategories();
