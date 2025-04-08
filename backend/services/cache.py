@@ -18,9 +18,13 @@ def refresh_video_cache(db, date_ranges=None):
 
     try:
         old_data = get_latest_cache(db)
-        combined = {v["videoId"]: v for v in old_data}
+        combined = {v.get("影片ID"): v for v in old_data if v.get("影片ID")}
         for item in new_data:
-            combined[item["videoId"]] = item
+            video_id = item.get("影片ID")
+            if not video_id:
+                logging.warning("⚠️ [refresh_video_cache] 缺少影片ID，略過此筆資料: %s", item)
+                continue
+            combined[video_id] = item
         merged_data = list(combined.values())
         db.collection("videos").document("latest").set({"data": merged_data})
         return merged_data, new_data

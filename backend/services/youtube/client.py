@@ -36,7 +36,12 @@ def get_channel_id(youtube, input_channel):
 def get_uploads_playlist_id(youtube, channel_id):
     try:
         response = youtube.channels().list(part="contentDetails", id=channel_id).execute()
-        return response['items'][0]['contentDetails']['relatedPlaylists']['uploads']
+        items = response.get("items", [])
+        if not items:
+            logging.warning("⚠️ [get_uploads_playlist_id] 找不到頻道內容，頻道 ID: %s", channel_id)
+            return None
+        return items[0]['contentDetails']['relatedPlaylists']['uploads']
     except Exception as e:
-        logging.error("🔥 [get_uploads_playlist_id] 無法取得上傳清單: %s", e, exc_info=True)
+        logging.error("🔥 [get_uploads_playlist_id] 無法取得上傳清單（頻道 ID: %s）: %s", channel_id, e, exc_info=True)
         return None
+
