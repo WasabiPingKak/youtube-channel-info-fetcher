@@ -115,6 +115,13 @@ def get_video_type(video):
 
 # 新增這個函式，把 main() 的邏輯包進來
 def get_video_data(date_ranges=None):
+    if not API_KEY:
+        raise EnvironmentError("❌ 未設定 API_KEY 環境變數")
+    if not INPUT_CHANNEL:
+        raise EnvironmentError("❌ 未設定 INPUT_CHANNEL 環境變數")
+
+    print(f"🔑 API_KEY 前五碼: {API_KEY[:5]}..., 頻道輸入: {INPUT_CHANNEL}")
+
     youtube = get_youtube_service()
     channel_id = get_channel_id(youtube, INPUT_CHANNEL)
     playlist_id = get_uploads_playlist_id(youtube, channel_id)
