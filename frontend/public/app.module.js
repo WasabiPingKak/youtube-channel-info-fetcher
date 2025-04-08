@@ -1,10 +1,27 @@
 import { fetchVideos as fetchVideoData, refreshCache, syncCategories, loadCategoryList as loadCategoryData } from "./videoService.js";
 import { renderCharts } from "./chartRenderer.js";
+import { renderVideos } from "./videoRenderer.js";
+import { setDefaultDates } from "./dateUtils.js";
+import { downloadJSON, downloadCSV } from "./downloadUtils.js";
+import { setupTabSwitching, setupRefreshButton, setupDownloadButtons } from "./events.js";
 
 let allVideos = [];
 let currentType = "直播檔";
 
-function fetchVideos() {
+function refreshAndReload(start, end) {
+  document.getElementById("status").textContent = "🔄 正在更新快取...";
+  refreshCache(start, end)
+    .then(result => {
+      document.getElementById("status").textContent = result.message || "✅ 已更新";
+      fetchAndRenderVideos();
+    })
+    .catch(err => {
+      console.error("❌ 快取更新失敗:", err);
+      document.getElementById("status").textContent = "❌ 快取更新失敗";
+    });
+}
+
+function fetchAndRenderVideos() {
   document.getElementById("status").textContent = "📦 載入中...";
   fetchVideoData()
     .then(data => {
@@ -14,10 +31,9 @@ function fetchVideos() {
         return;
       }
       document.getElementById("status").textContent = "";
-      console.log("🎯 選擇影片類型:", currentType);
-      renderVideos(currentType);
+      renderVideos(currentType, allVideos);
       renderCharts(currentType, allVideos);
-      setDefaultDates();
+      setDefaultDates(allVideos);
     })
     .catch(err => {
       console.error("❌ API 錯誤:", err);
@@ -25,114 +41,16 @@ function fetchVideos() {
     });
 }
 
-function renderVideos(type) {
-  const countLabel = document.getElementById("status");
-  const list = document.getElementById("video-list");
-  list.innerHTML = "";
-  const filtered = allVideos.filter(video => video.影片類型?.toLowerCase() === type.toLowerCase());
-  if (filtered.length === 0) {
-    countLabel.textContent = `📊 ${type}：0 筆`;
-    list.innerHTML = "<li>🚫 沒有符合的資料。</li>";
-    return;
-  }
-  countLabel.textContent = `📊 ${type}：${filtered.length} 筆`;
-  filtered.forEach(video => {
-    const li = document.createElement("li");
-    li.innerHTML = `
-      <strong>${video.發布日期}</strong>｜${video.影片類型}<br>
-      <strong>${video.標題}</strong><br>
-      ⏱️ ${video.影片時長}｜📂 類別：${video.類別}
-    `;
-    list.appendChild(li);
-  });
-}
-
-const refreshBtn = document.getElementById("refresh-btn");
-if (refreshBtn) {
-  refreshBtn.addEventListener("click", () => {
-    const start = document.getElementById("start-date").value;
-    const end = document.getElementById("end-date").value;
-    if (!start || !end) {
-      alert("請選擇起始與結束日期！");
-      return;
-    }
-
-    document.getElementById("status").textContent = "🔄 正在更新快取...";
-    refreshCache(start, end)
-      .then(result => {
-        document.getElementById("status").textContent = result.message || "✅ 已更新";
-        fetchVideos();
-      })
-      .catch(err => {
-        console.error("❌ 快取更新失敗:", err);
-        document.getElementById("status").textContent = "❌ 快取更新失敗";
-      });
-  });
-}
-
-document.querySelectorAll(".tab-button").forEach(btn => {
-  btn.addEventListener("click", () => {
-    document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-    currentType = btn.dataset.type;
-    console.log("🎯 選擇影片類型:", currentType);
-    renderVideos(currentType);
-    renderCharts(currentType, allVideos);
-    setDefaultDates();
-  });
+setupTabSwitching(type => {
+  currentType = type;
+  renderVideos(currentType, allVideos);
+  renderCharts(currentType, allVideos);
+  setDefaultDates(allVideos);
 });
 
-document.getElementById("download-json").addEventListener("click", () => {
-  if (!allVideos.length) {
-    alert("⚠️ 尚無資料可下載");
-    return;
-  }
-  const blob = new Blob([JSON.stringify(allVideos, null, 2)], { type: "application/json" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "videos.json";
-  link.click();
-});
+setupRefreshButton(refreshAndReload);
 
-document.getElementById("download-csv").addEventListener("click", () => {
-  if (!allVideos.length) {
-    alert("⚠️ 尚無資料可下載");
-    return;
-  }
-  const headers = Object.keys(allVideos[0]);
-  const csvRows = [
-    headers.join(","),
-    ...allVideos.map(row => headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`).join(","))
-  ];
-  const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
-  const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = "videos.csv";
-  link.click();
-});
-
-function setDefaultDates() {
-  const today = new Date();
-  const endStr = today.toISOString().split("T")[0];
-  const endInput = document.getElementById("end-date");
-  if (endInput) endInput.value = endStr;
-
-  if (allVideos.length > 0) {
-    const sortedDates = allVideos
-      .map(v => v.發布日期.replaceAll("/", "-"))
-      .sort();
-    const lastDate = sortedDates[sortedDates.length - 1];
-    const startInput = document.getElementById("start-date");
-    if (startInput) startInput.value = lastDate;
-  } else {
-    const weekAgo = new Date(Date.now() - 7 * 86400000);
-    const startStr = weekAgo.toISOString().split("T")[0];
-    const startInput = document.getElementById("start-date");
-    if (startInput) startInput.value = startStr;
-  }
-}
-
-fetchVideos();
+setupDownloadButtons(allVideos, () => downloadJSON(allVideos), () => downloadCSV(allVideos));
 
 document.getElementById("sync-category").addEventListener("click", () => {
   const name = document.getElementById("category-name").value.trim();
@@ -214,4 +132,5 @@ async function loadCategories() {
   }
 }
 
+fetchAndRenderVideos();
 loadCategories();
