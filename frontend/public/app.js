@@ -178,7 +178,7 @@ document.getElementById("download-csv").addEventListener("click", () => {
   }
   const headers = Object.keys(allVideos[0]);
   const csvRows = [
-    headers.join(","), 
+    headers.join(","),
     ...allVideos.map(row => headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`).join(","))
   ];
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });
@@ -223,6 +223,8 @@ document.getElementById("sync-category").addEventListener("click", () => {
     return;
   }
 
+  document.getElementById("category-sync-result").textContent = "🔄 同步中...";
+
   fetch(apiBase + "/api/categories/sync", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -232,6 +234,9 @@ document.getElementById("sync-category").addEventListener("click", () => {
     .then(data => {
       if (data.message) {
         document.getElementById("category-sync-result").textContent = "✅ " + data.message;
+        document.getElementById("category-name").value = "";
+        document.getElementById("category-keywords").value = "";
+        loadCategoryList(); // 🔁 同步後重新載入
       } else if (data.error) {
         document.getElementById("category-sync-result").textContent = "❌ " + data.error;
       } else {
@@ -243,8 +248,6 @@ document.getElementById("sync-category").addEventListener("click", () => {
       document.getElementById("category-sync-result").textContent = "❌ 發生錯誤";
     });
 });
-
-
 
 async function loadCategoryList() {
   const container = document.getElementById("category-list");
