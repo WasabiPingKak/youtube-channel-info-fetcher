@@ -210,3 +210,85 @@ function setDefaultDates() {
 }
 
 fetchVideos();
+
+
+
+document.getElementById("sync-category").addEventListener("click", () => {
+  const name = document.getElementById("category-name").value.trim();
+  const keywords = document.getElementById("category-keywords").value.split(",").map(k => k.trim()).filter(Boolean);
+  const mode = document.getElementById("category-mode").value;
+
+  if (!name || keywords.length === 0) {
+    document.getElementById("category-sync-result").textContent = "⚠️ 請填入分類名稱與至少一個關鍵字";
+    return;
+  }
+
+  fetch(apiBase + "/api/categories/sync", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify([{ name, keywords, mode }])
+  })
+    .then(res => res.json())
+    .then(data => {
+      if (data.message) {
+        document.getElementById("category-sync-result").textContent = "✅ " + data.message;
+      } else if (data.error) {
+        document.getElementById("category-sync-result").textContent = "❌ " + data.error;
+      } else {
+        document.getElementById("category-sync-result").textContent = "⚠️ 未知回應";
+      }
+    })
+    .catch(err => {
+      console.error("❌ 同步分類失敗:", err);
+      document.getElementById("category-sync-result").textContent = "❌ 發生錯誤";
+    });
+});
+
+
+
+async function loadCategoryList() {
+  const container = document.getElementById("category-list");
+  container.innerHTML = "載入中...";
+
+  try {
+    const res = await fetch("https://youtube-api-service-260305364477.asia-east1.run.app/api/categories");
+    const data = await res.json();
+
+    container.innerHTML = "";
+
+    if (data.length === 0) {
+      container.textContent = "（尚無分類資料）";
+      return;
+    }
+
+    data.forEach(cat => {
+      const wrapper = document.createElement("div");
+      wrapper.className = "category-block";
+
+      const title = document.createElement("h3");
+      title.textContent = `📂 ${cat.name}`;
+      wrapper.appendChild(title);
+
+      if (cat.keywords && cat.keywords.length > 0) {
+        const ul = document.createElement("ul");
+        cat.keywords.forEach(kw => {
+          const li = document.createElement("li");
+          li.textContent = kw;
+          ul.appendChild(li);
+        });
+        wrapper.appendChild(ul);
+      } else {
+        const note = document.createElement("p");
+        note.textContent = "（無關鍵字）";
+        wrapper.appendChild(note);
+      }
+
+      container.appendChild(wrapper);
+    });
+  } catch (err) {
+    container.innerHTML = "❌ 讀取分類失敗";
+    console.error(err);
+  }
+}
+
+loadCategoryList();

@@ -48,3 +48,21 @@ ul#video-list li:nth-child(odd) {
 ul#video-list li:nth-child(even) {
   background-color: #ffffff;
 }
+
+
+.category-wrapper {
+  margin-top: 20px;
+}
+.category-block {
+  background: #f8f8f8;
+  border: 1px solid #ddd;
+  padding: 10px;
+  margin-bottom: 10px;
+  border-radius: 8px;
+}
+.category-block h3 {
+  margin: 0 0 6px 0;
+}
+.category-block ul {
+  padding-left: 20px;
+}
