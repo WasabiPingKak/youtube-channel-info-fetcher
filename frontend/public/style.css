@@ -66,3 +66,12 @@ ul#video-list li:nth-child(even) {
 .category-block ul {
   padding-left: 20px;
 }
+
+
+ul.collapsed {
+  display: none;
+}
+.category-block h3 {
+  cursor: pointer;
+  user-select: none;
+}

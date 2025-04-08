@@ -267,6 +267,7 @@ async function loadCategoryList() {
 
       const title = document.createElement("h3");
       title.textContent = `📂 ${cat.name}`;
+    title.style.cursor = "pointer";
       wrapper.appendChild(title);
 
       if (cat.keywords && cat.keywords.length > 0) {
@@ -276,7 +277,11 @@ async function loadCategoryList() {
           li.textContent = kw;
           ul.appendChild(li);
         });
-        wrapper.appendChild(ul);
+        ul.classList.add("collapsed");
+    title.addEventListener("click", () => {
+      ul.classList.toggle("collapsed");
+    });
+    wrapper.appendChild(ul);
       } else {
         const note = document.createElement("p");
         note.textContent = "（無關鍵字）";
