@@ -10,12 +10,14 @@ export const TagManager = (() => {
     render();
   }
 
-  function saveToServer() {
-    const dataToSave = data.map(entry => ({ name: entry.category, keywords: entry.keywords }));
-      saveTagConfig(dataToSave).then(() => {
-      // ✅ 儲存完成，但不顯示 alert
-    });
-  }
+  
+function saveToServer() {
+  const dataToSave = data.map(entry => ({ name: entry.category, keywords: entry.keywords }));
+  saveTagConfig(dataToSave).then(() => {
+    location.reload();  // ✅ 儲存後重新載入整個網站
+  });
+}
+
 
   function setVideoData(videoList) {
     videos = videoList || [];
