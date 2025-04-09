@@ -3,3 +3,7 @@ config.py
 output.*
 .env.deploy
 firebase-key.json
+venv/
+__pycache__/
+*.pyc
+.coverage

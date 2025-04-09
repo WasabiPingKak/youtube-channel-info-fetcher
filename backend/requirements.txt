@@ -5,4 +5,6 @@ pytz
 google-api-python-client
 requests
 firebase-admin
-google-cloud-firestore
+pytest
+google-cloud-firestorecd
+pytest-cov
