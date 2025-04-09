@@ -19,10 +19,10 @@ def convert_duration_to_hms(duration):
 
 def get_video_publish_date(video):
     try:
-        utc_dt = datetime.datetime.strptime(video['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
-        utc_dt = pytz.UTC.localize(utc_dt)
-        local_dt = utc_dt.astimezone(pytz.timezone("Asia/Taipei"))
-        return local_dt.strftime("%Y/%m/%d")
+        return datetime.datetime.strptime(video['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=pytz.UTC)
+    except Exception as e:
+        logging.error("🔥 [get_video_publish_date] 解析影片日期失敗: %s", e, exc_info=True)
+        return None
     except Exception as e:
         logging.error("🔥 [get_video_publish_date] 解析影片日期失敗: %s", e, exc_info=True)
         return "未知日期"

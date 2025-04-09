@@ -24,7 +24,10 @@ def init_cache_routes(app, db):
             date_ranges = None
             if start and end:
                 start_dt = tz.localize(datetime.datetime.strptime(start, "%Y-%m-%d"))
-                end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d"))
+                start_dt = start_dt.astimezone(pytz.UTC)
+                end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d") + datetime.timedelta(days=1))
+                end_dt = end_dt.astimezone(pytz.UTC)
+                end_dt = end_dt.astimezone(pytz.UTC)
                 date_ranges = [(start_dt, end_dt)]
             merged_data, new_data = refresh_video_cache(db, date_ranges)
             return jsonify({
@@ -47,7 +50,9 @@ def init_cache_routes(app, db):
 
             tz = pytz.timezone("Asia/Taipei")
             start_dt = tz.localize(datetime.datetime.strptime(start, "%Y-%m-%d"))
-            end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d"))
+            start_dt = start_dt.astimezone(pytz.UTC)
+            end_dt = tz.localize(datetime.datetime.strptime(end, "%Y-%m-%d") + datetime.timedelta(days=1))
+            end_dt = end_dt.astimezone(pytz.UTC)
             new_data = overwrite_video_cache(db, [(start_dt, end_dt)])
 
             return jsonify({
