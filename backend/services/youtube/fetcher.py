@@ -47,7 +47,10 @@ def get_video_data(date_ranges=None, api_key=None, input_channel=None):
                 skipped += 1
                 continue
 
-            published_dt = datetime.datetime.fromisoformat(video['snippet']['publishedAt'][:-1]).astimezone(pytz.timezone("Asia/Taipei"))
+            # 正確轉換時區處理 publishedAt
+            published_dt = datetime.datetime.strptime(video['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
+            published_dt = pytz.UTC.localize(published_dt).astimezone(pytz.timezone("Asia/Taipei"))
+
             if date_ranges and not any(start <= published_dt < end for start, end in date_ranges):
                 skipped += 1
                 continue
@@ -76,4 +79,3 @@ def get_video_data(date_ranges=None, api_key=None, input_channel=None):
 
     logging.info(f"✅ 處理完成，共取得 {len(results)} 筆，略過 {skipped} 筆")
     return results
-

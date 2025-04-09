@@ -6,5 +6,5 @@ google-api-python-client
 requests
 firebase-admin
 pytest
-google-cloud-firestorecd
+google-cloud-firestore
 pytest-cov

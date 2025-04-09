@@ -14,6 +14,15 @@ KEEP_REVISIONS=5
 PROJECT_ID=$(gcloud config get-value project)
 IMAGE_URI="gcr.io/$PROJECT_ID/$SERVICE_NAME"
 
+# === 使用者選項 ===
+read -p "✅ 要切換流量到新 revision 嗎？(Y/n): " confirm_switch
+confirm_switch="${confirm_switch:-y}"
+read -p "🧹 要清除舊的 Revisions，只保留最新 $KEEP_REVISIONS 個嗎？(y/N): " confirm_clean
+
+export CONFIRM_SWITCH="$confirm_switch"
+export CONFIRM_CLEAN="$confirm_clean"
+
+
 # === 建構映像檔（Dockerfile 模式） ===
 echo ""
 echo "🐳 使用 Dockerfile 建構映像..."
@@ -58,8 +67,8 @@ LATEST_URL=$(gcloud run revisions describe "$LATEST_REVISION" \
 echo "🔗 可用於測試的 URL：$LATEST_URL"
 
 # === 可選擇切流量 ===
-read -p "✅ 要將流量切換到新 revision 嗎？(y/N): " confirm
-if [[ "$confirm" =~ ^[Yy]$ ]]; then
+# 使用先前輸入的選項進行判斷
+if [[ "$CONFIRM_SWITCH" =~ ^[Yy]$ ]]; then
   echo "🚦 正在切換流量到 $LATEST_REVISION..."
   gcloud run services update-traffic "$SERVICE_NAME" \
     --region "$REGION" \
@@ -74,27 +83,32 @@ fi
 
 # === 清除舊 revision ===
 echo ""
-echo "🧹 清理舊的 Revisions，只保留最新 $KEEP_REVISIONS 個..."
-revisions=$(gcloud run revisions list \
-  --service="$SERVICE_NAME" \
-  --region="$REGION" \
-  --sort-by="~CREATED" \
-  --format="value(metadata.name)")
+# 使用先前輸入的選項進行判斷
+if [[ "$CONFIRM_CLEAN" =~ ^[Yy]$ ]]; then
+  echo "🧹 正在清理舊的 Revisions..."
+  revisions=$(gcloud run revisions list \
+    --service="$SERVICE_NAME" \
+    --region="$REGION" \
+    --sort-by="~CREATED" \
+    --format="value(metadata.name)")
 
-revisions_array=($revisions)
+  revisions_array=($revisions)
 
-if [ ${#revisions_array[@]} -le $KEEP_REVISIONS ]; then
-  echo "✅ 無需清理，目前 revision 數量為 ${#revisions_array[@]}"
-  exit 0
-fi
-
-for ((i=$KEEP_REVISIONS; i<${#revisions_array[@]}; i++)); do
-  revision="${revisions_array[$i]}"
-    gcloud run revisions describe "$revision" --region="$REGION" > /dev/null 2>&1
-  if [ $? -eq 0 ]; then
-    echo "⛔ 刪除 revision: $revision"
-    gcloud run revisions delete "$revision" --region="$REGION" --quiet
+  if [ {#revisions_array[@]} -le $KEEP_REVISIONS ]; then
+    echo "✅ 無需清理，目前 revision 數量為 ${#revisions_array[@]}"
+    exit 0
   fi
-done
 
-echo "✅ 完成部署並清除舊版本！"
+  for ((i=$KEEP_REVISIONS; i<${#revisions_array[@]}; i++)); do
+    revision="${revisions_array[$i]}"
+    gcloud run revisions describe "$revision" --region="$REGION" > /dev/null 2>&1
+    if [ $? -eq 0 ]; then
+      echo "⛔ 刪除 revision: $revision"
+      gcloud run revisions delete "$revision" --region="$REGION" --quiet
+    fi
+  done
+
+  echo "✅ 完成清除舊版本！"
+else
+  echo "ℹ️ 已略過清除舊的 Revisions"
+fi
