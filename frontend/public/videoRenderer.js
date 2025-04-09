@@ -2,7 +2,21 @@
 export function renderVideos(type, allVideos) {
   const countLabel = document.getElementById("status");
   const list = document.getElementById("video-list");
-  list.innerHTML = "";
+  function formatDateToTaipei(isoString) {
+  const formatter = new Intl.DateTimeFormat('zh-TW', {
+    timeZone: 'Asia/Taipei',
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit'
+  });
+  const parts = formatter.formatToParts(new Date(isoString));
+  const y = parts.find(p => p.type === 'year').value;
+  const m = parts.find(p => p.type === 'month').value;
+  const d = parts.find(p => p.type === 'day').value;
+  return `${y}/${m}/${d}`;
+}
+
+list.innerHTML = "";
 
   const filtered = allVideos
     .filter(video => video.影片類型?.toLowerCase() === type.toLowerCase())
@@ -18,7 +32,7 @@ export function renderVideos(type, allVideos) {
   filtered.forEach(video => {
     const li = document.createElement("li");
     li.innerHTML = `
-      <strong>${video.發布日期}</strong>｜${video.影片類型}<br>
+      <strong>${formatDateToTaipei(video.發布日期)}</strong>｜${video.影片類型}<br>
       <strong>${video.標題}</strong><br>
       ⏱️ ${video.影片時長}｜📂 類別：${video.類別}
     `;
