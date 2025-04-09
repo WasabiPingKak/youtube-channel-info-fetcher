@@ -7,6 +7,12 @@ import { setupTabSwitching, setupRefreshButton, setupDownloadButtons } from "./e
 import { TagManager } from './tagManager.js';
 
 
+function updatePreviewSource() {
+  const filtered = allVideos.filter(v => (v["影片類型"] || "").toLowerCase() === currentType.toLowerCase());
+  TagManager.setVideoData(filtered);
+  TagManager.init();  // 強制刷新分類預覽
+}
+
 let allVideos = [];
 let currentType = "直播檔";
 
@@ -16,6 +22,7 @@ function refreshAndReload(start, end) {
     .then(result => {
       document.getElementById("status").textContent = result.message || "✅ 已更新";
       fetchAndRenderVideos();
+      updatePreviewSource();
     })
     .catch(err => {
       console.error("❌ 快取更新失敗:", err);
@@ -33,10 +40,11 @@ function fetchAndRenderVideos() {
         return;
       }
       document.getElementById("status").textContent = "";
-      TagManager.setVideoData(allVideos);
+      updatePreviewSource();
       renderVideos(currentType, allVideos);
       renderCharts(currentType, allVideos);
       setDefaultDates(allVideos);
+  updatePreviewSource();
     })
     .catch(err => {
       console.error("❌ API 錯誤:", err);
@@ -49,6 +57,7 @@ setupTabSwitching(type => {
   renderVideos(currentType, allVideos);
   renderCharts(currentType, allVideos);
   setDefaultDates(allVideos);
+  updatePreviewSource();
 });
 
 setupRefreshButton(refreshAndReload);
@@ -136,6 +145,7 @@ async function loadCategories() {
 }
 
 fetchAndRenderVideos();
+      updatePreviewSource();
 loadCategories();
 
 window.addEventListener("DOMContentLoaded", () => {

@@ -14,6 +14,7 @@ export const TagManager = (() => {
 
   function setVideoData(videoList) {
     videos = videoList || [];
+    console.log("📦 接收影片資料（類型）:", videos.map(v => v["影片類型"]));
   }
 
   function getMatchedVideos(keywords) {
@@ -61,6 +62,8 @@ export const TagManager = (() => {
       addTagInput.setAttribute('data-index', index);
 
       const matched = getMatchedVideos(entry.keywords);
+      console.log("🧩 分類:", entry.category, "關鍵字:", entry.keywords, "命中數:", matched.length);
+
       const preview = document.createElement('div');
       preview.className = 'preview-block';
       if (entry.keywords.length === 0) {
@@ -68,15 +71,20 @@ export const TagManager = (() => {
       } else if (matched.length === 0) {
         preview.textContent = '❌ 無命中影片';
       } else {
-        preview.innerHTML = `🎯 命中 ${matched.length} 部影片：`;
+        preview.innerHTML = `🎯 命中 ${matched.length} 部影片： <button class='toggle-preview'>👁️ 顯示清單</button>`;
         const ul = document.createElement('ul');
         ul.className = 'preview-list';
+        ul.style.display = 'none';
         matched.forEach(v => {
           const li = document.createElement('li');
           li.textContent = v.標題;
           ul.appendChild(li);
         });
         preview.appendChild(ul);
+        preview.querySelector('.toggle-preview').addEventListener('click', () => {
+          ul.style.display = ul.style.display === 'none' ? 'block' : 'none';
+          preview.querySelector('.toggle-preview').textContent = ul.style.display === 'none' ? '👁️ 顯示清單' : '🙈 收合清單';
+        });
       }
 
       wrapper.appendChild(header);
