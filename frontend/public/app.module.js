@@ -64,36 +64,7 @@ setupRefreshButton(refreshAndReload);
 
 setupDownloadButtons(allVideos, () => downloadJSON(allVideos), () => downloadCSV(allVideos));
 
-document.getElementById("sync-category").addEventListener("click", () => {
-  const name = document.getElementById("category-name").value.trim();
-  const keywords = document.getElementById("category-keywords").value.split(",").map(k => k.trim()).filter(Boolean);
-  const mode = document.getElementById("category-mode").value;
 
-  if (!name || keywords.length === 0) {
-    document.getElementById("category-sync-result").textContent = "⚠️ 請填入分類名稱與至少一個關鍵字";
-    return;
-  }
-
-  document.getElementById("category-sync-result").textContent = "🔄 同步中...";
-
-  syncCategories(name, keywords, mode)
-    .then(data => {
-      if (data.message) {
-        document.getElementById("category-sync-result").textContent = "✅ " + data.message;
-        document.getElementById("category-name").value = "";
-        document.getElementById("category-keywords").value = "";
-        loadCategories();
-      } else if (data.error) {
-        document.getElementById("category-sync-result").textContent = "❌ " + data.error;
-      } else {
-        document.getElementById("category-sync-result").textContent = "⚠️ 未知回應";
-      }
-    })
-    .catch(err => {
-      console.error("❌ 同步分類失敗:", err);
-      document.getElementById("category-sync-result").textContent = "❌ 發生錯誤";
-    });
-});
 
 async function loadCategories() {
   const container = document.getElementById("category-list");
@@ -114,7 +85,7 @@ async function loadCategories() {
       wrapper.className = "category-block";
 
       const title = document.createElement("h3");
-      title.textContent = `📂 ${cat.name}`;
+      title.textContent = `📂 ${cat.category}`;
       title.style.cursor = "pointer";
       wrapper.appendChild(title);
 

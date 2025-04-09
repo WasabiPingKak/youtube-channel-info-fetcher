@@ -10,6 +10,13 @@
       ],
       "rewrites": [
         {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "youtube-api-service",
+            "region": "asia-east1"
+          }
+        },
+        {
           "source": "**",
           "destination": "/index.html"
         }
@@ -24,6 +31,13 @@
         "**/node_modules/**"
       ],
       "rewrites": [
+        {
+          "source": "/api/**",
+          "run": {
+            "serviceId": "youtube-api-service",
+            "region": "asia-east1"
+          }
+        },
         {
           "source": "**",
           "destination": "/index.html"

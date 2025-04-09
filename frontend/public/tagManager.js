@@ -1,20 +1,24 @@
+import { getTagConfig, saveTagConfig } from './tagService.js';
+
 export const TagManager = (() => {
-  const STORAGE_KEY = 'categoryKeywordMapping';
+  const STORAGE_KEY = 'categoryKeywordMapping'; // 不再使用
   let data = [];
   let videos = [];
 
-  function loadFromStorage() {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    data = raw ? JSON.parse(raw) : [];
+  async function loadFromServer() {
+    data = await getTagConfig();
+    render();
   }
 
-  function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  function saveToServer() {
+    const dataToSave = data.map(entry => ({ name: entry.category, keywords: entry.keywords }));
+      saveTagConfig(dataToSave).then(() => {
+      // ✅ 儲存完成，但不顯示 alert
+    });
   }
 
   function setVideoData(videoList) {
     videos = videoList || [];
-    console.log("📦 接收影片資料（類型）:", videos.map(v => v["影片類型"]));
   }
 
   function getMatchedVideos(keywords) {
@@ -50,9 +54,19 @@ export const TagManager = (() => {
       const tagList = document.createElement('div');
       tagList.className = 'tag-list';
       entry.keywords.forEach((tag, tagIndex) => {
-        const span = document.createElement('span');
-        span.className = 'tag';
-        span.innerHTML = `${tag} <button class="remove-tag" data-cat="${index}" data-tag="${tagIndex}">x</button>`;
+        
+const span = document.createElement('span');
+span.className = 'tag';
+span.textContent = tag;
+
+const removeBtn = document.createElement('button');
+removeBtn.className = 'remove-tag';
+removeBtn.textContent = 'x';
+removeBtn.setAttribute('data-cat', index);
+removeBtn.setAttribute('data-tag', tagIndex);
+
+span.appendChild(removeBtn);
+
         tagList.appendChild(span);
       });
 
@@ -62,8 +76,6 @@ export const TagManager = (() => {
       addTagInput.setAttribute('data-index', index);
 
       const matched = getMatchedVideos(entry.keywords);
-      console.log("🧩 分類:", entry.category, "關鍵字:", entry.keywords, "命中數:", matched.length);
-
       const preview = document.createElement('div');
       preview.className = 'preview-block';
       if (entry.keywords.length === 0) {
@@ -89,7 +101,14 @@ export const TagManager = (() => {
 
       wrapper.appendChild(header);
       wrapper.appendChild(tagList);
+      
+      const addButton = document.createElement('button');
+      addButton.textContent = '➕ 新增';
+      addButton.className = 'add-tag-button';
+      addButton.setAttribute('data-index', index);
       wrapper.appendChild(addTagInput);
+      wrapper.appendChild(addButton);
+    
       wrapper.appendChild(preview);
       container.appendChild(wrapper);
     });
@@ -98,14 +117,30 @@ export const TagManager = (() => {
   function bindEvents() {
     const container = document.getElementById('tag-manager-container');
 
+    
+    container.addEventListener('click', (e) => {
+      if (e.target.classList.contains('add-tag-button')) {
+        const index = e.target.getAttribute('data-index');
+        const input = container.querySelector(`.add-tag-input[data-index="${index}"]`);
+        const value = input.value.trim();
+        if (value) {
+          data[index].keywords.push(value);
+          markUnsaved(e.target.closest('.category-block'));
+          input.value = '';
+          render();
+        }
+      }
+    });
+
     container.addEventListener('keydown', (e) => {
+
       if (e.target.classList.contains('add-tag-input') && e.key === 'Enter') {
         const index = e.target.getAttribute('data-index');
         const value = e.target.value.trim();
         if (value) {
           data[index].keywords.push(value);
+          markUnsaved(e.target.closest('.category-block'));
           e.target.value = '';
-          saveToStorage();
           render();
         }
       }
@@ -116,19 +151,16 @@ export const TagManager = (() => {
         const catIndex = e.target.getAttribute('data-cat');
         const tagIndex = e.target.getAttribute('data-tag');
         data[catIndex].keywords.splice(tagIndex, 1);
-        saveToStorage();
         render();
       } else if (e.target.classList.contains('delete-category')) {
         const index = e.target.getAttribute('data-index');
         data.splice(index, 1);
-        saveToStorage();
         render();
       }
     });
 
     document.getElementById('add-category').addEventListener('click', () => {
       data.push({ category: '新分類', keywords: [] });
-      saveToStorage();
       render();
     });
 
@@ -137,17 +169,24 @@ export const TagManager = (() => {
         const idx = input.getAttribute('data-index');
         data[idx].category = input.value.trim();
       });
-      saveToStorage();
-      render();
-      alert('已儲存分類與關鍵字設定');
+      saveToServer();
     });
   }
 
   function init() {
-    loadFromStorage();
-    render();
+    loadFromServer();
     bindEvents();
   }
 
   return { init, setVideoData };
 })();
+
+function markUnsaved(wrapper) {
+  wrapper.classList.add("unsaved");
+  if (!wrapper.querySelector('.unsaved-hint')) {
+    const hint = document.createElement('div');
+    hint.className = 'unsaved-hint';
+    hint.textContent = '⚠ 尚未儲存';
+    wrapper.appendChild(hint);
+  }
+}

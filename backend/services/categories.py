@@ -3,7 +3,14 @@ import logging
 def get_all_categories(db):
     try:
         categories_ref = db.collection("categories").stream()
-        return [{"id": cat.id, **cat.to_dict()} for cat in categories_ref]
+        return [
+            {
+                "id": cat.id,
+                "category": cat.to_dict().get("name", "未命名"),
+                "keywords": cat.to_dict().get("keywords", [])
+            }
+            for cat in categories_ref
+        ]
     except Exception:
         logging.error("🔥 [get_all_categories] 讀取分類時發生錯誤", exc_info=True)
         return []
