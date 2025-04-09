@@ -33,6 +33,7 @@ function fetchAndRenderVideos() {
         return;
       }
       document.getElementById("status").textContent = "";
+      TagManager.setVideoData(allVideos);
       renderVideos(currentType, allVideos);
       renderCharts(currentType, allVideos);
       setDefaultDates(allVideos);
