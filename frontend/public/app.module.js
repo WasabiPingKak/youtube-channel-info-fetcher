@@ -4,6 +4,8 @@ import { renderVideos } from "./videoRenderer.js";
 import { setDefaultDates } from "./dateUtils.js";
 import { downloadJSON, downloadCSV } from "./downloadUtils.js";
 import { setupTabSwitching, setupRefreshButton, setupDownloadButtons } from "./events.js";
+import { TagManager } from './tagManager.js';
+
 
 let allVideos = [];
 let currentType = "直播檔";
@@ -134,3 +136,20 @@ async function loadCategories() {
 
 fetchAndRenderVideos();
 loadCategories();
+
+window.addEventListener("DOMContentLoaded", () => {
+  const toggleButton = document.getElementById("toggle-tag-manager");
+  if (!toggleButton) {
+    console.warn("找不到 #toggle-tag-manager 元素");
+    return;
+  }
+
+  toggleButton.addEventListener("click", () => {
+    console.log("✅ 編輯分類按鈕被點擊");
+    const panel = document.getElementById("tag-manager-panel");
+    panel.style.display = panel.style.display === "none" ? "block" : "none";
+    if (panel.style.display === "block") {
+      TagManager.init();
+    }
+  });
+});
