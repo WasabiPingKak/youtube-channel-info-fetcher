@@ -39,3 +39,45 @@ list.innerHTML = "";
     list.appendChild(li);
   });
 }
+
+
+import { filterVideosByCategory } from './videoService.js';
+
+export function renderFilteredVideos(videos, currentType, currentCategory, tagConfig) {
+  const countLabel = document.getElementById("status");
+  const list = document.getElementById("video-list");
+
+  function formatDateToTaipei(isoString) {
+    const formatter = new Intl.DateTimeFormat('zh-TW', {
+      timeZone: 'Asia/Taipei',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit'
+    });
+    const parts = formatter.formatToParts(new Date(isoString));
+    const y = parts.find(p => p.type === 'year').value;
+    const m = parts.find(p => p.type === 'month').value;
+    const d = parts.find(p => p.type === 'day').value;
+    return `${y}/${m}/${d}`;
+  }
+
+  const filteredByType = videos.filter(video => video.影片類型?.toLowerCase() === currentType.toLowerCase());
+  const filtered = filterVideosByCategory(filteredByType, currentCategory, tagConfig)
+    .sort((a, b) => new Date(b.發布日期) - new Date(a.發布日期));
+
+  list.innerHTML = "";
+
+  if (filtered.length === 0) {
+    countLabel.textContent = `📊 ${currentType} / ${currentCategory}：0 筆`;
+    list.innerHTML = "<li>🚫 沒有符合的資料。</li>";
+    return;
+  }
+
+  countLabel.textContent = `📊 ${currentType} / ${currentCategory}：${filtered.length} 筆`;
+
+  for (const v of filtered) {
+    const li = document.createElement("li");
+    li.textContent = `📹 ${v["標題"]} ｜ ${v["影片時長"]} ｜ ${formatDateToTaipei(v["發布日期"])} ｜ ${v["影片ID"]}`;
+    list.appendChild(li);
+  }
+}

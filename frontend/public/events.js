@@ -1,3 +1,7 @@
+import { getTagConfig } from './tagService.js';
+import { renderCategoryChart, renderKeywordChart } from './chartRenderer.js';
+import { renderFilteredVideos } from './videoRenderer.js';
+import { getCategoryStats, getKeywordStats, filterVideosByCategory } from './videoService.js';
 
 export function setupTabSwitching(onSwitch) {
   document.querySelectorAll(".tab-button").forEach(btn => {
@@ -41,4 +45,57 @@ export function setupDownloadButtons(allVideos, onJSON, onCSV) {
     }
     onCSV();
   });
+}
+
+
+
+
+
+let currentCategory = "全部";
+let availableCategories = [];
+
+export async function setupSubCategoryButtons() {
+  try {
+    const rawCategories = await getTagConfig();
+    availableCategories = rawCategories.map(c => c.category);
+    const container = document.getElementById("sub-category-buttons");
+    container.innerHTML = "";
+
+    const categories = ["全部", ...availableCategories, "未分類"];
+
+    categories.forEach(cat => {
+      const btn = document.createElement("button");
+      btn.className = "sub-category-button";
+      btn.textContent = cat;
+      btn.dataset.category = cat;
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".sub-category-button").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        currentCategory = cat;
+        console.log("🔘 子分類點擊：", cat);
+
+if (!window.globalData) return;
+const { allVideos, currentType, tagConfig } = window.globalData;
+
+if (currentCategory === "全部") {
+  const stats = getCategoryStats(
+    allVideos.filter(v => v.影片類型 === currentType),
+    tagConfig
+  );
+  renderCategoryChart(stats);
+} else {
+  const filtered = allVideos.filter(v => v.影片類型 === currentType);
+  const subset = filterVideosByCategory(filtered, currentCategory, tagConfig);
+  const stats = getKeywordStats(subset, tagConfig, currentCategory);
+  renderKeywordChart(stats);
+}
+
+renderFilteredVideos(allVideos, currentType, currentCategory, tagConfig);
+
+      });
+      container.appendChild(btn);
+    });
+  } catch (err) {
+    console.error("🚫 無法載入子分類資料", err);
+  }
 }

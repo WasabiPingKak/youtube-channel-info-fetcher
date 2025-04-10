@@ -1,9 +1,8 @@
 import { fetchVideos as fetchVideoData, refreshCache, syncCategories, loadCategoryList as loadCategoryData } from "./videoService.js";
-import { renderCharts } from "./chartRenderer.js";
 import { renderVideos } from "./videoRenderer.js";
 import { setDefaultDates } from "./dateUtils.js";
 import { downloadJSON, downloadCSV } from "./downloadUtils.js";
-import { setupTabSwitching, setupRefreshButton, setupDownloadButtons } from "./events.js";
+import { setupTabSwitching, setupRefreshButton, setupDownloadButtons, setupSubCategoryButtons } from "./events.js";
 import { TagManager } from './tagManager.js';
 
 
@@ -42,8 +41,7 @@ function fetchAndRenderVideos() {
       document.getElementById("status").textContent = "";
       updatePreviewSource();
       renderVideos(currentType, allVideos);
-      renderCharts(currentType, allVideos);
-      setDefaultDates(allVideos);
+            setDefaultDates(allVideos);
   updatePreviewSource();
     })
     .catch(err => {
@@ -55,8 +53,7 @@ function fetchAndRenderVideos() {
 setupTabSwitching(type => {
   currentType = type;
   renderVideos(currentType, allVideos);
-  renderCharts(currentType, allVideos);
-  setDefaultDates(allVideos);
+    setDefaultDates(allVideos);
   updatePreviewSource();
 });
 
@@ -74,6 +71,10 @@ async function loadCategories() {
     const data = await loadCategoryData();
 
     container.innerHTML = "";
+
+window.globalData = { allVideos, currentType, tagConfig: data };
+setupSubCategoryButtons();
+
 
     if (data.length === 0) {
       container.textContent = "（尚無分類資料）";
