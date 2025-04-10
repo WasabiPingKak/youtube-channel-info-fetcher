@@ -74,23 +74,25 @@ export async function setupSubCategoryButtons() {
         currentCategory = cat;
         console.log("🔘 子分類點擊：", cat);
 
-if (!window.globalData) return;
-const { allVideos, currentType, tagConfig } = window.globalData;
+        if (!window.globalData) return;
+        const { allVideos, currentType, tagConfig } = window.globalData;
 
-if (currentCategory === "全部") {
-  const stats = getCategoryStats(
-    allVideos.filter(v => v.影片類型 === currentType),
-    tagConfig
-  );
-  renderCategoryChart(stats);
-} else {
-  const filtered = allVideos.filter(v => v.影片類型 === currentType);
-  const subset = filterVideosByCategory(filtered, currentCategory, tagConfig);
-  const stats = getKeywordStats(subset, tagConfig, currentCategory);
-  renderKeywordChart(stats);
-}
 
-renderFilteredVideos(allVideos, currentType, currentCategory, tagConfig);
+        let filtered = allVideos.filter(v => v.影片類型 === currentType);
+        let subset = [];
+
+        if (currentCategory === "全部") {
+          const stats = getCategoryStats(filtered, tagConfig);
+          renderCategoryChart(stats);
+          subset = filtered;
+        } else {
+          subset = filterVideosByCategory(filtered, currentCategory, tagConfig);
+          const stats = getKeywordStats(subset, tagConfig, currentCategory);
+          renderKeywordChart(stats);
+        }
+
+
+        renderFilteredVideos(subset, currentType, currentCategory, tagConfig);
 
       });
       container.appendChild(btn);

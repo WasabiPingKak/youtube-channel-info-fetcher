@@ -1,4 +1,15 @@
 
+function normalize(str) {
+  return str
+    .toLowerCase()
+    .replace(/[\uFF01-\uFF5E]/g, ch => String.fromCharCode(ch.charCodeAt(0) - 0xfee0)) // 全形轉半形
+    .replace(/[\u3000]/g, ' ') // 全形空白
+    .replace(/[【】\[\]\(\)「」、，。！？?!…—~～<>《》]/g, '') // 移除標點
+    .trim();
+}
+
+
+
 const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
 
 export async function fetchVideos() {
@@ -31,15 +42,21 @@ export function filterVideosByCategory(videos, categoryName, tagConfig) {
   if (categoryName === "未分類") {
     const allKeywords = tagConfig.flatMap(c => c.keywords.map(k => k.toLowerCase()));
     return videos.filter(v => {
-      const title = v["標題"].toLowerCase();
+      const title = normalize(v["標題"]);
       return !allKeywords.some(kw => title.includes(kw));
     });
   }
 
-  const targetKeywords = tagConfig.find(c => c.category === categoryName)?.keywords || [];
+  
+const matchedCategory = tagConfig.find(c => c.category === categoryName);
+console.log("🔍 [分類篩選] 選擇分類:", categoryName);
+console.log("🔍 [分類篩選] 命中的分類資料:", matchedCategory);
+const targetKeywords = matchedCategory?.keywords || [];
+console.log("🔍 [分類篩選] 該分類的關鍵字:", targetKeywords);
+
   return videos.filter(v => {
-    const title = v["標題"].toLowerCase();
-    return targetKeywords.some(kw => title.includes(kw.toLowerCase()));
+    const title = normalize(v["標題"]);
+    return targetKeywords.some(kw => title.includes(normalize(kw)));
   });
 }
 
@@ -47,7 +64,7 @@ export function getCategoryStats(videos, tagConfig) {
   const stats = {};
 
   videos.forEach(v => {
-    const title = v["標題"].toLowerCase();
+    const title = normalize(v["標題"]);
     const matchedCategories = tagConfig.filter(c =>
       c.keywords.some(k => title.includes(k.toLowerCase()))
     ).map(c => c.category);
@@ -74,7 +91,7 @@ export function getKeywordStats(videos, tagConfig, categoryName) {
   target.keywords.forEach(k => stats[k] = { count: 0, minutes: 0 });
 
   videos.forEach(v => {
-    const title = v["標題"].toLowerCase();
+    const title = normalize(v["標題"]);
     target.keywords.forEach(k => {
       if (title.includes(k.toLowerCase())) {
         stats[k].count += 1;
