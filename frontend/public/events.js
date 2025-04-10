@@ -47,10 +47,6 @@ export function setupDownloadButtons(allVideos, onJSON, onCSV) {
   });
 }
 
-
-
-
-
 let currentCategory = "全部";
 let availableCategories = [];
 
@@ -75,10 +71,10 @@ export async function setupSubCategoryButtons() {
         console.log("🔘 子分類點擊：", cat);
 
         if (!window.globalData) return;
-        const { allVideos, currentType, tagConfig } = window.globalData;
+        const { allVideos, tagConfig } = window.globalData;
+        const currentType = document.querySelector(".tab-button.active")?.dataset.type || "直播檔";
 
-
-        let filtered = allVideos.filter(v => v.影片類型 === currentType);
+        let filtered = allVideos.filter(v => (v.影片類型 || '').toLowerCase() === currentType.toLowerCase());
         let subset = [];
 
         if (currentCategory === "全部") {
@@ -91,13 +87,11 @@ export async function setupSubCategoryButtons() {
           renderKeywordChart(stats);
         }
 
-
         renderFilteredVideos(subset, currentType, currentCategory, tagConfig);
-
       });
       container.appendChild(btn);
     });
   } catch (err) {
-    console.error("🚫 無法載入子分類資料", err);
+    console.error("❌ 子分類載入錯誤:", err);
   }
 }
