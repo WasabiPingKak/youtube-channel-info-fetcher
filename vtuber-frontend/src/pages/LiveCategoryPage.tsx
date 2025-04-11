@@ -23,8 +23,8 @@ const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff8042", "#8dd1e1", "#a4de6c"
 
 export default function LiveCategoryPage() {
   const [videoData, setVideoData] = useState<Video[]>([]);
-  const [categoryCounts, setCategoryCounts] = useState<CategoryCount[]>([]);
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [mainCategoryCounts, setMainCategoryCounts] = useState<CategoryCount[]>([]);
+  const [selectedMainCategory, setSelectedMainCategory] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchVideos = async () => {
@@ -32,48 +32,50 @@ export default function LiveCategoryPage() {
       const docSnap = await getDoc(docRef);
       const allVideos: Video[] = docSnap.data()?.data || [];
       const liveVideos = allVideos.filter((v) => v["影片類型"] === "直播檔");
-
       setVideoData(liveVideos);
 
       const countMap: Record<string, number> = {};
-      liveVideos.forEach((v) => {
-        const category = v["類別"] || "其他";
+      liveVideos.forEach((video) => {
+        const category = video["類別"] || "其他";
         countMap[category] = (countMap[category] || 0) + 1;
       });
-
-      const formattedCounts: CategoryCount[] = Object.entries(countMap).map(([name, value]) => ({
-        name,
-        value
-      }));
-      setCategoryCounts(formattedCounts);
+      const formattedCounts: CategoryCount[] = Object.entries(countMap).map(([name, value]) => ({ name, value }));
+      setMainCategoryCounts(formattedCounts);
     };
-
     fetchVideos();
   }, []);
 
-  const filteredVideos = selectedCategory
-    ? videoData.filter((v) => v["類別"] === selectedCategory)
+  const filteredVideos = selectedMainCategory
+    ? videoData.filter((v) => v["類別"] === selectedMainCategory)
     : [];
+
+  const handleMainCategoryClick = (entry: CategoryCount) => {
+    setSelectedMainCategory(entry.name);
+  };
+
+  const handleBack = () => {
+    setSelectedMainCategory(null);
+  };
 
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">📺 頻道直播影片主題統計</h1>
 
-      {!selectedCategory && (
+      {!selectedMainCategory && (
         <div className="flex flex-col items-center">
           <PieChart width={400} height={300}>
             <Pie
-              data={categoryCounts}
+              data={mainCategoryCounts}
               cx="50%"
               cy="50%"
               labelLine={false}
               label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
               outerRadius={100}
               dataKey="value"
-              onClick={(entry) => setSelectedCategory(entry.name)}
+              onClick={handleMainCategoryClick}
             >
-              {categoryCounts.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+              {mainCategoryCounts.map((entry, index) => (
+                <Cell key={`main-${index}`} fill={COLORS[index % COLORS.length]} />
               ))}
             </Pie>
             <Tooltip />
@@ -82,16 +84,11 @@ export default function LiveCategoryPage() {
         </div>
       )}
 
-      {selectedCategory && (
+      {selectedMainCategory && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">
-              🔍 當前分類：{selectedCategory}
-            </h2>
-            <button
-              onClick={() => setSelectedCategory(null)}
-              className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300"
-            >
+            <h2 className="text-xl font-semibold">🔍 當前分類：{selectedMainCategory}</h2>
+            <button onClick={handleBack} className="px-3 py-1 bg-gray-200 rounded hover:bg-gray-300">
               ⬅️ 返回
             </button>
           </div>
