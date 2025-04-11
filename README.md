@@ -57,4 +57,3 @@ firebase deploy --only hosting
 ```bash
 git checkout main -- frontend/public/index.html
 firebase deploy --only hosting
-```
