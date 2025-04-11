@@ -11,7 +11,7 @@ from routes.category_routes import init_category_routes
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-CORS(app)
+CORS(app, origins=["https://vtuber-channel-analyzer.web.app"])
 
 # 初始化 Firebase，加入錯誤處理
 try:
