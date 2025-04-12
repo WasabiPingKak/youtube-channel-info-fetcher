@@ -1,5 +1,5 @@
 
-const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
+const apiBase = "https://youtube-api-service-849816089238.asia-east1.run.app";
 let allVideos = [];
 let currentType = "直播檔";
 
@@ -178,7 +178,7 @@ document.getElementById("download-csv").addEventListener("click", () => {
   }
   const headers = Object.keys(allVideos[0]);
   const csvRows = [
-    headers.join(","), 
+    headers.join(","),
     ...allVideos.map(row => headers.map(h => `"${(row[h] || "").toString().replace(/"/g, '""')}"`).join(","))
   ];
   const blob = new Blob([csvRows.join("\n")], { type: "text/csv" });

@@ -70,7 +70,7 @@ function deploy_backend() {
     --region "$REGION" \
     --allow-unauthenticated \
     --no-traffic \
-    --set-env-vars "API_KEY=$API_KEY,INPUT_CHANNEL=$INPUT_CHANNEL"
+    --set-env-vars "API_KEY=$API_KEY,INPUT_CHANNEL=$INPUT_CHANNEL,GOOGLE_CLOUD_PROJECT=vtuber-channel-analyzer"
 
   if [ $? -ne 0 ]; then
     echo "❌ 後端部署失敗"

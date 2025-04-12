@@ -10,7 +10,7 @@ function normalize(str) {
 
 
 
-const apiBase = "https://youtube-api-service-260305364477.asia-east1.run.app";
+const apiBase = "https://youtube-api-service-849816089238.asia-east1.run.app";
 
 export async function fetchVideos() {
   const res = await fetch(apiBase + "/videos");
@@ -47,7 +47,7 @@ export function filterVideosByCategory(videos, categoryName, tagConfig) {
     });
   }
 
-  
+
 const matchedCategory = tagConfig.find(c => c.category === categoryName);
 console.log("🔍 [分類篩選] 選擇分類:", categoryName);
 console.log("🔍 [分類篩選] 命中的分類資料:", matchedCategory);
