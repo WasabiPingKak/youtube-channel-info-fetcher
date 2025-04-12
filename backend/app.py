@@ -47,9 +47,9 @@ def test_firestore():
 
     except Exception as e:
         import traceback
-        print("❌ 錯誤訊息：", e)
-        print(traceback.format_exc())
-        return f"<pre>{traceback.format_exc()}</pre>", 500
+        logging.error("🔥 Firestore 測試失敗：%s", traceback.format_exc())
+        logging.error("❗錯誤類型：%s", type(e).__name__)
+        logging.error("❗錯誤訊息：%s", str(e))
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

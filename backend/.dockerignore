@@ -1,0 +1,7 @@
+.env
+.env.*
+*.zip
+*.md
+__pycache__/
+.vscode/
+.git/
