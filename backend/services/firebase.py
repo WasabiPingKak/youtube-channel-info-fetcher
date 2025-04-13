@@ -4,16 +4,32 @@ import logging
 import os
 
 def init_firestore():
-    path = "firebase-key.json"
+    # ✅ 讀取環境變數指定的金鑰路徑（預設為 firebase-key.json）
+    path = os.getenv("GOOGLE_APPLICATION_CREDENTIALS", "firebase-key.json")
+
     try:
+        print("📂 目前工作目錄內容：", os.listdir("."))
+        print(f"📁 是否有 {path}：", os.path.exists(path))
+        print("🌍 GOOGLE_CLOUD_PROJECT =", os.getenv("GOOGLE_CLOUD_PROJECT"))
+        print("🌍 GOOGLE_APPLICATION_CREDENTIALS =", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
+        print("🧪 DEPLOY_TAG =", os.getenv("DEPLOY_TAG"))
+
         if not os.path.exists(path):
-            raise FileNotFoundError("❌ 找不到 firebase-key.json，請確認檔案是否存在")
+            raise FileNotFoundError(f"❌ 找不到 {path}，請確認檔案是否存在")
 
         if not firebase_admin._apps:
             cred = credentials.Certificate(path)
-            firebase_admin.initialize_app(cred)
+            print("📨 Firebase 使用者：", cred.service_account_email)
+            print("🔎 Firebase 金鑰專案 ID：", cred.project_id)
+            firebase_admin.initialize_app(cred, {
+                "projectId": "vtuber-channel-analyzer-v2"
+            })
             logging.info("✅ Firebase Admin 初始化成功")
-        return firestore.client()
+
+        db = firestore.client()
+        print("🧩 Firestore client 建立完成：", db)
+        return db
+
     except Exception:
         logging.error("🔥 [init_firestore] 初始化 Firebase 時發生錯誤", exc_info=True)
-        raise  # 繼續往上拋出例外，讓主程式知道初始化失敗
+        raise
