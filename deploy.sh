@@ -13,10 +13,10 @@ function deploy_frontend() {
 
   if [[ "$ENV" == "prod" ]]; then
     echo "🚨 你正在部署前端正式環境 (prod)"
-    URL="https://yt-channel-info-456010.web.app"
+    URL="https://vtuber-channel-analyzer-v3.web.app"
   elif [[ "$ENV" == "dev" ]]; then
     echo "🧪 你正在部署前端開發環境 (dev)"
-    URL="https://yt-channel-info-456010-dev.web.app"
+    URL="https://vtuber-channel-analyzer-v3-dev.web.app"
   else
     echo "❌ 無效的目標：$ENV（請輸入 dev 或 prod）"
     exit 1
@@ -32,13 +32,13 @@ function deploy_frontend() {
 }
 
 function deploy_backend() {
-  if [ ! -f backend/.env.deploy ]; then
-    echo "❌ 找不到 backend/.env.deploy 檔案，請確認環境變數檔存在"
+  if [ ! -f backend/.env ]; then
+    echo "❌ 找不到 backend/.env 檔案，請確認環境變數檔存在"
     exit 1
   fi
 
   pushd backend > /dev/null
-  source .env.deploy
+  source .env
 
   SERVICE_NAME="youtube-api-service"
   REGION="asia-east1"
@@ -70,7 +70,7 @@ function deploy_backend() {
     --region "$REGION" \
     --allow-unauthenticated \
     --no-traffic \
-    --set-env-vars "API_KEY=$API_KEY,INPUT_CHANNEL=$INPUT_CHANNEL,GOOGLE_CLOUD_PROJECT=vtuber-channel-analyzer"
+    --set-env-vars "API_KEY=$API_KEY,INPUT_CHANNEL=$INPUT_CHANNEL,GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
 
   if [ $? -ne 0 ]; then
     echo "❌ 後端部署失敗"
