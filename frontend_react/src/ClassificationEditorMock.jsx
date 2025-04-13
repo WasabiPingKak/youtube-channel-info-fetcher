@@ -4,6 +4,7 @@ import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { TabSwitcher } from "@/components/TabSwitcher";
 import { CategoryGroup } from "@/components/CategoryGroup";
+import { GameTagsGroup } from "@/components/GameTagsGroup";
 
 const ClassificationEditorMock = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
@@ -27,6 +28,11 @@ const ClassificationEditorMock = () => {
       <CategoryGroup
         type={activeTab}
         data={currentData}
+        setData={setChannelSettings}
+      />
+
+      <GameTagsGroup
+        data={channelSettings.game_tags}
         setData={setChannelSettings}
       />
 
