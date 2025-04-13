@@ -33,7 +33,7 @@ export const GameTagsGroup = ({ data, setData }) => {
   };
 
   const handleAddNewGame = () => {
-    if (names.includes("")) return; // 已有空白未填的項目
+    if (names.includes("")) return;
     setData((prev) => ({
       ...prev,
       game_tags: {
@@ -71,7 +71,6 @@ export const GameTagsGroup = ({ data, setData }) => {
               />
             ))
           )}
-
           <button
             onClick={handleAddNewGame}
             className="mt-2 px-3 py-1 bg-gray-100 border rounded hover:bg-gray-200 text-sm"
