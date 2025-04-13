@@ -1,10 +1,12 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { TabSwitcher } from "@/components/TabSwitcher";
 
 const ClassificationEditorMock = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
+  const [activeTab, setActiveTab] = useState("live");
 
   useEffect(() => {
     if (!channelSettings) return;
@@ -13,11 +15,16 @@ const ClassificationEditorMock = () => {
 
   if (!channelSettings) return <p>載入中...</p>;
 
+  const currentClassifications = channelSettings.classifications[activeTab];
+
   return (
     <div className="p-4 max-w-3xl">
       <h1 className="text-2xl font-bold mb-4">頻道分類設定</h1>
+
+      <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+
       <pre className="bg-gray-100 p-4 rounded text-sm whitespace-pre-wrap">
-        {JSON.stringify(channelSettings, null, 2)}
+        {JSON.stringify(currentClassifications, null, 2)}
       </pre>
 
       <button
