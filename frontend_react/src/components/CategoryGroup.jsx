@@ -2,7 +2,11 @@ import React from "react";
 import { CategoryEditor } from "./CategoryEditor";
 
 export const CategoryGroup = ({ type, data, setData }) => {
-  const categories = Object.keys(data);
+  const categories = Object.keys(data).sort((a, b) => {
+    if (a === "其他") return 1;
+    if (b === "其他") return -1;
+    return 0;
+  });
 
   const handleRename = (oldName, newName) => {
     const updated = { ...data };
