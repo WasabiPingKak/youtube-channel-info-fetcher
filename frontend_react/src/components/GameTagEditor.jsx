@@ -38,7 +38,7 @@ export const GameTagEditor = ({
     if (trimmed !== gameName && !allNames.includes(trimmed)) {
       onRename(gameName, trimmed);
     } else {
-      setName(gameName); // 還原舊值
+      setName(gameName);
     }
   };
 

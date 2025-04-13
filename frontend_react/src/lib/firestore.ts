@@ -5,7 +5,7 @@ const CHANNEL_ID = import.meta.env.VITE_DEFAULT_CHANNEL_ID || "UCLxa0YOtqi8IR5r2
 
 export const saveChannelSettings = async (data: any) => {
   const ref = doc(db, "channel_settings", CHANNEL_ID);
-  await setDoc(ref, data, { merge: true });
+  await setDoc(ref, data); // full overwrite
 };
 
 export const loadChannelSettings = async () => {

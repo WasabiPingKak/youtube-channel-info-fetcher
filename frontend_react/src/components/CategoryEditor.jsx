@@ -6,20 +6,18 @@ export const CategoryEditor = ({
   keywords,
   allCategories,
   onRename,
-  onDelete,
   onUpdateKeywords
 }) => {
   const [name, setName] = useState(categoryName);
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setName(categoryName); // 外部名稱變更時同步本地狀態
+    setName(categoryName);
   }, [categoryName]);
 
   const handleNameChange = (e) => {
     const newName = e.target.value.trimStart();
     setName(newName);
-
     if (newName !== categoryName && allCategories.includes(newName)) {
       setError("分類名稱已存在");
     } else {
@@ -32,7 +30,7 @@ export const CategoryEditor = ({
     if (newName && newName !== categoryName && !allCategories.includes(newName)) {
       onRename(categoryName, newName);
     } else {
-      setName(categoryName); // 恢復原始名稱
+      setName(categoryName);
     }
   };
 
@@ -47,17 +45,8 @@ export const CategoryEditor = ({
           disabled={categoryName === "其他"}
           placeholder="主分類名稱"
         />
-        {categoryName !== "其他" && (
-          <button
-            onClick={() => onDelete(categoryName)}
-            className="text-red-600 hover:underline text-sm"
-          >
-            刪除
-          </button>
-        )}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
-
       <KeywordTagsInput
         keywords={keywords}
         onChange={(newKeywords) => onUpdateKeywords(categoryName, newKeywords)}
