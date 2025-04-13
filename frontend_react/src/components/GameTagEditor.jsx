@@ -13,14 +13,15 @@ export const GameTagEditor = ({
   const [error, setError] = useState("");
 
   useEffect(() => {
-    setName(gameName); // 同步外部更新
+    setName(gameName);
   }, [gameName]);
 
   const handleNameChange = (e) => {
-    const newName = e.target.value.trimStart();
+    const newName = e.target.value;
     setName(newName);
 
-    if (newName !== gameName && allNames.includes(newName)) {
+    const trimmed = newName.trim();
+    if (trimmed !== gameName && allNames.includes(trimmed)) {
       setError("遊戲名稱已存在");
     } else {
       setError("");
@@ -28,11 +29,16 @@ export const GameTagEditor = ({
   };
 
   const handleBlur = () => {
-    const newName = name.trim();
-    if (newName && newName !== gameName && !allNames.includes(newName)) {
-      onRename(gameName, newName);
+    const trimmed = name.trim();
+    if (!trimmed) {
+      setError("遊戲名稱不可為空");
+      return;
+    }
+
+    if (trimmed !== gameName && !allNames.includes(trimmed)) {
+      onRename(gameName, trimmed);
     } else {
-      setName(gameName); // 還原原本名稱
+      setName(gameName); // 還原舊值
     }
   };
 
@@ -44,7 +50,7 @@ export const GameTagEditor = ({
           value={name}
           onChange={handleNameChange}
           onBlur={handleBlur}
-          placeholder="遊戲名稱"
+          placeholder="請輸入遊戲名稱"
         />
         <button
           onClick={() => onDelete(gameName)}

@@ -3,7 +3,7 @@ import { GameTagEditor } from "./GameTagEditor";
 
 export const GameTagsGroup = ({ data, setData }) => {
   const [collapsed, setCollapsed] = useState(true);
-  const names = Object.keys(data || {});
+  const names = Object.keys(data);
 
   const handleRename = (oldName, newName) => {
     const updated = { ...data };
@@ -32,16 +32,14 @@ export const GameTagsGroup = ({ data, setData }) => {
     }));
   };
 
-  const handleAddNew = () => {
-    let newName = "New Game";
-    let count = 1;
-    while (names.includes(newName)) {
-      newName = `New Game ${++count}`;
-    }
-    const updated = { ...data, [newName]: [] };
+  const handleAddNewGame = () => {
+    if (names.includes("")) return; // 已有空白未填的項目
     setData((prev) => ({
       ...prev,
-      game_tags: updated,
+      game_tags: {
+        ...prev.game_tags,
+        "": [],
+      },
     }));
   };
 
@@ -55,29 +53,30 @@ export const GameTagsGroup = ({ data, setData }) => {
       </button>
 
       {!collapsed && (
-        <div>
+        <div className="space-y-3">
           {names.length === 0 ? (
-            <p className="text-sm text-gray-500 mb-2">尚未設定任何遊戲標籤，請新增。</p>
-          ) : (
-            <div className="space-y-3 mb-4">
-              {names.map((name) => (
-                <GameTagEditor
-                  key={name}
-                  gameName={name}
-                  keywords={data[name]}
-                  allNames={names}
-                  onRename={handleRename}
-                  onDelete={handleDelete}
-                  onUpdateKeywords={handleUpdateKeywords}
-                />
-              ))}
+            <div className="text-sm text-gray-600 mb-2">
+              尚未設定任何遊戲標籤，請點選下方按鈕新增。
             </div>
+          ) : (
+            names.map((name) => (
+              <GameTagEditor
+                key={name || `__empty_${Math.random()}`}
+                gameName={name}
+                keywords={data[name]}
+                allNames={names}
+                onRename={handleRename}
+                onDelete={handleDelete}
+                onUpdateKeywords={handleUpdateKeywords}
+              />
+            ))
           )}
+
           <button
-            onClick={handleAddNew}
-            className="text-sm text-blue-600 hover:underline"
+            onClick={handleAddNewGame}
+            className="mt-2 px-3 py-1 bg-gray-100 border rounded hover:bg-gray-200 text-sm"
           >
-            ＋ 新增遊戲標籤
+            ➕ 新增遊戲
           </button>
         </div>
       )}
