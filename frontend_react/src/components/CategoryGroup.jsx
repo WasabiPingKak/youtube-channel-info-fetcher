@@ -33,6 +33,17 @@ export const CategoryGroup = ({ type, data, setData }) => {
     }));
   };
 
+  const handleUpdateKeywords = (catName, newKeywords) => {
+    const updated = { ...data, [catName]: newKeywords };
+    setData((prev) => ({
+      ...prev,
+      classifications: {
+        ...prev.classifications,
+        [type]: updated,
+      },
+    }));
+  };
+
   return (
     <div>
       {categories.map((cat) => (
@@ -43,6 +54,7 @@ export const CategoryGroup = ({ type, data, setData }) => {
           allCategories={categories}
           onRename={handleRename}
           onDelete={handleDelete}
+          onUpdateKeywords={handleUpdateKeywords}
         />
       ))}
     </div>

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { KeywordTagsInput } from "./KeywordTagsInput";
 
 export const CategoryEditor = ({
   categoryName,
@@ -6,6 +7,7 @@ export const CategoryEditor = ({
   allCategories,
   onRename,
   onDelete,
+  onUpdateKeywords,
 }) => {
   const [name, setName] = useState(categoryName);
   const [error, setError] = useState("");
@@ -45,9 +47,10 @@ export const CategoryEditor = ({
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      <div className="text-xs text-gray-500 mt-1">
-        （關鍵字輸入欄後續會加在這裡）
-      </div>
+      <KeywordTagsInput
+        keywords={keywords}
+        onChange={(newKeywords) => onUpdateKeywords(categoryName, newKeywords)}
+      />
     </div>
   );
 };
