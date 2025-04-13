@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { KeywordTagsInput } from "./KeywordTagsInput";
 
 export const CategoryEditor = ({
@@ -7,23 +7,32 @@ export const CategoryEditor = ({
   allCategories,
   onRename,
   onDelete,
-  onUpdateKeywords,
+  onUpdateKeywords
 }) => {
   const [name, setName] = useState(categoryName);
   const [error, setError] = useState("");
 
+  useEffect(() => {
+    setName(categoryName); // 外部名稱變更時同步本地狀態
+  }, [categoryName]);
+
   const handleNameChange = (e) => {
-    const newName = e.target.value.trim();
+    const newName = e.target.value.trimStart();
     setName(newName);
-    if (!newName) return;
 
     if (newName !== categoryName && allCategories.includes(newName)) {
       setError("分類名稱已存在");
     } else {
       setError("");
-      if (newName !== categoryName) {
-        onRename(categoryName, newName);
-      }
+    }
+  };
+
+  const handleBlur = () => {
+    const newName = name.trim();
+    if (newName && newName !== categoryName && !allCategories.includes(newName)) {
+      onRename(categoryName, newName);
+    } else {
+      setName(categoryName); // 恢復原始名稱
     }
   };
 
@@ -31,9 +40,11 @@ export const CategoryEditor = ({
     <div className="border rounded p-4 mb-3 bg-white shadow">
       <div className="flex items-center mb-2">
         <input
-          className="border px-2 py-1 mr-2 rounded flex-grow"
+          className="border px-2 py-1 mr-2 rounded flex-grow disabled:bg-gray-100"
           value={name}
           onChange={handleNameChange}
+          onBlur={handleBlur}
+          disabled={categoryName === "其他"}
           placeholder="主分類名稱"
         />
         {categoryName !== "其他" && (
