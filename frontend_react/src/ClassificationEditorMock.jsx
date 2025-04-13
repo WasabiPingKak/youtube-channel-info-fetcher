@@ -3,6 +3,7 @@ import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { TabSwitcher } from "@/components/TabSwitcher";
+import { CategoryGroup } from "@/components/CategoryGroup";
 
 const ClassificationEditorMock = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
@@ -15,7 +16,7 @@ const ClassificationEditorMock = () => {
 
   if (!channelSettings) return <p>載入中...</p>;
 
-  const currentClassifications = channelSettings.classifications[activeTab];
+  const currentData = channelSettings.classifications[activeTab];
 
   return (
     <div className="p-4 max-w-3xl">
@@ -23,9 +24,11 @@ const ClassificationEditorMock = () => {
 
       <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <pre className="bg-gray-100 p-4 rounded text-sm whitespace-pre-wrap">
-        {JSON.stringify(currentClassifications, null, 2)}
-      </pre>
+      <CategoryGroup
+        type={activeTab}
+        data={currentData}
+        setData={setChannelSettings}
+      />
 
       <button
         onClick={saveSettings}
