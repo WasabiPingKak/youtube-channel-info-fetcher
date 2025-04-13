@@ -21,9 +21,7 @@ def init_firestore():
             cred = credentials.Certificate(path)
             print("📨 Firebase 使用者：", cred.service_account_email)
             print("🔎 Firebase 金鑰專案 ID：", cred.project_id)
-            firebase_admin.initialize_app(cred, {
-                "projectId": "vtuber-channel-analyzer-v2"
-            })
+            firebase_admin.initialize_app(cred)
             logging.info("✅ Firebase Admin 初始化成功")
 
         db = firestore.client()

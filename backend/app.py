@@ -50,6 +50,10 @@ def test_firestore():
         logging.error("🔥 Firestore 測試失敗：%s", traceback.format_exc())
         logging.error("❗錯誤類型：%s", type(e).__name__)
         logging.error("❗錯誤訊息：%s", str(e))
+        return (
+            f"<h1>❌ Firestore 測試失敗</h1><pre>{traceback.format_exc()}</pre>",
+            500,
+        )
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))

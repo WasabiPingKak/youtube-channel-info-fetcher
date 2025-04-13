@@ -1,11 +1,13 @@
 .firebase/
 config.py
 output.*
+.env
 .env.deploy
 firebase-key.json
 venv/
 __pycache__/
 *.pyc
 .coverage
+node_modules
 .pytest_cache
 .env
