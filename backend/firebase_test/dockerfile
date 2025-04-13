@@ -1,0 +1,21 @@
+# 使用官方 Python 映像
+FROM python:3.9-slim
+
+# 設定工作目錄
+WORKDIR /app
+
+# 安裝依賴項
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# --- 如果使用金鑰檔案 (方法一) ---
+# 取消下面這行的註解，並確保 firebase-key.json 在建置上下文中
+COPY firebase-key.json .
+# ------------------------------------
+
+# 複製應用程式碼
+COPY main.py .
+
+# 設定啟動命令 (Cloud Run 需要)
+# 使用 Gunicorn 作為生產環境的 WSGI 伺服器
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "main:app"]

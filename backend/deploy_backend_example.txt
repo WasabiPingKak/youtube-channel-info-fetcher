@@ -1,6 +1,0 @@
-gcloud run deploy youtube-api-service \
-  --project=vtuber-channel-analyzer-v2 \
-  --source . \
-  --region=asia-east1 \
-  --allow-unauthenticated \
-  --set-env-vars="API_KEY=AIzaSyCmDPtTUt9a4k1PHZQ91Vcjyt0fL6WWNpc,INPUT_CHANNEL=UCLxa0YOtqi8IR5r2dSLXPng,DEPLOY_TAG=override-cred-4,GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-key.json,GOOGLE_APPLICATION_CREDENTIALS=/app/firebase-key.json"
