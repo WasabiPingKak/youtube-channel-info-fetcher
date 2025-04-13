@@ -9,3 +9,5 @@ __pycache__/
 *.pyc
 .coverage
 node_modules
+.pytest_cache
+.env

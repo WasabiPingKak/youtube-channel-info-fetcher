@@ -1,0 +1,17 @@
+{
+  "projects": {
+    "default": "yt-channel-info-456010"
+  },
+  "targets": {
+    "yt-channel-info-456010": {
+      "hosting": {
+        "dev": [
+          "yt-channel-info-456010-dev"
+        ],
+        "prod": [
+          "yt-channel-info-456010"
+        ]
+      }
+    }
+  }
+}
