@@ -65,13 +65,16 @@ def get_video_data(date_ranges=None, api_key=None, input_channel=None):
                 category = title.split("【")[1].split("】")[0]
 
             results.append({
-                "標題": title,
-                "影片ID": video_id,
-                "發布日期": date_text,
-                "影片時長": duration_text,
-                "總分鐘數": total_minutes,
-                "類別": category or "無",
-                "影片類型": video_type
+                "id": video_id,
+                "snippet": {
+                    "title": title,
+                    "publishedAt": video['snippet']['publishedAt'],
+                },
+                "contentDetails": {
+                    "duration": video['contentDetails']['duration'],
+                },
+                "duration": total_minutes,
+                "type": video_type
             })
         except Exception as e:
             logging.error("🔥 處理影片時發生錯誤（ID: %s）: %s", video.get("id", "未知"), e, exc_info=True)

@@ -2,10 +2,12 @@ import React, { useEffect, useState } from "react";
 import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { TabSwitcher } from "@/components/TabSwitcher";
-import { CategoryGroup } from "@/components/CategoryGroup";
-import { GameTagsGroup } from "@/components/GameTagsGroup";
-import { UnsavedNoticeBar } from "@/components/UnsavedNoticeBar";
+import TabSwitcher from "@/components/TabSwitcher";
+import CategoryGroup from "@/components/CategoryGroup";
+import GameTagsGroup from "@/components/GameTagsGroup";
+import UnsavedNoticeBar from "@/components/UnsavedNoticeBar";
+
+const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
 const ClassificationEditorMock = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
@@ -14,22 +16,79 @@ const ClassificationEditorMock = () => {
 
   useEffect(() => {
     if (!channelSettings) return;
-    console.log("載入成功：", channelSettings);
+    console.log("✅ 載入成功：", channelSettings);
   }, [channelSettings]);
 
   if (!channelSettings) return <p>載入中...</p>;
 
-  const currentData = channelSettings.classifications[activeTab];
+  const currentTabData = channelSettings[activeTab] || {};
+  const { 遊戲: gameTags = [], ...categories } = currentTabData;
+
+  // fallback 主分類（若該 tab 下無分類）
+  if (!channelSettings[activeTab] || Object.keys(channelSettings[activeTab]).length === 0) {
+    const defaultData = {};
+    FIXED_CATEGORIES.forEach((cat) => {
+      defaultData[cat] = [];
+    });
+    setChannelSettings((prev) => ({
+      ...prev,
+      [activeTab]: defaultData,
+    }));
+    setUnsaved(true);
+  }
 
   const handleSetData = (updater) => {
-    setChannelSettings(updater);
+    setChannelSettings((prev) => {
+      const updated = typeof updater === "function" ? updater(prev) : updater;
+      return { ...updated };
+    });
     setUnsaved(true);
+  };
+
+  const handleCategoryChange = (category, keywords) => {
+    handleSetData((prev) => {
+      const updated = { ...prev };
+      updated[activeTab] = {
+        ...updated[activeTab],
+        [category]: keywords,
+      };
+      return updated;
+    });
+  };
+
+  const handleCategoryRename = (oldName, newName) => {
+    handleSetData((prev) => {
+      const updated = { ...prev };
+      const current = updated[activeTab];
+      if (newName && newName !== oldName && !current[newName]) {
+        current[newName] = current[oldName];
+        delete current[oldName];
+      }
+      return updated;
+    });
+  };
+
+  const handleGameChange = (newGames) => {
+    handleSetData((prev) => {
+      const updated = { ...prev };
+      updated[activeTab] = {
+        ...updated[activeTab],
+        遊戲: newGames,
+      };
+      return updated;
+    });
   };
 
   const handleSave = async () => {
     await saveSettings();
     setUnsaved(false);
   };
+
+  const sortedCategories = Object.entries(categories).sort((a, b) => {
+    if (a[0] === "其他") return 1;
+    if (b[0] === "其他") return -1;
+    return a[0].localeCompare(b[0], "zh-Hant");
+  });
 
   return (
     <div className="p-4 max-w-3xl relative">
@@ -41,26 +100,32 @@ const ClassificationEditorMock = () => {
 
       <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
 
-      <CategoryGroup
-        type={activeTab}
-        data={currentData}
-        setData={handleSetData}
-      />
+      <div className="space-y-4">
+        {sortedCategories.map(([category, keywords]) => (
+          <CategoryGroup
+            key={category}
+            category={category}
+            keywords={keywords}
+            onChange={(newKeywords) => handleCategoryChange(category, newKeywords)}
+            onRename={(newName) => handleCategoryRename(category, newName)}
+            onDirty={() => setUnsaved(true)}
+            disableDelete={FIXED_CATEGORIES.some((name) => category.startsWith(name))}
+            disableEditName={category === "其他"}
+          />
+        ))}
 
-      <GameTagsGroup
-        data={channelSettings.game_tags}
-        setData={handleSetData}
-      />
+        <GameTagsGroup gameTags={gameTags} onChange={handleGameChange} />
 
-      <button
-        onClick={handleSave}
-        disabled={loading}
-        className={`mt-4 px-4 py-2 text-white rounded
-          ${unsaved ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
-          disabled:opacity-50`}
-      >
-        {loading ? "儲存中..." : unsaved ? "⚠ 尚未儲存 - 點我儲存" : "確認儲存"}
-      </button>
+        <button
+          onClick={handleSave}
+          disabled={loading}
+          className={`mt-4 px-4 py-2 text-white rounded
+            ${unsaved ? "bg-red-600 hover:bg-red-700" : "bg-blue-600 hover:bg-blue-700"}
+            disabled:opacity-50`}
+        >
+          {loading ? "儲存中..." : unsaved ? "⚠ 尚未儲存 - 點我儲存" : "確認儲存"}
+        </button>
+      </div>
 
       <ToastContainer position="bottom-right" autoClose={3000} />
     </div>
