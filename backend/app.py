@@ -1,4 +1,5 @@
 from flask import Flask
+print("✅ [app.py] Flask app module loaded")
 from flask_cors import CORS
 import logging
 import os
@@ -15,6 +16,7 @@ from routes.cache_channel_videos import init_cache_v2_routes
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
+print("✅ [app.py] Flask app created")
 CORS(app)
 
 # 初始化 Firebase，加入錯誤處理
@@ -28,6 +30,7 @@ except Exception:
 init_base_routes(app)
 init_cache_routes(app, db)
 init_category_routes(app, db)
+print("✅ [app.py] Registering cache v2 routes")
 init_cache_v2_routes(app)
 
 @app.route("/test-firestore")

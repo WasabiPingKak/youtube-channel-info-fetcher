@@ -1,4 +1,4 @@
-
+print("✅ [routes/cache_channel_videos.py] module loaded")
 from flask import Blueprint, request, jsonify
 import datetime
 import pytz
@@ -46,35 +46,47 @@ def init_cache_v2_routes(app):
             for doc in query.stream():
                 existing_ids.add(doc.id)
 
+            logging.info(f"🧩 開始分類與寫入，共 {len(all_videos)} 支影片")
             saved_videos = []
-            for video in all_videos:
-                if video["id"] in existing_ids:
+            for idx, video in enumerate(all_videos, start=1):
+                logging.debug(f"🔹 處理第 {idx} 支影片: {video.get('id')}")
+                if "id" not in video:
+                    logging.warning(f"⚠️ 略過影片：缺少 id 欄位 -> {video}")
                     continue
 
-                title = video["snippet"]["title"]
-                duration_str = video["contentDetails"]["duration"]
-                publish_at = video["snippet"]["publishedAt"]
-                duration_sec = video.get("duration", 0)
+                if video["id"] in existing_ids:
+                    logging.info(f"⏩ 已存在於快取中，略過：{video['id']}")
+                    continue
 
-                match = match_category_and_game(
-                    title=title,
-                    video_type=video.get("type", "video"),
-                    settings=settings
-                )
+                try:
+                    title = video["snippet"]["title"]
+                    duration_str = video["contentDetails"]["duration"]
+                    publish_at = video["snippet"]["publishedAt"]
+                    duration_sec = video.get("duration", 0)
 
-                doc_data = {
-                    "videoId": video["id"],
-                    "title": title,
-                    "publishDate": publish_at,
-                    "duration": duration_sec,
-                    "type": video.get("type", "video"),
-                    "matchedCategory": match.get("category") or "其他",
-                    "matchedGame": match.get("game"),
-                    "matchedKeywords": match.get("keywords", [])
-                }
+                    match = match_category_and_game(
+                        title=title,
+                        video_type=video.get("type", "video"),
+                        settings=settings
+                    )
 
-                collection_ref.document(video["id"]).set(doc_data)
-                saved_videos.append(doc_data)
+                    doc_data = {
+                        "videoId": video["id"],
+                        "title": title,
+                        "publishDate": publish_at,
+                        "duration": duration_sec,
+                        "type": video.get("type", "video"),
+                        "matchedCategory": match.get("category") or "其他",
+                        "matchedGame": match.get("game"),
+                        "matchedKeywords": match.get("keywords", [])
+                    }
+
+                    collection_ref.document(video["id"]).set(doc_data)
+                    logging.info(f"✅ 寫入完成：{video['id']}")
+                    saved_videos.append(doc_data)
+
+                except Exception as ve:
+                    logging.error(f"❌ 處理影片失敗：{video.get('id')} -> {ve}", exc_info=True)
 
             return jsonify({
                 "channel_id": channel_id,

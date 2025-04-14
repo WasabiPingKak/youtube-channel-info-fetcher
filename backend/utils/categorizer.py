@@ -13,6 +13,7 @@ def categorize_title_by_keywords(title, db):
         return []
 
 def match_category_and_game(video_title: str, video_type: str, settings: dict = None) -> dict:
+    print("🎯 [categorizer] match_category_and_game called")
     """
     假分類邏輯，供部署階段使用，總是回傳「其他」分類與空遊戲。
     """

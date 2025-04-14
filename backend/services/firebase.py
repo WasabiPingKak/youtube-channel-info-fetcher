@@ -21,9 +21,11 @@ def init_firestore():
             cred = credentials.Certificate(path)
             print("📨 Firebase 使用者：", cred.service_account_email)
             print("🔎 Firebase 金鑰專案 ID：", cred.project_id)
+            print("✅ [firebase.py] Initializing Firebase app")
             firebase_admin.initialize_app(cred)
             logging.info("✅ Firebase Admin 初始化成功")
 
+        print("✅ [firebase.py] Initializing Firestore client")
         db = firestore.client()
         print("🧩 Firestore client 建立完成：", db)
         return db
