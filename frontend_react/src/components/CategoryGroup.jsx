@@ -1,62 +1,30 @@
 import React from "react";
-import { CategoryEditor } from "./CategoryEditor";
+import KeywordTagsInput from "./KeywordTagsInput";
 
-export const CategoryGroup = ({ type, data, setData }) => {
-  const categories = Object.keys(data).sort((a, b) => {
-    if (a === "其他") return 1;
-    if (b === "其他") return -1;
-    return 0;
-  });
-
-  const handleRename = (oldName, newName) => {
-    const updated = { ...data };
-    updated[newName] = updated[oldName];
-    delete updated[oldName];
-    setData((prev) => ({
-      ...prev,
-      classifications: {
-        ...prev.classifications,
-        [type]: updated,
-      },
-    }));
-  };
-
-  const handleDelete = (name) => {
-    const updated = { ...data };
-    delete updated[name];
-    setData((prev) => ({
-      ...prev,
-      classifications: {
-        ...prev.classifications,
-        [type]: updated,
-      },
-    }));
-  };
-
-  const handleUpdateKeywords = (catName, newKeywords) => {
-    const updated = { ...data, [catName]: newKeywords };
-    setData((prev) => ({
-      ...prev,
-      classifications: {
-        ...prev.classifications,
-        [type]: updated,
-      },
-    }));
-  };
-
+export default function CategoryGroup({ category, keywords, onChange, disableDelete, onDelete }) {
   return (
-    <div>
-      {categories.map((cat) => (
-        <CategoryEditor
-          key={cat}
-          categoryName={cat}
-          keywords={data[cat]}
-          allCategories={categories}
-          onRename={handleRename}
-          onDelete={handleDelete}
-          onUpdateKeywords={handleUpdateKeywords}
+    <div className="p-4 border rounded bg-white shadow-sm mb-4">
+      <div className="flex items-center mb-2">
+        <label className="mr-2 font-semibold">📁 主分類名稱：</label>
+        <input
+          type="text"
+          value={category}
+          disabled
+          className="flex-1 border px-2 py-1 rounded bg-gray-100 text-gray-600"
         />
-      ))}
+        {!disableDelete && (
+          <button
+            onClick={onDelete}
+            className="ml-2 text-sm text-red-600 hover:underline"
+          >
+            刪除
+          </button>
+        )}
+      </div>
+      <div>
+        <label className="block font-semibold mb-1">🔑 關鍵字：</label>
+        <KeywordTagsInput value={keywords} onChange={onChange} />
+      </div>
     </div>
   );
-};
+}

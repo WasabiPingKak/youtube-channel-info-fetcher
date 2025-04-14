@@ -1,79 +1,47 @@
 import React, { useState } from "react";
-import { GameTagEditor } from "./GameTagEditor";
+import GameTagEditor from "./GameTagEditor";
 
-export const GameTagsGroup = ({ data, setData }) => {
+export default function GameTagsGroup({ gameTags, onChange }) {
   const [collapsed, setCollapsed] = useState(true);
-  const names = Object.keys(data);
 
-  const handleRename = (oldName, newName) => {
-    const updated = { ...data };
-    updated[newName] = updated[oldName];
-    delete updated[oldName];
-    setData((prev) => ({
-      ...prev,
-      game_tags: updated,
-    }));
+  const handleGameChange = (index, newGame) => {
+    const updated = [...gameTags];
+    updated[index] = newGame;
+    onChange(updated);
   };
 
-  const handleDelete = (name) => {
-    const updated = { ...data };
-    delete updated[name];
-    setData((prev) => ({
-      ...prev,
-      game_tags: updated,
-    }));
+  const handleDelete = (index) => {
+    const updated = [...gameTags];
+    updated.splice(index, 1);
+    onChange(updated);
   };
 
-  const handleUpdateKeywords = (name, newKeywords) => {
-    const updated = { ...data, [name]: newKeywords };
-    setData((prev) => ({
-      ...prev,
-      game_tags: updated,
-    }));
-  };
-
-  const handleAddNewGame = () => {
-    if (names.includes("")) return;
-    setData((prev) => ({
-      ...prev,
-      game_tags: {
-        ...prev.game_tags,
-        "": [],
-      },
-    }));
+  const handleAddGame = () => {
+    onChange([...gameTags, { game: "", keywords: [] }]);
   };
 
   return (
-    <div className="mt-6">
-      <button
+    <div className="border rounded-xl p-4 bg-gray-50">
+      <div
+        className="cursor-pointer select-none font-bold text-lg mb-2"
         onClick={() => setCollapsed(!collapsed)}
-        className="text-blue-600 hover:underline mb-2"
       >
-        {collapsed ? "▶ 展開遊戲標籤設定" : "▼ 收合遊戲標籤設定"}
-      </button>
-
+        🎮 遊戲分類 {collapsed ? "(點擊展開)" : "(點擊收合)"}
+      </div>
       {!collapsed && (
-        <div className="space-y-3">
-          {names.length === 0 ? (
-            <div className="text-sm text-gray-600 mb-2">
-              尚未設定任何遊戲標籤，請點選下方按鈕新增。
-            </div>
-          ) : (
-            names.map((name) => (
-              <GameTagEditor
-                key={name || `__empty_${Math.random()}`}
-                gameName={name}
-                keywords={data[name]}
-                allNames={names}
-                onRename={handleRename}
-                onDelete={handleDelete}
-                onUpdateKeywords={handleUpdateKeywords}
-              />
-            ))
-          )}
+        <div className="space-y-4">
+          {gameTags.map((item, index) => (
+            <GameTagEditor
+              key={index}
+              game={item.game}
+              keywords={item.keywords}
+              onChange={(newGame) => handleGameChange(index, newGame)}
+              onDelete={() => handleDelete(index)}
+            />
+          ))}
           <button
-            onClick={handleAddNewGame}
-            className="mt-2 px-3 py-1 bg-gray-100 border rounded hover:bg-gray-200 text-sm"
+            onClick={handleAddGame}
+            className="mt-2 px-3 py-1 rounded bg-blue-500 text-white hover:bg-blue-600"
           >
             ➕ 新增遊戲
           </button>
@@ -81,4 +49,4 @@ export const GameTagsGroup = ({ data, setData }) => {
       )}
     </div>
   );
-};
+}

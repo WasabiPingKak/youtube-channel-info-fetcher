@@ -76,13 +76,13 @@ def init_cache_v2_routes(app):
                         "publishDate": publish_at,
                         "duration": duration_sec,
                         "type": video.get("type", "video"),
-                        "matchedCategory": match.get("category") or "其他",
-                        "matchedGame": match.get("game"),
-                        "matchedKeywords": match.get("keywords", [])
+                        "matchedCategories": match.get("matchedCategories") or ["其他"],
+                        "game": match.get("game"),
+                        "matchedKeywords": match.get("matchedKeywords", [])
                     }
 
                     collection_ref.document(video["id"]).set(doc_data)
-                    logging.info(f"✅ 寫入完成：{video['id']}")
+                    logging.info(f"✅ 寫入完成：{video['id']} -> 類別: {doc_data['matchedCategories']} 遊戲: {doc_data['game']}")
                     saved_videos.append(doc_data)
 
                 except Exception as ve:

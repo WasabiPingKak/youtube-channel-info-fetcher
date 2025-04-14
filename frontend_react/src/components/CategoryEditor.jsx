@@ -1,56 +1,94 @@
-import React, { useState, useEffect } from "react";
-import { KeywordTagsInput } from "./KeywordTagsInput";
+import React, { useEffect, useState } from "react";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "../lib/firebase";
+import TabSwitcher from "./TabSwitcher";
+import CategoryGroup from "./CategoryGroup";
+import GameTagsGroup from "./GameTagsGroup";
+import toast from "react-hot-toast";
 
-export const CategoryEditor = ({
-  categoryName,
-  keywords,
-  allCategories,
-  onRename,
-  onUpdateKeywords
-}) => {
-  const [name, setName] = useState(categoryName);
-  const [error, setError] = useState("");
+const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+const DEFAULT_STRUCTURE = {
+  live: {},
+  video: {},
+  shorts: {},
+};
+
+export default function CategoryEditor() {
+  const [data, setData] = useState(DEFAULT_STRUCTURE);
+  const [tab, setTab] = useState("live");
 
   useEffect(() => {
-    setName(categoryName);
-  }, [categoryName]);
+    const fetchData = async () => {
+      try {
+        const ref = doc(db, "channel_settings", DEFAULT_CHANNEL_ID);
+        const snapshot = await getDoc(ref);
+        if (snapshot.exists()) {
+          setData(snapshot.data());
+        } else {
+          setData(DEFAULT_STRUCTURE);
+        }
+      } catch (err) {
+        toast.error("無法載入資料，請稍後再試。");
+        console.error("Fetch error:", err);
+      }
+    };
+    fetchData();
+  }, []);
 
-  const handleNameChange = (e) => {
-    const newName = e.target.value.trimStart();
-    setName(newName);
-    if (newName !== categoryName && allCategories.includes(newName)) {
-      setError("分類名稱已存在");
-    } else {
-      setError("");
+  const handleCategoryChange = (categoryName, keywords) => {
+    const newData = { ...data };
+    newData[tab][categoryName] = keywords;
+    setData(newData);
+  };
+
+  const handleGameTagsChange = (gameTags) => {
+    const newData = { ...data };
+    newData[tab]["遊戲"] = gameTags;
+    setData(newData);
+  };
+
+  const handleSave = async () => {
+    try {
+      const ref = doc(db, "channel_settings", DEFAULT_CHANNEL_ID);
+      await setDoc(ref, data, { merge: false });
+      toast.success("✅ 分類設定已儲存");
+    } catch (err) {
+      toast.error("❌ 儲存失敗，請稍後再試");
+      console.error("Save error:", err);
     }
   };
 
-  const handleBlur = () => {
-    const newName = name.trim();
-    if (newName && newName !== categoryName && !allCategories.includes(newName)) {
-      onRename(categoryName, newName);
-    } else {
-      setName(categoryName);
-    }
-  };
+  const categories = Object.entries(data[tab] || {})
+    .filter(([name]) => name !== "遊戲")
+    .sort((a, b) => {
+      if (a[0] === "其他") return 1;
+      if (b[0] === "其他") return -1;
+      return a[0].localeCompare(b[0], "zh-Hant");
+    });
+
+  const gameTags = data[tab]?.["遊戲"] || [];
 
   return (
-    <div className="border rounded p-4 mb-3 bg-white shadow">
-      <div className="flex items-center mb-2">
-        <input
-          className="border px-2 py-1 mr-2 rounded flex-grow disabled:bg-gray-100"
-          value={name}
-          onChange={handleNameChange}
-          onBlur={handleBlur}
-          disabled={categoryName === "其他"}
-          placeholder="主分類名稱"
+    <div className="space-y-4">
+      <TabSwitcher value={tab} onChange={setTab} />
+      {categories.map(([category, keywords]) => (
+        <CategoryGroup
+          key={category}
+          category={category}
+          keywords={keywords}
+          onChange={(newKeywords) => handleCategoryChange(category, newKeywords)}
+          disableDelete={category === "其他"}
         />
+      ))}
+      <GameTagsGroup gameTags={gameTags} onChange={handleGameTagsChange} />
+      <div className="pt-4">
+        <button
+          onClick={handleSave}
+          className="px-4 py-2 rounded bg-green-600 text-white hover:bg-green-700"
+        >
+          💾 儲存設定
+        </button>
       </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
-      <KeywordTagsInput
-        keywords={keywords}
-        onChange={(newKeywords) => onUpdateKeywords(categoryName, newKeywords)}
-      />
     </div>
   );
-};
+}
