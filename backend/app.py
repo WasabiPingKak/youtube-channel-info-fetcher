@@ -9,6 +9,8 @@ from services.firebase import init_firestore
 from routes.base_routes import init_base_routes
 from routes.cache_routes import init_cache_routes
 from routes.category_routes import init_category_routes
+print("✅ 準備載入 cache_channel_videos")
+from routes.cache_channel_videos import init_cache_v2_routes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -26,6 +28,7 @@ except Exception:
 init_base_routes(app)
 init_cache_routes(app, db)
 init_category_routes(app, db)
+init_cache_v2_routes(app)
 
 @app.route("/test-firestore")
 def test_firestore():
@@ -42,8 +45,8 @@ def test_firestore():
         print("📌 document 物件：", doc_ref)
 
         doc_ref.set({"hello": "world"})
-        print("✅ [test-firestore] 寫入成功")
-        return "✅ Firestore 測試寫入成功"
+        print("✅ [test-firestore] 寫入成功🦆")
+        return "✅ Firestore 測試寫入成功🦆"
 
     except Exception as e:
         import traceback
