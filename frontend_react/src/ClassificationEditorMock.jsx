@@ -7,6 +7,8 @@ import CategoryGroup from "@/components/CategoryGroup";
 import GameTagsGroup from "@/components/GameTagsGroup";
 import UnsavedNoticeBar from "@/components/UnsavedNoticeBar";
 
+const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
+
 const ClassificationEditorMock = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
   const [activeTab, setActiveTab] = useState("live");
@@ -23,14 +25,16 @@ const ClassificationEditorMock = () => {
   const { 遊戲: gameTags = [], ...categories } = currentTabData;
 
   // fallback 主分類（若該 tab 下無分類）
-  const categoryKeys = Object.keys(categories);
-  if (categoryKeys.length === 0) {
-    channelSettings[activeTab] = {
-      雜談: ["聊天", "閒聊"],
-      歌回: ["清唱", "唱歌"],
-      其他: [],
-      遊戲: gameTags,
-    };
+  if (!channelSettings[activeTab] || Object.keys(channelSettings[activeTab]).length === 0) {
+    const defaultData = {};
+    FIXED_CATEGORIES.forEach((cat) => {
+      defaultData[cat] = [];
+    });
+    setChannelSettings((prev) => ({
+      ...prev,
+      [activeTab]: defaultData,
+    }));
+    setUnsaved(true);
   }
 
   const handleSetData = (updater) => {
@@ -48,6 +52,18 @@ const ClassificationEditorMock = () => {
         ...updated[activeTab],
         [category]: keywords,
       };
+      return updated;
+    });
+  };
+
+  const handleCategoryRename = (oldName, newName) => {
+    handleSetData((prev) => {
+      const updated = { ...prev };
+      const current = updated[activeTab];
+      if (newName && newName !== oldName && !current[newName]) {
+        current[newName] = current[oldName];
+        delete current[oldName];
+      }
       return updated;
     });
   };
@@ -91,7 +107,10 @@ const ClassificationEditorMock = () => {
             category={category}
             keywords={keywords}
             onChange={(newKeywords) => handleCategoryChange(category, newKeywords)}
-            disableDelete={category === "其他"}
+            onRename={(newName) => handleCategoryRename(category, newName)}
+            onDirty={() => setUnsaved(true)}
+            disableDelete={FIXED_CATEGORIES.some((name) => category.startsWith(name))}
+            disableEditName={category === "其他"}
           />
         ))}
 
