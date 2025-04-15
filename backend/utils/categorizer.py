@@ -3,7 +3,6 @@ import re
 
 def normalize(text: str) -> str:
     text = text.lower().replace(" ", "").replace("　", "")
-    text = re.sub(r"[\[\]\(\)（）【】{}!！?？,，。:：\"'“”‘’…・・]", "", text)
     return text
 
 def match_category_and_game(title: str, video_type: str, settings: dict) -> dict:
