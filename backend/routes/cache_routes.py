@@ -11,6 +11,7 @@ def init_cache_routes(app, db):
     @cache_bp.route("/api/cache/classify-and-save", methods=["POST"])
     def classify_and_save():
         try:
+            print("✅ [classify-and-save] API 呼叫進入")
             data = request.get_json()
             channel_id = data.get("channel_id")
             start = data.get("start")
@@ -34,10 +35,11 @@ def init_cache_routes(app, db):
 
             return jsonify({
                 "message": "✅ 已完成分類並寫入快取",
-                "count": len(fetched_data)
+                "count": len(fetched_data or [])
             })
         except Exception:
             logging.error("🔥 /api/cache/classify-and-save 發生例外錯誤", exc_info=True)
             return jsonify({"error": "Internal Server Error"}), 500
 
     app.register_blueprint(cache_bp)
+    print("✅ [cache_routes] /api/cache/classify-and-save route registered")

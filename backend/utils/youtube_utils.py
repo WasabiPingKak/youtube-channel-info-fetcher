@@ -77,3 +77,27 @@ def get_video_type(video):
     except Exception as e:
         logging.error("🔥 [get_video_type] 判斷影片類型失敗: %s", e, exc_info=True)
         return "未知"
+
+def normalize_video_item(video):
+    try:
+        video_id = video.get("id")
+        title = video.get("snippet", {}).get("title")
+        publish_date = get_video_publish_date(video)
+        duration_iso = video.get("contentDetails", {}).get("duration")
+        duration = int(isodate.parse_duration(duration_iso).total_seconds()) if duration_iso else None
+        video_type = get_video_type(video)
+
+        if not video_id or not title or not publish_date or not video_type:
+            return None
+
+        return {
+            "videoId": video_id,
+            "title": title,
+            "publishDate": publish_date.isoformat(),
+            "duration": duration,
+            "type": video_type
+        }
+
+    except Exception as e:
+        logging.warning("⚠️ [normalize_video_item] 無法轉換影片資料: %s", video, exc_info=True)
+        return None
