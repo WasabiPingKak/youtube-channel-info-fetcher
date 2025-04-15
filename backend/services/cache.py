@@ -14,8 +14,9 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
             return []
 
         settings = settings_doc.to_dict()
-        raw_items = get_video_data(date_ranges=date_ranges)
+        logging.debug(f"🛠️ [DEBUG] 讀到設定欄位：{list(settings.keys())}")
 
+        raw_items = get_video_data(date_ranges=date_ranges)
         saved_videos = []
 
         for raw_item in raw_items:
@@ -33,7 +34,20 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
                 logging.warning("⚠️ [refresh_video_cache] 略過資料不完整影片: %s", item)
                 continue
 
-            result = match_category_and_game(title, video_type, settings)
+            type_map = {
+                "直播檔": "live",
+                "直播": "live",
+                "影片": "video",
+                "Shorts": "shorts",
+                "shorts": "shorts"
+            }
+            type_for_setting = type_map.get(video_type, video_type)
+
+            # ✅ 除錯用：確認 video_type 與設定對應是否正確
+            logging.debug(f"🎞️ [DEBUG] 處理影片類型: 原始={video_type}, 映射後={type_for_setting}")
+            logging.debug(f"🧪 [DEBUG] 設定中是否存在類型 '{type_for_setting}': {'✅ 存在' if type_for_setting in settings else '❌ 不存在'}")
+
+            result = match_category_and_game(title, type_for_setting, settings)
 
             video_data = {
                 "videoId": video_id,
