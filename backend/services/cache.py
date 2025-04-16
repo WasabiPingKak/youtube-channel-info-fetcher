@@ -1,52 +1,72 @@
+
 import logging
 from services.youtube.fetcher import get_video_data
+from utils.categorizer import match_category_and_game
+from utils.youtube_utils import normalize_video_item
 
-def get_latest_cache(db):
+def refresh_video_cache(db, channel_id: str, date_ranges=None):
     try:
-        doc = db.collection("videos").document("latest").get()
-        return doc.to_dict().get("data", []) if doc.exists else []
-    except Exception as e:
-        logging.error("🔥 [get_latest_cache] 取得最新快取時發生錯誤", exc_info=True)
-        return []
+        # 取得設定資料
+        settings_ref = db.collection("channel_data").document(channel_id).collection("settings").document("config")
+        settings_doc = settings_ref.get()
+        if not settings_doc.exists:
+            logging.warning("⚠️ [refresh_video_cache] 無法找到分類設定 config")
+            return []
 
-def refresh_video_cache(db, date_ranges=None):
-    try:
-        # 取得舊的快取資料
-        old_data = get_latest_cache(db)
-        old_video_ids = {v.get("影片ID") for v in old_data if v.get("影片ID")}
+        settings = settings_doc.to_dict()
+        logging.debug(f"🛠️ [DEBUG] 讀到設定欄位：{list(settings.keys())}")
 
-        # 取得新資料，但只保留尚未快取過的影片
-        fetched_data = get_video_data(date_ranges=date_ranges)
-        new_data = []
-        for item in fetched_data:
-            video_id = item.get("影片ID")
-            if not video_id:
-                logging.warning("⚠️ [refresh_video_cache] 缺少影片ID，略過此筆資料: %s", item)
+        raw_items = get_video_data(date_ranges=date_ranges)
+        saved_videos = []
+
+        for raw_item in raw_items:
+            item = normalize_video_item(raw_item)
+            if not item:
+                continue  # 正規化失敗的略過
+
+            video_id = item.get("videoId")
+            title = item.get("title")
+            publish_date = item.get("publishDate")
+            duration = item.get("duration")
+            video_type = item.get("type")
+
+            if not all([video_id, title, publish_date, video_type]):
+                logging.warning("⚠️ [refresh_video_cache] 略過資料不完整影片: %s", item)
                 continue
-            if video_id not in old_video_ids:
-                new_data.append(item)
-            else:
-                logging.info("ℹ️ [refresh_video_cache] 已存在快取中，略過影片ID: %s", video_id)
 
-        # 合併資料
-        combined = {v.get("影片ID"): v for v in old_data if v.get("影片ID")}
-        for item in new_data:
-            combined[item["影片ID"]] = item
-        merged_data = list(combined.values())
+            type_map = {
+                "直播檔": "live",
+                "直播": "live",
+                "影片": "video",
+                "Shorts": "shorts",
+                "shorts": "shorts"
+            }
+            type_for_setting = type_map.get(video_type, video_type)
 
-        # 儲存合併後的資料
-        db.collection("videos").document("latest").set({"data": merged_data})
-        return merged_data, new_data
+            # ✅ 除錯用：確認 video_type 與設定對應是否正確
+            logging.debug(f"🎞️ [DEBUG] 處理影片類型: 原始={video_type}, 映射後={type_for_setting}")
+            logging.debug(f"🧪 [DEBUG] 設定中是否存在類型 '{type_for_setting}': {'✅ 存在' if type_for_setting in settings else '❌ 不存在'}")
+
+            result = match_category_and_game(title, type_for_setting, settings)
+
+            video_data = {
+                "videoId": video_id,
+                "title": title,
+                "publishDate": publish_date,
+                "duration": duration,
+                "type": video_type,
+                "matchedCategories": result["matchedCategories"],
+                "game": result["game"],
+                "matchedKeywords": result["matchedKeywords"]
+            }
+
+            video_ref = db.collection("channel_data").document(channel_id).collection("videos").document(video_id)
+            video_ref.set(video_data)
+            saved_videos.append(video_data)
+
+        logging.info("✅ [refresh_video_cache] 寫入完成，共 %d 筆", len(saved_videos))
+        return saved_videos
 
     except Exception as e:
-        logging.error("🔥 [refresh_video_cache] 執行過程中發生錯誤", exc_info=True)
-        return [], []
-
-def overwrite_video_cache(db, date_ranges):
-    try:
-        new_data = get_video_data(date_ranges=date_ranges)
-        db.collection("videos").document("latest").set({"data": new_data})
-        return new_data
-    except Exception as e:
-        logging.error("🔥 [overwrite_video_cache] 取得或儲存資料時發生錯誤", exc_info=True)
+        logging.error("🔥 [refresh_video_cache] 快取更新錯誤", exc_info=True)
         return []

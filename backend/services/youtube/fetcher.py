@@ -55,27 +55,9 @@ def get_video_data(date_ranges=None, api_key=None, input_channel=None):
                 skipped += 1
                 continue
 
-            duration_text, total_minutes = convert_duration_to_hms(video['contentDetails']['duration'])
-            title = video['snippet']['title']
-            video_id = video['id']
-            date_text = get_video_publish_date(video)
+            # ✅ 保留完整影片欄位以避免資訊遺失
+            results.append(video)
 
-            category = None
-            if "【" in title and "】" in title:
-                category = title.split("【")[1].split("】")[0]
-
-            results.append({
-                "id": video_id,
-                "snippet": {
-                    "title": title,
-                    "publishedAt": video['snippet']['publishedAt'],
-                },
-                "contentDetails": {
-                    "duration": video['contentDetails']['duration'],
-                },
-                "duration": total_minutes,
-                "type": video_type
-            })
         except Exception as e:
             logging.error("🔥 處理影片時發生錯誤（ID: %s）: %s", video.get("id", "未知"), e, exc_info=True)
             continue
