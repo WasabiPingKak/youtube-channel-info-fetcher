@@ -1,6 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import ClassificationEditorMock from "./ClassificationEditorMock";
+import ClassificationEditorMock from "./components/classificationEditor/ClassificationEditorMock";
 import "./style.css";
 
 ReactDOM.createRoot(document.getElementById("root")).render(

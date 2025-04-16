@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
-import TabSwitcher from "./TabSwitcher";
+import { db } from "../../lib/firebase";
+import TabSwitcher from "../common/TopLevelTabs";
 import CategoryGroup from "./CategoryGroup";
 import GameTagsGroup from "./GameTagsGroup";
 import toast from "react-hot-toast";
