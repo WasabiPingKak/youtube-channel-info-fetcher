@@ -3,6 +3,7 @@ import { useVideoCache } from "../hooks/useVideoCache";
 import TopLevelTabs from "../components/common/TopLevelTabs";
 import SubCategoryTabs from "../components/common/SubCategoryTabs";
 import VideoCard from "../components/common/VideoCard";
+import CategoryChartSection from "../components/chart/CategoryChartSection";
 
 const VideoExplorerPage = () => {
   const [videoType, setVideoType] = useState("videos"); // "live" | "videos" | "shorts"
@@ -31,6 +32,11 @@ const VideoExplorerPage = () => {
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
       />
+
+      {/* 主分類統計圖表區塊：插入於 Tab 之下、影片清單之上 */}
+      {activeCategory && filteredVideos.length > 0 && (
+        <CategoryChartSection videos={filteredVideos} />
+      )}
 
       <div className="px-4 py-2 text-sm text-gray-600">
         {activeCategory
