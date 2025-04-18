@@ -14,7 +14,7 @@ const VideoExplorerPage = () => {
     setActiveCategory(null); // 清空分類讓 SubCategoryTabs 主動設為第一個分類
   }, [videoType]);
 
-  const VIDEO_TYPE_MAP = { live: "直播檔", videos: "一般影片", shorts: "Shorts" };
+  const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
 
   const filteredVideos = videos.filter((video) => {
     const expectedType = VIDEO_TYPE_MAP[videoType];
