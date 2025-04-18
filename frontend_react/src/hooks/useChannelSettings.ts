@@ -23,7 +23,7 @@ const defaultSettings: ChannelSettings = {
       節目: [],
       其他: []
     },
-    video: {
+    videos: {
       精華: [],
       其他: []
     },
