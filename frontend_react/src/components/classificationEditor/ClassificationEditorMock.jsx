@@ -2,10 +2,10 @@ import React, { useEffect, useState } from "react";
 import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import TabSwitcher from "@/components/TabSwitcher";
-import CategoryGroup from "@/components/CategoryGroup";
-import GameTagsGroup from "@/components/GameTagsGroup";
-import UnsavedNoticeBar from "@/components/UnsavedNoticeBar";
+import CategoryGroup from "@/components/classificationEditor/CategoryGroup";
+import GameTagsGroup from "@/components/classificationEditor/GameTagsGroup";
+import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
+import EditTabSwitcher from "@/components/classificationEditor/EditTabSwitcher";
 
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
@@ -98,7 +98,7 @@ const ClassificationEditorMock = () => {
         頻道分類設定 {unsaved && <span className="text-red-600 text-base">🔴 未儲存變更</span>}
       </h1>
 
-      <TabSwitcher activeTab={activeTab} setActiveTab={setActiveTab} />
+      <EditTabSwitcher activeTab={activeTab} onTabChange={setActiveTab} />
 
       <div className="space-y-4">
         {sortedCategories.map(([category, keywords]) => (
