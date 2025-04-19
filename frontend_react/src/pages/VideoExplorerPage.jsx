@@ -9,6 +9,8 @@ const VideoExplorerPage = () => {
   const [videoType, setVideoType] = useState("live"); // "live" | "videos" | "shorts"
   const [activeCategory, setActiveCategory] = useState("全部");
   const [chartType, setChartType] = useState("pie");
+  const [durationUnit, setDurationUnit] = useState("minutes"); // "minutes" | "hours"
+
   const { videos, loading, error, categorySettings } = useVideoCache();
 
   // 當影片類型變更時，預設分類切回 "全部"
@@ -18,20 +20,19 @@ const VideoExplorerPage = () => {
 
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
 
-  const filteredVideos = videos.filter((video) => {
-    const expectedType = VIDEO_TYPE_MAP[videoType];
-    const matchesType = video.type === expectedType;
+  const filteredVideos = videos
+    .filter((video) => {
+      const expectedType = VIDEO_TYPE_MAP[videoType];
+      const matchesType = video.type === expectedType;
 
-    // 「全部」分類時，不檢查 matchedCategories
-    if (activeCategory === "全部") {
-      return matchesType;
-    }
+      if (activeCategory === "全部") return matchesType;
 
-    const matchesCategory =
-      activeCategory && video.matchedCategories?.includes(activeCategory);
+      const matchesCategory =
+        activeCategory && video.matchedCategories?.includes(activeCategory);
 
-    return matchesType && matchesCategory;
-  });
+      return matchesType && matchesCategory;
+    })
+    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)); // 依照發布時間排序：新到舊
 
   return (
     <div className="py-4">
@@ -47,6 +48,8 @@ const VideoExplorerPage = () => {
         videoType={videoType}
         chartType={chartType}
         setChartType={setChartType}
+        durationUnit={durationUnit}
+        setDurationUnit={setDurationUnit}
         activeCategory={activeCategory}
         categorySettings={categorySettings}
       />
@@ -74,7 +77,7 @@ const VideoExplorerPage = () => {
           <div className="w-1/12 text-right">連結</div>
         </div>
         {filteredVideos.map((video) => (
-          <VideoCard key={video.videoId} video={video} />
+          <VideoCard key={video.videoId} video={video} durationUnit={durationUnit} />
         ))}
       </div>
     </div>

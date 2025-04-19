@@ -7,6 +7,8 @@ const CategoryChartSection = ({
   videoType,
   chartType,
   setChartType,
+  durationUnit,
+  setDurationUnit,
   activeCategory,
   categorySettings,
 }) => {
@@ -64,7 +66,7 @@ const CategoryChartSection = ({
       countData: sorted.map((d) => ({ category: d.category, count: d.count })),
       durationData: sorted.map((d) => ({
         category: d.category,
-        duration: Math.round((d.duration || 0) / 60),
+        duration: d.duration || 0, // 原始秒數，交由圖表元件轉換顯示單位
       })),
     };
   }, [videos, typeLabel, activeCategory, categorySettings, videoType, showAllKeywords]);
@@ -111,11 +113,17 @@ const CategoryChartSection = ({
 
       {hasData ? (
         <>
-          <ChartSwitcher chartType={chartType} setChartType={setChartType} />
+          <ChartSwitcher
+            chartType={chartType}
+            setChartType={setChartType}
+            durationUnit={durationUnit}
+            setDurationUnit={setDurationUnit}
+          />
           <CategoryChart
             countData={countData}
             durationData={durationData}
             chartType={chartType}
+            durationUnit={durationUnit}
           />
         </>
       ) : (
