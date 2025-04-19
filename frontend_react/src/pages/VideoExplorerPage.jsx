@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useVideoCache } from "../hooks/useVideoCache";
 import TopLevelTabs from "../components/common/TopLevelTabs";
@@ -29,7 +28,6 @@ const VideoExplorerPage = () => {
   return (
     <div className="py-4">
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
-
       <SubCategoryTabs
         activeType={videoType}
         activeCategory={activeCategory}
