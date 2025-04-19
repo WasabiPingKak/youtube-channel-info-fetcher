@@ -10,6 +10,7 @@ const CategoryChartSection = ({
   activeCategory,
   categorySettings,
 }) => {
+  const [showAllKeywords, setShowAllKeywords] = useState(false);
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
   const typeLabel = VIDEO_TYPE_MAP[videoType];
 
@@ -20,7 +21,8 @@ const CategoryChartSection = ({
     videos.forEach((video) => {
       if (video.type !== typeLabel) return;
 
-      // 細分類統計邏輯
+      const inCategory = video.matchedCategories?.includes(activeCategory);
+
       if (activeCategory) {
         const isGame = activeCategory === "遊戲";
 
@@ -29,10 +31,10 @@ const CategoryChartSection = ({
           if (!counts[key]) counts[key] = { category: key, count: 0, duration: 0 };
           counts[key].count += 1;
           counts[key].duration += video.duration || 0;
-        } else if (Array.isArray(video.matchedKeywords)) {
+        } else if (inCategory && Array.isArray(video.matchedKeywords)) {
           const keywords = categorySettings?.[videoType]?.[activeCategory] || [];
           video.matchedKeywords.forEach((kw) => {
-            if (keywords.includes(kw)) {
+            if (showAllKeywords || keywords.includes(kw)) {
               if (!counts[kw]) counts[kw] = { category: kw, count: 0, duration: 0 };
               counts[kw].count += 1;
               counts[kw].duration += video.duration || 0;
@@ -65,7 +67,7 @@ const CategoryChartSection = ({
         duration: Math.round((d.duration || 0) / 60),
       })),
     };
-  }, [videos, typeLabel, activeCategory, categorySettings, videoType]);
+  }, [videos, typeLabel, activeCategory, categorySettings, videoType, showAllKeywords]);
 
   const sectionTitle = activeCategory
     ? `${activeCategory} 細分類圖表`
@@ -76,6 +78,25 @@ const CategoryChartSection = ({
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-2">{sectionTitle}</h2>
+
+      {/* 切換統計模式：雙文字顯示 toggle */}
+      {activeCategory && activeCategory !== "遊戲" && (
+        <div className="mb-2 text-sm">
+          <button
+            onClick={() => setShowAllKeywords(false)}
+            className={`mr-4 font-medium transition ${!showAllKeywords ? "text-blue-600 underline" : "text-gray-400"}`}
+          >
+            只顯示分類設定中的關鍵字
+          </button>
+          <button
+            onClick={() => setShowAllKeywords(true)}
+            className={`font-medium transition ${showAllKeywords ? "text-blue-600 underline" : "text-gray-400"}`}
+          >
+            顯示分類內所有關鍵字
+          </button>
+        </div>
+      )}
+
       {hasData ? (
         <>
           <ChartSwitcher chartType={chartType} setChartType={setChartType} />
