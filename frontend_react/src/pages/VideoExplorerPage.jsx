@@ -32,7 +32,7 @@ const VideoExplorerPage = () => {
 
       return matchesType && matchesCategory;
     })
-    .sort((a, b) => new Date(b.publishedAt) - new Date(a.publishedAt)); // 依照發布時間排序：新到舊
+    .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate)); // 依照發布時間排序：新到舊
 
   return (
     <div className="py-4">
