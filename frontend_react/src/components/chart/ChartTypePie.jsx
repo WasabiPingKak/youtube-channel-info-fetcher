@@ -13,14 +13,14 @@ const ChartTypePie = ({ data, dataKey }) => {
         outerRadius={80}
         fill="#8884d8"
         dataKey={dataKey}
-        label
+        label={(entry) => entry.category} labelLine={false}
       >
         {data.map((_, index) => (
           <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
         ))}
       </Pie>
-      <Tooltip />
-      <Legend />
+      <Tooltip formatter={(value, name, props) => [`${value}`, props.payload.category]} />
+      <Legend formatter={(value, entry) => entry.payload.category} />
     </PieChart>
   );
 };

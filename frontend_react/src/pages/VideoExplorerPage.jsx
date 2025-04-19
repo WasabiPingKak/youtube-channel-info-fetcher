@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import { useVideoCache } from "../hooks/useVideoCache";
 import TopLevelTabs from "../components/common/TopLevelTabs";
@@ -8,7 +9,8 @@ import CategoryChartSection from "../components/chart/CategoryChartSection";
 const VideoExplorerPage = () => {
   const [videoType, setVideoType] = useState("videos"); // "live" | "videos" | "shorts"
   const [activeCategory, setActiveCategory] = useState(null);
-  const { videos, loading, error } = useVideoCache();
+  const [chartType, setChartType] = useState("pie");
+  const { videos, loading, error, categorySettings } = useVideoCache();
 
   // 自動選第一個分類（初次載入 or 類型切換）
   useEffect(() => {
@@ -27,16 +29,21 @@ const VideoExplorerPage = () => {
   return (
     <div className="py-4">
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
+
+      <CategoryChartSection
+        videos={videos}
+        videoType={videoType}
+        chartType={chartType}
+        setChartType={setChartType}
+        activeCategory={activeCategory}
+        categorySettings={categorySettings}
+      />
+
       <SubCategoryTabs
         activeType={videoType}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
       />
-
-      {/* 主分類統計圖表區塊：插入於 Tab 之下、影片清單之上 */}
-      {activeCategory && filteredVideos.length > 0 && (
-        <CategoryChartSection videos={filteredVideos} />
-      )}
 
       <div className="px-4 py-2 text-sm text-gray-600">
         {activeCategory
