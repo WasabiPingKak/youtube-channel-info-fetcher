@@ -30,6 +30,12 @@ const VideoExplorerPage = () => {
     <div className="py-4">
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
 
+      <SubCategoryTabs
+        activeType={videoType}
+        activeCategory={activeCategory}
+        onCategoryChange={setActiveCategory}
+      />
+
       <CategoryChartSection
         videos={videos}
         videoType={videoType}
@@ -37,12 +43,6 @@ const VideoExplorerPage = () => {
         setChartType={setChartType}
         activeCategory={activeCategory}
         categorySettings={categorySettings}
-      />
-
-      <SubCategoryTabs
-        activeType={videoType}
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
       />
 
       <div className="px-4 py-2 text-sm text-gray-600">
