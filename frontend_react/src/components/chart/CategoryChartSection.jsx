@@ -62,7 +62,7 @@ const CategoryChartSection = ({
       countData: sorted.map((d) => ({ category: d.category, count: d.count })),
       durationData: sorted.map((d) => ({
         category: d.category,
-        duration: Math.round((d.duration || 0) / 60), // 秒數轉分鐘
+        duration: Math.round((d.duration || 0) / 60),
       })),
     };
   }, [videos, typeLabel, activeCategory, categorySettings, videoType]);
@@ -71,15 +71,23 @@ const CategoryChartSection = ({
     ? `${activeCategory} 細分類圖表`
     : "主分類總覽圖表";
 
+  const hasData = countData.length > 0 || durationData.length > 0;
+
   return (
     <div className="p-4">
       <h2 className="text-xl font-bold mb-2">{sectionTitle}</h2>
-      <ChartSwitcher chartType={chartType} setChartType={setChartType} />
-      <CategoryChart
-        countData={countData}
-        durationData={durationData}
-        chartType={chartType}
-      />
+      {hasData ? (
+        <>
+          <ChartSwitcher chartType={chartType} setChartType={setChartType} />
+          <CategoryChart
+            countData={countData}
+            durationData={durationData}
+            chartType={chartType}
+          />
+        </>
+      ) : (
+        <p className="text-center text-gray-500 py-8">目前沒有資料可顯示</p>
+      )}
     </div>
   );
 };
