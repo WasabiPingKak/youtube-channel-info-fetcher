@@ -42,10 +42,7 @@ export const useChannelSettings = () => {
     (async () => {
       const data = await loadChannelSettings();
       if (data) {
-        setChannelSettings({
-          classifications: data.classifications ?? defaultSettings.classifications,
-          game_tags: data.game_tags ?? defaultSettings.game_tags
-        });
+        setChannelSettings(data as ChannelSettings);
       } else {
         setChannelSettings(defaultSettings);
         toast.info("⚠ 資料庫中尚無分類設定，已套用預設結構，請新增內容後儲存。");
