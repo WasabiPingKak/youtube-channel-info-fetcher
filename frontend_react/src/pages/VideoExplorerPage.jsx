@@ -59,6 +59,14 @@ const VideoExplorerPage = () => {
       )}
 
       <div className="mt-2">
+        <div className="flex px-4 py-2 text-xs text-gray-500 font-semibold border-b border-gray-200">
+          <div className="w-1/4">標題</div>
+          <div className="w-1/6">發布時間</div>
+          <div className="w-1/6">時長</div>
+          <div className="w-1/6">遊戲</div>
+          <div className="w-1/6">關鍵字</div>
+          <div className="w-1/12 text-right">連結</div>
+        </div>
         {filteredVideos.map((video) => (
           <VideoCard key={video.videoId} video={video} />
         ))}
