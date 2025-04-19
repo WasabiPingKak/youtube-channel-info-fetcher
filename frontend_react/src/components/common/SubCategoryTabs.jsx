@@ -16,26 +16,16 @@ const SubCategoryTabs = ({ activeType, activeCategory, onCategoryChange }) => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          const typeCategories = data[activeType];
-
-          if (!typeCategories || typeof typeCategories !== "object") {
-            setError(true);
-            return;
-          }
-
-          const sortedCategories = Object.keys(typeCategories).sort((a, b) => {
-            if (a === "其他") return 1;
-            if (b === "其他") return -1;
-            return 0;
-          });
-
+          const typeCategories = Object.keys(data[activeType] || {});
+          const sortedCategories = [
+            "全部",
+            ...typeCategories.filter((c) => c !== "其他"),
+            "其他",
+          ];
           setCategories(sortedCategories);
-        } else {
-          console.warn("No config document found");
-          setError(true);
         }
-      } catch (error) {
-        console.error("[SubCategoryTabs] Failed to load config:", error);
+      } catch (err) {
+        console.error("無法載入分類設定", err);
         setError(true);
       }
     };
@@ -43,33 +33,19 @@ const SubCategoryTabs = ({ activeType, activeCategory, onCategoryChange }) => {
     fetchCategories();
   }, [activeType]);
 
-  if (error) {
-    return (
-      <p className="px-4 py-2 text-red-600">
-        🚫 無法載入分類。請檢查 Firestore 設定是否正確。
-      </p>
-    );
-  }
-
-  if (categories.length === 0) {
-    return (
-      <p className="px-4 py-2 text-gray-600">
-        ⚠ 此類型下尚未設定任何主分類，請至設定頁建立。
-      </p>
-    );
-  }
+  if (error) return <div className="text-red-500">載入分類失敗</div>;
 
   return (
-    <div className="flex flex-wrap gap-2 px-4 py-2">
+    <div className="flex flex-wrap gap-2 mb-4">
       {categories.map((category) => (
         <button
           key={category}
-          className={`px-3 py-1 rounded-full border ${
+          onClick={() => onCategoryChange(category)}
+          className={`px-4 py-1 rounded-full border ${
             activeCategory === category
               ? "bg-blue-600 text-white"
-              : "bg-white text-gray-800 border-gray-300 hover:bg-gray-100"
+              : "bg-white text-gray-700 border-gray-300"
           }`}
-          onClick={() => onCategoryChange(category)}
         >
           {category}
         </button>
