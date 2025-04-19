@@ -79,21 +79,30 @@ const CategoryChartSection = ({
     <div className="p-4">
       <h2 className="text-xl font-bold mb-2">{sectionTitle}</h2>
 
-      {/* 切換統計模式：雙文字顯示 toggle */}
       {activeCategory && activeCategory !== "遊戲" && (
-        <div className="mb-2 text-sm">
-          <button
-            onClick={() => setShowAllKeywords(false)}
-            className={`mr-4 font-medium transition ${!showAllKeywords ? "text-blue-600 underline" : "text-gray-400"}`}
-          >
-            只顯示分類設定中的關鍵字
-          </button>
-          <button
-            onClick={() => setShowAllKeywords(true)}
-            className={`font-medium transition ${showAllKeywords ? "text-blue-600 underline" : "text-gray-400"}`}
-          >
-            顯示分類內所有關鍵字
-          </button>
+        <div className="mb-3 mx-4">
+          <div className="inline-flex rounded border p-1 bg-gray-100 text-sm font-medium">
+            <button
+              onClick={() => setShowAllKeywords(false)}
+              className={`px-3 py-1 rounded transition ${
+                !showAllKeywords
+                  ? "bg-blue-500 text-white shadow"
+                  : "text-gray-700 hover:bg-white"
+              }`}
+            >
+              只顯示分類設定中的關鍵字
+            </button>
+            <button
+              onClick={() => setShowAllKeywords(true)}
+              className={`px-3 py-1 rounded transition ${
+                showAllKeywords
+                  ? "bg-blue-500 text-white shadow"
+                  : "text-gray-700 hover:bg-white"
+              }`}
+            >
+              顯示分類內所有關鍵字
+            </button>
+          </div>
         </div>
       )}
 
