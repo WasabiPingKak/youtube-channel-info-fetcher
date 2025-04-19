@@ -7,6 +7,8 @@ const CategoryChartSection = ({
   videoType,
   chartType,
   setChartType,
+  durationUnit,
+  setDurationUnit,
   activeCategory,
   categorySettings,
 }) => {
@@ -23,7 +25,7 @@ const CategoryChartSection = ({
 
       const inCategory = video.matchedCategories?.includes(activeCategory);
 
-      if (activeCategory) {
+      if (activeCategory && activeCategory !== "全部") {
         const isGame = activeCategory === "遊戲";
 
         if (isGame && video.game) {
@@ -42,7 +44,7 @@ const CategoryChartSection = ({
           });
         }
       } else {
-        // 主分類統計邏輯
+        // 主分類統計邏輯，包括 activeCategory === "全部"
         if (Array.isArray(video.matchedCategories)) {
           video.matchedCategories.forEach((cat) => {
             if (!counts[cat]) counts[cat] = { category: cat, count: 0, duration: 0 };
@@ -64,22 +66,25 @@ const CategoryChartSection = ({
       countData: sorted.map((d) => ({ category: d.category, count: d.count })),
       durationData: sorted.map((d) => ({
         category: d.category,
-        duration: Math.round((d.duration || 0) / 60),
+        duration: d.duration || 0, // 原始秒數，交由圖表元件轉換顯示單位
       })),
     };
   }, [videos, typeLabel, activeCategory, categorySettings, videoType, showAllKeywords]);
 
-  const sectionTitle = activeCategory
-    ? `${activeCategory} 細分類圖表`
-    : "主分類總覽圖表";
+  const sectionTitle =
+    activeCategory && activeCategory !== "遊戲"
+      ? `${activeCategory} 細分類圖表`
+      : "主分類總覽圖表";
 
   const hasData = countData.length > 0 || durationData.length > 0;
 
   return (
     <div className="p-4">
-      <h2 className="text-xl font-bold mb-2">{sectionTitle}</h2>
+      <h2 className="text-xl font-bold mb-2">
+        {activeCategory === "全部" ? "全部 細分類圖表" : sectionTitle}
+      </h2>
 
-      {activeCategory && activeCategory !== "遊戲" && (
+      {activeCategory && activeCategory !== "遊戲" && activeCategory !== "全部" && (
         <div className="mb-3 mx-4">
           <div className="inline-flex rounded border p-1 bg-gray-100 text-sm font-medium">
             <button
@@ -108,11 +113,17 @@ const CategoryChartSection = ({
 
       {hasData ? (
         <>
-          <ChartSwitcher chartType={chartType} setChartType={setChartType} />
+          <ChartSwitcher
+            chartType={chartType}
+            setChartType={setChartType}
+            durationUnit={durationUnit}
+            setDurationUnit={setDurationUnit}
+          />
           <CategoryChart
             countData={countData}
             durationData={durationData}
             chartType={chartType}
+            durationUnit={durationUnit}
           />
         </>
       ) : (

@@ -6,24 +6,33 @@ import VideoCard from "../components/common/VideoCard";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
 
 const VideoExplorerPage = () => {
-  const [videoType, setVideoType] = useState("videos"); // "live" | "videos" | "shorts"
-  const [activeCategory, setActiveCategory] = useState(null);
+  const [videoType, setVideoType] = useState("live"); // "live" | "videos" | "shorts"
+  const [activeCategory, setActiveCategory] = useState("全部");
   const [chartType, setChartType] = useState("pie");
+  const [durationUnit, setDurationUnit] = useState("minutes"); // "minutes" | "hours"
+
   const { videos, loading, error, categorySettings } = useVideoCache();
 
-  // 自動選第一個分類（初次載入 or 類型切換）
+  // 當影片類型變更時，預設分類切回 "全部"
   useEffect(() => {
-    setActiveCategory(null); // 清空分類讓 SubCategoryTabs 主動設為第一個分類
+    setActiveCategory("全部");
   }, [videoType]);
 
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
 
-  const filteredVideos = videos.filter((video) => {
-    const expectedType = VIDEO_TYPE_MAP[videoType];
-    const matchesType = video.type === expectedType;
-    const matchesCategory = activeCategory && video.matchedCategories?.includes(activeCategory);
-    return matchesType && matchesCategory;
-  });
+  const filteredVideos = videos
+    .filter((video) => {
+      const expectedType = VIDEO_TYPE_MAP[videoType];
+      const matchesType = video.type === expectedType;
+
+      if (activeCategory === "全部") return matchesType;
+
+      const matchesCategory =
+        activeCategory && video.matchedCategories?.includes(activeCategory);
+
+      return matchesType && matchesCategory;
+    })
+    .sort((a, b) => new Date(b.publishDate) - new Date(a.publishDate)); // 依照發布時間排序：新到舊
 
   return (
     <div className="py-4">
@@ -39,6 +48,8 @@ const VideoExplorerPage = () => {
         videoType={videoType}
         chartType={chartType}
         setChartType={setChartType}
+        durationUnit={durationUnit}
+        setDurationUnit={setDurationUnit}
         activeCategory={activeCategory}
         categorySettings={categorySettings}
       />
@@ -66,7 +77,7 @@ const VideoExplorerPage = () => {
           <div className="w-1/12 text-right">連結</div>
         </div>
         {filteredVideos.map((video) => (
-          <VideoCard key={video.videoId} video={video} />
+          <VideoCard key={video.videoId} video={video} durationUnit={durationUnit} />
         ))}
       </div>
     </div>
