@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import CategoryEditor from "./components/classificationEditor/CategoryEditor";
+import CategoryEditor from "./components/CategoryEditor/CategoryEditor";
 import VideoExplorerPage from "./pages/VideoExplorerPage"; // 匯入剛剛的頁面元件
 import "./style.css";
 
