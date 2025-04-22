@@ -9,7 +9,7 @@ import EditTabSwitcher from "@/components/classificationEditor/EditTabSwitcher";
 
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
-const ClassificationEditorMock = () => {
+const CategoryEditor = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
   const [activeTab, setActiveTab] = useState("live");
   const [unsaved, setUnsaved] = useState(false);
@@ -132,4 +132,4 @@ const ClassificationEditorMock = () => {
   );
 };
 
-export default ClassificationEditorMock;
+export default CategoryEditor;
