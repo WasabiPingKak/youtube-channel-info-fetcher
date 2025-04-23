@@ -16,8 +16,7 @@ def match_category_and_game(title: str, video_type: str, settings: dict) -> dict
         logging.debug(f"🔍 [match] normalized: {normalized_title}")
 
         category_settings = settings.get(video_type, {})
-        game_entries = category_settings.get("遊戲", [])
-        logging.debug(f"🎮 [match] 遊戲分類清單: {game_entries}")
+        logging.debug(f"📁 [match] 類型分類設定: {list(category_settings.keys())}")
 
         # 處理主分類（不含遊戲）
         for category, keywords in category_settings.items():
@@ -31,7 +30,10 @@ def match_category_and_game(title: str, video_type: str, settings: dict) -> dict
                         matched_categories.append(category)
                     matched_keywords.append(kw)
 
-        # 處理遊戲分類
+        # 🔁 改回從設定中對應類型讀取「遊戲」欄位
+        game_entries = category_settings.get("遊戲", [])
+        logging.debug(f"🎮 [match] 遊戲分類條目數量: {len(game_entries)}")
+
         if isinstance(game_entries, list):
             for game_entry in game_entries:
                 game_name = game_entry.get("game")
