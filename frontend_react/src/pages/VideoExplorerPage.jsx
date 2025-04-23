@@ -41,6 +41,7 @@ const VideoExplorerPage = () => {
         activeType={videoType}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
+        videos={videos}
       />
 
       <CategoryChartSection
