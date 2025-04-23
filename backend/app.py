@@ -12,6 +12,7 @@ from routes.cache_routes import init_cache_routes
 from routes.category_routes import init_category_routes
 from routes.cache_channel_videos import init_cache_v2_routes
 from routes.firestore_settings import init_firestore_settings_routes
+from routes.category_save_apply_routes import init_category_save_apply_routes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -30,9 +31,9 @@ except Exception:
 init_base_routes(app)
 init_cache_routes(app, db)
 init_category_routes(app, db)
-print("✅ [app.py] Registering cache v2 routes")
 init_cache_v2_routes(app)
 init_firestore_settings_routes(app)
+init_category_save_apply_routes(app, db)
 
 
 @app.route("/test-firestore")

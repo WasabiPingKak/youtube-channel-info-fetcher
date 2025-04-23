@@ -70,3 +70,44 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
     except Exception as e:
         logging.error("🔥 [refresh_video_cache] 快取更新錯誤", exc_info=True)
         return []
+
+def apply_category_settings_to_videos(db, channel_id: str, settings: dict) -> int:
+    """
+    套用最新的分類設定到所有已存在的影片上，僅更新分類有變動的影片，回傳實際更新數量。
+    """
+    try:
+        videos_ref = db.collection("channel_data").document(channel_id).collection("videos")
+        video_docs = videos_ref.stream()
+
+        updated_count = 0
+
+        for doc in video_docs:
+            video = doc.to_dict()
+            video_id = video.get("videoId")
+            if not video_id:
+                continue
+
+            original_category = video.get("category")
+            original_game = video.get("game")
+            video_type = video.get("type", "")
+            title = video.get("title", "")
+
+            # 重新套用分類邏輯
+            result = match_category_and_game(title, video_type, settings)
+            new_category = result.get("matchedCategories")
+            new_game = result.get("game")
+
+            if new_category != original_category or new_game != original_game:
+                video_ref = videos_ref.document(video_id)
+                video_ref.update({
+                    "category": new_category,
+                    "game": new_game
+                })
+                updated_count += 1
+
+        logging.info(f"✅ [apply_category_settings_to_videos] 更新完成，共更新 {updated_count} 筆影片")
+        return updated_count
+
+    except Exception:
+        logging.exception("🔥 [apply_category_settings_to_videos] 更新分類時發生錯誤")
+        return 0

@@ -22,6 +22,25 @@ export const loadChannelSettings = async () => {
 };
 
 export const saveChannelSettings = async (data: any) => {
-  const ref = doc(db, "channel_data", CHANNEL_ID, "settings", "config");
-  await setDoc(ref, data); // full overwrite
+  const res = await fetch(`${API_BASE}/api/categories/save-and-apply`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      channel_id: CHANNEL_ID,
+      settings: data,
+    }),
+  });
+
+  if (!res.ok) {
+    throw new Error(`儲存設定失敗：HTTP ${res.status}`);
+  }
+
+  const result = await res.json();
+
+  if (!result.success) {
+    throw new Error(`後端錯誤：${result.error || "未知錯誤"}`);
+  }
+
+  console.log(`✅ 分類設定儲存成功，更新影片 ${result.updated_count} 筆`);
+  return result.updated_count;
 };
