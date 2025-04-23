@@ -95,7 +95,7 @@ const CategoryChartSection = ({
                   : "text-gray-700 hover:bg-white"
               }`}
             >
-              只顯示分類設定中的關鍵字
+              主分類
             </button>
             <button
               onClick={() => setShowAllKeywords(true)}
@@ -105,7 +105,7 @@ const CategoryChartSection = ({
                   : "text-gray-700 hover:bg-white"
               }`}
             >
-              顯示分類內所有關鍵字
+              顯示所有交叉命中關鍵字
             </button>
           </div>
         </div>
