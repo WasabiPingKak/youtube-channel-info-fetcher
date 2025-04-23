@@ -1,3 +1,4 @@
+
 import logging
 import re
 
@@ -18,21 +19,20 @@ def match_category_and_game(title: str, video_type: str, settings: dict) -> dict
         category_settings = settings.get(video_type, {})
         logging.debug(f"📁 [match] 類型分類設定: {list(category_settings.keys())}")
 
-        # 處理主分類（不含遊戲）
+        # ✅ 主分類處理
         for category, keywords in category_settings.items():
             if category == "遊戲":
-                continue  # 遊戲分類獨立處理
-            logging.debug(f"🔍 [match] 主分類: {category} → 關鍵字: {keywords}")
+                continue
             for kw in keywords:
                 if normalize(kw) in normalized_title:
-                    logging.debug(f"✅ 命中關鍵字: {kw} → 分類: {category}")
                     if category not in matched_categories:
                         matched_categories.append(category)
                     matched_keywords.append(kw)
 
-        # 🔁 改回從設定中對應類型讀取「遊戲」欄位
+        # ✅ 遊戲分類處理
         game_entries = category_settings.get("遊戲", [])
-        logging.debug(f"🎮 [match] 遊戲分類條目數量: {len(game_entries)}")
+        matched_game_keywords = set()
+        matched_game_name = None
 
         if isinstance(game_entries, list):
             for game_entry in game_entries:
@@ -41,18 +41,24 @@ def match_category_and_game(title: str, video_type: str, settings: dict) -> dict
                 all_keywords = keywords + [game_name] if game_name else []
                 for kw in all_keywords:
                     if normalize(kw) in normalized_title:
-                        logging.debug(f"🎮 命中遊戲關鍵字: {kw} → 遊戲: {game_name}")
-                        matched_game = game_name
-                        matched_keywords.append(kw)
-                        if "遊戲" not in matched_categories:
-                            matched_categories.append("遊戲")
+                        matched_game_name = game_name
+                        matched_game_keywords.add(kw)
                         break
-                if matched_game:
+                if matched_game_name:
                     break
 
-        # 若沒有命中任何主分類，補上「其他」
+        # ✅ 統一整理分類結果
+        if matched_game_name:
+            matched_game = matched_game_name
+            matched_categories = ["遊戲"]
+            matched_keywords.extend(list(matched_game_keywords))
+        else:
+            matched_game = None
+            matched_categories = [cat for cat in matched_categories if cat != "遊戲"]
+
+        # ✅ 最後處理 "其他" 類別
         if not matched_categories and "其他" in category_settings:
-            matched_categories.append("其他")
+            matched_categories = ["其他"]
 
         return {
             "matchedCategories": matched_categories,

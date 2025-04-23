@@ -88,8 +88,10 @@ def apply_category_settings_to_videos(db, channel_id: str, settings: dict) -> in
             if not video_id:
                 continue
 
-            original_category = video.get("category")
+            original_categories = video.get("matchedCategories")
             original_game = video.get("game")
+            original_keywords = set(video.get("matchedKeywords", []))
+
             video_type = video.get("type", "")
             title = video.get("title", "")
 
@@ -97,14 +99,20 @@ def apply_category_settings_to_videos(db, channel_id: str, settings: dict) -> in
 
             # 重新套用分類邏輯
             result = match_category_and_game(title, type_for_setting, settings)
-            new_category = result.get("matchedCategories")
+            new_categories = result.get("matchedCategories")
             new_game = result.get("game")
+            new_keywords = set(result.get("matchedKeywords", []))
 
-            if new_category != original_category or new_game != original_game:
+            if (
+                new_categories != original_categories or
+                new_game != original_game or
+                original_keywords != new_keywords
+            ):
                 video_ref = videos_ref.document(video_id)
                 video_ref.update({
-                    "category": new_category,
-                    "game": new_game
+                    "matchedCategories": new_categories,
+                    "game": new_game,
+                    "matchedKeywords": list(new_keywords)
                 })
                 updated_count += 1
 
