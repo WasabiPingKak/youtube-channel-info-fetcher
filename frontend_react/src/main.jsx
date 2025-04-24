@@ -2,7 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
-import ClassificationEditorMock from "./components/classificationEditor/ClassificationEditorMock";
+import CategoryEditor from "./components/CategoryEditor/CategoryEditor";
 import VideoExplorerPage from "./pages/VideoExplorerPage"; // 匯入剛剛的頁面元件
 import "./style.css";
 
@@ -11,7 +11,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
     <BrowserRouter>
       <Routes>
         <Route path="/videos" element={<VideoExplorerPage />} />
-        <Route path="/settings" element={<ClassificationEditorMock />} />
+        <Route path="/settings" element={<CategoryEditor />} />
         <Route
           path="*"
           element={

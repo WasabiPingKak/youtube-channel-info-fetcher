@@ -2,14 +2,14 @@ import React, { useEffect, useState } from "react";
 import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import CategoryGroup from "@/components/classificationEditor/CategoryGroup";
-import GameTagsGroup from "@/components/classificationEditor/GameTagsGroup";
+import CategoryGroup from "@/components/CategoryEditor/CategoryGroup";
+import GameTagsGroup from "@/components/CategoryEditor/GameTagsGroup";
 import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
-import EditTabSwitcher from "@/components/classificationEditor/EditTabSwitcher";
+import EditTabSwitcher from "@/components/CategoryEditor/EditTabSwitcher";
 
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
-const ClassificationEditorMock = () => {
+const CategoryEditor = () => {
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
   const [activeTab, setActiveTab] = useState("live");
   const [unsaved, setUnsaved] = useState(false);
@@ -132,4 +132,4 @@ const ClassificationEditorMock = () => {
   );
 };
 
-export default ClassificationEditorMock;
+export default CategoryEditor;

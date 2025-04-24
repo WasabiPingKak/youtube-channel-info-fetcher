@@ -54,8 +54,12 @@ export const useChannelSettings = () => {
     setLoading(true);
     try {
       if (channelSettings) {
-        await saveChannelSettings(channelSettings);
-        toast.success("設定已成功儲存！");
+        const updatedCount = await saveChannelSettings(channelSettings);
+        if (updatedCount >= 0) {
+          toast.success(`設定成功，已更新 ${updatedCount} 筆影片`);
+        } else {
+          toast.error("後端未回傳成功訊息！");
+        }
       }
     } catch (err) {
       console.error("寫入失敗：", err);

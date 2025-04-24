@@ -1,8 +1,16 @@
-
 import logging
 from services.youtube.fetcher import get_video_data
 from utils.categorizer import match_category_and_game
 from utils.youtube_utils import normalize_video_item
+
+# ✅ 抽出類型映射表，供兩個函式共用
+type_map = {
+    "直播檔": "live",
+    "直播": "live",
+    "影片": "videos",
+    "Shorts": "shorts",
+    "shorts": "shorts"
+}
 
 def refresh_video_cache(db, channel_id: str, date_ranges=None):
     try:
@@ -34,13 +42,6 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
                 logging.warning("⚠️ [refresh_video_cache] 略過資料不完整影片: %s", item)
                 continue
 
-            type_map = {
-                "直播檔": "live",
-                "直播": "live",
-                "影片": "video",
-                "Shorts": "shorts",
-                "shorts": "shorts"
-            }
             type_for_setting = type_map.get(video_type, video_type)
 
             # ✅ 除錯用：確認 video_type 與設定對應是否正確
@@ -70,3 +71,54 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
     except Exception as e:
         logging.error("🔥 [refresh_video_cache] 快取更新錯誤", exc_info=True)
         return []
+
+def apply_category_settings_to_videos(db, channel_id: str, settings: dict) -> int:
+    """
+    套用最新的分類設定到所有已存在的影片上，僅更新分類有變動的影片，回傳實際更新數量。
+    """
+    try:
+        videos_ref = db.collection("channel_data").document(channel_id).collection("videos")
+        video_docs = videos_ref.stream()
+
+        updated_count = 0
+
+        for doc in video_docs:
+            video = doc.to_dict()
+            video_id = video.get("videoId")
+            if not video_id:
+                continue
+
+            original_categories = video.get("matchedCategories")
+            original_game = video.get("game")
+            original_keywords = set(video.get("matchedKeywords", []))
+
+            video_type = video.get("type", "")
+            title = video.get("title", "")
+
+            type_for_setting = type_map.get(video_type, video_type)
+
+            # 重新套用分類邏輯
+            result = match_category_and_game(title, type_for_setting, settings)
+            new_categories = result.get("matchedCategories")
+            new_game = result.get("game")
+            new_keywords = set(result.get("matchedKeywords", []))
+
+            if (
+                new_categories != original_categories or
+                new_game != original_game or
+                original_keywords != new_keywords
+            ):
+                video_ref = videos_ref.document(video_id)
+                video_ref.update({
+                    "matchedCategories": new_categories,
+                    "game": new_game,
+                    "matchedKeywords": list(new_keywords)
+                })
+                updated_count += 1
+
+        logging.info(f"✅ [apply_category_settings_to_videos] 更新完成，共更新 {updated_count} 筆影片")
+        return updated_count
+
+    except Exception:
+        logging.exception("🔥 [apply_category_settings_to_videos] 更新分類時發生錯誤")
+        return 0
