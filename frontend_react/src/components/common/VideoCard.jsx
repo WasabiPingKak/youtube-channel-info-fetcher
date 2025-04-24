@@ -20,18 +20,19 @@ const VideoCard = ({ video, durationUnit }) => {
   const formattedDate = publishDate?.slice(0, 10) || "-";
 
   return (
-    <div
-      className="flex justify-between items-center py-2 px-4 border-b hover:bg-gray-100 transition-colors"
-    >
-      <div className="w-1/4 font-semibold truncate" title={title}>
+    <div className="flex items-center py-2 px-4 border-b hover:bg-gray-100 transition-colors">
+      <div className="flex-1 min-w-[240px] max-w-[50%] font-semibold truncate" title={title}>
         {title}
       </div>
-      <div className="w-1/6">{formattedDate}</div>
-      <div className="w-1/6">{formattedDuration}</div>
-      <div className="w-1/6">{game || "-"}</div>
-      <div className="w-1/6">
+
+      <div className="basis-28">{formattedDate}</div>
+      <div className="basis-28">{formattedDuration}</div>
+      <div className="basis-28">{game || "-"}</div>
+
+      <div className="basis-40">
         {matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "-"}
       </div>
+
       <div className="w-1/12 text-right">
         <a
           href={`https://www.youtube.com/watch?v=${videoId}`}
