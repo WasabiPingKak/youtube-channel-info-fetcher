@@ -12,3 +12,4 @@ node_modules
 .pytest_cache
 .env
 .cursorrules
+channel_list.txt
