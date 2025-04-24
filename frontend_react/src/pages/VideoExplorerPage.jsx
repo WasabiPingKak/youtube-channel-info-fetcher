@@ -9,7 +9,7 @@ const VideoExplorerPage = () => {
   const [videoType, setVideoType] = useState("live"); // "live" | "videos" | "shorts"
   const [activeCategory, setActiveCategory] = useState("全部");
   const [chartType, setChartType] = useState("pie");
-  const [durationUnit, setDurationUnit] = useState("minutes"); // "minutes" | "hours"
+  const [durationUnit, setDurationUnit] = useState("hours"); // "minutes" | "hours"
 
   const { videos, loading, error, categorySettings } = useVideoCache();
 
