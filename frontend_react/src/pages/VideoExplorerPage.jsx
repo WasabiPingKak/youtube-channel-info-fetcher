@@ -6,6 +6,7 @@ import TopLevelTabs from "../components/common/TopLevelTabs";
 import SubCategoryTabs from "../components/common/SubCategoryTabs";
 import VideoCard from "../components/common/VideoCard";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
+import ChannelInfoCard from "../components/common/ChannelInfoCard"; // ✅ 新增匯入
 
 const VideoExplorerPage = () => {
   const { videos, loading, error, categorySettings } = useVideoCache();
@@ -36,6 +37,9 @@ const VideoExplorerPage = () => {
 
   return (
     <div className="py-4">
+      {/* ✅ 頻道資訊卡 */}
+      <ChannelInfoCard />
+
       {/* Tabs */}
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
       <SubCategoryTabs
