@@ -22,7 +22,7 @@ export default function ChannelInfoCard() {
   }
 
   return (
-    <div className="bg-gray-50 w-full max-w-xl mx-auto flex items-center gap-4 rounded-2xl shadow p-4 mb-4">
+    <div className="bg-gray-50 w-full max-w-xl flex items-center gap-4 rounded-2xl shadow p-4 mb-4">
       <a href={data.url} target="_blank" rel="noopener noreferrer">
         <img
           src={data.thumbnail}

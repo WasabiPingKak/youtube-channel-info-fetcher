@@ -8,7 +8,7 @@
 
 使用方式：
 ------------
-# 安裝相依套件
+# 安裝相當套件
 pip install -r requirements.txt
 
 # 執行腳本
@@ -23,14 +23,16 @@ python fetch_channel_info.py --force
 import argparse
 import os
 import requests
+import datetime
 from google.cloud import firestore
 from google.oauth2 import service_account
 from dotenv import load_dotenv
 
 # ✅ 載入環境變數與初始化
-load_dotenv()
+load_dotenv("../.env.local")
 API_KEY = os.getenv("API_KEY")
-FIREBASE_KEY_PATH = os.getenv("FIREBASE_KEY_PATH", "firebase-key.json")
+BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+FIREBASE_KEY_PATH = os.getenv("FIREBASE_KEY_PATH", os.path.join(BASE_DIR, "firebase-key.json"))
 
 if not API_KEY:
     raise EnvironmentError("❌ 請在 .env 設定 YOUTUBE_API_KEY")
@@ -54,11 +56,22 @@ def fetch_channel_info_batch(channel_ids):
 # ✅ 主執行函式
 def process_channels(force=False):
     with open("channel_list.txt", "r", encoding="utf-8") as f:
-        all_ids = [line.strip() for line in f if line.strip()]
+        raw_lines = [line.strip() for line in f if line.strip()]
+
+    all_ids = []
+    for line in raw_lines:
+        if line.startswith("@"):
+            print(f"⚠️ 偵測到 @handle 格式：{line}")
+            print("   請先將其轉換為正式的 YouTube 頻道 ID（以 UC 開頭）再重試。")
+            continue
+        if not line.startswith("UC"):
+            print(f"⚠️ 無效的頻道 ID 格式，略過：{line}")
+            continue
+        all_ids.append(line)
 
     BATCH_SIZE = 50
     total = len(all_ids)
-    print(f"📦 共有 {total} 筆頻道要處理，開始查詢...")
+    print(f"📦 有效頻道共 {total} 筆，開始查詢...")
 
     for i in range(0, total, BATCH_SIZE):
         batch_ids = all_ids[i:i+BATCH_SIZE]
@@ -75,17 +88,23 @@ def process_channels(force=False):
                 url = f"https://www.youtube.com/channel/{channel_id}"
 
                 doc_ref = db.collection("channel_data").document(channel_id).collection("channel_info").document("info")
+                doc = doc_ref.get()
 
-                if not force and doc_ref.get().exists:
+                should_update = force or (not doc.exists) or ("updatedAt" not in doc.to_dict())
+
+                if not should_update:
                     print(f"⏩ 已存在，略過：{channel_id}")
                     continue
 
+                now = datetime.datetime.now()
                 doc_ref.set({
                     "name": name,
                     "url": url,
-                    "thumbnail": thumbnail
+                    "thumbnail": thumbnail,
+                    "updatedAt": now
                 })
                 print(f"✅ 已寫入：{channel_id} - {name}")
+                print(f"🗓 更新時間：{now.strftime('%Y-%m-%d %H:%M:%S')}")
 
         except Exception as e:
             print(f"❌ 發生錯誤：{e}")

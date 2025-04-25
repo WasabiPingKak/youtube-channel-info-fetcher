@@ -11,4 +11,4 @@ node_modules
 .env.*local
 .env.local
 .cursorrules
-channel_list.txt
+channel_list*
