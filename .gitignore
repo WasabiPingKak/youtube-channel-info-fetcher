@@ -1,8 +1,6 @@
 .firebase/
 config.py
 output.*
-.env
-.env.deploy
 firebase-key.json
 venv/
 __pycache__/
@@ -10,6 +8,7 @@ __pycache__/
 .coverage
 node_modules
 .pytest_cache
-.env
+.env.*local
+.env.local
 .cursorrules
-channel_list.txt
+channel_list*

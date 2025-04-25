@@ -6,9 +6,18 @@ import TopLevelTabs from "../components/common/TopLevelTabs";
 import SubCategoryTabs from "../components/common/SubCategoryTabs";
 import VideoCard from "../components/common/VideoCard";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
+import ChannelInfoCard from "../components/common/ChannelInfoCard"; // ✅ 新增匯入
+
+// ✅ 預設頻道 ID（之後可由側邊抽屜或 URL 參數帶入）
+const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const VideoExplorerPage = () => {
-  const { videos, loading, error, categorySettings } = useVideoCache();
+  // ✅ 改用新版 Hook：傳入頻道 ID 與 videoType
+  const { videos, loading, error, categorySettings } = useVideoCache(
+    DEFAULT_CHANNEL_ID,
+    // videoType 由 useVideoBrowseState 控制，先給預設值，稍後再覆寫
+    "videos"
+  );
 
   const {
     SORT_FIELDS,
@@ -29,6 +38,10 @@ const VideoExplorerPage = () => {
     setDurationUnit,
   } = useChartControlState();
 
+  // ✨ 依 videoType 變化重新取資料（invalidateQueries）
+  // （可選：若 useVideoBrowseState 已能在 setVideoType 觸發刷新，就不需要下面的 useEffect）
+  // 這裡先示例基本用法，暫不加入
+
   const arrowOf = (field) => {
     if (field !== sortField) return null;
     return sortOrder === "asc" ? "🔼" : "🔽";
@@ -36,6 +49,9 @@ const VideoExplorerPage = () => {
 
   return (
     <div className="py-4">
+      {/* ✅ 頻道資訊卡 */}
+      <ChannelInfoCard />
+
       {/* Tabs */}
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
       <SubCategoryTabs
@@ -59,7 +75,9 @@ const VideoExplorerPage = () => {
 
       {/* 影片數量 */}
       <div className="px-4 py-2 text-sm text-gray-600">
-        {activeCategory ? `共顯示 ${filteredVideos.length} 部影片` : "請選擇分類"}
+        {activeCategory
+          ? `共顯示 ${filteredVideos.length} 部影片`
+          : "請選擇分類"}
       </div>
 
       {loading && <p className="px-4">載入中...</p>}
@@ -117,7 +135,11 @@ const VideoExplorerPage = () => {
 
         {/* 資料列 */}
         {filteredVideos.map((video) => (
-          <VideoCard key={video.videoId} video={video} durationUnit={durationUnit} />
+          <VideoCard
+            key={video.videoId}
+            video={video}
+            durationUnit={durationUnit}
+          />
         ))}
       </div>
     </div>

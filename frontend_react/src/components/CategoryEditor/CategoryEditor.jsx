@@ -6,6 +6,7 @@ import CategoryGroup from "@/components/CategoryEditor/CategoryGroup";
 import GameTagsGroup from "@/components/CategoryEditor/GameTagsGroup";
 import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
 import EditTabSwitcher from "@/components/CategoryEditor/EditTabSwitcher";
+import ChannelInfoCard from "@/components/common/ChannelInfoCard"; // ✅ 新增匯入
 
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
@@ -92,6 +93,9 @@ const CategoryEditor = () => {
 
   return (
     <div className="p-4 max-w-3xl relative">
+      {/* ✅ 新增頻道資訊卡 */}
+      <ChannelInfoCard />
+
       {unsaved && <UnsavedNoticeBar />}
 
       <h1 className="text-2xl font-bold mb-4">

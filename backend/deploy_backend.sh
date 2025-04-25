@@ -2,7 +2,7 @@
 
 # ✅ 載入 .env 中的環境變數
 set -o allexport
-source .env
+source .env.local
 set +o allexport
 
 # ✅ 自訂參數
