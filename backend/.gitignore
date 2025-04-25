@@ -1,1 +1,2 @@
-deploy_cmd.sh
+.env.local
+.env.*local
