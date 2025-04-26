@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom"; // ✅ 新增：解析 URL channelId
 import { useChannelSettings } from "@/hooks/useChannelSettings";
 import { ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -6,19 +7,30 @@ import CategoryGroup from "@/components/CategoryEditor/CategoryGroup";
 import GameTagsGroup from "@/components/CategoryEditor/GameTagsGroup";
 import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
 import EditTabSwitcher from "@/components/CategoryEditor/EditTabSwitcher";
-import ChannelInfoCard from "@/components/common/ChannelInfoCard"; // ✅ 新增匯入
+import ChannelInfoCard from "@/components/common/ChannelInfoCard"; // ✅ 頻道資訊卡（隨切換變動）
+import ChannelDrawer from "@/components/common/ChannelDrawer"; // ✅ 新增：頻道切換抽屜
 
+const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"; // ✅ 預設頻道 ID
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
 const CategoryEditor = () => {
-  const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings();
+  const [searchParams] = useSearchParams(); // ✅ 取得 URL 參數
+  const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID; // ✅ 解析當前頻道
+  const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings(channelId); // ✅ 帶入 channelId
+
   const [activeTab, setActiveTab] = useState("live");
   const [unsaved, setUnsaved] = useState(false);
 
+  /* ✅ 頻道資料載入成功後 */
   useEffect(() => {
     if (!channelSettings) return;
     console.log("✅ 載入成功：", channelSettings);
   }, [channelSettings]);
+
+  /* ✅ 切換頻道時重設 unsaved */
+  useEffect(() => {
+    setUnsaved(false);
+  }, [channelId]);
 
   if (!channelSettings) return <p>載入中...</p>;
 
@@ -93,7 +105,10 @@ const CategoryEditor = () => {
 
   return (
     <div className="p-4 max-w-3xl relative">
-      {/* ✅ 新增頻道資訊卡 */}
+      {/* ✅ 頻道選擇抽屜 */}
+      <ChannelDrawer />
+
+      {/* ✅ 頻道資訊卡 */}
       <ChannelInfoCard />
 
       {unsaved && <UnsavedNoticeBar />}

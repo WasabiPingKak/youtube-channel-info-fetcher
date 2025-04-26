@@ -34,27 +34,36 @@ const defaultSettings: ChannelSettings = {
   game_tags: {}
 };
 
-export const useChannelSettings = () => {
+/**
+ * 自訂 Hook：讀取與儲存指定頻道的分類設定
+ * @param channelId 頻道 ID
+ */
+export const useChannelSettings = (channelId: string) => {
   const [channelSettings, setChannelSettings] = useState<ChannelSettings | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     (async () => {
-      const data = await loadChannelSettings();
-      if (data) {
-        setChannelSettings(data as ChannelSettings);
-      } else {
-        setChannelSettings(defaultSettings);
-        toast.info("⚠ 資料庫中尚無分類設定，已套用預設結構，請新增內容後儲存。");
+      try {
+        const data = await loadChannelSettings(channelId);
+        if (data) {
+          setChannelSettings(data as ChannelSettings);
+        } else {
+          setChannelSettings(defaultSettings);
+          toast.info("⚠ 資料庫中尚無分類設定，已套用預設結構，請新增內容後儲存。");
+        }
+      } catch (error) {
+        console.error("讀取分類設定失敗：", error);
+        toast.error("讀取分類設定失敗，請稍後再試！");
       }
     })();
-  }, []);
+  }, [channelId]); // ✅ 依 channelId 切換
 
   const saveSettings = async () => {
     setLoading(true);
     try {
       if (channelSettings) {
-        const updatedCount = await saveChannelSettings(channelSettings);
+        const updatedCount = await saveChannelSettings(channelId, channelSettings);
         if (updatedCount >= 0) {
           toast.success(`設定成功，已更新 ${updatedCount} 筆影片`);
         } else {
