@@ -1,24 +1,33 @@
-import React from "react";
+import React, { useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
+import { toast } from "react-hot-toast";
+
 import { useVideoCache } from "../hooks/useVideoCache";
 import { useVideoBrowseState } from "../hooks/useVideoBrowseState";
 import { useChartControlState } from "../hooks/useChartControlState";
+
+import ChannelDrawer from "../components/common/ChannelDrawer";
+import ChannelInfoCard from "../components/common/ChannelInfoCard";
 import TopLevelTabs from "../components/common/TopLevelTabs";
 import SubCategoryTabs from "../components/common/SubCategoryTabs";
-import VideoCard from "../components/common/VideoCard";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
-import ChannelInfoCard from "../components/common/ChannelInfoCard"; // ✅ 新增匯入
+import VideoCard from "../components/common/VideoCard";
 
-// ✅ 預設頻道 ID（之後可由側邊抽屜或 URL 參數帶入）
+// ✅ 若 URL 無指定 channel，使用預設頻道
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const VideoExplorerPage = () => {
-  // ✅ 改用新版 Hook：傳入頻道 ID 與 videoType
+  /* ---------------- 1. 解析 URL 參數 ---------------- */
+  const [searchParams] = useSearchParams();
+  const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID;
+
+  /* ---------------- 2. 讀取影片與分類快取 ---------------- */
   const { videos, loading, error, categorySettings } = useVideoCache(
-    DEFAULT_CHANNEL_ID,
-    // videoType 由 useVideoBrowseState 控制，先給預設值，稍後再覆寫
+    channelId,
     "videos"
   );
 
+  /* ---------------- 3. 處理瀏覽狀態 ---------------- */
   const {
     SORT_FIELDS,
     videoType,
@@ -31,6 +40,7 @@ const VideoExplorerPage = () => {
     filteredVideos,
   } = useVideoBrowseState(videos, categorySettings);
 
+  /* ---------------- 4. 圖表控制 ---------------- */
   const {
     chartType,
     setChartType,
@@ -38,18 +48,22 @@ const VideoExplorerPage = () => {
     setDurationUnit,
   } = useChartControlState();
 
-  // ✨ 依 videoType 變化重新取資料（invalidateQueries）
-  // （可選：若 useVideoBrowseState 已能在 setVideoType 觸發刷新，就不需要下面的 useEffect）
-  // 這裡先示例基本用法，暫不加入
+  /* ---------------- 5. 切換頻道完成後關閉 Toast ---------------- */
+  useEffect(() => {
+    if (!loading) toast.dismiss("channel-switch");
+  }, [loading]);
 
+  /* ---------------- 6. 排序箭頭 ---------------- */
   const arrowOf = (field) => {
     if (field !== sortField) return null;
     return sortOrder === "asc" ? "🔼" : "🔽";
   };
 
+  /* ---------------- 7. 主要畫面 ---------------- */
   return (
     <div className="py-4">
-      {/* ✅ 頻道資訊卡 */}
+      {/* 👉 ChannelDrawer & ChannelInfo */}
+      <ChannelDrawer />
       <ChannelInfoCard />
 
       {/* Tabs */}
@@ -73,7 +87,7 @@ const VideoExplorerPage = () => {
         categorySettings={categorySettings}
       />
 
-      {/* 影片數量 */}
+      {/* 影片數量提示 */}
       <div className="px-4 py-2 text-sm text-gray-600">
         {activeCategory
           ? `共顯示 ${filteredVideos.length} 部影片`
