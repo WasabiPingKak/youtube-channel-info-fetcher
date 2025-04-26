@@ -24,7 +24,7 @@ def refresh_video_cache(db, channel_id: str, date_ranges=None):
         settings = settings_doc.to_dict()
         logging.debug(f"🛠️ [DEBUG] 讀到設定欄位：{list(settings.keys())}")
 
-        raw_items = get_video_data(date_ranges=date_ranges)
+        raw_items = get_video_data(date_ranges=date_ranges, input_channel=channel_id)
         saved_videos = []
 
         for raw_item in raw_items:

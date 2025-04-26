@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase"; // ⬅ 若你已改用 firestore.ts 匯出也可以改這行
+import { db } from "../lib/firebase";
 
 export interface ChannelInfo {
   name: string;
