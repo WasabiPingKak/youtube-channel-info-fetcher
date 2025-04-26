@@ -6,7 +6,7 @@ import logging
 from firebase_admin import firestore
 
 from services.youtube.fetcher import get_video_data
-from services.firebase import init_firestore
+from services.firebase_init_service import init_firestore
 from utils.categorizer import match_category_and_game
 
 cache_v2_bp = Blueprint("cache_v2", __name__)

@@ -2,7 +2,7 @@ from flask import Blueprint, request, jsonify
 import datetime
 import pytz
 import logging
-from services.cache import refresh_video_cache
+from backend.services.video_cache_service import refresh_video_cache
 
 cache_bp = Blueprint("cache", __name__)
 logger = logging.getLogger(__name__)  # ✅ 建立專用 logger（通常習慣上每個檔案都這樣做）

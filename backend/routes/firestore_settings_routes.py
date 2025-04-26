@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
-from services.firestore_settings import load_category_settings, save_category_settings
+from backend.services.firestore_settings_service import load_category_settings, save_category_settings
 
 firestore_settings_bp = Blueprint("firestore_settings", __name__)
 
@@ -32,15 +32,3 @@ def load_category_settings_route():
     except Exception:
         logging.exception("🔥 無法載入分類設定")
         return jsonify({"success": False, "error": "伺服器內部錯誤", "code": "INTERNAL_SERVER_ERROR"}), 200
-
-def create_default_config():
-    categories = ["遊戲", "雜談", "音樂", "節目", "其他"]
-
-    def empty_category():
-        return {cat: [] for cat in categories}
-
-    return {
-        "live": empty_category(),
-        "videos": empty_category(),
-        "shorts": empty_category(),
-    }
