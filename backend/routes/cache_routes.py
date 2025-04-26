@@ -1,4 +1,3 @@
-
 from flask import Blueprint, request, jsonify
 import datetime
 import pytz
@@ -6,18 +5,22 @@ import logging
 from services.cache import refresh_video_cache
 
 cache_bp = Blueprint("cache", __name__)
+logger = logging.getLogger(__name__)  # ✅ 建立專用 logger（通常習慣上每個檔案都這樣做）
 
 def init_cache_routes(app, db):
     @cache_bp.route("/api/cache/classify-and-save", methods=["POST"])
     def classify_and_save():
         try:
-            print("✅ [classify-and-save] API 呼叫進入")
+            logger.info("✅ [classify-and-save] API 呼叫進入")
             data = request.get_json()
             channel_id = data.get("channel_id")
             start = data.get("start")
             end = data.get("end")
 
+            logger.info(f"🔹 channel_id: {channel_id}")
+
             if not channel_id:
+                logger.warning("⚠️ 缺少 channel_id")
                 return jsonify({"error": "缺少 channel_id"}), 400
 
             # 處理時間區間（選填）
@@ -33,13 +36,15 @@ def init_cache_routes(app, db):
             # 呼叫新版分類快取邏輯
             fetched_data = refresh_video_cache(db, channel_id, date_ranges)
 
+            logger.info(f"✅ 分類完成，寫入 {len(fetched_data or [])} 筆資料到快取")
+
             return jsonify({
                 "message": "✅ 已完成分類並寫入快取",
                 "count": len(fetched_data or [])
             })
         except Exception:
-            logging.error("🔥 /api/cache/classify-and-save 發生例外錯誤", exc_info=True)
+            logger.exception("🔥 /api/cache/classify-and-save 發生例外錯誤")  # ✅ 用 exception 自動帶 traceback
             return jsonify({"error": "Internal Server Error"}), 500
 
     app.register_blueprint(cache_bp)
-    print("✅ [cache_routes] /api/cache/classify-and-save route registered")
+    logger.info("✅ [cache_routes] /api/cache/classify-and-save route registered")
