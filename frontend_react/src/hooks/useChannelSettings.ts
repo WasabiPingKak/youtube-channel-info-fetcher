@@ -1,38 +1,59 @@
 import { useState, useEffect } from "react";
-import { loadChannelSettings, saveChannelSettings } from "@/lib/firestore";
+import { loadChannelSettings, saveChannelSettings } from "../lib/firestore";
 import { toast } from "react-toastify";
 
 interface ChannelSettings {
-  classifications: {
-    [type: string]: {
-      [category: string]: string[];
-    };
+  live: {
+    遊戲: GameCategoryItem[];
+    雜談: string[];
+    音樂: string[];
+    節目: string[];
+    其他: string[];
   };
-  game_tags: {
-    [game: string]: string[];
+  videos: {
+    遊戲: GameCategoryItem[];
+    雜談: string[];
+    音樂: string[];
+    節目: string[];
+    其他: string[];
+  };
+  shorts: {
+    遊戲: GameCategoryItem[];
+    雜談: string[];
+    音樂: string[];
+    節目: string[];
+    其他: string[];
   };
 }
 
-const defaultSettings: ChannelSettings = {
-  classifications: {
-    live: {
-      雜談: [],
-      遊戲: [],
-      音樂: [],
-      繪畫: [],
-      節目: [],
-      其他: []
-    },
-    videos: {
-      精華: [],
-      其他: []
-    },
-    shorts: {
-      其他: []
-    }
+interface GameCategoryItem {
+  game: string;
+  keywords: string[];
+}
+
+const createDefaultSettings = (): ChannelSettings => ({
+  live: {
+    遊戲: [],
+    雜談: [],
+    音樂: [],
+    節目: [],
+    其他: []
   },
-  game_tags: {}
-};
+  videos: {
+    遊戲: [],
+    雜談: [],
+    音樂: [],
+    節目: [],
+    其他: []
+  },
+  shorts: {
+    遊戲: [],
+    雜談: [],
+    音樂: [],
+    節目: [],
+    其他: []
+  }
+});
 
 /**
  * 自訂 Hook：讀取與儲存指定頻道的分類設定
@@ -40,39 +61,50 @@ const defaultSettings: ChannelSettings = {
  */
 export const useChannelSettings = (channelId: string) => {
   const [channelSettings, setChannelSettings] = useState<ChannelSettings | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
-    (async () => {
+    const fetchSettings = async () => {
+      if (!channelId) return;
+      setLoading(true);
       try {
-        const data = await loadChannelSettings(channelId);
-        if (data) {
-          setChannelSettings(data as ChannelSettings);
-        } else {
+        const response = await loadChannelSettings(channelId);
+
+        if (response.success) {
+          setChannelSettings(response.settings);
+        } else if (response.code === "not-found") {
+          const defaultSettings = createDefaultSettings();
           setChannelSettings(defaultSettings);
-          toast.info("⚠ 資料庫中尚無分類設定，已套用預設結構，請新增內容後儲存。");
+          toast.info("尚未設定分類，已載入預設設定");
+        } else {
+          toast.error(`讀取分類設定失敗：${response.error || "未知錯誤"}`);
+          console.error("load-category-settings failed:", response);
         }
       } catch (error) {
-        console.error("讀取分類設定失敗：", error);
-        toast.error("讀取分類設定失敗，請稍後再試！");
+        toast.error("讀取分類設定失敗");
+        console.error("load-category-settings error:", error);
+      } finally {
+        setLoading(false);
       }
-    })();
-  }, [channelId]); // ✅ 依 channelId 切換
+    };
+
+    fetchSettings();
+  }, [channelId]);
 
   const saveSettings = async () => {
+    if (!channelId || !channelSettings) return;
     setLoading(true);
     try {
-      if (channelSettings) {
-        const updatedCount = await saveChannelSettings(channelId, channelSettings);
-        if (updatedCount >= 0) {
-          toast.success(`設定成功，已更新 ${updatedCount} 筆影片`);
-        } else {
-          toast.error("後端未回傳成功訊息！");
-        }
+      const response = await saveChannelSettings(channelId, channelSettings);
+      if (response.success) {
+        toast.success("分類設定已成功儲存");
+      } else {
+        toast.error(`儲存分類設定失敗：${response.error || "未知錯誤"}`);
+        console.error("save-channel-settings failed:", response);
       }
-    } catch (err) {
-      console.error("寫入失敗：", err);
-      toast.error("儲存失敗，請稍後再試！");
+    } catch (error) {
+      toast.error("儲存分類設定失敗");
+      console.error("save-channel-settings error:", error);
     } finally {
       setLoading(false);
     }
