@@ -8,3 +8,4 @@ firebase-admin
 pytest
 google-cloud-firestore
 pytest-cov
+python-dateutil

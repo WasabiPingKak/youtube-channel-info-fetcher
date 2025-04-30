@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 import logging
-from backend.services.firestore_settings_service import save_category_settings
-from backend.services.video_cache_service import apply_category_settings_to_videos
+from services.firestore_settings_service import save_category_settings
+from services.video_cache_service import apply_category_settings_to_videos
 
 category_save_apply_bp = Blueprint("category_save_apply", __name__)
 

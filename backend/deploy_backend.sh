@@ -40,22 +40,29 @@ if [ $? -ne 0 ]; then
 fi
 
 echo ""
-LATEST_REVISION=$(gcloud run revisions list \
+echo "🔍 查詢最新 READY 狀態的 revision..."
+LATEST_READY_REVISION=$(gcloud run revisions list \
   --service="$SERVICE_NAME" \
   --region="$REGION" \
-  --sort-by="~CREATED" \
+  --filter="status.conditions.type=Ready AND status.conditions.status=True" \
+  --sort-by="~metadata.creationTimestamp" \
   --limit=1 \
   --format="value(metadata.name)")
 
-LATEST_URL=$(gcloud run revisions describe "$LATEST_REVISION" \
+if [ -n "$LATEST_READY_REVISION" ]; then
+  LATEST_URL=$(gcloud run revisions describe "$LATEST_READY_REVISION" \
   --region="$REGION" \
   --format="value(status.url)")
 
-echo "🔁 切換流量到最新版本：$LATEST_REVISION"
-gcloud run services update-traffic "$SERVICE_NAME" \
-  --region="$REGION" \
-  --to-revisions="$LATEST_REVISION=100"
+  echo "🔁 切換流量到最新 READY 版本：$LATEST_READY_REVISION"
+  gcloud run services update-traffic "$SERVICE_NAME" \
+    --region="$REGION" \
+    --to-revisions="$LATEST_READY_REVISION=100"
 
-echo ""
-echo "✅ 部署完成，流量已導向最新版本"
-echo "🔗 可用於測試的後端 URL：$LATEST_URL"
+  echo ""
+  echo "✅ 部署完成，流量已導向：$LATEST_READY_REVISION"
+  echo "🔗 可用於測試的後端 URL：$LATEST_URL"
+else
+  echo "❌ 找不到 READY 的 revision，無法切換流量"
+  exit 1
+fi

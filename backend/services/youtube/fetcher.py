@@ -8,7 +8,7 @@ from services.youtube.videos import get_video_ids_from_playlist, fetch_video_det
 from utils.youtube_utils import convert_duration_to_hms, get_video_publish_date, get_video_type
 
 def get_video_data(date_ranges=None, input_channel=None):
-    api_key = api_key or os.getenv("API_KEY")
+    api_key = os.getenv("API_KEY")
 
     if not api_key:
         raise EnvironmentError("❌ 未設定 API_KEY 環境變數")

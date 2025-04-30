@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
-from backend.services.category_service import get_all_categories, sync_category
+from services.category_service import get_all_categories, sync_category
 
 category_bp = Blueprint("category", __name__)
 
