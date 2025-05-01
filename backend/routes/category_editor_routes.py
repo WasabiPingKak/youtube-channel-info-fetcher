@@ -5,9 +5,9 @@ GET /api/categories/editor-data?channel_id={ID}
 
 回傳：
 {
-  "config": { ... },                   # settings/config 全文（若不存在則空物件）
-  "videos": [ ... ],                  # 該頻道所有影片文件
-  "removedSuggestedKeywords": [ ... ] # 從 config 中額外補上
+  "config": { ... },
+  "videos": [ ... ],
+  "removedSuggestedKeywords": [ ... ]
 }
 """
 
@@ -31,6 +31,18 @@ def _serialize_timestamp(ts: Any) -> str:
     return str(ts)
 
 
+def _normalize_type(raw: Any) -> str:
+    """將 Firestore 存的中文 type 正規化為 'live' | 'videos' | 'shorts'。"""
+    if isinstance(raw, str):
+        if "直播" in raw:
+            return "live"
+        if "影片" in raw:
+            return "videos"
+        if "short" in raw.lower():
+            return "shorts"
+    return "unknown"
+
+
 def init_category_editor_routes(app):
     """註冊 category editor 相關 API 路由到 app。"""
 
@@ -39,11 +51,17 @@ def init_category_editor_routes(app):
         """一次取得 settings/config 與所有影片文件。"""
         channel_id = request.args.get("channel_id")
         if not channel_id:
+            logging.warning("⚠️ 缺少 channel_id 參數")
             return jsonify({"error": "channel_id is required"}), 400
 
         try:
+            logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")
+
             # 1. 讀取分類設定
             config = load_category_settings(channel_id) or {}
+            logging.info(f"✅ config 載入成功，欄位數：{len(config)}")
+            if not config:
+                logging.warning("⚠️ 該頻道尚未建立 config 文件")
 
             # 2. 讀取影片清單
             videos_coll = (
@@ -51,23 +69,35 @@ def init_category_editor_routes(app):
                 .document(channel_id)
                 .collection("videos")
             )
-            docs = videos_coll.stream()
+            docs = list(videos_coll.stream())
+            logging.info(f"📦 讀取 Firestore 影片文件數量：{len(docs)}")
 
             videos: List[Dict[str, Any]] = []
-            for doc in docs:
+            for i, doc in enumerate(docs):
                 data = doc.to_dict() or {}
+                logging.debug(f"🔍 處理影片 {i + 1}：{data.get('title', '無標題')}")
 
-                videos.append(
-                    {
-                        "videoId": data.get("videoId", doc.id),
-                        "title": data.get("title"),
-                        "publishDate": _serialize_timestamp(data.get("publishDate")),
-                        "duration": data.get("duration"),
-                        "type": data.get("type"),
-                        "matchedCategories": data.get("matchedCategories", []),
-                        "game": data.get("game"),
-                    }
-                )
+                video_item = {
+                    "videoId": data.get("videoId", doc.id),
+                    "title": data.get("title"),
+                    "publishDate": _serialize_timestamp(data.get("publishDate")),
+                    "duration": data.get("duration"),
+                    "type": _normalize_type(data.get("type")),
+                    "matchedCategories": data.get("matchedCategories", []),
+                    "game": data.get("game"),
+                }
+
+                if not data.get("type"):
+                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 type 欄位")
+                if not data.get("title"):
+                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 title")
+                if not data.get("publishDate"):
+                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 publishDate")
+
+                videos.append(video_item)
+
+            if not videos:
+                logging.warning("⚠️ 該頻道目前影片為空，或全部無法解析")
 
             return jsonify({
                 "config": config,
