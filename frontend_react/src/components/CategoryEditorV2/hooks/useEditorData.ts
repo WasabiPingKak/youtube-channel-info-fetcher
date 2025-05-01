@@ -27,7 +27,7 @@ export function useEditorData(
     queryKey: ['editorData', channelId],
     enabled: !!channelId,
     staleTime: FIVE_MINUTES,
-    cacheTime: FIVE_MINUTES,
+    gcTime: FIVE_MINUTES,
     queryFn: async () => {
       const res = await fetch(
         `/api/categories/editor-data?channel_id=${encodeURIComponent(

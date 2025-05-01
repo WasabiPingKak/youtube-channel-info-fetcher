@@ -80,15 +80,15 @@ export default function ApplyModal({
         matchedCategories: catArray,
       };
       if (selectedCats.has('遊戲')) {
-        newVid.game = selectedGame;
+        newVid.gameName = selectedGame;
       } else {
-        delete newVid.game;
+        delete newVid.gameName;
       }
       return newVid;
     });
 
     setVideos(updated);
-    markUnsaved(true);
+    markUnsaved();
     onClose();
   };
 

@@ -1,197 +1,128 @@
-import React, { useMemo, useState } from 'react';
+import React, { useMemo } from 'react';
+import { XCircle } from 'lucide-react';
+
 import { useEditorStore } from '../hooks/useEditorStore';
 import {
   CategorySettings,
   MainCategory,
   Video,
+  NonGameMainCategory,
 } from '../types/editor';
 
-const MIN_FREQ = 3; // 高頻詞門檻
+/* 主分類列表（排除「其他」「遊戲」） */
+const MAIN_CATEGORIES: NonGameMainCategory[] = [
+  '雜談',
+  '節目',
+  '音樂',
+];
 
-/** 主要分類下拉選項（不含「遊戲」「其他」）*/
-const selectableCats: MainCategory[] = ['雜談', '節目', '音樂'];
-
+/* ------------------------------------------------------------------
+ * KeywordSuggestPanel
+ * ---------------------------------------------------------------- */
 export default function KeywordSuggestPanel() {
   /** ===== Store ===== */
   const activeType = useEditorStore((s) => s.activeType);
   const videos = useEditorStore((s) => s.videos);
   const config = useEditorStore((s) => s.config);
-  const updateConfigOfType = useEditorStore(
-    (s) => s.updateConfigOfType
-  );
+  const removed = useEditorStore((s) => s.removedSuggestedKeywords);
   const addRemovedKeyword = useEditorStore(
     (s) => s.addRemovedKeyword
   );
-  const removed = useEditorStore((s) => s.removedSuggestedKeywords);
+  const updateConfigOfType = useEditorStore(
+    (s) => s.updateConfigOfType
+  );
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
-  /** ===== Helper：統計詞頻 ===== */
-  const {
-    bracketWords,
-    highFreqWords,
-  }: {
-    bracketWords: string[];
-    highFreqWords: string[];
-  } = useMemo(() => {
-    const bracketSet = new Set<string>();
-    const freq: Record<string, number> = {};
+  /** ===== 目前類型的設定（若無則 {}） ===== */
+  const currentSettings: CategorySettings =
+    config[activeType] ?? {};
 
-    const existingKeywords = new Set<string>();
-    const cs = config?.[activeType] as CategorySettings | undefined;
-    if (cs) {
-      selectableCats.forEach((cat) =>
-        cs[cat].forEach((k) => existingKeywords.add(k))
-      );
-      cs.遊戲.forEach((g) =>
-        g.keywords.forEach((k) => existingKeywords.add(k))
-      );
-    }
+  /** ===== 已存在的關鍵字 Set（排除遊戲） ===== */
+  const existingKeywords = new Set<string>();
+  MAIN_CATEGORIES.forEach((cat) => {
+    (currentSettings[cat] ?? []).forEach((k) =>
+      existingKeywords.add(k)
+    );
+  });
 
-    (videos as Video[])
-      .filter((v) => v.type === activeType)
+  /** ===== 影片標題字詞統計 → 建議關鍵字 ===== */
+  const suggestions = useMemo(() => {
+    const stat: Record<string, number> = {};
+
+    videos
+      .filter((v: Video) => v.type === activeType)
       .forEach((v) => {
-        // 括號詞
-        const brackets = [...v.title.matchAll(/\(([^)]+)\)/g)];
-        brackets.forEach((m) => {
-          const phrase = m[1].trim();
-          if (
-            phrase &&
-            !existingKeywords.has(phrase) &&
-            !removed.includes(phrase)
-          ) {
-            bracketSet.add(phrase);
-          }
+        const words = v.title.split(/[^\\p{L}\\p{N}]+/u).filter(Boolean);
+        words.forEach((w) => {
+          const word = w.trim();
+          if (!word) return;
+          stat[word] = (stat[word] || 0) + 1;
         });
-
-        // 一般詞
-        v.title
-          .split(/[^a-zA-Z0-9\u4e00-\u9fff]+/u)
-          .filter((w) => w.length > 1)
-          .forEach((word) => {
-            if (
-              !existingKeywords.has(word) &&
-              !removed.includes(word)
-            ) {
-              freq[word] = (freq[word] || 0) + 1;
-            }
-          });
       });
 
-    const bracketWords = Array.from(bracketSet);
+    // 轉成陣列後排序
+    return Object.entries(stat)
+      .sort((a, b) => b[1] - a[1])
+      .map(([word]) => word)
+      .filter(
+        (w) =>
+          !existingKeywords.has(w) && !removed.includes(w) && w.length > 1
+      )
+      .slice(0, 50); // 只取前 50
+  }, [videos, activeType, existingKeywords, removed]);
 
-    // 高頻詞 (>= MIN_FREQ)，去掉括號詞
-    const highFreqWords = Object.entries(freq)
-      .filter(([_, count]) => count >= MIN_FREQ)
-      .map(([w]) => w)
-      .filter((w) => !bracketSet.has(w))
-      .sort((a, b) => freq[b] - freq[a]) // 依出現次數排序
-      .slice(0, 50); // 最多顯示 50
+  /** ===== 新增關鍵字到主分類 ===== */
+  const addKeyword = (cat: NonGameMainCategory, word: string) => {
+    const oldSettings = currentSettings ?? {};
+    const keywords = oldSettings[cat] ?? [];
 
-    // 把括號詞立刻加進正式關鍵字 (雜談)
-    if (bracketWords.length > 0 && cs) {
-      const newCat = { ...cs };
-      newCat['雜談'] = Array.from(
-        new Set([...cs['雜談'], ...bracketWords])
-      );
-      updateConfigOfType(activeType, newCat);
-      markUnsaved(true);
-    }
+    if (keywords.includes(word)) return;
 
-    return { bracketWords, highFreqWords };
-  }, [videos, activeType, config, removed, updateConfigOfType, markUnsaved]);
-
-  /** ===== Handlers ===== */
-  const [catSelect, setCatSelect] = useState<Record<string, MainCategory>>(
-    {}
-  );
-
-  const handleAddKeyword = (word: string) => {
-    const cat = catSelect[word] || '雜談';
-    const oldSettings = config[activeType];
     const newSettings: CategorySettings = {
       ...oldSettings,
-      [cat]: [...oldSettings[cat], word],
+      [cat]: [...keywords, word],
     };
+
     updateConfigOfType(activeType, newSettings);
-    markUnsaved(true);
+    markUnsaved();
   };
 
-  const handleRemoveSuggestion = (word: string) => {
-    addRemovedKeyword(word);
-  };
-
-  /** ===== Render ===== */
   return (
-    <section className="border p-3 rounded-lg space-y-4">
-      {/* 括號詞 */}
-      <div>
-        <h3 className="font-semibold mb-1">📎 括號詞 (已自動加入)</h3>
-        {bracketWords.length === 0 ? (
-          <p className="text-xs text-gray-400">無</p>
-        ) : (
-          <div className="flex gap-2 flex-wrap">
-            {bracketWords.map((w) => (
-              <span
-                key={w}
-                className="text-xs bg-gray-300 dark:bg-gray-700 px-2 py-0.5 rounded"
+    <section className="border p-3 rounded-lg">
+      <header className="mb-2 font-semibold">🔍 建議關鍵字</header>
+
+      {suggestions.length === 0 && (
+        <p className="text-sm text-gray-400">
+          沒有可建議的關鍵字
+        </p>
+      )}
+
+      {suggestions.map((word) => (
+        <div
+          key={word}
+          className="flex items-center justify-between py-1 border-b last:border-0 text-sm"
+        >
+          <span>{word}</span>
+          <div className="flex gap-2">
+            {MAIN_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                className="px-2 py-0.5 text-xs rounded bg-blue-100 dark:bg-blue-800"
+                onClick={() => addKeyword(cat, word)}
               >
-                {w}
-              </span>
+                加到 {cat}
+              </button>
             ))}
+            {/* Ignore */}
+            <button
+              className="text-gray-400 hover:text-gray-600"
+              onClick={() => addRemovedKeyword(word)}
+            >
+              <XCircle size={16} />
+            </button>
           </div>
-        )}
-      </div>
-
-      {/* 高頻詞 */}
-      <div>
-        <h3 className="font-semibold mb-1">🔍 高頻詞建議</h3>
-        {highFreqWords.length === 0 ? (
-          <p className="text-xs text-gray-400">目前沒有新的高頻詞</p>
-        ) : (
-          <ul className="space-y-1">
-            {highFreqWords.map((w) => (
-              <li
-                key={w}
-                className="flex items-center gap-2 bg-gray-50 dark:bg-gray-800 p-1 rounded"
-              >
-                <span className="flex-1 text-sm">{w}</span>
-
-                {/* 選擇主分類 */}
-                <select
-                  className="text-xs border rounded px-1 py-0.5"
-                  value={catSelect[w] || '雜談'}
-                  onChange={(e) =>
-                    setCatSelect({
-                      ...catSelect,
-                      [w]: e.target.value as MainCategory,
-                    })
-                  }
-                >
-                  {selectableCats.map((c) => (
-                    <option key={c} value={c}>
-                      {c}
-                    </option>
-                  ))}
-                </select>
-
-                {/* + / × 按鈕 */}
-                <button
-                  className="text-green-600 text-sm px-1"
-                  onClick={() => handleAddKeyword(w)}
-                >
-                  ＋
-                </button>
-                <button
-                  className="text-red-600 text-sm px-1"
-                  onClick={() => handleRemoveSuggestion(w)}
-                >
-                  ×
-                </button>
-              </li>
-            ))}
-          </ul>
-        )}
-      </div>
+        </div>
+      ))}
     </section>
   );
 }

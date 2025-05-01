@@ -71,7 +71,7 @@ export default function EditorLayout() {
   return (
     <div className="flex flex-col gap-4 p-4">
       {/* 頻道資訊卡 */}
-      <ChannelInfoCard channelId={channelId!} />
+      <ChannelInfoCard />
 
       {/* Tabs + Save 按鈕 */}
       <div className="flex items-center justify-between">

@@ -36,13 +36,18 @@ if (import.meta.env.DEV) {
   window.queryClient = queryClient;
 }
 
-/* --- 動態載入 CategoryEditor（僅在 dev 或顯式開啟時） --- */
+/* --- 動態載入：舊版 CategoryEditor（/settings） --- */
 let CategoryEditor = null;
 if (enableSettings) {
   CategoryEditor = React.lazy(() =>
     import("./components/CategoryEditor/CategoryEditor")
   );
 }
+
+/* --- 動態載入：新版 CategoryEditorV2（/editor/:channelId） --- */
+const CategoryEditorV2 = React.lazy(() =>
+  import("./components/CategoryEditorV2/components/EditorLayout")
+);
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
@@ -54,7 +59,10 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             {/* 公開頁面 */}
             <Route path="/videos" element={<VideoExplorerPage />} />
 
-            {/* 管理頁（僅在開啟時加入） */}
+            {/* 新版分類編輯器 */}
+            <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
+
+            {/* 舊版管理頁（僅在開啟時加入） */}
             {enableSettings && CategoryEditor && (
               <Route path="/settings" element={<CategoryEditor />} />
             )}

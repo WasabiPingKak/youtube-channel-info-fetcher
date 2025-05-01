@@ -1,11 +1,7 @@
 /**
  * VideoDualList
  * -------------
- * 左邊：未分類影片清單
- * 右邊：已分類影片清單（可依主分類篩選）
- *
- * - 使用者在左欄勾選影片 → 點「套用至分類 ▶」打開 ApplyModal
- * - ApplyModal 關閉且選擇分類後，更新 Store.config 與 Store.videos
+ * 左：未分類　右：已分類（可依主分類篩選）
  */
 
 import React, { useMemo, useState } from 'react';
@@ -15,18 +11,18 @@ import {
   VideoType,
 } from '../types/editor';
 import { useEditorStore } from '../hooks/useEditorStore';
-
-// TODO: 待實作
 import ApplyModal from './ApplyModal';
 
-const mainCategories: MainCategory[] = [
+/** 右欄主分類篩選（含「全部」） */
+type FilterCategory = '全部' | MainCategory;
+const mainCategories: FilterCategory[] = [
   '全部',
   '雜談',
   '節目',
   '音樂',
   '遊戲',
   '其他',
-] as unknown as MainCategory[];
+];
 
 export default function VideoDualList() {
   /** ===== Store ===== */
@@ -35,8 +31,7 @@ export default function VideoDualList() {
 
   /** ===== Local State ===== */
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
-  const [rightFilter, setRightFilter] =
-    useState<MainCategory>('全部');
+  const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
   /** ===== Derived Lists ===== */
@@ -54,11 +49,11 @@ export default function VideoDualList() {
     return { unclassified: uncl, classified: cl };
   }, [videos, activeType]);
 
-  /** 根據右欄 Filter 篩選分類影片 */
+  /** 依右側分類篩選 */
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
     return classified.filter((v) =>
-      v.matchedCategories?.includes(rightFilter)
+      v.matchedCategories?.includes(rightFilter as MainCategory)
     );
   }, [classified, rightFilter]);
 
@@ -153,7 +148,7 @@ export default function VideoDualList() {
                     key={c}
                     className="text-xs px-1 rounded bg-green-600 text-white"
                   >
-                    {c === '遊戲' && v.game ? v.game : c}
+                    {c === '遊戲' && v.gameName ? v.gameName : c}
                   </span>
                 ))}
               </span>

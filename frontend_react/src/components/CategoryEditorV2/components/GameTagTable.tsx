@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { Pencil, Trash2, Plus } from 'lucide-react';
 
 import { useEditorStore } from '../hooks/useEditorStore';
-import { GameEntry, CategorySettings } from '../types/editor';
+import {
+  GameEntry,
+  CategorySettings,
+  VideoType,
+} from '../types/editor';
 
 import {
   Dialog,
@@ -70,9 +74,7 @@ function GameModal({
               onChange={(e) => setName(e.target.value)}
             />
             {hasNameConflict && (
-              <p className="text-xs text-red-600 mt-0.5">
-                名稱已存在
-              </p>
+              <p className="text-xs text-red-600 mt-0.5">名稱已存在</p>
             )}
           </div>
 
@@ -152,7 +154,9 @@ export default function GameTagTable() {
   );
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
-  const games = config?.[activeType]?.遊戲 ?? [];
+  // 安全取得遊戲清單，若不存在則給空陣列
+  const games: GameEntry[] =
+    config?.[activeType]?.遊戲 ?? [];
 
   /** ===== Local Modal State ===== */
   const [modalMode, setModalMode] = useState<
@@ -169,34 +173,33 @@ export default function GameTagTable() {
   const existingNames = new Set<string>(games.map((g) => g.game));
 
   const saveGameEntry = (entry: GameEntry, replaceOld?: string) => {
-    const oldSettings = config[activeType];
-    let newGameList: GameEntry[];
+    const oldSettings: CategorySettings =
+      config[activeType] ?? {};
 
-    if (replaceOld) {
-      newGameList = games.map((g) =>
-        g.game === replaceOld ? entry : g
-      );
-    } else {
-      newGameList = [...games, entry];
-    }
+    const newGameList: GameEntry[] = replaceOld
+      ? games.map((g) => (g.game === replaceOld ? entry : g))
+      : [...games, entry];
 
-    // 更新設定
     const newSettings: CategorySettings = {
       ...oldSettings,
       遊戲: newGameList,
     };
-    updateConfigOfType(activeType, newSettings);
-    markUnsaved(true);
+
+    updateConfigOfType(activeType as VideoType, newSettings);
+    markUnsaved();
   };
 
   const deleteGameEntry = (name: string) => {
-    const oldSettings = config[activeType];
+    const oldSettings: CategorySettings =
+      config[activeType] ?? {};
+
     const newSettings: CategorySettings = {
       ...oldSettings,
       遊戲: games.filter((g) => g.game !== name),
     };
-    updateConfigOfType(activeType, newSettings);
-    markUnsaved(true);
+
+    updateConfigOfType(activeType as VideoType, newSettings);
+    markUnsaved();
   };
 
   /** ===== Render ===== */

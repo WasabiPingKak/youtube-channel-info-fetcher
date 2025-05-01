@@ -1,8 +1,8 @@
-/**
+/* --------------------------------------------------------------------------
  * useEditorStore
  * --------------
- * Zustand store：統一管理 CategoryEditor 編輯狀態
- */
+ * 全域狀態管理（Zustand）
+ * ------------------------------------------------------------------------ */
 
 import { create } from 'zustand';
 import type {
@@ -13,8 +13,8 @@ import type {
   VideoType,
 } from '../types/editor';
 
-export const useEditorStore = create<EditorState>((set) => ({
-  // ---------- state ----------
+export const useEditorStore = create<EditorState>((set, get) => ({
+  /* ---------- state ---------- */
   channelId: '',
   config: {} as CategoryConfig,
   videos: [],
@@ -22,35 +22,37 @@ export const useEditorStore = create<EditorState>((set) => ({
   unsaved: false,
   removedSuggestedKeywords: [],
 
-  // ---------- actions ----------
-  setChannelId: (id) => set({ channelId: id }),
-
-  setConfig: (config) => set({ config }),
-
-  /** 僅更新指定 type 的 CategorySettings */
-  updateConfigOfType: (type: VideoType, newSettings: CategorySettings) =>
-    set((state) => ({
-      config: { ...state.config, [type]: newSettings },
-      unsaved: true,
-    })),
-
+  /* ---------- basic setters ---------- */
+  setChannelId: (id: string) => set({ channelId: id }),
+  setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
   setVideos: (videos: Video[]) => set({ videos }),
+  setActiveType: (type: VideoType) => set({ activeType: type }),
+  setUnsaved: (flag: boolean) => set({ unsaved: flag }),
+  markUnsaved: () => set({ unsaved: true }),
 
-  setActiveType: (type) => set({ activeType: type }),
-
-  markUnsaved: (flag) => set({ unsaved: flag }),
-
-  addRemovedKeyword: (word) =>
-    set((state) => ({
-      removedSuggestedKeywords: [
-        ...state.removedSuggestedKeywords,
-        word,
-      ],
-    })),
-
+  /* ---------- keyword helpers ---------- */
+  addRemovedKeyword: (word: string) =>
+    set((state) => {
+      if (state.removedSuggestedKeywords.includes(word)) return state;
+      return {
+        removedSuggestedKeywords: [
+          ...state.removedSuggestedKeywords,
+          word,
+        ],
+      };
+    }),
   resetRemovedKeywords: () => set({ removedSuggestedKeywords: [] }),
 
-  /** 切換頻道時快速重置 store */
+  /* ---------- config updater ---------- */
+  updateConfigOfType: (type: VideoType, settings: CategorySettings) =>
+    set((state) => ({
+      config: {
+        ...state.config,
+        [type]: settings,
+      },
+    })),
+
+  /* ---------- reset whole store ---------- */
   resetStore: () =>
     set({
       channelId: '',
