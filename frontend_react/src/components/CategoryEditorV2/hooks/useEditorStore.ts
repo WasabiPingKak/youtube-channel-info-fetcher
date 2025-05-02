@@ -25,8 +25,11 @@ export const useEditorStore = create<EditorState>((set, get) => {
     activeType: 'live',
     unsaved: false,
     removedSuggestedKeywords: [],
+    activeKeywordFilter: null,
 
     /* ---------- basic setters ---------- */
+    setActiveKeywordFilter: (kw: string | null) => set({ activeKeywordFilter: kw }),
+
     /* ---------- 建議詞相關 ---------- */
     addRemovedKeyword: (kw: string) => {
       const current = get().removedSuggestedKeywords;
@@ -53,15 +56,29 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     },
 
-    getUnclassifiedVideos: () =>
-      get().videos.filter(v =>
-        v.matchedCategories.length === 0 || isOnlyOtherCategory(v)
-      ),
+    getUnclassifiedVideos: () => {
+      const filter = get().activeKeywordFilter;
+      return get().videos.filter((v) => {
+        const isTarget = v.matchedCategories.length === 0 || isOnlyOtherCategory(v);
+        if (!filter) return isTarget;
+        return isTarget && (
+          v.matchedCategories.includes(filter) ||
+          v.gameName === filter
+        );
+      });
+    },
 
-    getClassifiedVideos: () =>
-      get().videos.filter(v =>
-        v.matchedCategories.length > 0 && !isOnlyOtherCategory(v)
-      ),
+    getClassifiedVideos: () => {
+      const filter = get().activeKeywordFilter;
+      return get().videos.filter((v) => {
+        const isTarget = v.matchedCategories.length > 0 && !isOnlyOtherCategory(v);
+        if (!filter) return isTarget;
+        return isTarget && (
+          v.matchedCategories.includes(filter) ||
+          v.gameName === filter
+        );
+      });
+    },
 
     setChannelId: (id: string) => set({ channelId: id }),
     setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
@@ -69,8 +86,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
     updateVideos: (videos: Video[]) => set({ videos }),
     setActiveType: (type: VideoType) => set({ activeType: type }),
     setUnsaved: (flag: boolean) => set({ unsaved: flag }),
-
-
 
     /* ---------- config updater ---------- */
     updateConfigOfType: (type: VideoType, settings: CategorySettings) => {
@@ -92,6 +107,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
         activeType: 'live',
         unsaved: false,
         removedSuggestedKeywords: [],
+        activeKeywordFilter: null,
       }),
 
     /* ---------- unsaved flag ---------- */

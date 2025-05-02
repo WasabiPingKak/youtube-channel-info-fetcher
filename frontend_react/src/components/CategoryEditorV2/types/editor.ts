@@ -38,30 +38,31 @@ export interface EditorState {
   unsaved: boolean;
   removedSuggestedKeywords: string[];
 
+  activeKeywordFilter: string | null;
+
   /* 基本 setters */
   setChannelId: (id: string) => void;
   setConfig: (config: CategoryConfig) => void;
   setVideos: (videos: Video[]) => void;
-  setActiveType: (type: VideoType) => void;
-  markUnsaved: () => void;
-  setUnsaved: (flag: boolean) => void;
   updateVideos: (videos: Video[]) => void;
+  setActiveType: (type: VideoType) => void;
+  setUnsaved: (flag: boolean) => void;
+  markUnsaved: () => void;
+  setActiveKeywordFilter: (kw: string | null) => void;
 
-  /* 關鍵字相關 */
+  /* 建議詞操作 */
   addRemovedKeyword: (kw: string) => void;
   resetRemovedKeywords: () => void;
   addKeywordToCategory: (kw: string, category: string) => void;
 
-  /* 分類設定更新 */
-  updateConfigOfType: (
-    type: VideoType,
-    settings: CategorySettings
-  ) => void;
+  /* 分類操作 */
+  updateConfigOfType: (type: VideoType, settings: CategorySettings) => void;
 
-  /* 整個 Store 重置 */
-  resetStore: () => void;
-
-  /* 分類清單 getter（含過濾邏輯） */
+  /* 清單邏輯 */
   getUnclassifiedVideos: () => Video[];
   getClassifiedVideos: () => Video[];
+
+  /* 重置整體狀態 */
+  resetStore: () => void;
 }
+

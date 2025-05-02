@@ -21,6 +21,7 @@ export default function VideoDualList() {
   const store = useEditorStore();
   const activeType = store.activeType;
   const videos = store.videos;
+  const activeKeywordFilter = store.activeKeywordFilter; // ✅ 使 useMemo 能夠觸發重算
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
@@ -31,7 +32,7 @@ export default function VideoDualList() {
       .getUnclassifiedVideos()
       .filter((v) => v.type === activeType)
       .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
-    [activeType, videos]
+    [activeType, videos, activeKeywordFilter] // ✅ 加入 keyword 篩選依賴
   );
 
   const classified = useMemo(() =>
@@ -39,7 +40,7 @@ export default function VideoDualList() {
       .getClassifiedVideos()
       .filter((v) => v.type === activeType)
       .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
-    [activeType, videos]
+    [activeType, videos, activeKeywordFilter] // ✅ 加入 keyword 篩選依賴
   );
 
   const filteredClassified = useMemo(() => {
