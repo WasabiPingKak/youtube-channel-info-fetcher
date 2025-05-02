@@ -7,47 +7,48 @@ import {
 import { useEditorStore } from '../hooks/useEditorStore';
 import ApplyModal from './ApplyModal';
 
-/** 右欄主分類篩選（含「全部」，不包含「其他」） */
 type FilterCategory = '全部' | MainCategory;
-const mainCategories: FilterCategory[] = [
-  '全部',
-  '雜談',
-  '節目',
-  '音樂',
-  '遊戲',
-];
+const mainCategories: FilterCategory[] = ['全部', '雜談', '節目', '音樂', '遊戲'];
 
 export default function VideoDualList() {
   const store = useEditorStore();
   const activeType = store.activeType;
   const videos = store.videos;
-  const activeKeywordFilter = store.activeKeywordFilter; // ✅ 使 useMemo 能夠觸發重算
+  const activeKeywordFilter = store.activeKeywordFilter;
+
+  console.log('[VideoDualList] activeKeywordFilter:', activeKeywordFilter);
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const unclassified = useMemo(() =>
-    store
-      .getUnclassifiedVideos()
-      .filter((v) => v.type === activeType)
-      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
-    [activeType, videos, activeKeywordFilter] // ✅ 加入 keyword 篩選依賴
-  );
+  const unclassified = useMemo(() => {
+    const raw = store.getUnclassifiedVideos().filter((v) => v.type === activeType);
+    console.log('[unclassified] before filter', raw.map((v) => v.title));
 
-  const classified = useMemo(() =>
-    store
-      .getClassifiedVideos()
-      .filter((v) => v.type === activeType)
-      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
-    [activeType, videos, activeKeywordFilter] // ✅ 加入 keyword 篩選依賴
-  );
+    const filtered = raw.filter((v) =>
+      activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
+    );
+    console.log('[unclassified] after filter', filtered.map((v) => v.title));
+
+    return filtered.sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
+  }, [activeType, videos, activeKeywordFilter]);
+
+  const classified = useMemo(() => {
+    const raw = store.getClassifiedVideos().filter((v) => v.type === activeType);
+    console.log('[classified] before filter', raw.map((v) => v.title));
+
+    const filtered = raw.filter((v) =>
+      activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
+    );
+    console.log('[classified] after filter', filtered.map((v) => v.title));
+
+    return filtered.sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
+  }, [activeType, videos, activeKeywordFilter]);
 
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
-    return classified.filter((v) =>
-      v.matchedCategories?.includes(rightFilter as MainCategory)
-    );
+    return classified.filter((v) => v.matchedCategories?.includes(rightFilter as MainCategory));
   }, [classified, rightFilter]);
 
   const toggleSelect = (id: string) => {
@@ -77,9 +78,7 @@ export default function VideoDualList() {
 
   const restoreSelected = () => {
     const nextVideos = videos.map((v) =>
-      selectedIds.has(v.videoId)
-        ? { ...v, matchedCategories: [], gameName: undefined }
-        : v
+      selectedIds.has(v.videoId) ? { ...v, matchedCategories: [], gameName: undefined } : v
     );
     store.updateVideos(nextVideos);
     store.markUnsaved();
@@ -99,17 +98,12 @@ export default function VideoDualList() {
             />
             <h2 className="font-semibold">
               未分類 ({unclassified.length})
-              <span
-                className="ml-1 text-xs text-gray-400"
-                title="未分類影片將自動被歸入「其他」"
-              >
+              <span className="ml-1 text-xs text-gray-400" title="未分類影片將自動被歸入「其他」">
                 ⓘ
               </span>
             </h2>
           </div>
-          <p className="text-xs text-gray-500 ml-6">
-            ※ 未套用分類的影片將自動歸入「其他」
-          </p>
+          <p className="text-xs text-gray-500 ml-6">※ 未套用分類的影片將自動歸入「其他」</p>
         </header>
 
         <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
@@ -130,9 +124,7 @@ export default function VideoDualList() {
             <li className="text-gray-400 text-sm py-4 text-center">
               目前無未分類影片
               <br />
-              <span className="text-xs text-gray-500">
-                未分類影片將自動被標記為「其他」
-              </span>
+              <span className="text-xs text-gray-500">未分類影片將自動被標記為「其他」</span>
             </li>
           )}
         </ul>
@@ -163,9 +155,7 @@ export default function VideoDualList() {
               <button
                 key={cat}
                 className={`px-3 py-0.5 text-sm rounded-full ${
-                  rightFilter === cat
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 dark:bg-gray-700'
+                  rightFilter === cat ? 'bg-blue-600 text-white' : 'bg-gray-200 dark:bg-gray-700'
                 }`}
                 onClick={() => setRightFilter(cat)}
               >
@@ -189,10 +179,7 @@ export default function VideoDualList() {
               <span className="text-sm flex-1">{v.title}</span>
               <span className="flex gap-1 flex-wrap">
                 {v.matchedCategories.map((c) => (
-                  <span
-                    key={c}
-                    className="text-xs px-1 rounded bg-green-600 text-white"
-                  >
+                  <span key={c} className="text-xs px-1 rounded bg-green-600 text-white">
                     {c === '遊戲' && v.gameName ? v.gameName : c}
                   </span>
                 ))}
@@ -200,9 +187,7 @@ export default function VideoDualList() {
             </li>
           ))}
           {filteredClassified.length === 0 && (
-            <li className="text-gray-400 text-sm py-4 text-center">
-              無符合篩選的影片
-            </li>
+            <li className="text-gray-400 text-sm py-4 text-center">無符合篩選的影片</li>
           )}
         </ul>
 

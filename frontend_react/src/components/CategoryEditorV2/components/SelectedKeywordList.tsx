@@ -1,6 +1,7 @@
 // components/SelectedKeywordList.tsx
 import React from 'react';
 import { useEditorStore } from '../hooks/useEditorStore';
+import type { GameEntry } from '../types/editor';
 
 export default function SelectedKeywordList() {
   const config = useEditorStore((s) => s.config);
@@ -10,35 +11,70 @@ export default function SelectedKeywordList() {
   const setConfig = useEditorStore((s) => s.setConfig);
   const setUnsaved = useEditorStore((s) => s.setUnsaved);
 
-  const keywordList = config?.[activeType]?.['雜談'] ?? [];
+  const settings = config?.[activeType] ?? {};
+
+  console.log('[SelectedKeywordList] activeType:', activeType);
+  console.log('[SelectedKeywordList] config:', config);
+  console.log('[SelectedKeywordList] settings for type:', settings);
+
+  const keywordList = Object.entries(settings)
+    .filter(([category]) => category !== '其他')
+    .flatMap(([category, value]) => {
+      if (category === '遊戲') {
+        const games = (value as GameEntry[]).map((entry) => entry.game);
+        console.log(`[SelectedKeywordList] 遊戲分類 - 取出 game 名稱：`, games);
+        return games;
+      } else {
+        console.log(`[SelectedKeywordList] ${category} 分類 - 取出關鍵字：`, value);
+        return value as string[];
+      }
+    });
+
+  console.log('[SelectedKeywordList] keywordList 結果：', keywordList);
+  console.log('[SelectedKeywordList] activeKeywordFilter:', activeKeywordFilter);
 
   const handleRemove = (kw: string) => {
-    const newList = keywordList.filter((k) => k !== kw);
+    console.log('[handleRemove] 移除關鍵字：', kw);
+
     const newConfig = { ...config };
+    const newSettings = { ...settings };
 
-    if (!newConfig[activeType]) {
-      newConfig[activeType] = { 雜談: [] };
+    for (const [category, value] of Object.entries(settings)) {
+      if (category === '其他') continue;
+
+      if (category === '遊戲') {
+        const updated = (value as GameEntry[]).filter((entry) => entry.game !== kw);
+        newSettings[category] = updated;
+      } else {
+        const updated = (value as string[]).filter((k) => k !== kw);
+        newSettings[category] = updated;
+      }
     }
-    newConfig[activeType]!['雜談'] = newList;
 
+    newConfig[activeType] = newSettings;
     setConfig(newConfig);
     setUnsaved(true);
 
-    // 若正在篩選此詞，移除時也清除過濾狀態
     if (activeKeywordFilter === kw) {
+      console.log('[handleRemove] 目前正在篩選的關鍵字被移除，清除 activeKeywordFilter');
       setActiveKeywordFilter(null);
     }
   };
 
   const handleToggleFilter = (kw: string) => {
-    setActiveKeywordFilter(activeKeywordFilter === kw ? null : kw);
+    const isSame = activeKeywordFilter === kw;
+    console.log('[handleToggleFilter] 點擊關鍵字：', kw, '| isSame:', isSame);
+    setActiveKeywordFilter(isSame ? null : kw);
   };
 
-  if (keywordList.length === 0) return null;
+  if (keywordList.length === 0) {
+    console.log('[SelectedKeywordList] 無任何關鍵字可顯示');
+    return null;
+  }
 
   return (
     <div className="mt-4">
-      <h3 className="font-semibold mb-2">✅ 已選分類關鍵字</h3>
+      <h3 className="font-semibold mb-2">✅ 已套用的主題分類關鍵字</h3>
       <div className="flex flex-wrap gap-2">
         {keywordList.map((kw) => {
           const isActive = activeKeywordFilter === kw;

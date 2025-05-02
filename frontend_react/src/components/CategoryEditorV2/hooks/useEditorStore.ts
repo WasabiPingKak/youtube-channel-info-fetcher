@@ -70,10 +70,14 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     getClassifiedVideos: () => {
       const filter = get().activeKeywordFilter;
-      return get().videos.filter((v) => {
+      const all = get().videos;
+
+      return all.filter((v) => {
         const isTarget = v.matchedCategories.length > 0 && !isOnlyOtherCategory(v);
         if (!filter) return isTarget;
+
         return isTarget && (
+          v.title.includes(filter) ||
           v.matchedCategories.includes(filter) ||
           v.gameName === filter
         );
