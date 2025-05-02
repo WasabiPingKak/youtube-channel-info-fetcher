@@ -23,8 +23,8 @@ export interface CategoryConfig {
 export interface Video {
   videoId: string;
   title: string;
-  publishedAt: string;
-  type: VideoType;            // ✅ 新增：影片所屬類型
+  publishDate: string;
+  type: VideoType;
   category: MainCategory;
   matchedCategories: string[];
   gameName?: string;

@@ -30,6 +30,8 @@ export default function VideoDualList() {
   const updateVideos = useEditorStore((s) => s.updateVideos);
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
+  console.log("🎥 所有影片原始資料", videos);
+
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
@@ -39,14 +41,24 @@ export default function VideoDualList() {
     const cl: Video[] = [];
     videos.forEach((v) => {
       if (v.type !== activeType) return;
+
       if (!v.matchedCategories || v.matchedCategories.length === 0) {
         uncl.push(v);
       } else {
         cl.push(v);
       }
     });
+
+    uncl.sort(
+      (a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()
+    );
+    cl.sort(
+      (a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()
+    );
+
     return { unclassified: uncl, classified: cl };
   }, [videos, activeType]);
+
 
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
