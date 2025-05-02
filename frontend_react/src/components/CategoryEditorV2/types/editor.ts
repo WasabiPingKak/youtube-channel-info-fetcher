@@ -48,8 +48,9 @@ export interface EditorState {
   updateVideos: (videos: Video[]) => void;
 
   /* 關鍵字相關 */
-  addRemovedKeyword: (word: string) => void;
+  addRemovedKeyword: (kw: string) => void;
   resetRemovedKeywords: () => void;
+  addKeywordToCategory: (kw: string, category: string) => void;
 
   /* 分類設定更新 */
   updateConfigOfType: (

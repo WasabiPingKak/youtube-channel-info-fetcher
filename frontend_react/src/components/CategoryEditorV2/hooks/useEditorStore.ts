@@ -27,6 +27,32 @@ export const useEditorStore = create<EditorState>((set, get) => {
     removedSuggestedKeywords: [],
 
     /* ---------- basic setters ---------- */
+    /* ---------- 建議詞相關 ---------- */
+    addRemovedKeyword: (kw: string) => {
+      const current = get().removedSuggestedKeywords;
+      if (!current.includes(kw)) {
+        set({ removedSuggestedKeywords: [...current, kw], unsaved: true });
+      }
+    },
+
+    resetRemovedKeywords: () => {
+      set({ removedSuggestedKeywords: [] });
+    },
+
+    addKeywordToCategory: (kw: string, category: string) => {
+      const config = get().config;
+      const active = get().activeType;
+      const updated = { ...config };
+
+      const currentList = updated[active]?.[category] ?? [];
+      if (!currentList.includes(kw)) {
+        const newList = [...currentList, kw];
+        if (!updated[active]) updated[active] = { 雜談: [], 節目: [], 音樂: [], 遊戲: [], 其他: [] };
+        updated[active][category] = newList;
+        set({ config: updated, unsaved: true });
+      }
+    },
+
     getUnclassifiedVideos: () =>
       get().videos.filter(v =>
         v.matchedCategories.length === 0 || isOnlyOtherCategory(v)
@@ -44,17 +70,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setActiveType: (type: VideoType) => set({ activeType: type }),
     setUnsaved: (flag: boolean) => set({ unsaved: flag }),
 
-    /* ---------- keyword helpers ---------- */
-    addRemovedKeyword: (word: string) => {
-      const current = get().removedSuggestedKeywords;
-      if (!current.includes(word)) {
-        set({ removedSuggestedKeywords: [...current, word] });
-      }
-    },
 
-    resetRemovedKeywords: () => {
-      set({ removedSuggestedKeywords: [] });
-    },
 
     /* ---------- config updater ---------- */
     updateConfigOfType: (type: VideoType, settings: CategorySettings) => {

@@ -18,6 +18,8 @@ import ChannelInfoCard from '../../common/ChannelInfoCard'; // 已存在元件
 import ChannelDrawer from '../../common/ChannelDrawer'; // ✅ 頻道側邊欄
 import SaveAllButton from './SaveAllButton';
 import VideoDualList from './VideoDualList';
+import KeywordSuggestPanel from './KeywordSuggestPanel';
+import SelectedKeywordList from './SelectedKeywordList';
 import GameTagTable from './GameTagTable'; // ✅ 新增匯入
 
 const typeTabs: { key: 'live' | 'videos' | 'shorts'; label: string }[] = [
@@ -95,6 +97,10 @@ export default function EditorLayout() {
 
         <SaveAllButton disabled={!unsaved} />
       </div>
+
+      {/* 自動建議區塊 */}
+      <KeywordSuggestPanel />
+      <SelectedKeywordList />
 
       {/* 主要編輯區塊 */}
       <VideoDualList />
