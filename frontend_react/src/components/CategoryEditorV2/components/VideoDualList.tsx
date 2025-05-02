@@ -110,7 +110,7 @@ export default function VideoDualList() {
           {unclassified.map((v) => (
             <li
               key={v.videoId}
-              className="flex items-start gap-2 bg-gray-50 dark:bg-gray-800 p-1 rounded"
+              className="flex items-center gap-2 px-4 py-2 border-b hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               <input
                 type="checkbox"
@@ -169,7 +169,7 @@ export default function VideoDualList() {
           {filteredClassified.map((v) => (
             <li
               key={v.videoId}
-              className="flex items-start gap-2 bg-white/50 dark:bg-gray-800 p-1 rounded"
+              className="flex items-center gap-2 px-4 py-2 border-b hover:bg-gray-100 dark:hover:bg-gray-700 transition"
             >
               <input
                 type="checkbox"
