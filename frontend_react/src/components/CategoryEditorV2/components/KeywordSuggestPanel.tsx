@@ -36,7 +36,7 @@ export default function KeywordSuggestPanel() {
   return (
     <div className="p-3 border rounded-xl space-y-4 bg-white shadow">
       <div>
-        <h3 className="font-semibold mb-2">📎 標題括號建議</h3>
+        <h3 className="font-semibold mb-2">📎 標題括號解析</h3>
         <div className="border rounded">
           {bracketKeywords.length === 0 ? (
             <div className="p-2 text-gray-400 text-sm">（無括號建議）</div>
@@ -56,7 +56,7 @@ export default function KeywordSuggestPanel() {
       </div>
 
       <div>
-        <h3 className="font-semibold mb-2">🔍 高頻關鍵字建議</h3>
+        <h3 className="font-semibold mb-2">🔍 高頻關鍵字解析</h3>
         <div className="border rounded">
           {frequentKeywords.length === 0 ? (
             <div className="p-2 text-gray-400 text-sm">（無高頻建議）</div>

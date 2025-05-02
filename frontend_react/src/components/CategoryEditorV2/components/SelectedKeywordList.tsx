@@ -59,7 +59,7 @@ export default function SelectedKeywordList() {
 
   return (
     <div className="mt-4">
-      <h3 className="font-semibold mb-2">✅ 已套用的主題分類關鍵字</h3>
+      <h3 className="font-semibold mb-2">✅ 運作中的分類關鍵字</h3>
       <div className="flex flex-wrap gap-2">
         {keywordList.map((kw) => {
           const isActive = activeKeywordFilter === kw;
