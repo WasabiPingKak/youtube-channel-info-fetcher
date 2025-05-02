@@ -13,54 +13,72 @@ import type {
   VideoType,
 } from '../types/editor';
 
-export const useEditorStore = create<EditorState>((set, get) => ({
-  /* ---------- state ---------- */
-  channelId: '',
-  config: {} as CategoryConfig,
-  videos: [],
-  activeType: 'live',
-  unsaved: false,
-  removedSuggestedKeywords: [],
+export const useEditorStore = create<EditorState>((set, get) => {
+  const isOnlyOtherCategory = (video: Video) =>
+    video.matchedCategories.length === 1 && video.matchedCategories[0] === '其他';
 
-  /* ---------- basic setters ---------- */
-  setChannelId: (id: string) => set({ channelId: id }),
-  setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
-  setVideos: (videos: Video[]) => set({ videos }),
-  updateVideos: (videos: Video[]) => set({ videos }), // ✅ 新增這一行
-  setActiveType: (type: VideoType) => set({ activeType: type }),
-  setUnsaved: (flag: boolean) => set({ unsaved: flag }),
-  markUnsaved: () => set({ unsaved: true }),
+  return {
+    /* ---------- state ---------- */
+    channelId: '',
+    config: {} as CategoryConfig,
+    videos: [],
+    activeType: 'live',
+    unsaved: false,
+    removedSuggestedKeywords: [],
 
-  /* ---------- keyword helpers ---------- */
-  addRemovedKeyword: (word: string) =>
-    set((state) => {
-      if (state.removedSuggestedKeywords.includes(word)) return state;
-      return {
-        removedSuggestedKeywords: [
-          ...state.removedSuggestedKeywords,
-          word,
-        ],
-      };
-    }),
-  resetRemovedKeywords: () => set({ removedSuggestedKeywords: [] }),
+    /* ---------- basic setters ---------- */
+    getUnclassifiedVideos: () =>
+      get().videos.filter(v =>
+        v.matchedCategories.length === 0 || isOnlyOtherCategory(v)
+      ),
 
-  /* ---------- config updater ---------- */
-  updateConfigOfType: (type: VideoType, settings: CategorySettings) =>
-    set((state) => ({
-      config: {
-        ...state.config,
-        [type]: settings,
-      },
-    })),
+    getClassifiedVideos: () =>
+      get().videos.filter(v =>
+        v.matchedCategories.length > 0 && !isOnlyOtherCategory(v)
+      ),
 
-  /* ---------- reset whole store ---------- */
-  resetStore: () =>
-    set({
-      channelId: '',
-      config: {} as CategoryConfig,
-      videos: [],
-      activeType: 'live',
-      unsaved: false,
-      removedSuggestedKeywords: [],
-    }),
-}));
+    setChannelId: (id: string) => set({ channelId: id }),
+    setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
+    setVideos: (videos: Video[]) => set({ videos }),
+    updateVideos: (videos: Video[]) => set({ videos }),
+    setActiveType: (type: VideoType) => set({ activeType: type }),
+    setUnsaved: (flag: boolean) => set({ unsaved: flag }),
+
+    /* ---------- keyword helpers ---------- */
+    addRemovedKeyword: (word: string) => {
+      const current = get().removedSuggestedKeywords;
+      if (!current.includes(word)) {
+        set({ removedSuggestedKeywords: [...current, word] });
+      }
+    },
+
+    resetRemovedKeywords: () => {
+      set({ removedSuggestedKeywords: [] });
+    },
+
+    /* ---------- config updater ---------- */
+    updateConfigOfType: (type: VideoType, settings: CategorySettings) => {
+      const current = get().config;
+      set({
+        config: {
+          ...current,
+          [type]: settings,
+        },
+      });
+    },
+
+    /* ---------- reset whole store ---------- */
+    resetStore: () =>
+      set({
+        channelId: '',
+        config: {} as CategoryConfig,
+        videos: [],
+        activeType: 'live',
+        unsaved: false,
+        removedSuggestedKeywords: [],
+      }),
+
+    /* ---------- unsaved flag ---------- */
+    markUnsaved: () => set({ unsaved: true }),
+  };
+});

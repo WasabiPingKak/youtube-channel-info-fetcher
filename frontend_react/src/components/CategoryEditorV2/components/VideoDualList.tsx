@@ -1,9 +1,3 @@
-/**
- * VideoDualList
- * -------------
- * 左：未分類　右：已分類（可依主分類篩選）
- */
-
 import React, { useMemo, useState } from 'react';
 import {
   MainCategory,
@@ -13,7 +7,7 @@ import {
 import { useEditorStore } from '../hooks/useEditorStore';
 import ApplyModal from './ApplyModal';
 
-/** 右欄主分類篩選（含「全部」） */
+/** 右欄主分類篩選（含「全部」，不包含「其他」） */
 type FilterCategory = '全部' | MainCategory;
 const mainCategories: FilterCategory[] = [
   '全部',
@@ -21,44 +15,32 @@ const mainCategories: FilterCategory[] = [
   '節目',
   '音樂',
   '遊戲',
-  '其他',
 ];
 
 export default function VideoDualList() {
-  const activeType = useEditorStore((s) => s.activeType);
-  const videos = useEditorStore((s) => s.videos);
-  const updateVideos = useEditorStore((s) => s.updateVideos);
-  const markUnsaved = useEditorStore((s) => s.markUnsaved);
-
-  console.log("🎥 所有影片原始資料", videos);
+  const store = useEditorStore();
+  const activeType = store.activeType;
+  const videos = store.videos;
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
-  const { unclassified, classified } = useMemo(() => {
-    const uncl: Video[] = [];
-    const cl: Video[] = [];
-    videos.forEach((v) => {
-      if (v.type !== activeType) return;
+  const unclassified = useMemo(() =>
+    store
+      .getUnclassifiedVideos()
+      .filter((v) => v.type === activeType)
+      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
+    [activeType, videos]
+  );
 
-      if (!v.matchedCategories || v.matchedCategories.length === 0) {
-        uncl.push(v);
-      } else {
-        cl.push(v);
-      }
-    });
-
-    uncl.sort(
-      (a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()
-    );
-    cl.sort(
-      (a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()
-    );
-
-    return { unclassified: uncl, classified: cl };
-  }, [videos, activeType]);
-
+  const classified = useMemo(() =>
+    store
+      .getClassifiedVideos()
+      .filter((v) => v.type === activeType)
+      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime()),
+    [activeType, videos]
+  );
 
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
@@ -98,8 +80,8 @@ export default function VideoDualList() {
         ? { ...v, matchedCategories: [], gameName: undefined }
         : v
     );
-    updateVideos(nextVideos);
-    markUnsaved();
+    store.updateVideos(nextVideos);
+    store.markUnsaved();
     clearSelection();
   };
 
@@ -107,15 +89,26 @@ export default function VideoDualList() {
     <div className="grid gap-4 md:grid-cols-2">
       {/* ===== 未分類左欄 ===== */}
       <section className="border p-2 rounded-lg flex flex-col">
-        <header className="flex flex-col gap-2 mb-2">
+        <header className="flex flex-col gap-1 mb-2">
           <div className="flex items-center gap-2">
             <input
               type="checkbox"
               checked={isAllSelected(unclassified)}
               onChange={() => toggleSelectAll(unclassified)}
             />
-            <h2 className="font-semibold">未分類 ({unclassified.length})</h2>
+            <h2 className="font-semibold">
+              未分類 ({unclassified.length})
+              <span
+                className="ml-1 text-xs text-gray-400"
+                title="未分類影片將自動被歸入「其他」"
+              >
+                ⓘ
+              </span>
+            </h2>
           </div>
+          <p className="text-xs text-gray-500 ml-6">
+            ※ 未套用分類的影片將自動歸入「其他」
+          </p>
         </header>
 
         <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
@@ -135,6 +128,10 @@ export default function VideoDualList() {
           {unclassified.length === 0 && (
             <li className="text-gray-400 text-sm py-4 text-center">
               目前無未分類影片
+              <br />
+              <span className="text-xs text-gray-500">
+                未分類影片將自動被標記為「其他」
+              </span>
             </li>
           )}
         </ul>

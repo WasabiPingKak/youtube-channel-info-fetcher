@@ -59,4 +59,8 @@ export interface EditorState {
 
   /* 整個 Store 重置 */
   resetStore: () => void;
+
+  /* 分類清單 getter（含過濾邏輯） */
+  getUnclassifiedVideos: () => Video[];
+  getClassifiedVideos: () => Video[];
 }

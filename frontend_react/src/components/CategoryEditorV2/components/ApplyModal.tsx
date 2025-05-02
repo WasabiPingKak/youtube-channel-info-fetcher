@@ -5,7 +5,7 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-} from '@/components/ui/dialog'; // shadcn/ui
+} from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
 import {
@@ -40,9 +40,7 @@ export default function ApplyModal({
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
   /** ===== Local State ===== */
-  const [selectedCats, setSelectedCats] = useState<
-    Set<MainCategory>
-  >(new Set());
+  const [selectedCats, setSelectedCats] = useState<Set<MainCategory>>(new Set());
   const [selectedGame, setSelectedGame] = useState<string>('');
 
   /** 遊戲清單（依 activeType 取設定） */
@@ -61,7 +59,6 @@ export default function ApplyModal({
     setSelectedCats((prev) => {
       const next = new Set(prev);
       next.has(cat) ? next.delete(cat) : next.add(cat);
-      /* 若取消勾選「遊戲」→ 清空 selectedGame */
       if (!next.has('遊戲')) setSelectedGame('');
       return next;
     });
@@ -71,19 +68,22 @@ export default function ApplyModal({
   const handleConfirm = () => {
     if (isConfirmDisabled) return;
 
-    const catArray = [...selectedCats];
+    const catArray = [...selectedCats].filter((cat) => cat !== '其他');
 
     const updated = videos.map((v: Video) => {
       if (!videoIds.includes(v.videoId)) return v;
+
       const newVid: Video = {
         ...v,
         matchedCategories: catArray,
       };
-      if (selectedCats.has('遊戲')) {
+
+      if (catArray.includes('遊戲')) {
         newVid.gameName = selectedGame;
       } else {
         delete newVid.gameName;
       }
+
       return newVid;
     });
 
