@@ -13,29 +13,17 @@ export default function SelectedKeywordList() {
 
   const settings = config?.[activeType] ?? {};
 
-  console.log('[SelectedKeywordList] activeType:', activeType);
-  console.log('[SelectedKeywordList] config:', config);
-  console.log('[SelectedKeywordList] settings for type:', settings);
-
   const keywordList = Object.entries(settings)
     .filter(([category]) => category !== '其他')
     .flatMap(([category, value]) => {
       if (category === '遊戲') {
-        const games = (value as GameEntry[]).map((entry) => entry.game);
-        console.log(`[SelectedKeywordList] 遊戲分類 - 取出 game 名稱：`, games);
-        return games;
+        return (value as GameEntry[]).map((entry) => entry.game);
       } else {
-        console.log(`[SelectedKeywordList] ${category} 分類 - 取出關鍵字：`, value);
         return value as string[];
       }
     });
 
-  console.log('[SelectedKeywordList] keywordList 結果：', keywordList);
-  console.log('[SelectedKeywordList] activeKeywordFilter:', activeKeywordFilter);
-
   const handleRemove = (kw: string) => {
-    console.log('[handleRemove] 移除關鍵字：', kw);
-
     const newConfig = { ...config };
     const newSettings = { ...settings };
 
@@ -56,19 +44,16 @@ export default function SelectedKeywordList() {
     setUnsaved(true);
 
     if (activeKeywordFilter === kw) {
-      console.log('[handleRemove] 目前正在篩選的關鍵字被移除，清除 activeKeywordFilter');
       setActiveKeywordFilter(null);
     }
   };
 
   const handleToggleFilter = (kw: string) => {
     const isSame = activeKeywordFilter === kw;
-    console.log('[handleToggleFilter] 點擊關鍵字：', kw, '| isSame:', isSame);
     setActiveKeywordFilter(isSame ? null : kw);
   };
 
   if (keywordList.length === 0) {
-    console.log('[SelectedKeywordList] 無任何關鍵字可顯示');
     return null;
   }
 

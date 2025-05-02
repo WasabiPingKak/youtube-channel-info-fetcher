@@ -16,34 +16,28 @@ export default function VideoDualList() {
   const videos = store.videos;
   const activeKeywordFilter = store.activeKeywordFilter;
 
-  console.log('[VideoDualList] activeKeywordFilter:', activeKeywordFilter);
-
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
   const unclassified = useMemo(() => {
-    const raw = store.getUnclassifiedVideos().filter((v) => v.type === activeType);
-    console.log('[unclassified] before filter', raw.map((v) => v.title));
-
-    const filtered = raw.filter((v) =>
-      activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
-    );
-    console.log('[unclassified] after filter', filtered.map((v) => v.title));
-
-    return filtered.sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
+    return store
+      .getUnclassifiedVideos()
+      .filter((v) => v.type === activeType)
+      .filter((v) =>
+        activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
+      )
+      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
   }, [activeType, videos, activeKeywordFilter]);
 
   const classified = useMemo(() => {
-    const raw = store.getClassifiedVideos().filter((v) => v.type === activeType);
-    console.log('[classified] before filter', raw.map((v) => v.title));
-
-    const filtered = raw.filter((v) =>
-      activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
-    );
-    console.log('[classified] after filter', filtered.map((v) => v.title));
-
-    return filtered.sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
+    return store
+      .getClassifiedVideos()
+      .filter((v) => v.type === activeType)
+      .filter((v) =>
+        activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
+      )
+      .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
   }, [activeType, videos, activeKeywordFilter]);
 
   const filteredClassified = useMemo(() => {
