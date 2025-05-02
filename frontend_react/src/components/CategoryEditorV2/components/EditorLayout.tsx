@@ -15,9 +15,9 @@ import { useEditorData } from '../hooks/useEditorData';
 import { useEditorStore } from '../hooks/useEditorStore';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard'; // 已存在元件
-// TODO: 之後實作 SaveAllButton, VideoDualList
 import SaveAllButton from './SaveAllButton';
 import VideoDualList from './VideoDualList';
+import GameTagTable from './GameTagTable'; // ✅ 新增匯入
 
 const typeTabs: { key: 'live' | 'videos' | 'shorts'; label: string }[] = [
   { key: 'live', label: '直播' },
@@ -69,7 +69,7 @@ export default function EditorLayout() {
   }
 
   return (
-    <div className="flex flex-col gap-4 p-4">
+    <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
       {/* 頻道資訊卡 */}
       <ChannelInfoCard />
 
@@ -96,6 +96,9 @@ export default function EditorLayout() {
 
       {/* 主要編輯區塊 */}
       <VideoDualList />
+
+      {/* 遊戲標籤管理器 */}
+      <GameTagTable />
     </div>
   );
 }

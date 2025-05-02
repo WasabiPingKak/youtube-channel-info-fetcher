@@ -146,104 +146,75 @@ function ConfirmModal({
  * GameTagTable
  * ---------------------------------------------------------------- */
 export default function GameTagTable() {
-  /** ===== Store ===== */
   const activeType = useEditorStore((s) => s.activeType);
   const config = useEditorStore((s) => s.config);
-  const updateConfigOfType = useEditorStore(
-    (s) => s.updateConfigOfType
-  );
+  const updateConfigOfType = useEditorStore((s) => s.updateConfigOfType);
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
-  // 安全取得遊戲清單，若不存在則給空陣列
-  const games: GameEntry[] =
-    config?.[activeType]?.遊戲 ?? [];
+  const games: GameEntry[] = config?.[activeType]?.遊戲 ?? [];
 
-  /** ===== Local Modal State ===== */
-  const [modalMode, setModalMode] = useState<
-    'add' | 'edit' | null
-  >(null);
-  const [editingGame, setEditingGame] = useState<GameEntry | null>(
-    null
-  );
-  const [deleteTarget, setDeleteTarget] = useState<GameEntry | null>(
-    null
-  );
+  const [modalMode, setModalMode] = useState<'add' | 'edit' | null>(null);
+  const [editingGame, setEditingGame] = useState<GameEntry | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<GameEntry | null>(null);
 
-  /** ===== Helpers ===== */
   const existingNames = new Set<string>(games.map((g) => g.game));
 
   const saveGameEntry = (entry: GameEntry, replaceOld?: string) => {
-    const oldSettings: CategorySettings =
-      config[activeType] ?? {};
-
+    const oldSettings: CategorySettings = config[activeType] ?? {};
     const newGameList: GameEntry[] = replaceOld
       ? games.map((g) => (g.game === replaceOld ? entry : g))
       : [...games, entry];
 
-    const newSettings: CategorySettings = {
+    updateConfigOfType(activeType as VideoType, {
       ...oldSettings,
       遊戲: newGameList,
-    };
-
-    updateConfigOfType(activeType as VideoType, newSettings);
+    });
     markUnsaved();
   };
 
   const deleteGameEntry = (name: string) => {
-    const oldSettings: CategorySettings =
-      config[activeType] ?? {};
-
-    const newSettings: CategorySettings = {
+    const oldSettings: CategorySettings = config[activeType] ?? {};
+    updateConfigOfType(activeType as VideoType, {
       ...oldSettings,
       遊戲: games.filter((g) => g.game !== name),
-    };
-
-    updateConfigOfType(activeType as VideoType, newSettings);
+    });
     markUnsaved();
   };
 
-  /** ===== Render ===== */
   return (
-    <section className="border p-3 rounded-lg">
-      <header className="flex items-center justify-between mb-2">
-        <h3 className="font-semibold">🎮 遊戲標籤管理</h3>
-        <button
-          className="text-green-600 flex items-center gap-1 text-sm"
-          onClick={() => {
-            setModalMode('add');
-            setEditingGame(null);
-          }}
-        >
-          <Plus size={16} />
-          新增
-        </button>
+    <section className="bg-white rounded-lg p-4 shadow-sm">
+      <header className="mb-2">
+        <h3 className="font-semibold mb-2">🎮 遊戲標籤管理</h3>
       </header>
+      <button
+        className="mb-3 text-sm bg-gray-100 hover:bg-gray-200 rounded px-3 py-1 flex items-center gap-1"
+        onClick={() => {
+          setModalMode('add');
+          setEditingGame(null);
+        }}
+      >
+        <Plus size={16} />
+        新增遊戲
+      </button>
 
-      <table className="min-w-full text-sm">
+      <table className="w-full border border-gray-300 text-sm">
         <thead>
-          <tr className="bg-gray-200 dark:bg-gray-700">
-            <th className="px-2 py-1 text-left">遊戲名稱</th>
-            <th className="px-2 py-1 text-left">關鍵字</th>
-            <th className="px-2 py-1 w-14">操作</th>
+          <tr className="bg-gray-100 text-gray-700 text-sm">
+            <th className="px-2 py-1 text-left border-b border-gray-300">遊戲名稱</th>
+            <th className="px-2 py-1 text-left border-b border-gray-300">關鍵字</th>
+            <th className="px-2 py-1 w-14 border-b border-gray-300">操作</th>
           </tr>
         </thead>
         <tbody>
           {games.map((g) => (
-            <tr
-              key={g.game}
-              className="border-b dark:border-gray-600"
-            >
-              <td className="px-2 py-1">{g.game}</td>
-              <td className="px-2 py-1">
-                {g.keywords.join(', ')}
-              </td>
-              <td className="px-2 py-1 flex gap-2">
-                <button
-                  onClick={() => {
-                    setModalMode('edit');
-                    setEditingGame(g);
-                  }}
-                >
+            <tr key={g.game} className="border-b">
+              <td className="px-2 py-1 align-top border-t border-gray-200">{g.game}</td>
+              <td className="px-2 py-1 align-top border-t border-gray-200">{g.keywords.join(', ')}</td>
+              <td className="px-2 py-1 align-top border-t border-gray-200 flex gap-2">
+                <button onClick={() => {
+                  setModalMode('edit');
+                  setEditingGame(g);
+                }}>
                   <Pencil size={16} />
                 </button>
                 <button onClick={() => setDeleteTarget(g)}>
@@ -254,10 +225,7 @@ export default function GameTagTable() {
           ))}
           {games.length === 0 && (
             <tr>
-              <td
-                colSpan={3}
-                className="text-center py-4 text-gray-400"
-              >
+              <td colSpan={3} className="text-center py-6 text-gray-400 border-t">
                 尚未新增任何遊戲
               </td>
             </tr>
@@ -265,7 +233,7 @@ export default function GameTagTable() {
         </tbody>
       </table>
 
-      {/* ===== 新增 / 編輯 Modal ===== */}
+      {/* 新增 / 編輯 Modal */}
       {modalMode && (
         <GameModal
           open
@@ -273,15 +241,12 @@ export default function GameTagTable() {
           existingNames={existingNames}
           onClose={() => setModalMode(null)}
           onSave={(entry) =>
-            saveGameEntry(
-              entry,
-              modalMode === 'edit' ? editingGame!.game : undefined
-            )
+            saveGameEntry(entry, modalMode === 'edit' ? editingGame!.game : undefined)
           }
         />
       )}
 
-      {/* ===== 刪除確認 ===== */}
+      {/* 刪除確認 Modal */}
       {!!deleteTarget && (
         <ConfirmModal
           open

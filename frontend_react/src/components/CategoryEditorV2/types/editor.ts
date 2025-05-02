@@ -44,7 +44,8 @@ export interface EditorState {
   setVideos: (videos: Video[]) => void;
   setActiveType: (type: VideoType) => void;
   markUnsaved: () => void;
-  setUnsaved: (flag: boolean) => void;      // ✅ 新增：直接設定 unsaved
+  setUnsaved: (flag: boolean) => void;
+  updateVideos: (videos: Video[]) => void;
 
   /* 關鍵字相關 */
   addRemovedKeyword: (word: string) => void;

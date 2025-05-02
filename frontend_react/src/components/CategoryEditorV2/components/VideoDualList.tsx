@@ -25,16 +25,15 @@ const mainCategories: FilterCategory[] = [
 ];
 
 export default function VideoDualList() {
-  /** ===== Store ===== */
   const activeType = useEditorStore((s) => s.activeType);
   const videos = useEditorStore((s) => s.videos);
+  const updateVideos = useEditorStore((s) => s.updateVideos);
+  const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
-  /** ===== Local State ===== */
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
-  /** ===== Derived Lists ===== */
   const { unclassified, classified } = useMemo(() => {
     const uncl: Video[] = [];
     const cl: Video[] = [];
@@ -49,7 +48,6 @@ export default function VideoDualList() {
     return { unclassified: uncl, classified: cl };
   }, [videos, activeType]);
 
-  /** 依右側分類篩選 */
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
     return classified.filter((v) =>
@@ -57,7 +55,6 @@ export default function VideoDualList() {
     );
   }, [classified, rightFilter]);
 
-  /** ===== Handler ===== */
   const toggleSelect = (id: string) => {
     setSelectedIds((prev) => {
       const next = new Set(prev);
@@ -68,25 +65,28 @@ export default function VideoDualList() {
 
   const clearSelection = () => setSelectedIds(new Set());
 
-  /** ===== Render ===== */
+  const restoreSelected = () => {
+    const nextVideos = videos.map((v) =>
+      selectedIds.has(v.videoId)
+        ? { ...v, matchedCategories: [], gameName: undefined }
+        : v
+    );
+    updateVideos(nextVideos);
+    markUnsaved();
+    clearSelection();
+  };
+
   return (
     <div className="grid gap-4 md:grid-cols-2">
       {/* ===== 未分類左欄 ===== */}
-      <section className="border p-2 rounded-lg">
+      <section className="border p-2 rounded-lg flex flex-col">
         <header className="flex items-center justify-between mb-2">
           <h2 className="font-semibold">
             未分類 ({unclassified.length})
           </h2>
-          <button
-            disabled={selectedIds.size === 0}
-            className="text-sm text-blue-600 disabled:text-gray-400"
-            onClick={() => setModalOpen(true)}
-          >
-            套用至分類 ▶
-          </button>
         </header>
 
-        <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1">
+        <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
           {unclassified.map((v) => (
             <li
               key={v.videoId}
@@ -106,16 +106,23 @@ export default function VideoDualList() {
             </li>
           )}
         </ul>
+
+        <button
+          disabled={selectedIds.size === 0}
+          className="mt-2 bg-blue-600 text-white rounded px-4 py-2 text-sm disabled:bg-gray-300"
+          onClick={() => setModalOpen(true)}
+        >
+          套用至分類 ▶
+        </button>
       </section>
 
       {/* ===== 已分類右欄 ===== */}
-      <section className="border p-2 rounded-lg">
+      <section className="border p-2 rounded-lg flex flex-col">
         <header className="flex items-center justify-between mb-2">
           <h2 className="font-semibold">
             已分類 ({classified.length})
           </h2>
 
-          {/* 主分類 Filter Tabs */}
           <div className="flex space-x-1">
             {mainCategories.map((cat) => (
               <button
@@ -133,15 +140,18 @@ export default function VideoDualList() {
           </div>
         </header>
 
-        <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1">
+        <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
           {filteredClassified.map((v) => (
             <li
               key={v.videoId}
               className="flex items-start gap-2 bg-white/50 dark:bg-gray-800 p-1 rounded"
             >
+              <input
+                type="checkbox"
+                checked={selectedIds.has(v.videoId)}
+                onChange={() => toggleSelect(v.videoId)}
+              />
               <span className="text-sm flex-1">{v.title}</span>
-
-              {/* 顯示多枚徽章 */}
               <span className="flex gap-1 flex-wrap">
                 {v.matchedCategories.map((c) => (
                   <span
@@ -160,9 +170,16 @@ export default function VideoDualList() {
             </li>
           )}
         </ul>
+
+        <button
+          disabled={selectedIds.size === 0}
+          className="mt-2 bg-gray-200 text-black rounded px-4 py-2 text-sm disabled:opacity-50"
+          onClick={restoreSelected}
+        >
+          ◀ 還原至未分類
+        </button>
       </section>
 
-      {/* ===== Apply Modal ===== */}
       {isModalOpen && (
         <ApplyModal
           videoIds={[...selectedIds]}

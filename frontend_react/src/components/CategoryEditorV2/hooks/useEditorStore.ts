@@ -26,6 +26,7 @@ export const useEditorStore = create<EditorState>((set, get) => ({
   setChannelId: (id: string) => set({ channelId: id }),
   setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
   setVideos: (videos: Video[]) => set({ videos }),
+  updateVideos: (videos: Video[]) => set({ videos }), // ✅ 新增這一行
   setActiveType: (type: VideoType) => set({ activeType: type }),
   setUnsaved: (flag: boolean) => set({ unsaved: flag }),
   markUnsaved: () => set({ unsaved: true }),
