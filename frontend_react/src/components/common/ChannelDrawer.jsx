@@ -1,8 +1,10 @@
-// src/components/common/ChannelDrawer.jsx
+﻿// src/components/common/ChannelDrawer.jsx
 // -----------------------------------------------------
 // 頻道側邊抽屜：顯示 Firestore channel_index 清單，
-// 點擊後更新 URL ?channel=xxx、關閉 Drawer、顯示 Toast。
+// 點擊後依照目前頁面 URL 格式（path 或 query）切換頻道，
+// 自動更新網址、關閉 Drawer 並顯示切換中 Toast。
 // -----------------------------------------------------
+
 import React, { useState } from "react";
 import { useChannelList } from "../../hooks/useChannelList";
 import { useNavigate, useSearchParams } from "react-router-dom";
@@ -24,10 +26,17 @@ export default function ChannelDrawer() {
 
   /* --- 選擇頻道後的動作 --- */
   const handleSelect = (channelId, name) => {
-    // 1) 更新 URL 參數
-    const params = new URLSearchParams(searchParams);
-    params.set("channel", channelId);
-    navigate({ search: params.toString() });
+    const currentPath = window.location.pathname;
+
+    if (currentPath.startsWith("/editor/")) {
+      // 👉 path 模式
+      navigate(`/editor/${channelId}`);
+    } else {
+      // 👉 query string 模式
+      const params = new URLSearchParams(searchParams);
+      params.set("channel", channelId);
+      navigate({ search: params.toString() });
+    }
 
     // 2) 關閉 Drawer
     closeDrawer();

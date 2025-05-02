@@ -63,6 +63,21 @@ export default function VideoDualList() {
     });
   };
 
+  const toggleSelectAll = (list: Video[]) => {
+    const allSelected = list.every((v) => selectedIds.has(v.videoId));
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      list.forEach((v) => {
+        allSelected ? next.delete(v.videoId) : next.add(v.videoId);
+      });
+      return next;
+    });
+  };
+
+  const isAllSelected = (list: Video[]) => {
+    return list.length > 0 && list.every((v) => selectedIds.has(v.videoId));
+  };
+
   const clearSelection = () => setSelectedIds(new Set());
 
   const restoreSelected = () => {
@@ -80,10 +95,15 @@ export default function VideoDualList() {
     <div className="grid gap-4 md:grid-cols-2">
       {/* ===== 未分類左欄 ===== */}
       <section className="border p-2 rounded-lg flex flex-col">
-        <header className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold">
-            未分類 ({unclassified.length})
-          </h2>
+        <header className="flex flex-col gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isAllSelected(unclassified)}
+              onChange={() => toggleSelectAll(unclassified)}
+            />
+            <h2 className="font-semibold">未分類 ({unclassified.length})</h2>
+          </div>
         </header>
 
         <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
@@ -118,16 +138,21 @@ export default function VideoDualList() {
 
       {/* ===== 已分類右欄 ===== */}
       <section className="border p-2 rounded-lg flex flex-col">
-        <header className="flex items-center justify-between mb-2">
-          <h2 className="font-semibold">
-            已分類 ({classified.length})
-          </h2>
+        <header className="flex flex-col gap-2 mb-2">
+          <div className="flex items-center gap-2">
+            <input
+              type="checkbox"
+              checked={isAllSelected(filteredClassified)}
+              onChange={() => toggleSelectAll(filteredClassified)}
+            />
+            <h2 className="font-semibold">已分類 ({classified.length})</h2>
+          </div>
 
-          <div className="flex space-x-1">
+          <div className="flex flex-wrap gap-1">
             {mainCategories.map((cat) => (
               <button
                 key={cat}
-                className={`px-2 py-0.5 text-xs rounded ${
+                className={`px-3 py-0.5 text-sm rounded-full ${
                   rightFilter === cat
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-200 dark:bg-gray-700'

@@ -15,6 +15,7 @@ import { useEditorData } from '../hooks/useEditorData';
 import { useEditorStore } from '../hooks/useEditorStore';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard'; // 已存在元件
+import ChannelDrawer from '../../common/ChannelDrawer'; // ✅ 頻道側邊欄
 import SaveAllButton from './SaveAllButton';
 import VideoDualList from './VideoDualList';
 import GameTagTable from './GameTagTable'; // ✅ 新增匯入
@@ -71,6 +72,7 @@ export default function EditorLayout() {
   return (
     <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
       {/* 頻道資訊卡 */}
+      <ChannelDrawer />
       <ChannelInfoCard />
 
       {/* Tabs + Save 按鈕 */}
