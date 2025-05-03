@@ -143,7 +143,7 @@ function ConfirmModal({
 }
 
 /* ------------------------------------------------------------------
- * GameTagTable
+ * GameTagTable（已整合 checkbox 勾選）
  * ---------------------------------------------------------------- */
 export default function GameTagTable() {
   const activeType = useEditorStore((s) => s.activeType);
@@ -152,6 +152,8 @@ export default function GameTagTable() {
   const markUnsaved = useEditorStore((s) => s.markUnsaved);
 
   const games: GameEntry[] = config?.[activeType]?.遊戲 ?? [];
+  const selected = useEditorStore((s) => s.selectedBySource.game);
+  const toggleSuggestionChecked = useEditorStore((s) => s.toggleSuggestionChecked);
 
   const [modalMode, setModalMode] = useState<'add' | 'edit' | null>(null);
   const [editingGame, setEditingGame] = useState<GameEntry | null>(null);
@@ -185,6 +187,9 @@ export default function GameTagTable() {
     <section className="bg-white rounded-lg p-4 shadow-sm">
       <header className="mb-2">
         <h3 className="font-semibold mb-2">🎮 遊戲標籤管理</h3>
+        <p className="text-sm text-gray-500">
+          根據目前已設定的遊戲關鍵字，反查有哪些遊戲名稱有命中影片標題。
+        </p>
       </header>
       <button
         className="mb-3 text-sm bg-gray-100 hover:bg-gray-200 rounded px-3 py-1 flex items-center gap-1"
@@ -200,6 +205,7 @@ export default function GameTagTable() {
       <table className="w-full border border-gray-300 text-sm">
         <thead>
           <tr className="bg-gray-100 text-gray-700 text-sm">
+            <th className="px-2 py-1 text-left border-b border-gray-300">啟用</th>
             <th className="px-2 py-1 text-left border-b border-gray-300">遊戲名稱</th>
             <th className="px-2 py-1 text-left border-b border-gray-300">關鍵字</th>
             <th className="px-2 py-1 w-14 border-b border-gray-300">操作</th>
@@ -208,6 +214,13 @@ export default function GameTagTable() {
         <tbody>
           {games.map((g) => (
             <tr key={g.game} className="border-b">
+              <td className="px-2 py-1 align-top border-t border-gray-200">
+                <input
+                  type="checkbox"
+                  checked={selected.has(g.game)}
+                  onChange={() => toggleSuggestionChecked('game', g.game)}
+                />
+              </td>
               <td className="px-2 py-1 align-top border-t border-gray-200">{g.game}</td>
               <td className="px-2 py-1 align-top border-t border-gray-200">{g.keywords.join(', ')}</td>
               <td className="px-2 py-1 align-top border-t border-gray-200 flex gap-2">
@@ -225,7 +238,7 @@ export default function GameTagTable() {
           ))}
           {games.length === 0 && (
             <tr>
-              <td colSpan={3} className="text-center py-6 text-gray-400 border-t">
+              <td colSpan={4} className="text-center py-6 text-gray-400 border-t">
                 尚未新增任何遊戲
               </td>
             </tr>

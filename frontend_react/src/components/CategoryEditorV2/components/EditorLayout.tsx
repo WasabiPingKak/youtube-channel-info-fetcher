@@ -4,9 +4,9 @@
  * CategoryEditorV2 外框：
  * 1. 讀取 editor-data → 注入 Zustand Store
  * 2. 顯示頻道資訊 (ChannelInfoCard)
- * 3. 頂層 Tabs：live / videos / shorts
- * 4. SaveAllButton（佔位）
- * 5. Slot 放置子元件 (VideoDualList 等)
+ * 3. SaveAllButton
+ * 4. 關鍵字建議與編輯（KeywordSuggestPanel）
+ * 5. 類型 Tabs（VideoTypeTabs） → 影片編輯清單（VideoDualList）
  */
 
 import React, { useEffect } from 'react';
@@ -14,31 +14,21 @@ import { useParams } from 'react-router-dom';
 import { useEditorData } from '../hooks/useEditorData';
 import { useEditorStore } from '../hooks/useEditorStore';
 
-import ChannelInfoCard from '../../common/ChannelInfoCard'; // 已存在元件
-import ChannelDrawer from '../../common/ChannelDrawer'; // ✅ 頻道側邊欄
+import ChannelInfoCard from '../../common/ChannelInfoCard';
+import ChannelDrawer from '../../common/ChannelDrawer';
 import SaveAllButton from './SaveAllButton';
-import VideoDualList from './VideoDualList';
 import KeywordSuggestPanel from './KeywordSuggestPanel';
-import SelectedKeywordList from './SelectedKeywordList';
-import GameTagTable from './GameTagTable'; // ✅ 新增匯入
-
-const typeTabs: { key: 'live' | 'videos' | 'shorts'; label: string }[] = [
-  { key: 'live', label: '直播' },
-  { key: 'videos', label: '影片' },
-  { key: 'shorts', label: 'Shorts' },
-];
+import VideoDualList from './VideoDualList';
+import VideoTypeTabs from './VideoTypeTabs'; // ✅ 新增匯入
 
 export default function EditorLayout() {
-  // 1. 從路由取得 channelId（/editor/:channelId）
   const { channelId } = useParams<{ channelId: string }>();
-
-  // 2. TanStack Query 讀取資料
   const { data, isLoading, isError, error } = useEditorData(channelId);
 
-  // 3. 注入 Zustand Store
   const setChannelId = useEditorStore((s) => s.setChannelId);
   const setConfig = useEditorStore((s) => s.setConfig);
   const setVideos = useEditorStore((s) => s.setVideos);
+  const unsaved = useEditorStore((s) => s.unsaved);
 
   useEffect(() => {
     if (data && channelId) {
@@ -49,11 +39,6 @@ export default function EditorLayout() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, channelId]);
 
-  const activeType = useEditorStore((s) => s.activeType);
-  const setActiveType = useEditorStore((s) => s.setActiveType);
-  const unsaved = useEditorStore((s) => s.unsaved);
-
-  // Render Logic
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -77,36 +62,21 @@ export default function EditorLayout() {
       <ChannelDrawer />
       <ChannelInfoCard />
 
-      {/* Tabs + Save 按鈕 */}
-      <div className="flex items-center justify-between">
-        <div className="flex space-x-2">
-          {typeTabs.map((tab) => (
-            <button
-              key={tab.key}
-              className={`px-4 py-1 rounded-full text-sm ${
-                activeType === tab.key
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-200 dark:bg-gray-700'
-              }`}
-              onClick={() => setActiveType(tab.key)}
-            >
-              {tab.label}
-            </button>
-          ))}
-        </div>
-
+      {/* ✅ 上方僅顯示儲存按鈕 */}
+      <div className="flex justify-end">
         <SaveAllButton disabled={!unsaved} />
       </div>
 
       {/* 自動建議區塊 */}
       <KeywordSuggestPanel />
-      <SelectedKeywordList />
 
-      {/* 主要編輯區塊 */}
-      <VideoDualList />
+      {/* ✅ 類型切換 tab（從原本移下來） */}
+      <VideoTypeTabs />
 
-      {/* 遊戲標籤管理器 */}
-      <GameTagTable />
+      {/* 編輯用影片清單 */}
+      <div className="min-h-[600px]">
+        <VideoDualList />
+      </div>
     </div>
   );
 }

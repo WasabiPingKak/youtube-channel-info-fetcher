@@ -31,6 +31,15 @@ export interface Video {
 }
 
 export interface EditorState {
+  selectedBySource: {
+    bracket: Set<string>;
+    frequency: Set<string>;
+    game: Set<string>;
+    custom: Set<string>;
+  };
+
+  toggleSuggestionChecked: (source: 'bracket' | 'frequency' | 'game' | 'custom', name: string, force?: boolean) => void;
+
   channelId: string;
   config: CategoryConfig;
   videos: Video[];
@@ -65,4 +74,3 @@ export interface EditorState {
   /* 重置整體狀態 */
   resetStore: () => void;
 }
-

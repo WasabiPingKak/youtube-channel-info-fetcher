@@ -27,8 +27,23 @@ export const useEditorStore = create<EditorState>((set, get) => {
     removedSuggestedKeywords: [],
     activeKeywordFilter: null,
 
+    // ✅ v2: 類別勾選狀態（四大來源）
+    selectedBySource: {
+      bracket: new Set(),
+      frequency: new Set(),
+      game: new Set(),
+      custom: new Set(),
+    },
+
     /* ---------- basic setters ---------- */
     setActiveKeywordFilter: (kw: string | null) => set({ activeKeywordFilter: kw }),
+    setChannelId: (id: string) => set({ channelId: id }),
+    setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
+    setVideos: (videos: Video[]) => set({ videos }),
+    updateVideos: (videos: Video[]) => set({ videos }),
+    setActiveType: (type: VideoType) => set({ activeType: type }),
+    setUnsaved: (flag: boolean) => set({ unsaved: flag }),
+    markUnsaved: () => set({ unsaved: true }),
 
     /* ---------- 建議詞相關 ---------- */
     addRemovedKeyword: (kw: string) => {
@@ -37,11 +52,33 @@ export const useEditorStore = create<EditorState>((set, get) => {
         set({ removedSuggestedKeywords: [...current, kw], unsaved: true });
       }
     },
-
     resetRemovedKeywords: () => {
       set({ removedSuggestedKeywords: [] });
     },
 
+
+    // ✅ v2: 切換勾選分類（四來源之一）
+    toggleSuggestionChecked: (source, name, force) => {
+      const current = get().selectedBySource[source];
+      const updated = new Set(current);
+      const shouldCheck = typeof force === 'boolean' ? force : !current.has(name);
+
+      if (shouldCheck) {
+        updated.add(name);
+      } else {
+        updated.delete(name);
+      }
+
+      set((state) => ({
+        selectedBySource: {
+          ...state.selectedBySource,
+          [source]: updated,
+        },
+        unsaved: true,
+      }));
+    },
+
+    /* ---------- 關鍵字分類操作 ---------- */
     addKeywordToCategory: (kw: string, category: string) => {
       const config = get().config;
       const active = get().activeType;
@@ -56,6 +93,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       }
     },
 
+    /* ---------- 類別影片篩選 ---------- */
     getUnclassifiedVideos: () => {
       const filter = get().activeKeywordFilter;
       return get().videos.filter((v) => {
@@ -84,13 +122,6 @@ export const useEditorStore = create<EditorState>((set, get) => {
       });
     },
 
-    setChannelId: (id: string) => set({ channelId: id }),
-    setConfig: (cfg: CategoryConfig) => set({ config: cfg }),
-    setVideos: (videos: Video[]) => set({ videos }),
-    updateVideos: (videos: Video[]) => set({ videos }),
-    setActiveType: (type: VideoType) => set({ activeType: type }),
-    setUnsaved: (flag: boolean) => set({ unsaved: flag }),
-
     /* ---------- config updater ---------- */
     updateConfigOfType: (type: VideoType, settings: CategorySettings) => {
       const current = get().config;
@@ -102,7 +133,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
       });
     },
 
-    /* ---------- reset whole store ---------- */
+    /* ---------- reset ---------- */
     resetStore: () =>
       set({
         channelId: '',
@@ -112,9 +143,12 @@ export const useEditorStore = create<EditorState>((set, get) => {
         unsaved: false,
         removedSuggestedKeywords: [],
         activeKeywordFilter: null,
+        selectedBySource: {
+          bracket: new Set(),
+          frequency: new Set(),
+          game: new Set(),
+          custom: new Set(),
+        },
       }),
-
-    /* ---------- unsaved flag ---------- */
-    markUnsaved: () => set({ unsaved: true }),
   };
 });
