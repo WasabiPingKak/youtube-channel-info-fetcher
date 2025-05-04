@@ -1,9 +1,3 @@
-/* --------------------------------------------------------------------------
- * useEditorStore
- * --------------
- * 全域狀態管理（Zustand）
- * ------------------------------------------------------------------------ */
-
 import { create } from 'zustand';
 import type {
   CategoryConfig,
@@ -11,6 +5,7 @@ import type {
   EditorState,
   Video,
   VideoType,
+  GameEntry,
 } from '../types/editor';
 
 export const useEditorStore = create<EditorState>((set, get) => {
@@ -27,13 +22,14 @@ export const useEditorStore = create<EditorState>((set, get) => {
     removedSuggestedKeywords: [],
     activeKeywordFilter: null,
 
-    // ✅ v2: 類別勾選狀態（四大來源）
     selectedBySource: {
       bracket: new Set(),
       frequency: new Set(),
       game: new Set(),
       custom: new Set(),
     },
+
+    customKeywords: [],
 
     /* ---------- basic setters ---------- */
     setActiveKeywordFilter: (kw: string | null) => set({ activeKeywordFilter: kw }),
@@ -45,6 +41,9 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setUnsaved: (flag: boolean) => set({ unsaved: flag }),
     markUnsaved: () => set({ unsaved: true }),
 
+    setCustomKeywords: (list: string[]) =>
+      set({ customKeywords: list, unsaved: true }),
+
     /* ---------- 建議詞相關 ---------- */
     addRemovedKeyword: (kw: string) => {
       const current = get().removedSuggestedKeywords;
@@ -52,22 +51,15 @@ export const useEditorStore = create<EditorState>((set, get) => {
         set({ removedSuggestedKeywords: [...current, kw], unsaved: true });
       }
     },
-    resetRemovedKeywords: () => {
-      set({ removedSuggestedKeywords: [] });
-    },
+    resetRemovedKeywords: () => set({ removedSuggestedKeywords: [] }),
 
-
-    // ✅ v2: 切換勾選分類（四來源之一）
     toggleSuggestionChecked: (source, name, force) => {
       const current = get().selectedBySource[source];
       const updated = new Set(current);
       const shouldCheck = typeof force === 'boolean' ? force : !current.has(name);
 
-      if (shouldCheck) {
-        updated.add(name);
-      } else {
-        updated.delete(name);
-      }
+      if (shouldCheck) updated.add(name);
+      else updated.delete(name);
 
       set((state) => ({
         selectedBySource: {
@@ -87,7 +79,8 @@ export const useEditorStore = create<EditorState>((set, get) => {
       const currentList = updated[active]?.[category] ?? [];
       if (!currentList.includes(kw)) {
         const newList = [...currentList, kw];
-        if (!updated[active]) updated[active] = { 雜談: [], 節目: [], 音樂: [], 遊戲: [], 其他: [] };
+        if (!updated[active])
+          updated[active] = { 雜談: [], 節目: [], 音樂: [], 遊戲: [], 其他: [] };
         updated[active][category] = newList;
         set({ config: updated, unsaved: true });
       }
@@ -99,25 +92,19 @@ export const useEditorStore = create<EditorState>((set, get) => {
       return get().videos.filter((v) => {
         const isTarget = v.matchedCategories.length === 0 || isOnlyOtherCategory(v);
         if (!filter) return isTarget;
-        return isTarget && (
-          v.matchedCategories.includes(filter) ||
-          v.gameName === filter
-        );
+        return isTarget && (v.matchedCategories.includes(filter) || v.gameName === filter);
       });
     },
-
     getClassifiedVideos: () => {
       const filter = get().activeKeywordFilter;
-      const all = get().videos;
-
-      return all.filter((v) => {
+      return get().videos.filter((v) => {
         const isTarget = v.matchedCategories.length > 0 && !isOnlyOtherCategory(v);
         if (!filter) return isTarget;
-
-        return isTarget && (
-          v.title.includes(filter) ||
-          v.matchedCategories.includes(filter) ||
-          v.gameName === filter
+        return (
+          isTarget &&
+          (v.title.includes(filter) ||
+            v.matchedCategories.includes(filter) ||
+            v.gameName === filter)
         );
       });
     },
@@ -131,6 +118,42 @@ export const useEditorStore = create<EditorState>((set, get) => {
           [type]: settings,
         },
       });
+    },
+
+    /* ---------- 初始化自訂關鍵字 ---------- */
+    initCustomKeywordsFromConfig: (
+      config: CategorySettings,
+      bracketWords: string[],
+      frequentWords: string[],
+      gameEntries: GameEntry[]
+    ) => {
+      // 先收集自動來源已用關鍵字
+      const used = new Set<string>([
+        ...bracketWords,
+        ...frequentWords,
+        ...gameEntries.map((g) => g.game),
+        ...gameEntries.flatMap((g) => g.keywords),
+      ]);
+
+      // 從 config 的雜談/節目/音樂撈出未被自動來源佔用的字
+      const customSet = new Set<string>();
+      for (const main of ['雜談', '節目', '音樂'] as const) {
+        const arr = config[main] ?? [];
+        for (const w of arr) {
+          if (!used.has(w)) customSet.add(w);
+        }
+      }
+
+      const customList = [...customSet];
+      // 一次性更新 customKeywords 並預設勾選
+      set((state) => ({
+        customKeywords: customList,
+        selectedBySource: {
+          ...state.selectedBySource,
+          custom: new Set(customList),
+        },
+        unsaved: true,
+      }));
     },
 
     /* ---------- reset ---------- */
@@ -149,6 +172,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
           game: new Set(),
           custom: new Set(),
         },
+        customKeywords: [],
       }),
   };
 });

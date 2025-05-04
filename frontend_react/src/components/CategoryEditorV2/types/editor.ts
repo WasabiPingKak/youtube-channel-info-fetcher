@@ -46,8 +46,18 @@ export interface EditorState {
   activeType: VideoType;
   unsaved: boolean;
   removedSuggestedKeywords: string[];
-
   activeKeywordFilter: string | null;
+
+  // ✅ 加入 customKeywords 支援
+  customKeywords: string[];
+  setCustomKeywords: (list: string[]) => void;
+
+  initCustomKeywordsFromConfig: (
+    config: CategorySettings,
+    bracketWords: string[],
+    frequentWords: string[],
+    gameEntries: GameEntry[]
+  ) => void;
 
   /* 基本 setters */
   setChannelId: (id: string) => void;

@@ -5,8 +5,8 @@ import BracketKeywordBlock from './BracketKeywordBlock';
 import FrequentKeywordBlock from './FrequentKeywordBlock';
 import GameTagTable from './GameTagTable';
 import SelectedCategoryPills from './common/SelectedCategoryPills';
-import CustomKeywordBlock from './CustomKeywordBlock';
-import { useCategoryFilterState } from '../hooks/useCategoryFilterState'; // ✅ 新增引入
+import CustomTagTable from './CustomTagTable';
+import { useCategoryFilterState } from '../hooks/useCategoryFilterState';
 
 export default function KeywordSuggestPanel() {
   const videos = useEditorStore((s) => s.videos);
@@ -14,6 +14,9 @@ export default function KeywordSuggestPanel() {
   const config = useEditorStore((s) => s.config);
   const toggleChecked = useEditorStore((s) => s.toggleSuggestionChecked);
   const activeType = useEditorStore((s) => s.activeType);
+  const initCustomKeywords = useEditorStore(
+    (s) => s.initCustomKeywordsFromConfig,
+  );
 
   const {
     bracketKeywords,
@@ -22,10 +25,16 @@ export default function KeywordSuggestPanel() {
     rebuild,
   } = useKeywordSuggestion(videos, removed);
 
+  /* ---------- store 選取狀態 ---------- */
   const selectedBracket = useEditorStore((s) => s.selectedBySource.bracket);
   const selectedFrequency = useEditorStore((s) => s.selectedBySource.frequency);
   const selectedGame = useEditorStore((s) => s.selectedBySource.game);
 
+  /* ---------- ✍️ 自訂關鍵字 ---------- */
+  const customKeywords = useEditorStore((s) => s.customKeywords);
+  const selectedCustom = useEditorStore((s) => s.selectedBySource.custom);
+
+  /* ---------- Pill 用 suggestions ---------- */
   const bracketSuggestions = bracketKeywords.map((item) => ({
     name: item.keyword,
     source: 'bracket' as const,
@@ -41,13 +50,10 @@ export default function KeywordSuggestPanel() {
   }));
 
   const gameEntries = config?.[activeType]?.遊戲 ?? [];
-
   const gameSuggestions = gameEntries.map((g) => {
     const keywords = [...(g.keywords || []), g.game];
     const matchedCount = videos.filter((v) =>
-      keywords.some((kw) =>
-        v.title.toLowerCase().includes(kw.toLowerCase())
-      )
+      keywords.some((kw) => v.title.toLowerCase().includes(kw.toLowerCase())),
     ).length;
 
     return {
@@ -58,15 +64,31 @@ export default function KeywordSuggestPanel() {
     };
   });
 
+  const customSuggestions = customKeywords.map((kw) => {
+    const matchedCount = videos.filter((v) =>
+      v.title.toLowerCase().includes(kw.toLowerCase()),
+    ).length;
+
+    return {
+      name: kw,
+      source: 'custom' as const,
+      matchedCount,
+      isChecked: selectedCustom.has(kw),
+    };
+  });
+
   const allSuggestions = [
     ...bracketSuggestions,
     ...frequencySuggestions,
     ...gameSuggestions,
+    ...customSuggestions,
   ];
 
+  /* ---------- 關鍵字過濾狀態 ---------- */
   const { selectedFilter, setFilter, clearFilter, isFilterActive } =
     useCategoryFilterState();
 
+  /* ---------- 初始化勾選 ---------- */
   function extractCategoryNames(config: any): Set<string> {
     const result = new Set<string>();
     ['live', 'videos', 'shorts'].forEach((type) => {
@@ -105,39 +127,50 @@ export default function KeywordSuggestPanel() {
         toggleChecked('game', entry.game, true);
       }
     });
-  }, [bracketKeywords, frequentKeywords, gameEntries, config, toggleChecked]);
 
+    // ✅ 新增：初始化自訂關鍵字
+    initCustomKeywords(
+      config?.[activeType] ?? {},
+      bracketKeywords.map((k) => k.keyword),
+      frequentKeywords.map((k) => k.keyword),
+      gameEntries,
+    );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config, activeType, bracketKeywords, frequentKeywords, gameEntries]);
+
+  /* ---------- Render ---------- */
   return (
     <div className="p-3 border rounded-xl space-y-6 bg-white shadow">
-      <BracketKeywordBlock
-        keywords={bracketKeywords.map(item => ({ keyword: item.keyword, count: item.count }))}
-        selected={Array.from(selectedBracket)}
-        toggleChecked={(kw) => toggleChecked('bracket', kw)}
-      />
-      <FrequentKeywordBlock
-        keywords={frequentKeywords.map(item => ({ keyword: item.keyword, count: item.count }))}
-        selected={Array.from(selectedFrequency)}
-        toggleChecked={(kw) => toggleChecked('frequency', kw)}
-      />
-      <GameTagTable />
-      <CustomKeywordBlock />
+      {/* ❶ 自動來源 + 自訂關鍵字區塊 */}
+      <section className="space-y-6">
+        <BracketKeywordBlock
+          keywords={bracketKeywords}
+          selected={Array.from(selectedBracket)}
+          toggleChecked={(kw) => toggleChecked('bracket', kw)}
+        />
+        <FrequentKeywordBlock
+          keywords={frequentKeywords}
+          selected={Array.from(selectedFrequency)}
+          toggleChecked={(kw) => toggleChecked('frequency', kw)}
+        />
+        <GameTagTable />
+        <CustomTagTable />
+      </section>
 
-      <section className="bg-white rounded-lg p-4 shadow-sm">
+      {/* ❷ 已勾選 pills */}
+      <section className="mt-6 p-4 border rounded-xl bg-gray-50">
         <header className="mb-2">
-          <h3 className="font-semibold mb-1">🧩 編輯中的分類標籤</h3>
+          <h3 className="font-semibold mb-1">🧩 關鍵字過濾區</h3>
           <p className="text-sm text-gray-500">
             這些是你已勾選的分類標籤，儲存後將套用到目前影片類型。
           </p>
         </header>
+
         <SelectedCategoryPills
           suggestions={allSuggestions}
-          onFilterClick={(filter) => {
-            if (isFilterActive(filter)) {
-              clearFilter();
-            } else {
-              setFilter(filter);
-            }
-          }}
+          onFilterClick={(filter) =>
+            isFilterActive(filter) ? clearFilter() : setFilter(filter)
+          }
           isActive={isFilterActive}
         />
 
