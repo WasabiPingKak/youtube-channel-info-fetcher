@@ -6,13 +6,11 @@ import FrequentKeywordBlock from './FrequentKeywordBlock';
 import GameTagTable from './GameTagTable';
 import SelectedCategoryPills from './common/SelectedCategoryPills';
 import CustomKeywordBlock from './CustomKeywordBlock';
+import { useCategoryFilterState } from '../hooks/useCategoryFilterState'; // ✅ 新增引入
 
 export default function KeywordSuggestPanel() {
   const videos = useEditorStore((s) => s.videos);
   const removed = useEditorStore((s) => s.removedSuggestedKeywords);
-  const addRemovedKeyword = useEditorStore((s) => s.addRemovedKeyword);
-  const addKeywordToCategory = useEditorStore((s) => s.addKeywordToCategory);
-  const setUnsaved = useEditorStore((s) => s.setUnsaved);
   const config = useEditorStore((s) => s.config);
   const toggleChecked = useEditorStore((s) => s.toggleSuggestionChecked);
   const activeType = useEditorStore((s) => s.activeType);
@@ -44,13 +42,8 @@ export default function KeywordSuggestPanel() {
 
   const gameEntries = config?.[activeType]?.遊戲 ?? [];
 
-  // ✅ Log for debugging
-  console.log('🔍 activeType:', activeType);
-  console.log('🎮 config[activeType]?.遊戲:', config?.[activeType]?.遊戲);
-  console.log('📺 videos (sample):', videos.slice(0, 3).map((v) => v.title));
-
   const gameSuggestions = gameEntries.map((g) => {
-    const keywords = [...(g.keywords || []), g.game]; // ✅ 加入 game 名稱作為 fallback keyword
+    const keywords = [...(g.keywords || []), g.game];
     const matchedCount = videos.filter((v) =>
       keywords.some((kw) =>
         v.title.toLowerCase().includes(kw.toLowerCase())
@@ -71,6 +64,9 @@ export default function KeywordSuggestPanel() {
     ...gameSuggestions,
   ];
 
+  const { selectedFilter, setFilter, clearFilter, isFilterActive } =
+    useCategoryFilterState();
+
   function extractCategoryNames(config: any): Set<string> {
     const result = new Set<string>();
     ['live', 'videos', 'shorts'].forEach((type) => {
@@ -89,7 +85,6 @@ export default function KeywordSuggestPanel() {
     return result;
   }
 
-  // ✅ 預設勾選出現在 config 中的分類名稱
   useEffect(() => {
     const configNames = extractCategoryNames(config);
 
@@ -136,10 +131,24 @@ export default function KeywordSuggestPanel() {
         </header>
         <SelectedCategoryPills
           suggestions={allSuggestions}
-          onFilterClick={(name) => {
-            console.log("Filter clicked:", name);
+          onFilterClick={(filter) => {
+            if (isFilterActive(filter)) {
+              clearFilter();
+            } else {
+              setFilter(filter);
+            }
           }}
+          isActive={isFilterActive}
         />
+
+        <div className="mt-4">
+          <button
+            className="text-sm px-4 py-2 border rounded text-gray-700 hover:bg-gray-100"
+            onClick={clearFilter}
+          >
+            顯示所有影片
+          </button>
+        </div>
       </section>
     </div>
   );

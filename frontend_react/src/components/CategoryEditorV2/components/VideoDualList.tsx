@@ -5,6 +5,7 @@ import {
   VideoType,
 } from '../types/editor';
 import { useEditorStore } from '../hooks/useEditorStore';
+import { useCategoryFilterState } from '../hooks/useCategoryFilterState';
 import ApplyModal from './ApplyModal';
 
 type FilterCategory = '全部' | MainCategory;
@@ -15,30 +16,64 @@ export default function VideoDualList() {
   const activeType = store.activeType;
   const videos = store.videos;
   const activeKeywordFilter = store.activeKeywordFilter;
+  const { selectedFilter } = useCategoryFilterState();
 
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
   const [rightFilter, setRightFilter] = useState<FilterCategory>('全部');
   const [isModalOpen, setModalOpen] = useState(false);
 
+  // ✅ DEBUG: 篩選條件 log
+  console.log("🔍 selectedFilter:", selectedFilter);
+
+  // ✅ DEBUG: 原始 store 影片數量 log
+  console.log("📦 getUnclassifiedVideos():", store.getUnclassifiedVideos().length);
+  console.log("📦 getClassifiedVideos():", store.getClassifiedVideos().length);
+
   const unclassified = useMemo(() => {
-    return store
+    const list = store
       .getUnclassifiedVideos()
       .filter((v) => v.type === activeType)
       .filter((v) =>
         activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
       )
+      .filter((v) => {
+        if (!selectedFilter) return true;
+        const match = v.matchedCategories.includes(selectedFilter.name);
+        const gameMatched = selectedFilter.type === 'game' && v.gameName === selectedFilter.name;
+        const finalMatch = match || gameMatched;
+        console.log("🧪 check:", v.title, "→ categories:", v.matchedCategories, "gameName:", v.gameName, "→ match:", finalMatch);
+        return finalMatch;
+        console.log("🧪 [未分類] check:", v.title, "categories:", v.matchedCategories, "→ match:", match);
+        return match;
+      })
       .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
-  }, [activeType, videos, activeKeywordFilter]);
+
+    console.log("✅ filteredUnclassified.length:", list.length);
+    return list;
+  }, [store, activeType, activeKeywordFilter, selectedFilter]);
 
   const classified = useMemo(() => {
-    return store
+    const list = store
       .getClassifiedVideos()
       .filter((v) => v.type === activeType)
       .filter((v) =>
         activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
       )
+      .filter((v) => {
+        if (!selectedFilter) return true;
+        const match = v.matchedCategories.includes(selectedFilter.name);
+        const gameMatched = selectedFilter.type === 'game' && v.gameName === selectedFilter.name;
+        const finalMatch = match || gameMatched;
+        console.log("🧪 check:", v.title, "→ categories:", v.matchedCategories, "gameName:", v.gameName, "→ match:", finalMatch);
+        return finalMatch;
+        console.log("🧪 [已分類] check:", v.title, "categories:", v.matchedCategories, "→ match:", match);
+        return match;
+      })
       .sort((a, b) => new Date(b.publishDate ?? 0).getTime() - new Date(a.publishDate ?? 0).getTime());
-  }, [activeType, videos, activeKeywordFilter]);
+
+    console.log("✅ filteredClassified.length:", list.length);
+    return list;
+  }, [store, activeType, activeKeywordFilter, selectedFilter]);
 
   const filteredClassified = useMemo(() => {
     if (rightFilter === '全部') return classified;
