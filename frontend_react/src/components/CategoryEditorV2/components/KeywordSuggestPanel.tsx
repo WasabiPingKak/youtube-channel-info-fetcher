@@ -9,6 +9,7 @@ import {
   mapGameSuggestions,
   mapCustomSuggestions,
   extractCategoryNames,
+  mergeSuggestionsByPriority,
 } from '../utils/suggestionUtils';
 import SuggestionBlocksContainer from './containers/SuggestionBlocksContainer';
 import SelectedFilterPanel from './containers/SelectedFilterPanel';
@@ -43,17 +44,17 @@ export default function KeywordSuggestPanel() {
   const bracketSuggestions = mapBracketSuggestions(bracketKeywords, selectedBracket);
   const frequencySuggestions = mapFrequencySuggestions(frequentKeywords, selectedFrequency);
 
-
   const gameEntries = config?.[activeType]?.遊戲 ?? [];
   const gameSuggestions = mapGameSuggestions(gameEntries, videos, selectedGame);
   const customSuggestions = mapCustomSuggestions(customKeywords, videos, selectedCustom);
 
-  const allSuggestions = [
-    ...bracketSuggestions,
-    ...frequencySuggestions,
+  // 合併同名關鍵字，依來源優先級去重
+  const allSuggestions = mergeSuggestionsByPriority([
     ...gameSuggestions,
     ...customSuggestions,
-  ];
+    ...bracketSuggestions,
+    ...frequencySuggestions,
+  ]);
 
   /* ---------- 關鍵字過濾狀態 ---------- */
   const { selectedFilter, setFilter, clearFilter, isFilterActive } =

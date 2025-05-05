@@ -93,8 +93,8 @@ export function extractCategoryNames(
   }
 ): Set<string> {
   const result = new Set<string>();
-  (['live', 'videos', 'shorts'] as const).forEach(type => {
-    const block = config[type];
+  ['live', 'videos', 'shorts'].forEach(type => {
+    const block = (config as any)[type] as Record<string, any>;
     if (!block) return;
     Object.values(block).forEach(entries => {
       if (Array.isArray(entries) && entries.length > 0) {
@@ -110,4 +110,27 @@ export function extractCategoryNames(
     });
   });
   return result;
+}
+
+/**
+ * 根據來源優先權合併建議項目，同名只保留最高優先權來源
+ * 優先順序：game > custom > bracket > frequency
+ */
+export function mergeSuggestionsByPriority(
+  suggestions: Suggestion[]
+): Suggestion[] {
+  const priority: Record<Suggestion['source'], number> = {
+    game: 1,
+    custom: 2,
+    bracket: 3,
+    frequency: 4,
+  };
+  const map = new Map<string, Suggestion>();
+  suggestions.forEach(s => {
+    const existing = map.get(s.name);
+    if (!existing || priority[s.source] < priority[existing.source]) {
+      map.set(s.name, s);
+    }
+  });
+  return Array.from(map.values());
 }

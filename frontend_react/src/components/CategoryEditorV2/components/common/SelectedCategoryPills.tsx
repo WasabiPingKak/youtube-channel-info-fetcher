@@ -77,7 +77,7 @@ export default function SelectedCategoryPills({
                       }`}
                       onClick={() => onFilterClick?.(filter)}
                     >
-                      {item.name} ({item.matchedCount})
+                      {item.name}
                     </button>
                   );
                 })}
