@@ -18,8 +18,8 @@ import ChannelInfoCard from '../../common/ChannelInfoCard';
 import ChannelDrawer from '../../common/ChannelDrawer';
 import SaveAllButton from './SaveAllButton';
 import KeywordSuggestPanel from './KeywordSuggestPanel';
-import VideoDualList from './VideoDualList';
-import VideoTypeTabs from './VideoTypeTabs'; // ✅ 新增匯入
+import FilteredVideoList from './FilteredVideoList';;
+import VideoTypeTabs from './VideoTypeTabs';
 
 export default function EditorLayout() {
   const { channelId } = useParams<{ channelId: string }>();
@@ -75,7 +75,7 @@ export default function EditorLayout() {
 
       {/* 編輯用影片清單 */}
       <div className="min-h-[600px]">
-        <VideoDualList />
+        <FilteredVideoList  />
       </div>
     </div>
   );
