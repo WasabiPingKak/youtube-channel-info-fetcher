@@ -2,6 +2,7 @@ import React from 'react';
 import SelectedCategoryPills from '../common/SelectedCategoryPills';
 import { useCategoryFilterState } from '../../hooks/useCategoryFilterState';
 import type { Suggestion } from '../../utils/suggestionUtils';
+import { useEditorStore } from '../../hooks/useEditorStore';
 
 interface SelectedFilterPanelProps {
   suggestions: Suggestion[];
@@ -9,6 +10,10 @@ interface SelectedFilterPanelProps {
 
 export default function SelectedFilterPanel({ suggestions }: SelectedFilterPanelProps) {
   const { selectedFilter, setFilter, clearFilter, isFilterActive } = useCategoryFilterState();
+
+  const setActiveKeyword = useEditorStore(
+    (s) => s.setActiveKeywordFilter,
+  );
 
   return (
     <section className="mt-6 p-4 border rounded-xl bg-gray-50">
@@ -24,6 +29,7 @@ export default function SelectedFilterPanel({ suggestions }: SelectedFilterPanel
         onFilterClick={(filter) => {
           if (isFilterActive(filter)) {
             clearFilter();
+            setActiveKeyword(null);
           } else {
             setFilter(filter);
           }
@@ -34,7 +40,10 @@ export default function SelectedFilterPanel({ suggestions }: SelectedFilterPanel
       <div className="mt-4">
         <button
           className="text-sm px-4 py-2 border rounded text-gray-700 hover:bg-gray-100"
-          onClick={clearFilter}
+          onClick={() => {
+            clearFilter();
+            setActiveKeyword(null);
+          }}
         >
           顯示所有影片
         </button>

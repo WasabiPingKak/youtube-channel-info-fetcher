@@ -1,4 +1,14 @@
-import React, { useMemo, useState } from 'react';
+// components/ApplyModal.tsx
+// --------------------------------------------------
+// 套用 Badge 的對話框（複選主類別 → 批次套用）
+// 依 2025‑05‑05 規格：
+//   • 只需要主類別複選，不處理遊戲名稱下拉
+//   • 關鍵字來源 = activeKeywordFilter (目前選中 pill)
+//   • 呼叫 useEditorStore.applyBadges(keyword, categories)
+//   • 不傳 videoIds，邏輯由 store 內部自行篩選命中影片
+// --------------------------------------------------
+
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -8,16 +18,10 @@ import {
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 
-import {
-  MainCategory,
-  Video,
-  GameEntry,
-} from '../types/editor';
+import { MainCategory } from '../types/editor';
 import { useEditorStore } from '../hooks/useEditorStore';
 
 interface ApplyModalProps {
-  /** 使用者勾選的影片 ID */
-  videoIds: string[];
   onClose: () => void;
 }
 
@@ -28,67 +32,30 @@ const selectableCategories: MainCategory[] = [
   '遊戲',
 ];
 
-export default function ApplyModal({
-  videoIds,
-  onClose,
-}: ApplyModalProps) {
+export default function ApplyModal({ onClose }: ApplyModalProps) {
   /** ===== Store ===== */
-  const activeType = useEditorStore((s) => s.activeType);
-  const videos = useEditorStore((s) => s.videos);
-  const setVideos = useEditorStore((s) => s.setVideos);
-  const config = useEditorStore((s) => s.config);
-  const markUnsaved = useEditorStore((s) => s.markUnsaved);
+  const keyword = useEditorStore((s) => s.activeKeywordFilter);
+  const applyBadges = useEditorStore((s) => s.applyBadges);
 
   /** ===== Local State ===== */
   const [selectedCats, setSelectedCats] = useState<Set<MainCategory>>(new Set());
-  const [selectedGame, setSelectedGame] = useState<string>('');
-
-  /** 遊戲清單（依 activeType 取設定） */
-  const gameOptions: GameEntry[] = useMemo(
-    () => config?.[activeType]?.遊戲 ?? [],
-    [config, activeType]
-  );
 
   /** 是否按鈕可用 */
-  const isConfirmDisabled =
-    selectedCats.size === 0 ||
-    (selectedCats.has('遊戲') && !selectedGame);
+  const isConfirmDisabled = selectedCats.size === 0 || !keyword;
 
   /** 選中 / 取消主分類 */
   const toggleCategory = (cat: MainCategory) => {
     setSelectedCats((prev) => {
       const next = new Set(prev);
       next.has(cat) ? next.delete(cat) : next.add(cat);
-      if (!next.has('遊戲')) setSelectedGame('');
       return next;
     });
   };
 
-  /** onConfirm：更新 Store */
+  /** onConfirm：批次套用 Badge */
   const handleConfirm = () => {
-    if (isConfirmDisabled) return;
-
-    const catArray = [...selectedCats].filter((cat) => cat !== '其他');
-
-    const updated = videos.map((v: Video) => {
-      if (!videoIds.includes(v.videoId)) return v;
-
-      const newVid: Video = {
-        ...v,
-        matchedCategories: catArray,
-      };
-
-      if (catArray.includes('遊戲')) {
-        newVid.gameName = selectedGame;
-      } else {
-        delete newVid.gameName;
-      }
-
-      return newVid;
-    });
-
-    setVideos(updated);
-    markUnsaved();
+    if (isConfirmDisabled || !keyword) return;
+    applyBadges(keyword, [...selectedCats]);
     onClose();
   };
 
@@ -113,37 +80,11 @@ export default function ApplyModal({
           ))}
         </div>
 
-        {/* 遊戲下拉 */}
-        {selectedCats.has('遊戲') && (
-          <div className="mt-4">
-            <label className="block text-sm mb-1">選擇遊戲名稱：</label>
-            <select
-              className="w-full border rounded px-2 py-1 text-sm"
-              value={selectedGame}
-              onChange={(e) => setSelectedGame(e.target.value)}
-            >
-              <option value="">-- 請選擇 --</option>
-              {gameOptions.map((g) => (
-                <option key={g.game} value={g.game}>
-                  {g.game}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-
         <DialogFooter className="mt-6">
-          <Button
-            variant="secondary"
-            onClick={onClose}
-            className="mr-2"
-          >
+          <Button variant="secondary" onClick={onClose} className="mr-2">
             取消
           </Button>
-          <Button
-            disabled={isConfirmDisabled}
-            onClick={handleConfirm}
-          >
+          <Button disabled={isConfirmDisabled} onClick={handleConfirm}>
             確認套用
           </Button>
         </DialogFooter>

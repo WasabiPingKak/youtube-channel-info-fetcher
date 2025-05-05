@@ -14,6 +14,18 @@ export type CategorySettings = Partial<Record<NonGameMainCategory, string[]>> & 
   遊戲?: GameEntry[];
 };
 
+// 🔖 Badge 型別定義
+export type BadgeMain = MainCategory | '未分類';
+
+/**
+ * 用於 UI 顯示的雙層 Badge。
+ * - 正常情況：{ main: MainCategory, keyword: string }
+ * - 未分類：{ main: '未分類' } (keyword 省略)
+ */
+export type Badge =
+  | { main: MainCategory; keyword: string }
+  | { main: '未分類'; keyword?: undefined };
+
 export interface CategoryConfig {
   live?: CategorySettings;
   videos?: CategorySettings;
@@ -28,6 +40,8 @@ export interface Video {
   category: MainCategory;
   matchedCategories: string[];
   gameName?: string;
+  /** 前端顯示用 Badge 列表，不與後端同步 */
+  badges?: Badge[];
 }
 
 export interface EditorState {
@@ -38,7 +52,11 @@ export interface EditorState {
     custom: Set<string>;
   };
 
-  toggleSuggestionChecked: (source: 'bracket' | 'frequency' | 'game' | 'custom', name: string, force?: boolean) => void;
+  toggleSuggestionChecked: (
+    source: 'bracket' | 'frequency' | 'game' | 'custom',
+    name: string,
+    force?: boolean
+  ) => void;
 
   channelId: string;
   config: CategoryConfig;
@@ -76,6 +94,14 @@ export interface EditorState {
 
   /* 分類操作 */
   updateConfigOfType: (type: VideoType, settings: CategorySettings) => void;
+  /**
+   * 套用 badge：將 keyword 套用到指定主類別陣列
+   */
+  applyBadges: (keyword: string, categories: MainCategory[]) => void;
+  /**
+   * 依 keyword 批次移除所有主類別下的 badge
+   */
+  removeBadges: (keyword: string) => void;
 
   /* 清單邏輯 */
   getUnclassifiedVideos: () => Video[];

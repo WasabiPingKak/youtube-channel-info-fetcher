@@ -1,18 +1,27 @@
+// components/FilteredVideoList.tsx
+// --------------------------------------------------
+// 顯示符合篩選的影片清單 + 新規格 Badge（含 [未分類] 占位）
+// --------------------------------------------------
+
 import React, { useMemo, useState } from 'react';
-import { Video, VideoType } from '../types/editor';
+import type { Video, VideoType, Badge } from '../types/editor';
 import { useEditorStore } from '../hooks/useEditorStore';
 import { useCategoryFilterState } from '../hooks/useCategoryFilterState';
 import ApplyModal from './ApplyModal';
+import VideoBadge from './VideoBadge';
 
 export default function FilteredVideoList() {
+  /* -------- Store hooks -------- */
   const store = useEditorStore();
   const activeType: VideoType = store.activeType;
   const videos: Video[] = store.videos;
   const activeKeywordFilter = store.activeKeywordFilter;
   const { selectedFilter } = useCategoryFilterState();
 
+  /* -------- Local state -------- */
   const [isModalOpen, setModalOpen] = useState(false);
 
+  /* -------- Derived: 篩選後影片清單 -------- */
   const filteredVideos = useMemo(() => {
     return videos
       .filter((v) => v.type === activeType)
@@ -20,18 +29,17 @@ export default function FilteredVideoList() {
         activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
       )
       .filter((v) => {
-        // 如果沒有選任何 pill，就顯示所有影片
         if (!selectedFilter) return true;
-        // 點了哪個 pill，就用它的文字去檢查影片標題
         return v.title.includes(selectedFilter.name);
       })
       .sort(
         (a, b) =>
           new Date(b.publishDate ?? 0).getTime() -
-          new Date(a.publishDate ?? 0).getTime()
+          new Date(a.publishDate ?? 0).getTime(),
       );
   }, [videos, activeType, activeKeywordFilter, selectedFilter]);
 
+  /* -------- Render -------- */
   return (
     <section className="border p-2 rounded-lg flex flex-col">
       {/* Header */}
@@ -42,24 +50,35 @@ export default function FilteredVideoList() {
       {/* List */}
       <ul className="space-y-1 max-h-[60vh] overflow-auto pr-1 flex-1">
         {filteredVideos.length > 0 ? (
-          filteredVideos.map((v) => (
-            <li
-              key={v.videoId}
-              className="flex items-center gap-2 px-4 py-2 border-b hover:bg-gray-100 dark:hover:bg-gray-700 transition"
-            >
-              <span className="text-sm flex-1">{v.title}</span>
-              <span className="flex gap-1 flex-wrap">
-                {v.matchedCategories.map((c) => (
-                  <span
-                    key={c}
-                    className="text-xs px-1 rounded bg-green-600 text-white"
-                  >
-                    {c === '遊戲' && v.gameName ? v.gameName : c}
-                  </span>
-                ))}
-              </span>
-            </li>
-          ))
+          filteredVideos.map((v) => {
+            // 確保每支影片至少顯示 [未分類] 一個 badge
+            const badgeList: Badge[] =
+              v.badges && v.badges.length > 0
+                ? v.badges
+                : [{ main: '未分類' }];
+
+            return (
+              <li
+                key={v.videoId}
+                className="flex items-center gap-2 px-4 py-2 border-b hover:bg-gray-100 dark:hover:bg-gray-700 transition"
+              >
+                {/* Title */}
+                <span className="text-sm flex-1 truncate" title={v.title}>
+                  {v.title}
+                </span>
+
+                {/* Badges */}
+                <span className="flex gap-1 flex-wrap">
+                  {badgeList.map((b, idx) => (
+                    <VideoBadge
+                      key={`${b.main}-${b.keyword ?? 'none'}-${idx}`}
+                      badge={b}
+                    />
+                  ))}
+                </span>
+              </li>
+            );
+          })
         ) : (
           <li className="text-gray-400 text-sm py-4 text-center">
             目前沒有符合篩選的影片
@@ -77,12 +96,7 @@ export default function FilteredVideoList() {
       </button>
 
       {/* Modal */}
-      {isModalOpen && (
-        <ApplyModal
-          videoIds={filteredVideos.map((v) => v.videoId)}
-          onClose={() => setModalOpen(false)}
-        />
-      )}
+      {isModalOpen && <ApplyModal onClose={() => setModalOpen(false)} />}
     </section>
   );
 }
