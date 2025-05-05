@@ -20,11 +20,10 @@ export default function FilteredVideoList() {
         activeKeywordFilter ? v.title.includes(activeKeywordFilter) : true
       )
       .filter((v) => {
+        // 如果沒有選任何 pill，就顯示所有影片
         if (!selectedFilter) return true;
-        const match = v.matchedCategories.includes(selectedFilter.name);
-        const gameMatch =
-          selectedFilter.type === 'game' && v.gameName === selectedFilter.name;
-        return match || gameMatch;
+        // 點了哪個 pill，就用它的文字去檢查影片標題
+        return v.title.includes(selectedFilter.name);
       })
       .sort(
         (a, b) =>
