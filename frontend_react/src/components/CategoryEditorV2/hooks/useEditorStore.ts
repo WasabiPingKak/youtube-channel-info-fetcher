@@ -22,6 +22,8 @@ import type {
 } from '../types/editor';
 import { generateBadgesForVideo } from './utils/badgeUtils';
 
+import { defaultConfig } from '../types/editor';
+
 export const useEditorStore = create<EditorState>((set, get) => {
 
   const populateBadgesFromConfig = () => {
@@ -105,6 +107,102 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     setCustomKeywords: (list: string[]) => set({ customKeywords: list, unsaved: true }),
 
+    // ---------- Config 初始化 & 單一來源操作 ----------
+    /**
+     * 載入並用 defaultConfig 補齊欄位
+     */
+    loadConfig: (raw?: Partial<CategoryConfig>) => {
+      set({
+        config: {
+          live:   { ...defaultConfig.live,   ...raw?.live   },
+          videos: { ...defaultConfig.videos, ...raw?.videos },
+          shorts: { ...defaultConfig.shorts, ...raw?.shorts },
+        },
+        unsaved: false,
+      });
+      populateBadgesFromConfig();
+    },
+
+    /**
+     * 遊戲分類：新增
+     */
+    addGameToConfig: (type, game, keywords = []) => {
+      set((state) => {
+        const section = state.config[type] || {};
+        const games = section.遊戲 || [];
+        if (games.some((g) => g.game === game)) return state;
+        return {
+          config: {
+            ...state.config,
+            [type]: {
+              ...section,
+              遊戲: [...games, { game, keywords }],
+            },
+          },
+          unsaved: true,
+        };
+      });
+    },
+
+    /**
+     * 遊戲分類：移除
+     */
+    removeGameFromConfig: (type, game) => {
+      set((state) => {
+        const section = state.config[type] || {};
+        return {
+          config: {
+            ...state.config,
+            [type]: {
+              ...section,
+              遊戲: (section.遊戲 || []).filter((g) => g.game !== game),
+            },
+          },
+          unsaved: true,
+        };
+      });
+    },
+
+    /**
+     * 其他主分類（雜談/節目/音樂/其他）：新增 keyword
+     */
+    addKeywordToConfig: (type, main, keyword) => {
+      set((state) => {
+        const section = state.config[type] || {};
+        const list = section[main] || [];
+        if (list.includes(keyword)) return state;
+        return {
+          config: {
+            ...state.config,
+            [type]: {
+              ...section,
+              [main]: [...list, keyword],
+            },
+          },
+          unsaved: true,
+        };
+      });
+    },
+
+    /**
+     * 其他主分類：移除 keyword
+     */
+    removeKeywordFromConfig: (type, main, keyword) => {
+      set((state) => {
+        const section = state.config[type] || {};
+        return {
+          config: {
+            ...state.config,
+            [type]: {
+              ...section,
+              [main]: (section[main] || []).filter((k) => k !== keyword),
+            },
+          },
+          unsaved: true,
+        };
+      });
+    },
+
     /* ---------- 建議詞操作 ---------- */
     addRemovedKeyword: (kw: string) => {
       const current = get().removedSuggestedKeywords;
@@ -161,6 +259,13 @@ export const useEditorStore = create<EditorState>((set, get) => {
     /* ---------- 🆕  Batch Badge 操作 ---------- */
     /** ➕ 批次套用：對命中影片加入 [主類別[keyword]] */
     applyBadges: (keyword: string, categories: MainCategory[]) => {
+      categories.forEach((cat) => {
+        if (cat === '遊戲') {
+          get().addGameToConfig('videos', keyword, []);
+        } else {
+          get().addKeywordToConfig('videos', cat, keyword);
+        }
+      });
       const all = get().videos.map((v) => ({ ...v }));
       all.forEach((v) => {
         if (!isVideoHitByKeyword(v, keyword)) return;
@@ -184,6 +289,10 @@ export const useEditorStore = create<EditorState>((set, get) => {
 
     /** ➖ 批次移除：依 keyword 刪除所有主類別 badge */
     removeBadges: (keyword: string) => {
+      get().removeGameFromConfig('videos', keyword);
+      (['雜談', '節目', '音樂', '其他'] as const).forEach((main) => {
+        get().removeKeywordFromConfig('videos', main, keyword);
+      });
       const all = get().videos.map((v) => ({ ...v }));
       all.forEach((v) => {
         if (!v.badges || v.badges.length === 0) return;

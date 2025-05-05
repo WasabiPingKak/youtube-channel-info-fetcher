@@ -16,29 +16,34 @@ export default function SaveAllButton({ disabled }: SaveAllButtonProps) {
     (s) => s.resetRemovedKeywords
   );
 
-  /* ---------------- Mutation ---------------- */
+  // 讀取環境變數中的 API 基底 URL
+  const BASE_URL = import.meta.env.VITE_API_BASE || '';
+
   const mutation = useMutation({
     mutationFn: async () => {
-      const res = await fetch('/api/categories/save-and-apply', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ channel_id: channelId, config }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json().catch(() => ({}));
-        throw new Error(
-          err?.message || 'Failed to save category settings'
-        );
+      const res = await fetch(
+        `${BASE_URL}/api/categories/save-and-apply`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ channel_id: channelId, settings: config }),
+        }
+      );
+      const data = await res.json();
+      if (!res.ok || data.success !== true) {
+        throw new Error(data.message || '儲存失敗');
       }
+      return data;
     },
-    onSuccess: () => {
-      toast.success('✅ 已儲存並重新分類！');
+    onSuccess: (data) => {
+      toast.success(
+        `設定已儲存，成功套用 ${data.updated_count} 筆分類！`
+      );
       setUnsaved(false);
       resetRemovedKeywords();
     },
     onError: (err) => {
-      toast.error(`❌ 儲存失敗：${(err as Error).message}`);
+      toast.error(`儲存失敗：${(err as Error).message}`);
     },
   });
 

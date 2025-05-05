@@ -19,7 +19,7 @@ export type BadgeMain = MainCategory | '未分類';
 
 /**
  * 用於 UI 顯示的雙層 Badge。
- * - 正常情況：{ main: MainCategory, keyword: string }
+ * - 正常情況：{ main: MainCategory; keyword: string }
  * - 未分類：{ main: '未分類' } (keyword 省略)
  */
 export type Badge =
@@ -31,6 +31,13 @@ export interface CategoryConfig {
   videos?: CategorySettings;
   shorts?: CategorySettings;
 }
+
+// 預設空的 CategoryConfig，作為初始化用
+export const defaultConfig: CategoryConfig = {
+  live: {},
+  videos: {},
+  shorts: {},
+};
 
 export interface Video {
   videoId: string;
@@ -79,6 +86,7 @@ export interface EditorState {
 
   /* 基本 setters */
   setChannelId: (id: string) => void;
+  loadConfig: (raw?: Partial<CategoryConfig>) => void;
   setConfig: (config: CategoryConfig) => void;
   setVideos: (videos: Video[]) => void;
   updateVideos: (videos: Video[]) => void;
@@ -91,6 +99,24 @@ export interface EditorState {
   addRemovedKeyword: (kw: string) => void;
   resetRemovedKeywords: () => void;
   addKeywordToCategory: (kw: string, category: string) => void;
+
+  /* Config 操作 */
+  addGameToConfig: (
+    type: VideoType,
+    game: string,
+    keywords?: string[]
+  ) => void;
+  removeGameFromConfig: (type: VideoType, game: string) => void;
+  addKeywordToConfig: (
+    type: VideoType,
+    main: NonGameMainCategory,
+    keyword: string
+  ) => void;
+  removeKeywordFromConfig: (
+    type: VideoType,
+    main: NonGameMainCategory,
+    keyword: string
+  ) => void;
 
   /* 分類操作 */
   updateConfigOfType: (type: VideoType, settings: CategorySettings) => void;

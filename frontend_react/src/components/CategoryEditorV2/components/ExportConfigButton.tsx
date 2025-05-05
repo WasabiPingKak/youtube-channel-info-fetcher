@@ -8,12 +8,13 @@ import { useEditorStore } from '../hooks/useEditorStore';
 import { downloadConfigJson } from '../utils/exportConfig';
 
 export default function ExportConfigButton() {
+  // 直接讀取 store 裡的 config（已經透過 loadConfig / applyBadges / removeBadges 維護過）
   const config = useEditorStore((s) => s.config);
 
   const handleExport = () => {
+    // 若尚未載入或完全空物件，可直接不動作或提示使用者先載入
     if (!config || Object.keys(config).length === 0) return;
-    const cfg = config;
-    downloadConfigJson(cfg);
+    downloadConfigJson(config);
   };
 
   return (

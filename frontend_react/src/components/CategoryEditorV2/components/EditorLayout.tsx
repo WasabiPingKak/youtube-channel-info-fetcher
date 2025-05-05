@@ -13,6 +13,7 @@ import React, { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { useEditorData } from '../hooks/useEditorData';
 import { useEditorStore } from '../hooks/useEditorStore';
+import { Toaster } from 'react-hot-toast';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard';
 import ChannelDrawer from '../../common/ChannelDrawer';
@@ -57,26 +58,29 @@ export default function EditorLayout() {
   }
 
   return (
-    <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
-      {/* 頻道資訊卡 */}
-      <ChannelDrawer />
-      <ChannelInfoCard />
+    <>
+      <Toaster position="top-right" reverseOrder={false} />
+      <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
+        {/* 頻道資訊卡 */}
+        <ChannelDrawer />
+        <ChannelInfoCard />
 
-      {/* ✅ 上方僅顯示儲存按鈕 */}
-      <div className="flex justify-end">
-        <SaveAllButton disabled={!unsaved} />
+        {/* 自動建議區塊 */}
+        <KeywordSuggestPanel />
+
+        {/* ✅ 類型切換 tab（從原本移下來） */}
+        <VideoTypeTabs />
+
+        {/* ✅ 上方僅顯示儲存按鈕 */}
+        <div className="flex justify-end">
+          <SaveAllButton disabled={!unsaved} />
+        </div>
+
+        {/* 編輯用影片清單 */}
+        <div className="min-h-[600px]">
+          <FilteredVideoList />
+        </div>
       </div>
-
-      {/* 自動建議區塊 */}
-      <KeywordSuggestPanel />
-
-      {/* ✅ 類型切換 tab（從原本移下來） */}
-      <VideoTypeTabs />
-
-      {/* 編輯用影片清單 */}
-      <div className="min-h-[600px]">
-        <FilteredVideoList  />
-      </div>
-    </div>
+    </>
   );
 }
