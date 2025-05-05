@@ -19,7 +19,7 @@ const BracketKeywordBlock: React.FC<KeywordBlockProps> = ({
       <header className="mb-2">
         <h3 className="font-semibold mb-1">📎 標題括號解析</h3>
         <p className="text-sm text-gray-500">
-          從影片標題的括號中抽取的主題，點擊可加入分類
+          從影片標題的括號中抽取的主題，點擊可在關鍵字過濾區啟用
         </p>
       </header>
       <div className="flex flex-wrap gap-2">

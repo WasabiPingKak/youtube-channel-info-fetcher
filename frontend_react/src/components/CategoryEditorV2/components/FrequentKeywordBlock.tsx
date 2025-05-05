@@ -19,7 +19,7 @@ const FrequentKeywordBlock: React.FC<KeywordBlockProps> = ({
       <header className="mb-2">
         <h3 className="font-semibold mb-1">📊 高頻關鍵字解析</h3>
         <p className="text-sm text-gray-500">
-          從無括號的影片標題中分析出的高頻詞，點擊可加入分類
+          從無括號的影片標題中分析出的高頻詞，點擊可在關鍵字過濾區啟用
         </p>
       </header>
       <div className="flex flex-wrap gap-2">
