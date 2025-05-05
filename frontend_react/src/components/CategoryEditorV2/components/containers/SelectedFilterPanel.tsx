@@ -3,6 +3,7 @@ import SelectedCategoryPills from '../common/SelectedCategoryPills';
 import { useCategoryFilterState } from '../../hooks/useCategoryFilterState';
 import type { Suggestion } from '../../utils/suggestionUtils';
 import { useEditorStore } from '../../hooks/useEditorStore';
+import ExportConfigButton from '../ExportConfigButton';
 
 interface SelectedFilterPanelProps {
   suggestions: Suggestion[];
@@ -47,6 +48,8 @@ export default function SelectedFilterPanel({ suggestions }: SelectedFilterPanel
         >
           顯示所有影片
         </button>
+
+        <ExportConfigButton />
       </div>
     </section>
   );
