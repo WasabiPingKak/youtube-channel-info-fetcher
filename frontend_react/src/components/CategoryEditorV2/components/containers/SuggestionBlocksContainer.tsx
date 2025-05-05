@@ -6,8 +6,6 @@ import FrequentKeywordBlock from '../FrequentKeywordBlock';
 import GameTagTable from '../GameTagTable';
 import CustomTagTable from '../CustomTagTable';
 import {
-  mapBracketSuggestions,
-  mapFrequencySuggestions,
   mapGameSuggestions,
   mapCustomSuggestions,
 } from '../../utils/suggestionUtils';
@@ -19,34 +17,43 @@ export default function SuggestionBlocksContainer() {
   const toggleChecked = useEditorStore((s) => s.toggleSuggestionChecked);
   const activeType = useEditorStore((s) => s.activeType);
 
+  // 原始建議列表
   const {
     bracketKeywords,
     frequentKeywords,
-    gameKeywords,
-    rebuild,
   } = useKeywordSuggestion(videos, removed);
 
+  // 已選中的名稱集合
   const selectedBracket = useEditorStore((s) => s.selectedBySource.bracket);
   const selectedFrequency = useEditorStore((s) => s.selectedBySource.frequency);
   const selectedGame = useEditorStore((s) => s.selectedBySource.game);
   const customKeywords = useEditorStore((s) => s.customKeywords);
   const selectedCustom = useEditorStore((s) => s.selectedBySource.custom);
 
-  const bracketSuggestions = mapBracketSuggestions(bracketKeywords, selectedBracket);
-  const frequencySuggestions = mapFrequencySuggestions(frequentKeywords, selectedFrequency);
+  // 產生遊戲與自訂關鍵字的建議模型
   const gameEntries = config?.[activeType]?.遊戲 ?? [];
   const gameSuggestions = mapGameSuggestions(gameEntries, videos, selectedGame);
   const customSuggestions = mapCustomSuggestions(customKeywords, videos, selectedCustom);
 
+  // 要隱藏的關鍵字名稱集合
+  const excludeNames = new Set<string>([
+    ...gameSuggestions.map((s) => s.name),
+    ...customSuggestions.map((s) => s.name),
+  ]);
+
+  // 過濾掉所有出現在遊戲或自訂區塊的關鍵字
+  const filteredBracket = bracketKeywords.filter((kw) => !excludeNames.has(kw.keyword));
+  const filteredFrequent = frequentKeywords.filter((kw) => !excludeNames.has(kw.keyword));
+
   return (
     <section className="space-y-6">
       <BracketKeywordBlock
-        keywords={bracketKeywords}
+        keywords={filteredBracket}
         selected={Array.from(selectedBracket)}
         toggleChecked={(kw) => toggleChecked('bracket', kw)}
       />
       <FrequentKeywordBlock
-        keywords={frequentKeywords}
+        keywords={filteredFrequent}
         selected={Array.from(selectedFrequency)}
         toggleChecked={(kw) => toggleChecked('frequency', kw)}
       />
