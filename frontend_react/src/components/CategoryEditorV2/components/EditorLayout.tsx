@@ -1,3 +1,4 @@
+// EditorLayout.tsx
 /**
  * EditorLayout
  * ------------
@@ -14,12 +15,13 @@ import { useParams } from 'react-router-dom';
 import { useEditorData } from '../hooks/useEditorData';
 import { useEditorStore } from '../hooks/useEditorStore';
 import { Toaster } from 'react-hot-toast';
+import { useChannelList } from '../../../hooks/useChannelList';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard';
 import ChannelDrawer from '../../common/ChannelDrawer';
 import SaveAllButton from './SaveAllButton';
 import KeywordSuggestPanel from './KeywordSuggestPanel';
-import FilteredVideoList from './FilteredVideoList';;
+import FilteredVideoList from './FilteredVideoList';
 import VideoTypeTabs from './VideoTypeTabs';
 
 export default function EditorLayout() {
@@ -30,6 +32,9 @@ export default function EditorLayout() {
   const setConfig = useEditorStore((s) => s.setConfig);
   const setVideos = useEditorStore((s) => s.setVideos);
   const unsaved = useEditorStore((s) => s.unsaved);
+
+  // 取得頻道清單以獲取目前頻道名稱
+  const { data: channelList = [] } = useChannelList();
 
   useEffect(() => {
     if (data && channelId) {
@@ -59,24 +64,28 @@ export default function EditorLayout() {
 
   return (
     <>
+      {/* Toaster 用於顯示所有 toast */}
       <Toaster position="top-right" reverseOrder={false} />
+
       <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
-        {/* 頻道資訊卡 */}
+        {/* 側邊抽屜：選擇頻道 */}
         <ChannelDrawer />
+
+        {/* 頻道資訊卡 */}
         <ChannelInfoCard />
 
         {/* 自動建議區塊 */}
         <KeywordSuggestPanel />
 
-        {/* ✅ 類型切換 tab（從原本移下來） */}
+        {/* 類型切換 Tab */}
         <VideoTypeTabs />
 
-        {/* ✅ 上方僅顯示儲存按鈕 */}
+        {/* 儲存按鈕 */}
         <div className="flex justify-end">
           <SaveAllButton disabled={!unsaved} />
         </div>
 
-        {/* 編輯用影片清單 */}
+        {/* 影片編輯清單 */}
         <div className="min-h-[600px]">
           <FilteredVideoList />
         </div>

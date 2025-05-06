@@ -2,7 +2,7 @@
 // -----------------------------------------------------
 // 頻道側邊抽屜：顯示 Firestore channel_index 清單，
 // 點擊後依照目前頁面 URL 格式（path 或 query）切換頻道，
-// 自動更新網址、關閉 Drawer 並顯示切換中 Toast。
+// 自動更新網址、關閉 Drawer 並顯示切換完成 Toast。
 // -----------------------------------------------------
 
 import React, { useState } from "react";
@@ -38,11 +38,11 @@ export default function ChannelDrawer() {
       navigate({ search: params.toString() });
     }
 
-    // 2) 關閉 Drawer
+    // 關閉 Drawer
     closeDrawer();
 
-    // 3) 顯示 Toast / Loading
-    toast.loading(`正在切換至「${name}」…`, { id: "channel-switch" });
+    // 顯示切換完成 Toast
+    toast.success(`已切換至「${name}」`);
   };
 
   return (
