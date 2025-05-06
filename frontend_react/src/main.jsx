@@ -14,7 +14,7 @@ const enableSettings = import.meta.env.VITE_ENABLE_SETTINGS === "true";
 const queryClient = new QueryClient();
 
 /* --- 只有在正式環境啟用 persist 快取（跨重整）--- */
-if (!import.meta.env.DEV) {
+//if (!import.meta.env.DEV) {
   // ⬇️ 延遲匯入持久化工具，只在 production 才加載
   import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => {
     import("@tanstack/query-sync-storage-persister").then(({ createSyncStoragePersister }) => {
@@ -25,11 +25,11 @@ if (!import.meta.env.DEV) {
       persistQueryClient({
         queryClient,
         persister: localStoragePersister,
-        maxAge: 1000 * 60 * 5, // 5分鐘
+        maxAge: 1000 * 60 * 60 * 12,
       });
     });
   });
-}
+//}
 
 /* --- 可選：提供給 DevTools Console 測試 invalidate 用 --- */
 if (import.meta.env.DEV) {
