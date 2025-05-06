@@ -21,21 +21,10 @@ import type {
   NonGameMainCategory,
 } from '../types/editor';
 import { generateBadgesForVideo } from './utils/badgeUtils';
-
 import { defaultConfig } from '../types/editor';
+import { populateBadges } from './utils/populateBadges';
 
 export const useEditorStore = create<EditorState>((set, get) => {
-
-  const populateBadgesFromConfig = () => {
-    const { videos, config } = get();
-    if (!videos.length || !Object.keys(config).length) return;
-
-    const withBadges = videos.map((v) =>
-      v.badges?.length ? v : { ...v, badges: generateBadgesForVideo(v, config[v.type]) },
-    );
-    set({ videos: withBadges });
-  };
-
   /* ---------- utilities ---------- */
 
   /** 當影片僅有 matchedCategories=['其他'] 時，用於舊邏輯判定 */
@@ -93,12 +82,16 @@ export const useEditorStore = create<EditorState>((set, get) => {
     setActiveKeywordFilter: (kw: string | null) => set({ activeKeywordFilter: kw }),
     setChannelId: (id: string) => set({ channelId: id }),
     setConfig: (cfg: CategoryConfig) => {
-      set({ config: cfg });
-      populateBadgesFromConfig();
+      const { videos } = get();
+      const type = videos[0]?.type || 'videos';
+      const updatedVideos = populateBadges(videos, cfg[type] || {});
+      set({ config: cfg, videos: updatedVideos });
     },
     setVideos: (videos: Video[]) => {
-      set({ videos });
-      populateBadgesFromConfig();
+      const { config } = get();
+      const type = videos[0]?.type || 'videos';
+      const updatedVideos = populateBadges(videos, config[type] || {});
+      set({ videos: updatedVideos });
     },
     updateVideos: (videos: Video[]) => set({ videos }),
     setActiveType: (type: VideoType) => set({ activeType: type }),
@@ -112,15 +105,20 @@ export const useEditorStore = create<EditorState>((set, get) => {
      * 載入並用 defaultConfig 補齊欄位
      */
     loadConfig: (raw?: Partial<CategoryConfig>) => {
+      const { videos } = get();
+      const fullConfig = {
+        live:   { ...defaultConfig.live,   ...raw?.live   },
+        videos: { ...defaultConfig.videos, ...raw?.videos },
+        shorts: { ...defaultConfig.shorts, ...raw?.shorts },
+      };
+      const type = videos[0]?.type || 'videos';
+      const updatedVideos = populateBadges(videos, fullConfig[type] || {});
+
       set({
-        config: {
-          live:   { ...defaultConfig.live,   ...raw?.live   },
-          videos: { ...defaultConfig.videos, ...raw?.videos },
-          shorts: { ...defaultConfig.shorts, ...raw?.shorts },
-        },
+        config: fullConfig,
+        videos: updatedVideos,
         unsaved: false,
       });
-      populateBadgesFromConfig();
     },
 
     /**
