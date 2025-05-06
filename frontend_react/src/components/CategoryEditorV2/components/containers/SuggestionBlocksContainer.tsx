@@ -49,7 +49,7 @@ export default function SuggestionBlocksContainer() {
     <section className="space-y-6">
       <BracketKeywordBlock
         keywords={filteredBracket}
-        selected={Array.from(selectedBracket)}
+        selected={selectedBracket}
         toggleChecked={(kw) => toggleChecked('bracket', kw)}
       />
       <FrequentKeywordBlock

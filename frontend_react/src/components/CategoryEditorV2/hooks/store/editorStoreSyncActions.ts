@@ -13,6 +13,7 @@ export const getSyncActions = (set: any, get: any) => ({
     const type = videos[0]?.type || 'videos';
     const updatedVideos = populateBadges(videos, cfg[type] || {});
     set({ config: cfg, videos: updatedVideos });
+    get().hydrateSelectionsFromConfig(cfg);
   },
 
   setVideos: (videos: Video[]) => {

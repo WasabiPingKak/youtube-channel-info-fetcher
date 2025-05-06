@@ -31,8 +31,8 @@ import {
   getSelectionActions,
   getCategoryActions,
   getSyncActions,
+  getHydrationActions,
 } from './store';
-
 
 export const useEditorStore = create<EditorState>((set, get) => {
   /* ---------- state & actions ---------- */
@@ -45,6 +45,7 @@ export const useEditorStore = create<EditorState>((set, get) => {
     ...getSelectionActions(set, get),
     ...getCategoryActions(set, get),
     ...getSyncActions(set, get),
+    ...getHydrationActions(set, get),
 
     /* ---------- 基本 state ---------- */
     channelId: '',

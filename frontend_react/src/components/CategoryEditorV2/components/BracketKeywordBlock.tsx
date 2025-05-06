@@ -3,7 +3,7 @@ import CategoryToggleButton from "./common/CategoryToggleButton";
 
 interface KeywordBlockProps {
   keywords: { keyword: string; count: number }[];
-  selected: string[];
+  selected: Set<string>;
   toggleChecked: (keyword: string) => void;
 }
 
@@ -23,15 +23,19 @@ const BracketKeywordBlock: React.FC<KeywordBlockProps> = ({
         </p>
       </header>
       <div className="flex flex-wrap gap-2">
-        {sortedKeywords.map((item) => (
-          <CategoryToggleButton
-            key={item.keyword}
-            name={item.keyword}
-            count={item.count}
-            selected={selected.includes(item.keyword)}
-            onToggle={() => toggleChecked(item.keyword)}
-          />
-        ))}
+        {sortedKeywords.map((item) => {
+          const isSelected = selected.has(item.keyword);
+
+          return (
+            <CategoryToggleButton
+              key={item.keyword}
+              name={item.keyword}
+              count={item.count}
+              selected={isSelected}
+              onToggle={() => toggleChecked(item.keyword)}
+            />
+          );
+        })}
       </div>
     </section>
   );

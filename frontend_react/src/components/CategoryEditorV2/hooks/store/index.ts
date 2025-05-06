@@ -11,3 +11,4 @@ export { getCustomKeywordActions } from './editorStoreCustomKeywordActions';
 export { getSelectionActions } from './editorStoreSelectionActions';
 export { getCategoryActions } from './editorStoreCategoryActions';
 export { getSyncActions } from './editorStoreSyncActions';
+export { getHydrationActions } from './editorStoreHydrationActions';
