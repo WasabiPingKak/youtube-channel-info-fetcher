@@ -51,6 +51,8 @@ export interface Video {
   badges?: Badge[];
 }
 
+export type KeywordSource = 'bracket' | 'frequency' | 'game' | 'custom';
+
 export interface EditorState {
   selectedBySource: {
     bracket: Set<string>;
