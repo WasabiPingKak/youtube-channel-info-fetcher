@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { useEditorStore } from './useEditorStore';
+import { useEditorStore } from '../hooks/useEditorStore';
 import type {
   Video,
   CategorySettings,
@@ -28,13 +28,16 @@ const tokenize = (text: string): string[] =>
     .split(/\s+/)
     .filter((w) => w.length > 1);
 
-/* 可擴充停用詞 */
+/* 停用詞清單 */
 const STOP_WORDS = new Set<string>(['一個', '這個']);
 
-/**
- * 預設空的分類設定，用於避免每次回傳新物件導致快取失效
- */
-const DEFAULT_CATEGORY_SETTINGS: CategorySettings = {};
+/* 判斷是否為純數字 */
+const isPureNumber = (token: string): boolean => {
+  const arabic = /^\d+$/;
+  const roman = /^[ivxlcdm]+$/i;
+  const chinese = /^[零一二三四五六七八九十百千萬兩]+$/;
+  return arabic.test(token) || roman.test(token) || chinese.test(token);
+};
 
 /* ---------- Hook 主體 ---------- */
 export function useKeywordSuggestion(
@@ -45,87 +48,60 @@ export function useKeywordSuggestion(
   const [frequentKeywords, setFrequentKeywords] = useState<SuggestedKeyword[]>([]);
   const [gameKeywords, setGameKeywords] = useState<SuggestedKeyword[]>([]);
 
-  /* 直接從全域 store 取得目前影片型別與設定 */
-  const activeType = useEditorStore((s) => s.activeType);
-  const rawCategorySettings = useEditorStore(
-    (s) => s.config?.[activeType] as CategorySettings | undefined
-  );
-  const categorySettings = rawCategorySettings ?? DEFAULT_CATEGORY_SETTINGS;
-
   const rebuild = useCallback(() => {
-    /* ---- 統計器 ---- */
     const bracketCounter: Record<string, number> = {};
-    const keywordCounter: Record<string, number> = {};
-    const gameCounter: Record<string, number> = {};
+    const freqCounter: Record<string, number> = {};
+    const bracketRawStrings: Set<string> = new Set();
 
-    const usedInBracket = new Set<string>(); // 記錄已命中括號的 videoId
-
-    /* ---------- 📎 解析括號詞 ---------- */
     for (const video of videos) {
-      const title = video.title ?? '';
-      let match: RegExpExecArray | null;
-      BRACKET_REGEX.lastIndex = 0; // reset
+      const title = video.title;
 
-      while ((match = BRACKET_REGEX.exec(title)) !== null) {
-        const kw = match[1].trim();
-        if (!kw || removed.includes(kw)) continue;
-
-        bracketCounter[kw] = (bracketCounter[kw] || 0) + 1;
-        usedInBracket.add(video.videoId);
+      // ✅ 收集括號內原始完整字串（不再做分詞）
+      const matches = [...title.matchAll(BRACKET_REGEX)];
+      for (const match of matches) {
+        const full = match[1].trim();
+        if (full.length > 0) {
+          bracketRawStrings.add(full);
+          bracketCounter[full] = (bracketCounter[full] || 0) + 1;
+        }
       }
-    }
 
-    /* ---------- 🔍 高頻關鍵字 ---------- */
-    for (const video of videos) {
-      if (usedInBracket.has(video.videoId)) continue;
-
-      const tokens = tokenize(video.title ?? '');
-
-      for (const tk of tokens) {
-        if (STOP_WORDS.has(tk) || removed.includes(tk)) continue;
-        keywordCounter[tk] = (keywordCounter[tk] || 0) + 1;
-      }
-    }
-
-    /* ---------- 🎮 遊戲關鍵字 ---------- */
-    const gameEntries: GameEntry[] = categorySettings.遊戲 ?? [];
-
-    for (const video of videos) {
-      const titleLower = (video.title ?? '').toLowerCase();
-
-      for (const game of gameEntries) {
-        for (const kw of game.keywords) {
-          if (removed.includes(kw)) continue;
-          if (titleLower.includes(kw.toLowerCase())) {
-            gameCounter[kw] = (gameCounter[kw] || 0) + 1;
-          }
+      // ✅ 分詞頻率統計（frequentKeywords 用）
+      const tokens = tokenize(title);
+      for (const token of tokens) {
+        if (!STOP_WORDS.has(token)) {
+          freqCounter[token] = (freqCounter[token] || 0) + 1;
         }
       }
     }
 
-    /* ---------- 產生結果 ---------- */
-    const bracketList = Object.entries(bracketCounter)
-      .sort((a, b) => b[1] - a[1])
-      .map(([keyword, count]) => ({ keyword, count }));
+    const filteredFrequent: SuggestedKeyword[] = Object.entries(freqCounter)
+      .filter(
+        ([word, count]) =>
+          count >= 2 &&
+          !bracketRawStrings.has(word) &&
+          !isPureNumber(word)
+      )
+      .map(([keyword, count]) => ({ keyword, count }))
+      .sort((a, b) => b.count - a.count);
 
-    const frequentList = Object.entries(keywordCounter)
-      .filter(([_, count]) => count >= 3)
-      .sort((a, b) => b[1] - a[1])
-      .map(([keyword, count]) => ({ keyword, count }));
-
-    const gameList = Object.entries(gameCounter)
-      .sort((a, b) => b[1] - a[1])
-      .map(([keyword, count]) => ({ keyword, count }));
+    const bracketList: SuggestedKeyword[] = Object.entries(bracketCounter)
+      .map(([keyword, count]) => ({ keyword, count }))
+      .sort((a, b) => b.count - a.count); // ✅ 不拆字、不排除、保留低頻詞
 
     setBracketKeywords(bracketList);
-    setFrequentKeywords(frequentList);
-    setGameKeywords(gameList);
-  }, [videos, removed, rawCategorySettings]);
+    setFrequentKeywords(filteredFrequent);
+    setGameKeywords([]); // 遊戲標籤尚未實作
+  }, [videos]);
 
-  /* 首次掛載 & 依賴變動時重建 */
   useEffect(() => {
     rebuild();
   }, [rebuild]);
 
-  return { bracketKeywords, frequentKeywords, gameKeywords, rebuild };
+  return {
+    bracketKeywords,
+    frequentKeywords,
+    gameKeywords,
+    rebuild,
+  };
 }
