@@ -60,11 +60,14 @@ export default function KeywordSuggestPanel() {
   const { selectedFilter, setFilter, clearFilter, isFilterActive } =
     useCategoryFilterState();
 
-  /* ---------- ✅ 修正：僅初始化一次 ---------- */
+  /* ---------- ✅ 自訂關鍵字初始化 ---------- */
   const hasInitRef = useRef(false);
 
   useEffect(() => {
     if (hasInitRef.current) return;
+    if (!config || videos.length === 0) return;
+    if (bracketKeywords.length === 0 && frequentKeywords.length === 0) return;
+
     hasInitRef.current = true;
 
     const configNames = extractCategoryNames(config);
@@ -88,12 +91,12 @@ export default function KeywordSuggestPanel() {
     });
 
     initCustomKeywords(
-      config?.[activeType] ?? {},
+      config[activeType] ?? {},
       bracketKeywords.map((k) => k.keyword),
       frequentKeywords.map((k) => k.keyword),
       gameEntries,
     );
-  }, []);
+  }, [config, videos, bracketKeywords, frequentKeywords, gameEntries]);
 
   /* ---------- Render ---------- */
   return (
