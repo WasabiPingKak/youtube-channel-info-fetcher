@@ -135,6 +135,9 @@ export interface EditorState {
   getUnclassifiedVideos: () => Video[];
   getClassifiedVideos: () => Video[];
 
+  getMergedConfig: () => CategorySettings;
+  getFullMergedConfig: () => CategoryConfig;
+
   /* 重置整體狀態 */
   resetStore: () => void;
 }

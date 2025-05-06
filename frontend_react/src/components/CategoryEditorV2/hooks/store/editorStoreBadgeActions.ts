@@ -34,11 +34,13 @@ export const getBadgeActions = (set: any, get: any) => ({
    * ➕ 批次套用：對命中影片加入 [主類別[keyword]]
    */
   applyBadges: (keyword: string, categories: MainCategory[]) => {
+    const activeType = get().activeType;
+
     categories.forEach((cat) => {
       if (cat === '遊戲') {
-        get().addGameToConfig('videos', keyword, []);
+        get().addGameToConfig(activeType, keyword, []);
       } else {
-        get().addKeywordToConfig('videos', cat, keyword);
+        get().addKeywordToConfig(activeType, cat, keyword);
       }
     });
 
@@ -67,9 +69,11 @@ export const getBadgeActions = (set: any, get: any) => ({
    * ➖ 批次移除：依 keyword 刪除所有主類別 badge
    */
   removeBadges: (keyword: string) => {
-    get().removeGameFromConfig('videos', keyword);
+    const activeType = get().activeType;
+
+    get().removeGameFromConfig(activeType, keyword);
     (['雜談', '節目', '音樂', '其他'] as const).forEach((main) => {
-      get().removeKeywordFromConfig('videos', main, keyword);
+      get().removeKeywordFromConfig(activeType, main, keyword);
     });
 
     const all = get().videos.map((v) => ({ ...v }));

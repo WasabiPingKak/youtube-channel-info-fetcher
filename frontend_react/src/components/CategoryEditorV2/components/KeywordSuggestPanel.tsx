@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { useEditorStore } from '../hooks/useEditorStore';
 import { useKeywordSuggestion } from '../hooks/useKeywordSuggestion';
 import SelectedCategoryPills from './common/SelectedCategoryPills';
@@ -60,7 +60,13 @@ export default function KeywordSuggestPanel() {
   const { selectedFilter, setFilter, clearFilter, isFilterActive } =
     useCategoryFilterState();
 
+  /* ---------- ✅ 修正：僅初始化一次 ---------- */
+  const hasInitRef = useRef(false);
+
   useEffect(() => {
+    if (hasInitRef.current) return;
+    hasInitRef.current = true;
+
     const configNames = extractCategoryNames(config);
 
     bracketKeywords.forEach((item) => {
@@ -81,15 +87,13 @@ export default function KeywordSuggestPanel() {
       }
     });
 
-    // ✅ 新增：初始化自訂關鍵字
     initCustomKeywords(
       config?.[activeType] ?? {},
       bracketKeywords.map((k) => k.keyword),
       frequentKeywords.map((k) => k.keyword),
       gameEntries,
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config, activeType, bracketKeywords, frequentKeywords, gameEntries]);
+  }, []);
 
   /* ---------- Render ---------- */
   return (
