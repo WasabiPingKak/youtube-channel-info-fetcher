@@ -41,6 +41,7 @@
   - 自動填入 `updatedAt = SERVER_TIMESTAMP`
 - 建立或更新 `channel_index/{channel_id}`
   - 包含 `name`、`thumbnail`、`url`、`enabled`、`priority`
+- 若 `channel_data/{channel_id}/settings/config` 尚未存在，則自動從 `config_default.json` 初始化分類設定
 
 ---
 
@@ -92,11 +93,13 @@ youtube_tools/
 ├── handle_cache.json                  # 快取（自動產生）
 ├── youtube_channel_import.log         # log（自動產生）
 ├── .env.local                         # API 金鑰與金鑰路徑
+├── config_default.json                # 預設分類設定（自動寫入 settings/config）
 ├── core/                              # 程式模組
 │   ├── constants.py
 │   ├── env.py
 │   ├── log_setup.py
 │   ├── youtube_api.py
 │   ├── firestore_writer.py
-│   └── handle_utils.py
+│   ├── handle_utils.py
+│   └── config_initializer.py
 ```
