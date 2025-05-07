@@ -8,6 +8,7 @@ youtube_channel_import.py
   4. 寫入 / 更新：
      - channel_data/{channel_id}/channel_info/info
      - channel_index/{channel_id}
+     - channel_data/{channel_id}/settings/config（若不存在則初始化）
   5. 在終端輸出成功 / 失敗摘要
   6. 將完整細節寫入 youtube_channel_import.log
 
@@ -25,6 +26,7 @@ from pathlib import Path
 from google.cloud import firestore
 from dotenv import load_dotenv
 
+from core.log_setup import logger
 from core.handle_utils import parse_and_resolve_channel_ids
 from core.youtube_api import (
     build_youtube_service,
@@ -36,7 +38,7 @@ from core.constants import (
     FIRESTORE_INFO_PATH, FIRESTORE_INDEX_COLLECTION, SPECIAL_CHANNEL_ID,
 )
 from core.firestore_writer import init_firestore_client, needs_update_info
-from core.log_setup import logger
+from core.config_initializer import init_config_if_absent
 
 # ---------------------------------------------------------------------------#
 # 📂 載入環境變數
@@ -119,6 +121,12 @@ def main():
             logger.error("[Index] 寫入失敗 %s：%s", cid, e)
             failed.append(cid)
             continue
+
+        # ✅ 新增邏輯：初始化 settings/config（如果不存在）
+        try:
+            init_config_if_absent(fs_client, cid, data["name"])
+        except Exception as e:
+            logger.warning("[Config] 初始化失敗 %s：%s", cid, e)
 
         logger.info("[結果] %s %s [%s]", cid, data["name"], status)
         success.append(cid)

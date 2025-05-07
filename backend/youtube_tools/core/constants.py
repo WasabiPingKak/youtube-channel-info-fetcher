@@ -20,6 +20,11 @@ LOG_FILE = Path("youtube_channel_import.log")
 # 📦 Firestore 寫入目標路徑
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
+FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
+
+# 預設設定檔的本地路徑（假設你放在根目錄）
+def get_config_default_path() -> str:
+    return "config_default.json"
 
 # 🔒 特殊頻道 ID（例如後台固定設定頻道）
 SPECIAL_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"
