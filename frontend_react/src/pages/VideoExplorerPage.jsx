@@ -2,7 +2,7 @@ import React, { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-import { useVideoCache } from "../hooks/useVideoCache";
+import { useClassifiedVideos } from "../hooks/useClassifiedVideos";
 import { useVideoBrowseState } from "../hooks/useVideoBrowseState";
 import { useChartControlState } from "../hooks/useChartControlState";
 
@@ -22,7 +22,7 @@ const VideoExplorerPage = () => {
   const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID;
 
   /* ---------------- 2. 讀取影片與分類快取 ---------------- */
-  const { videos, loading, error, categorySettings } = useVideoCache(
+  const { videos, loading, error, categorySettings } = useClassifiedVideos(
     channelId,
     "videos"
   );

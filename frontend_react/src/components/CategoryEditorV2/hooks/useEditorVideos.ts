@@ -12,7 +12,7 @@ export function useEditorVideos(channelId?: string) {
     queryKey: ["editor-videos", channelId],
     queryFn: async () => {
       const res = await fetch(
-        `${API_BASE}/api/categories/editor-data?channel_id=${encodeURIComponent(
+        `${API_BASE}/api/categories/editor-data-v2?channel_id=${encodeURIComponent(
           channelId!
         )}`
       );

@@ -1,13 +1,20 @@
 import logging
 from typing import List, Dict, Any
 
-
 def normalize(text: str) -> str:
     """
     將文字轉為小寫並移除全形／半形空白，方便比對。
     """
     return text.lower().replace(" ", "").replace("　", "")
 
+# 類型映射：轉為統一比對格式
+TYPE_MAP = {
+    "直播檔": "live",
+    "直播": "live",
+    "影片": "videos",
+    "Shorts": "shorts",
+    "shorts": "shorts"
+}
 
 def match_category_and_game(
     title: str, video_type: str, settings: Dict[str, Any]
@@ -27,11 +34,17 @@ def match_category_and_game(
         matched_keywords: List[str] = []
         matched_game: str | None = None
 
+        logging.debug("🧪 settings 結構：%s", settings.keys())
+        logging.debug("🧪 settings['live'] = %s", settings.get("live", "❌ 無資料"))
+
         normalized_title = normalize(title)
         logging.debug("🔍 [match] 處理影片標題: %s", title)
         logging.debug("🔍 [match] normalized: %s", normalized_title)
 
-        category_settings = settings.get(video_type, {})
+        logging.debug("🔍 [match] 傳入的 video_type: %s", video_type)
+        logging.debug("🧩 [match] settings 結構: %s", list(settings.keys()))
+        type_key = TYPE_MAP.get(video_type, video_type)
+        category_settings = settings.get(type_key, {})
         logging.debug("📁 [match] 類型分類設定: %s", list(category_settings.keys()))
 
         # ────────────────────────────────────────────────
@@ -46,6 +59,7 @@ def match_category_and_game(
                     if category not in matched_categories:            # 避免重複
                         matched_categories.append(category)
                     matched_keywords.append(kw)
+                    logging.debug("🏷️ 命中分類 [%s] via keyword [%s]", category, kw)
 
         # ────────────────────────────────────────────────
         # 2️⃣ 處理「遊戲」主分類
@@ -62,6 +76,7 @@ def match_category_and_game(
                 all_keywords = keywords + ([game_name] if game_name else [])
                 if any(normalize(kw) in normalized_title for kw in all_keywords):
                     matched_game_name = game_name
+                    logging.debug("🎮 命中遊戲 [%s] via keywords %s", game_name, all_keywords)
                     break  # 命中第一個即停；陣列順序代表優先序
 
         # ────────────────────────────────────────────────
@@ -87,6 +102,10 @@ def match_category_and_game(
         # 若無任何命中且設定有「其他」，回填「其他」
         if not matched_categories and "其他" in category_settings:
             matched_categories = ["其他"]
+            logging.debug("➕ 無命中分類，自動套用 [其他]")
+
+        logging.debug("✅ [match] 結果 | Categories: %s | Game: %s | Keywords: %s",
+                      matched_categories, matched_game, matched_keywords)
 
         return {
             "matchedCategories": matched_categories,
