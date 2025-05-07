@@ -1,6 +1,6 @@
 from flask import Blueprint, request, jsonify
 import logging
-from backend.services.firestore_settings_service import load_category_settings, save_category_settings
+from services.firestore_settings_service import load_category_settings, save_category_settings
 
 firestore_settings_bp = Blueprint("firestore_settings", __name__)
 

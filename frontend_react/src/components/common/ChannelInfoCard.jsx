@@ -1,11 +1,15 @@
+import { useParams, useSearchParams } from "react-router-dom";
 import { useChannelInfo } from "../../hooks/useChannelInfo";
-import { useSearchParams } from "react-router-dom";
 
 export default function ChannelInfoCard() {
+  const { channelId: paramId } = useParams();
   const [searchParams] = useSearchParams();
-  const channelId = searchParams.get("channel") || "UCLxa0YOtqi8IR5r2dSLXPng";
+  const queryId = searchParams.get("channel");
 
-  const { data, isLoading, error } = useChannelInfo(channelId);
+  // 優先使用路由參數，再用 query string，最後 fallback 預設頻道
+  const finalChannelId = paramId || queryId || "UCLxa0YOtqi8IR5r2dSLXPng";
+
+  const { data, isLoading, error } = useChannelInfo(finalChannelId);
 
   if (isLoading) {
     return (

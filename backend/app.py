@@ -11,8 +11,9 @@ from routes.base_routes import init_base_routes
 from routes.cache_routes import init_cache_routes
 from routes.category_routes import init_category_routes
 from routes.cache_channel_videos import init_cache_v2_routes
-from backend.routes.firestore_settings_routes import init_firestore_settings_routes
+from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
+from routes.category_editor_routes import init_category_editor_routes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,6 +35,7 @@ init_category_routes(app, db)
 init_cache_v2_routes(app)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
+init_category_editor_routes(app)
 
 
 @app.route("/test-firestore")
