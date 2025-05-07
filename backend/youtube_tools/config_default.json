@@ -1,0 +1,260 @@
+{
+    "live": {
+        "遊戲": [
+            {
+                "game": "APEX",
+                "keywords": [
+                    "apex legend",
+                    "apex 英雄",
+                    "欸配"
+                ]
+            },
+            {
+                "game": "STREET FIGHTER 6",
+                "keywords": [
+                    "SF6"
+                ]
+            },
+            {
+                "game": "雀魂",
+                "keywords": []
+            },
+            {
+                "game": "健身環",
+                "keywords": []
+            },
+            {
+                "game": "特戰英豪",
+                "keywords": [
+                    "Valorant",
+                    "打瓦",
+                    "瓦羅蘭",
+                    "特戰"
+                ]
+            },
+            {
+                "game": "Final Fantasy XIV",
+                "keywords": [
+                    "FF 14",
+                    "FFXIV",
+                    "FF XIV"
+                ]
+            },
+            {
+                "game": "崩壞：星穹鐵道",
+                "keywords": []
+            },
+            {
+                "game": "魔物獵人 荒野",
+                "keywords": [
+                    "MHWilds",
+                    "MHWs",
+                    "Monster Hunter Wilds"
+                ]
+            },
+            {
+                "game": "Minecraft",
+                "keywords": [
+                    "麥塊",
+                    "MC",
+                    "Minecraft"
+                ]
+            }
+        ],
+        "雜談": [
+            "閒聊",
+            "工作台",
+            "繪圖",
+            "塗鴉",
+            "加班台",
+            "棉花糖",
+            "雜談"
+        ],
+        "音樂": [
+            "翻唱",
+            "歌回",
+            "cover",
+            "歌枠"
+        ],
+        "節目": [
+            "同步視聽",
+            "初配信",
+            "週年",
+            "企劃",
+            "連動"
+        ],
+        "其他": []
+    },
+    "videos": {
+        "遊戲": [
+            {
+                "game": "APEX",
+                "keywords": [
+                    "apex legend",
+                    "apex 英雄",
+                    "欸配"
+                ]
+            },
+            {
+                "game": "STREET FIGHTER 6",
+                "keywords": [
+                    "SF6"
+                ]
+            },
+            {
+                "game": "雀魂",
+                "keywords": []
+            },
+            {
+                "game": "健身環",
+                "keywords": []
+            },
+            {
+                "game": "特戰英豪",
+                "keywords": [
+                    "Valorant",
+                    "打瓦",
+                    "瓦羅蘭",
+                    "特戰"
+                ]
+            },
+            {
+                "game": "Final Fantasy XIV",
+                "keywords": [
+                    "FF 14",
+                    "FFXIV",
+                    "FF XIV"
+                ]
+            },
+            {
+                "game": "崩壞：星穹鐵道",
+                "keywords": []
+            },
+            {
+                "game": "魔物獵人 荒野",
+                "keywords": [
+                    "MHWilds",
+                    "MHWs",
+                    "Monster Hunter Wilds"
+                ]
+            },
+            {
+                "game": "Minecraft",
+                "keywords": [
+                    "麥塊",
+                    "MC",
+                    "Minecraft"
+                ]
+            }
+        ],
+        "雜談": [
+            "閒聊",
+            "工作台",
+            "繪圖",
+            "塗鴉",
+            "加班台",
+            "棉花糖",
+            "雜談"
+        ],
+        "音樂": [
+            "翻唱",
+            "歌回",
+            "cover",
+            "歌枠"
+        ],
+        "節目": [
+            "同步視聽",
+            "初配信",
+            "週年",
+            "企劃",
+            "連動"
+        ],
+        "其他": []
+    },
+    "shorts": {
+        "遊戲": [
+            {
+                "game": "APEX",
+                "keywords": [
+                    "apex legend",
+                    "apex 英雄",
+                    "欸配"
+                ]
+            },
+            {
+                "game": "STREET FIGHTER 6",
+                "keywords": [
+                    "SF6"
+                ]
+            },
+            {
+                "game": "雀魂",
+                "keywords": []
+            },
+            {
+                "game": "健身環",
+                "keywords": []
+            },
+            {
+                "game": "特戰英豪",
+                "keywords": [
+                    "Valorant",
+                    "打瓦",
+                    "瓦羅蘭",
+                    "特戰"
+                ]
+            },
+            {
+                "game": "Final Fantasy XIV",
+                "keywords": [
+                    "FF 14",
+                    "FFXIV",
+                    "FF XIV"
+                ]
+            },
+            {
+                "game": "崩壞：星穹鐵道",
+                "keywords": []
+            },
+            {
+                "game": "魔物獵人 荒野",
+                "keywords": [
+                    "MHWilds",
+                    "MHWs",
+                    "Monster Hunter Wilds"
+                ]
+            },
+            {
+                "game": "Minecraft",
+                "keywords": [
+                    "麥塊",
+                    "MC",
+                    "Minecraft"
+                ]
+            }
+        ],
+        "雜談": [
+            "閒聊",
+            "工作台",
+            "繪圖",
+            "塗鴉",
+            "加班台",
+            "棉花糖",
+            "雜談"
+        ],
+        "音樂": [
+            "翻唱",
+            "歌回",
+            "cover",
+            "歌枠"
+        ],
+        "節目": [
+            "同步視聽",
+            "初配信",
+            "週年",
+            "企劃",
+            "連動"
+        ],
+        "其他": []
+    }
+}
