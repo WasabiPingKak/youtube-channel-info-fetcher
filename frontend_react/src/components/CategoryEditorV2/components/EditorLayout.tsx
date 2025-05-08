@@ -5,6 +5,7 @@ import { useEditorVideos } from '../hooks/useEditorVideos';
 import { useEditorStore } from '../hooks/useEditorStore';
 import { Toaster } from 'react-hot-toast';
 import { useChannelList } from '../../../hooks/useChannelList';
+import type { VideoType } from '../types/editor';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard';
 import ChannelDrawer from '../../common/ChannelDrawer';
@@ -12,6 +13,12 @@ import SaveAllButton from './SaveAllButton';
 import KeywordSuggestPanel from './KeywordSuggestPanel';
 import FilteredVideoList from './FilteredVideoList';
 import VideoTypeTabs from './VideoTypeTabs';
+
+const TYPE_MAP: Record<string, VideoType> = {
+  "直播檔": "live",
+  "影片": "videos",
+  "Shorts": "shorts",
+};
 
 export default function EditorLayout() {
   const { channelId } = useParams<{ channelId: string }>();
@@ -43,7 +50,14 @@ export default function EditorLayout() {
       setConfig(configData.config);
     }
     if (videosData) {
-      setVideos(videosData);
+      if (videosData) {
+        const enriched = videosData.map((v) => ({
+          ...v,
+          type: TYPE_MAP[v.type] ?? v.type, // ⬅️ 轉成英文代碼
+        }));
+        setVideos(enriched);
+      }
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [channelId, configData, videosData]);

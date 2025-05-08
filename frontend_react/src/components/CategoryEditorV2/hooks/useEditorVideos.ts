@@ -24,7 +24,7 @@ export function useEditorVideos(channelId?: string) {
       return data.videos as Video[];
     },
     // 設定 12 小時快取 (staleTime) 及垃圾回收時間 (gcTime)
-    staleTime: 1000 * 60 * 60 * 12,
-    gcTime: 1000 * 60 * 60 * 12,
+    staleTime: 1000 * 60 * 60 * 0,
+    gcTime: 1000 * 60 * 60 * 0,
   });
 }

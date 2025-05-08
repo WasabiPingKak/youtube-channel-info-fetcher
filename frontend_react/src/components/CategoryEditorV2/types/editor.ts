@@ -141,3 +141,9 @@ export interface EditorState {
   /* 重置整體狀態 */
   resetStore: () => void;
 }
+
+export interface EditorConfigResponse {
+  config: CategoryConfig;
+  customKeywords: string[];
+  removedSuggestedKeywords: string[];
+}
