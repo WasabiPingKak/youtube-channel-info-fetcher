@@ -6,7 +6,6 @@ from services.firestore_settings_service import (
     load_category_settings,
     save_category_settings,
 )
-from services.video_cache_service import apply_category_settings_to_videos
 
 category_save_apply_bp = Blueprint("category_save_apply", __name__)
 
@@ -42,13 +41,10 @@ def init_category_save_apply_routes(app, db):
                     "error":   "無法儲存分類設定"
                 }), 500
 
-            # 套用設定到影片分類
-            updated_count = apply_category_settings_to_videos(db, channel_id, settings)
-
             return jsonify({
                 "success":       True,
                 "message":       "設定已儲存並成功套用分類",
-                "updated_count": updated_count
+                "updated_count": -1
             })
 
         except Exception:
