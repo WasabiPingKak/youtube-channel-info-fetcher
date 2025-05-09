@@ -13,8 +13,7 @@ import { toast } from "react-hot-toast"; // 依專案實際 Toast 工具調整 i
 // ↙️ Drawer 寬度（Tailwind w-72 ≈ 18rem）
 const DRAWER_WIDTH = "w-72";
 
-export default function ChannelDrawer() {
-  const [open, setOpen] = useState(false);
+export default function ChannelDrawer({ open, setOpen, showTriggerButton = true }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
 
@@ -48,35 +47,35 @@ export default function ChannelDrawer() {
   return (
     <>
       {/* 👉 觸發按鈕（可依需求替換為 Icon） */}
-      <button
-        onClick={() => setOpen(true)}
-        className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-        aria-label="選擇頻道"
-      >
-        <svg
-          className="h-6 w-6"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="2"
-          viewBox="0 0 24 24"
+      {showTriggerButton && (
+        <button
+          onClick={() => setOpen(true)}
+          className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+          aria-label="選擇頻道"
         >
-          <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-        </svg>
-      </button>
+          <svg
+            className="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+      )}
 
       {/* 👉 Drawer Overlay */}
       <div
-        className={`fixed inset-0 z-40 bg-black/30 transition-opacity ${
-          open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 z-40 bg-black/30 transition-opacity ${open ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+          }`}
         onClick={closeDrawer}
       />
 
       {/* 👉 Drawer Panel */}
       <aside
-        className={`fixed inset-y-0 left-0 z-50 ${DRAWER_WIDTH} bg-white dark:bg-zinc-900 shadow-lg transform transition-transform ${
-          open ? "translate-x-0" : "-translate-x-full"
-        } flex flex-col`}
+        className={`fixed inset-y-0 left-0 z-50 ${DRAWER_WIDTH} bg-white dark:bg-zinc-900 shadow-lg transform transition-transform ${open ? "translate-x-0" : "-translate-x-full"
+          } flex flex-col`}
       >
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b dark:border-zinc-800">

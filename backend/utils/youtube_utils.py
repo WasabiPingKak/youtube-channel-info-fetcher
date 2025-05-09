@@ -32,6 +32,12 @@ def get_video_publish_date(video):
 
 def get_video_type(video):
     try:
+        # ✅ 若影片已經有 "type" 欄位（快取格式），直接使用它
+        if "type" in video:
+            logging.debug("📦 [get_video_type] 使用快取格式 type=%s | videoId=%s", video["type"], video.get("videoId"))
+            return video["type"]
+
+        # ✅ 原始格式處理邏輯（YouTube API）
         live_details = video.get('liveStreamingDetails', {})
         broadcast_status = video['snippet'].get('liveBroadcastContent')
 
@@ -87,6 +93,22 @@ def get_video_type(video):
 
 def normalize_video_item(video):
     try:
+        # ✅ 已清洗格式（無 snippet）
+        if "snippet" not in video and "videoId" in video:
+            required_keys = ["videoId", "title", "publishDate", "duration", "type"]
+            if all(k in video for k in required_keys):
+                return {
+                    "videoId": video["videoId"],
+                    "title": video["title"],
+                    "publishDate": video["publishDate"],
+                    "duration": video["duration"],
+                    "type": video["type"]
+                }
+            else:
+                logging.warning("⚠️ [normalize_video_item] 清洗後影片缺欄位: %s", video)
+                return None
+
+        # ✅ 原始 YouTube API 格式
         video_id = video.get("id")
         title = video.get("snippet", {}).get("title")
         publish_date = get_video_publish_date(video)

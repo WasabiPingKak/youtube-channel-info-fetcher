@@ -12,7 +12,7 @@ export function useEditorVideos(channelId?: string) {
     queryKey: ["editor-videos", channelId],
     queryFn: async () => {
       const res = await fetch(
-        `${API_BASE}/api/categories/editor-data?channel_id=${encodeURIComponent(
+        `${API_BASE}/api/categories/editor-data-v2?channel_id=${encodeURIComponent(
           channelId!
         )}`
       );
@@ -24,7 +24,7 @@ export function useEditorVideos(channelId?: string) {
       return data.videos as Video[];
     },
     // 設定 12 小時快取 (staleTime) 及垃圾回收時間 (gcTime)
-    staleTime: 1000 * 60 * 60 * 12,
-    gcTime: 1000 * 60 * 60 * 12,
+    staleTime: 1000 * 60 * 60 * 0,
+    gcTime: 1000 * 60 * 60 * 0,
   });
 }

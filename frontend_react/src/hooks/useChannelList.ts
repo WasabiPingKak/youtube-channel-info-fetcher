@@ -62,7 +62,7 @@ export function useChannelList() {
       return list;
     },
     /* 5 分鐘內視為新鮮資料；15 分鐘後進入 GC */
-    staleTime: 5 * 60 * 1000,
-    gcTime: 15 * 60 * 1000,
+    // staleTime: 5 * 60 * 1000,
+    // gcTime: 15 * 60 * 1000,
   });
 }

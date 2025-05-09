@@ -30,7 +30,7 @@ export default function SaveAllButton({ disabled }: SaveAllButtonProps) {
       return data;
     },
     onSuccess: (data) => {
-      toast.success(`設定已儲存，成功套用 ${data.updated_count} 筆分類！`);
+      toast.success(`設定已儲存`);
       useEditorStore.getState().setUnsaved(false);
       useEditorStore.getState().resetRemovedKeywords();
     },
