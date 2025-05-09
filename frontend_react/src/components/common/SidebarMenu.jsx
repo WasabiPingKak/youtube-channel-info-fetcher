@@ -1,6 +1,8 @@
-import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
+import { FaYoutube, FaTwitter, FaHome } from "react-icons/fa";
+import { RiSidebarUnfoldFill } from "react-icons/ri";
+import { GrAnalytics } from "react-icons/gr";
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
@@ -15,19 +17,19 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
     const menuItems = [
         {
             label: "首頁",
-            icon: "🏠",
+            icon: <FaHome className="w-5 h-5" />,
             action: () => navigate(`/videos?channel=${DEFAULT_CHANNEL_ID}`),
         },
         {
             label: "切換頻道",
-            icon: "🔁",
+            icon: <RiSidebarUnfoldFill className="w-5 h-5" />,
             action: handleOpenChannelDrawer,
         },
     ];
 
     const snsLinks = [
-        { icon: "▶️", name: "YouTube", href: "https://www.youtube.com/@wasabi.pingkak" },
-        { icon: "🐦", name: "Twitter", href: "" },
+        { icon: <FaYoutube className="w-5 h-5" />, name: "YouTube", href: "https://www.youtube.com/@wasabi.pingkak" },
+        { icon: <FaTwitter className="w-5 h-5" />, name: "Twitter", href: "" },
     ];
 
     return (
@@ -43,8 +45,9 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
                 >
                     {collapsed ? <ChevronRight className="w-5 h-5" /> : <ChevronLeft className="w-5 h-5" />}
                 </button>
-                <div className={`text-xl font-bold text-gray-800 dark:text-white ${collapsed ? "hidden" : "block"}`}>
-                    📊 頻道分析
+                <div className={`flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white ${collapsed ? "hidden" : "flex"}`}>
+                    <GrAnalytics className="w-6 h-6" />
+                    <span>頻道分析 Beta</span>
                 </div>
             </div>
 
