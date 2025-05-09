@@ -2,6 +2,7 @@ DEMO 網站連結：
 https://vtuber-channel-analyzer-v3.web.app/videos?channel=UCLxa0YOtqi8IR5r2dSLXPng
 
 🔍 頻道分析工具介紹
+
 本專案是一個針對 YouTube 頻道影片內容進行分類與統計分析的視覺化網站。
 目標是協助創作者或觀眾快速掌握頻道內容的分佈概況，包括：
 
