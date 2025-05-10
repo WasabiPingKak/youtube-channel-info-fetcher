@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { FaYoutube, FaTwitter, FaHome } from "react-icons/fa";
+import { FaYoutube, FaTwitter, FaHome, FaGithub } from "react-icons/fa";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
 import { GrAnalytics } from "react-icons/gr";
 
@@ -29,7 +29,8 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
 
     const snsLinks = [
         { icon: <FaYoutube className="w-5 h-5" />, name: "YouTube", href: "https://www.youtube.com/@wasabi.pingkak" },
-        { icon: <FaTwitter className="w-5 h-5" />, name: "Twitter", href: "" },
+        { icon: <FaTwitter className="w-5 h-5" />, name: "Twitter", href: "https://x.com/wasabi_pingkak" },
+        { icon: <FaGithub  className="w-5 h-5" />, name: "GitHub", href: "https://github.com/WasabiPingKak/youtube-channel-info-fetcher" },
     ];
 
     return (
@@ -91,7 +92,7 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
             </nav>
 
             <div className={`p-3 text-xs text-gray-400 text-center ${collapsed ? "hidden" : "block"}`}>
-                © 2025 by Wasabi pingkak
+                © 2025 by Wasabi PingKak
             </div>
         </aside>
     );
