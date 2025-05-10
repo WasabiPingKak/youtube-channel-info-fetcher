@@ -30,7 +30,7 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
     const snsLinks = [
         { icon: <FaYoutube className="w-5 h-5" />, name: "YouTube", href: "https://www.youtube.com/@wasabi.pingkak" },
         { icon: <FaTwitter className="w-5 h-5" />, name: "Twitter", href: "https://x.com/wasabi_pingkak" },
-        { icon: <FaGithub  className="w-5 h-5" />, name: "GitHub", href: "https://github.com/WasabiPingKak/youtube-channel-info-fetcher" },
+        { icon: <FaGithub className="w-5 h-5" />, name: "GitHub", href: "https://github.com/WasabiPingKak/youtube-channel-info-fetcher" },
     ];
 
     return (
@@ -81,7 +81,15 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
                 ))}
 
                 <hr className="my-4 border-gray-300 dark:border-zinc-700" />
-
+                <a
+                    href="https://forms.gle/QU3tMBTu7MgucSgZ7"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center px-4 py-3 gap-3 text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-zinc-800 rounded"
+                >
+                    <span>📝</span>
+                    {!collapsed && <span>協助擴增遊戲名單</span>}
+                </a>
                 <button
                     onClick={() => navigate("/thanks")}
                     className="flex items-center w-full px-4 py-3 gap-3 text-pink-700 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-zinc-800 rounded"
