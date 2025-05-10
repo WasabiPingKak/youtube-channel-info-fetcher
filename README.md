@@ -63,3 +63,6 @@ cd frontend
 ---
 
 如需切換至維護模式，請手動替換 `index.html` 為維護頁版本後重新部署。
+
+[![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WasabiPingKak/youtube-channel-info-fetcher)
+
