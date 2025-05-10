@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import VideoExplorerPage from "./pages/VideoExplorerPage";
+import ThanksPage from "./pages/ThanksPage";
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -58,6 +59,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Routes>
             {/* 公開頁面 */}
             <Route path="/videos" element={<VideoExplorerPage />} />
+
+            <Route path="/thanks" element={<ThanksPage />} />
 
             {/* 新版分類編輯器 */}
             <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
