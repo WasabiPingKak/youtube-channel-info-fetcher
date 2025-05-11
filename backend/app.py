@@ -14,6 +14,8 @@ from routes.category_save_apply_routes import init_category_save_apply_routes
 from routes.category_editor_routes import init_category_editor_routes
 from routes.video_routes import init_video_routes
 from routes.editor_data_v2_route import init_editor_data_v2_route
+from routes.video_update_route import init_video_update_route
+
 
 logging.basicConfig(level=logging.INFO)
 
@@ -34,8 +36,9 @@ init_cache_routes(app, db)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app)
-init_video_routes(app, db)
 init_editor_data_v2_route(app, db)
+init_video_routes(app, db)
+init_video_update_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

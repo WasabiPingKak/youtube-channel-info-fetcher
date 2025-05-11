@@ -57,7 +57,7 @@ export function useClassifiedVideos(
       // ✅ 埋 log：印出影片總數與每部影片的關鍵資訊
       console.log(`📦 取得 ${videos.length} 部影片（type=${videoType}）`);
       videos.forEach((v) => {
-        console.log(`🧩 ${v.title} | matchedKeywords:`, v.matchedKeywords ?? []);
+        // console.log(`🧩 ${v.title} | matchedKeywords:`, v.matchedKeywords ?? []);
       });
 
       const categorySettings = settingsSnap.exists() ? settingsSnap.data() : null;

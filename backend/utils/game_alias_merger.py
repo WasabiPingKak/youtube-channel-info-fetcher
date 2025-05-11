@@ -1,6 +1,6 @@
 import logging
 from typing import List, Dict, Any
-from utils.categorizer import normalize
+from categorizer import normalize
 
 logger = logging.getLogger(__name__)
 logger.debug("📦 [game_alias_merger.py] 模組已開始執行")
