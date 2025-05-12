@@ -81,6 +81,13 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
                 ))}
 
                 <hr className="my-4 border-gray-300 dark:border-zinc-700" />
+                <button
+                    onClick={() => navigate("/authorize-channel")}
+                    className="flex items-center w-full px-4 py-3 gap-3 text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800 rounded"
+                >
+                    <span>🔗</span>
+                    {!collapsed && <span>授權我的頻道(尚未開放)</span>}
+                </button>
                 <a
                     href="https://forms.gle/QU3tMBTu7MgucSgZ7"
                     target="_blank"

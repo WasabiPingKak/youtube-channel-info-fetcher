@@ -50,7 +50,7 @@ export default function ChannelInfoCard() {
               className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white animate-pulse"
               title="本站開發者"
             >
-              🛠️ 本站製作者
+              💻 本站開發者
             </span>
           )}
         </a>

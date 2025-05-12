@@ -29,10 +29,17 @@ echo ""
 echo "🚀 部署映像至 Cloud Run..."
 gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE_URI" \
-  --region "$REGION" \
+  --region="$REGION" \
   --allow-unauthenticated \
   --no-traffic \
-  --set-env-vars "API_KEY=$API_KEY,INPUT_CHANNEL=$INPUT_CHANNEL,GOOGLE_CLOUD_PROJECT=$PROJECT_ID"
+  --set-env-vars \
+    "API_KEY=$API_KEY,\
+    INPUT_CHANNEL=$INPUT_CHANNEL,\
+    GOOGLE_CLOUD_PROJECT=$PROJECT_ID,\
+    GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,\
+    GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET,\
+    GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI,\
+    FRONTEND_BASE_URL=$FRONTEND_BASE_URL"
 
 if [ $? -ne 0 ]; then
   echo "❌ 後端部署失敗"
@@ -51,8 +58,8 @@ LATEST_READY_REVISION=$(gcloud run revisions list \
 
 if [ -n "$LATEST_READY_REVISION" ]; then
   LATEST_URL=$(gcloud run revisions describe "$LATEST_READY_REVISION" \
-  --region="$REGION" \
-  --format="value(status.url)")
+    --region="$REGION" \
+    --format="value(status.url)")
 
   echo "🔁 切換流量到最新 READY 版本：$LATEST_READY_REVISION"
   gcloud run services update-traffic "$SERVICE_NAME" \
@@ -64,5 +71,7 @@ if [ -n "$LATEST_READY_REVISION" ]; then
   echo "🔗 可用於測試的後端 URL：$LATEST_URL"
 else
   echo "❌ 找不到 READY 的 revision，無法切換流量"
+  echo "📋 以下是目前 revision 狀態，請確認部署是否成功："
+  gcloud run revisions list --service="$SERVICE_NAME" --region="$REGION"
   exit 1
 fi

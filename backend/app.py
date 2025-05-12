@@ -15,13 +15,15 @@ from routes.category_editor_routes import init_category_editor_routes
 from routes.video_routes import init_video_routes
 from routes.editor_data_v2_route import init_editor_data_v2_route
 from routes.video_update_route import init_video_update_route
-
+from routes.oauth_callback_route import init_oauth_callback_route
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 print("✅ [app.py] Flask app created")
 CORS(app)
+app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
+app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "https://your-frontend.com")
 
 # 初始化 Firebase，加入錯誤處理
 try:
@@ -39,6 +41,7 @@ init_category_editor_routes(app)
 init_editor_data_v2_route(app, db)
 init_video_routes(app, db)
 init_video_update_route(app, db)
+init_oauth_callback_route(app)
 
 @app.route("/test-firestore")
 def test_firestore():
