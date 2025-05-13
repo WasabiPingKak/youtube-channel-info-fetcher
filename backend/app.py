@@ -17,6 +17,7 @@ from routes.editor_data_v2_route import init_editor_data_v2_route
 from routes.video_update_route import init_video_update_route
 from routes.oauth_callback_route import init_oauth_callback_route
 from routes.init_channel_route import init_channel_route
+from routes.channel_index_route import init_channel_index_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -44,7 +45,7 @@ init_video_routes(app, db)
 init_video_update_route(app, db)
 init_oauth_callback_route(app)
 init_channel_route(app)
-
+init_channel_index_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

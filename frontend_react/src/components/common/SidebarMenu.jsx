@@ -1,9 +1,9 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaYoutube, FaTwitter, FaHome, FaGithub } from "react-icons/fa";
-import { RiSidebarUnfoldFill } from "react-icons/ri";
 import { GrAnalytics } from "react-icons/gr";
 import { MdPrivacyTip } from "react-icons/md";
+import { TbSwitch } from "react-icons/tb";
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
@@ -23,8 +23,8 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
         },
         {
             label: "切換頻道",
-            icon: <RiSidebarUnfoldFill className="w-5 h-5" />,
-            action: handleOpenChannelDrawer,
+            icon: <TbSwitch className="w-5 h-5" />,
+            action: () => navigate("/channels"),
         },
     ];
 

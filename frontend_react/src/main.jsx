@@ -10,6 +10,7 @@ import ThanksPage from "./pages/ThanksPage";
 import AuthorizeChannelPage from "./pages/AuthorizeChannelPage";
 import AuthLoadingPage from "./pages/AuthLoadingPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
+import ChannelSelectorPage from "./pages/ChannelSelectorPage";
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -63,6 +64,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Routes>
             {/* 公開頁面 */}
             <Route path="/videos" element={<VideoExplorerPage />} />
+            <Route path="/channels" element={<ChannelSelectorPage />} />
             <Route path="/authorize-channel" element={<AuthorizeChannelPage />} />
             <Route path="/thanks" element={<ThanksPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
