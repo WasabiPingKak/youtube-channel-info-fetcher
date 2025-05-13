@@ -9,7 +9,6 @@ from googleapiclient.errors import HttpError
 
 db = firestore.Client()
 
-# 🔧 不再依賴 constants 模組，直接定義 Firestore 路徑與 API key
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
@@ -65,31 +64,33 @@ def run_channel_initialization(channel_id: str):
             raise Exception("找不到頻道資訊，請確認 channelId 是否正確")
 
         snippet = items[0]["snippet"]
-        stats = items[0].get("statistics", {})
+
+        # 📸 取得最大可用縮圖
+        thumbnails = snippet.get("thumbnails", {})
+        thumbnail_url = (
+            thumbnails.get("maxres", {}).get("url") or
+            thumbnails.get("high", {}).get("url") or
+            thumbnails.get("default", {}).get("url")
+        )
 
         info_data = {
-            "channelId": channel_id,
-            "title": snippet.get("title"),
-            "description": snippet.get("description"),
-            "thumbnail": snippet.get("thumbnails", {}).get("default", {}).get("url"),
-            "publishedAt": snippet.get("publishedAt"),
-            "subscriberCount": int(stats.get("subscriberCount", 0)),
-            "videoCount": int(stats.get("videoCount", 0)),
-            "viewCount": int(stats.get("viewCount", 0)),
-            "lastInitializedAt": firestore.SERVER_TIMESTAMP,
+            "name": snippet.get("title"),
+            "thumbnail": thumbnail_url,
+            "updatedAt": firestore.SERVER_TIMESTAMP,
+            "url": f"https://www.youtube.com/channel/{channel_id}",
         }
 
         # ✍️ 寫入 channel_info/info
         info_ref = db.document(FIRESTORE_INFO_PATH.format(channel_id=channel_id))
-        info_ref.set(info_data, merge=True)
+        info_ref.set(info_data)
         logging.info(f"[Init] ✅ 寫入 channel_info/info 成功：{channel_id}")
 
         # ✍️ 寫入 channel_index
         index_ref = db.collection(FIRESTORE_INDEX_COLLECTION).document(channel_id)
         index_data = {
-            "name": info_data["title"],
+            "name": info_data["name"],
             "thumbnail": info_data["thumbnail"],
-            "url": f"https://www.youtube.com/channel/{channel_id}",
+            "url": info_data["url"],
             "enabled": True,
             "priority": 1 if channel_id == SPECIAL_CHANNEL_ID else 100,
         }
@@ -102,7 +103,7 @@ def run_channel_initialization(channel_id: str):
             logging.info(f"[Index] 🔁 channel_index 無變化，略過：{channel_id}")
 
         # ✅ 初始化設定（如尚未存在）
-        init_config_if_absent(channel_id, info_data["title"])
+        init_config_if_absent(channel_id, info_data["name"])
 
         logging.info(f"[Init] 🎉 頻道初始化完成：{channel_id}")
 
