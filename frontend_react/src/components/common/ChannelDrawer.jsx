@@ -24,24 +24,42 @@ export default function ChannelDrawer({ open, setOpen, showTriggerButton = true 
   const closeDrawer = () => setOpen(false);
 
   /* --- 選擇頻道後的動作 --- */
-  const handleSelect = (channelId, name) => {
-    const currentPath = window.location.pathname;
+  const handleSelect = async (channelId, name) => {
+    const toastId = toast.loading(`正在載入頻道「${name}」的資料...`);
 
-    if (currentPath.startsWith("/editor/")) {
-      // 👉 path 模式
-      navigate(`/editor/${channelId}`);
-    } else {
-      // 👉 query string 模式
-      const params = new URLSearchParams(searchParams);
-      params.set("channel", channelId);
-      navigate({ search: params.toString() });
+    try {
+      const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/videos/check-update?channelId=${channelId}`);
+      const data = await res.json();
+
+      if (data.shouldUpdate && data.updateToken) {
+        await fetch(`${import.meta.env.VITE_API_BASE}/api/videos/update`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            channelId: channelId,
+            updateToken: data.updateToken,
+          }),
+        });
+      }
+
+      // ✅ 更新成功後再切換頁面
+      const currentPath = window.location.pathname;
+      if (currentPath.startsWith("/editor/")) {
+        navigate(`/editor/${channelId}`);
+      } else {
+        const params = new URLSearchParams(searchParams);
+        params.set("channel", channelId);
+        navigate({ search: params.toString() });
+      }
+
+      toast.success(`已切換至「${name}」`);
+    } catch (e) {
+      console.warn("更新失敗", e);
+      // 可選：toast.error("更新失敗") 或靜默
+    } finally {
+      toast.dismiss(toastId);
+      closeDrawer();
     }
-
-    // 關閉 Drawer
-    closeDrawer();
-
-    // 顯示切換完成 Toast
-    toast.success(`已切換至「${name}」`);
   };
 
   return (

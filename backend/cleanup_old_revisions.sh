@@ -19,27 +19,24 @@ if [ "$TOTAL_COUNT" -le "$RESERVE_COUNT" ]; then
   exit 0
 fi
 
-# 要刪除的 revision（跳過前 N 筆）
-REVISIONS_TO_DELETE=$(echo "$ALL_REVISIONS" | tail -n +"$((RESERVE_COUNT + 1))")
+# 要刪除的 revision（跳過前 N 筆），同時清除換行與潛在 \r 字元
+REVISIONS_TO_DELETE=$(echo "$ALL_REVISIONS" | tail -n +"$((RESERVE_COUNT + 1))" | tr -d '\r')
 
-echo "🧹 準備刪除以下舊的 revisions："
+DELETE_COUNT=$(echo "$REVISIONS_TO_DELETE" | grep -c .)
+echo "🧹 將刪除 $DELETE_COUNT 個舊的 revisions："
 echo "$REVISIONS_TO_DELETE"
-
-# 確認刪除
-read -p "❗確定要刪除上述 $(echo "$REVISIONS_TO_DELETE" | wc -l) 個 revisions？(y/n): " confirm
-if [ "$confirm" != "y" ]; then
-  echo "🚫 已取消清理。"
-  exit 0
-fi
 
 # 開始刪除
 echo ""
 echo "🚀 開始刪除..."
-for rev in $REVISIONS_TO_DELETE; do
-  echo "🔴 刪除 $rev"
-  gcloud run revisions delete "$rev" \
-    --region="$REGION" \
-    --quiet
+echo "$REVISIONS_TO_DELETE" | while IFS= read -r rev; do
+  rev=$(echo "$rev" | tr -d '\r')  # 清除 CR
+  if [ -n "$rev" ]; then
+    echo "🔴 刪除 $rev"
+    gcloud run revisions delete "$rev" \
+      --region="$REGION" \
+      --quiet
+  fi
 done
 
 echo ""

@@ -2,10 +2,14 @@ import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 import VideoExplorerPage from "./pages/VideoExplorerPage";
 import ThanksPage from "./pages/ThanksPage";
+import AuthorizeChannelPage from "./pages/AuthorizeChannelPage";
+import AuthLoadingPage from "./pages/AuthLoadingPage";
+import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -16,20 +20,20 @@ const queryClient = new QueryClient();
 
 /* --- 只有在正式環境啟用 persist 快取（跨重整）--- */
 //if (!import.meta.env.DEV) {
-  // ⬇️ 延遲匯入持久化工具，只在 production 才加載
-  import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => {
-    import("@tanstack/query-sync-storage-persister").then(({ createSyncStoragePersister }) => {
-      const localStoragePersister = createSyncStoragePersister({
-        storage: window.localStorage,
-      });
+// ⬇️ 延遲匯入持久化工具，只在 production 才加載
+import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => {
+  import("@tanstack/query-sync-storage-persister").then(({ createSyncStoragePersister }) => {
+    const localStoragePersister = createSyncStoragePersister({
+      storage: window.localStorage,
+    });
 
-      persistQueryClient({
-        queryClient,
-        persister: localStoragePersister,
-        maxAge: 1000 * 60 * 60 * 12,
-      });
+    persistQueryClient({
+      queryClient,
+      persister: localStoragePersister,
+      maxAge: 1000 * 60 * 60 * 12,
     });
   });
+});
 //}
 
 /* --- 可選：提供給 DevTools Console 測試 invalidate 用 --- */
@@ -59,8 +63,9 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           <Routes>
             {/* 公開頁面 */}
             <Route path="/videos" element={<VideoExplorerPage />} />
-
+            <Route path="/authorize-channel" element={<AuthorizeChannelPage />} />
             <Route path="/thanks" element={<ThanksPage />} />
+            <Route path="/privacy" element={<PrivacyPolicyPage />} />
 
             {/* 新版分類編輯器 */}
             <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
@@ -69,6 +74,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             {enableSettings && CategoryEditor && (
               <Route path="/settings" element={<CategoryEditor />} />
             )}
+
+            <Route path="/auth-loading" element={<AuthLoadingPage />} />
 
             {/* 其他路徑 → redirect 提示 */}
             <Route
@@ -87,6 +94,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
           </Routes>
         </Suspense>
       </BrowserRouter>
+
+      <Toaster position="top-center" />
 
       {/* React Query Devtools（僅在開發環境顯示） */}
       {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}

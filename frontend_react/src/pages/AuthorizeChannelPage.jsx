@@ -1,0 +1,127 @@
+// src/pages/AuthorizeChannelPage.jsx
+
+import React, { useState } from "react";
+import MainLayout from "../components/layout/MainLayout";
+
+const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
+const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
+const SCOPE = "https://www.googleapis.com/auth/youtube.readonly";
+
+const AuthorizeChannelPage = () => {
+    const [confirmed, setConfirmed] = useState(false);
+
+    const handleAuthorize = () => {
+        const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
+            `client_id=${GOOGLE_CLIENT_ID}` +
+            `&redirect_uri=${REDIRECT_URI}` +
+            `&response_type=code` +
+            `&scope=${encodeURIComponent(SCOPE)}` +
+            `&access_type=offline` +
+            `&prompt=consent`;
+
+        window.location.href = authUrl;
+    };
+
+    return (
+        <MainLayout>
+            <div className="max-w-2xl mx-auto mt-10 px-4">
+                <h1 className="text-2xl font-bold mb-6">頻道授權分析</h1>
+
+                <div className="space-y-4 text-gray-800 text-base">
+                    <p>
+                        本站旨在協助創作者分析自己的 YouTube 頻道內容，主要是影片分類與主題分布。
+                        分類結果僅根據影片標題進行過濾分析，無法讀取影片實際內容。
+                    </p>
+                    <p>
+                        雖然網站名稱為「Vtuber Channel Analyzer」，但本服務不限 Vtuber 使用，
+                        任何 YouTube 創作者皆可授權使用。
+                    </p>
+                    <p>
+                        點擊下方按鈕後，我會引導你使用 Google 帳號授權。你授權的內容與用途如下：
+                    </p>
+
+                    {/* 授權內容簡要條列 */}
+                    <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
+                        <div>
+                            <p className="font-semibold text-black">
+                                本站僅會讀取你頻道中原本就公開的資訊：
+                            </p>
+                            <p className="pl-4">
+                                包括頻道名稱、頻道資訊欄、頻道頭像、影片縮圖、影片標題、影片時長、影片資訊欄、播放清單與發佈時間。
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="font-semibold text-black">
+                                本站不會取得任何操作權限：
+                            </p>
+                            <p className="pl-4">
+                                無法發佈影片、留言、修改播放清單或變更設定，也不會發送社群貼文。
+                            </p>
+                        </div>
+
+                        <div>
+                            <p className="font-semibold text-black">
+                                資料用途：
+                            </p>
+                            <p className="pl-4">
+                                授權資料僅用於本網站的靜態分類分析，不會另作他用。若你希望移除這些資料，請聯絡本站開發者協助刪除。
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* 紅色警語區塊 */}
+                <div className="bg-red-50 border border-red-200 p-4 rounded space-y-2 text-red-700 text-sm">
+                    <p>
+                        若你所屬的頻道為企業經營、經紀公司或團體所有，請務必事先取得負責人或經紀單位的明確同意再進行授權。
+                    </p>
+                    <p>
+                        本網站僅提供技術分析服務，無法辨別授權人的身分或授權是否經適當同意。
+                    </p>
+                    <p>
+                        若未經允許即授權使用，可能涉及違反內部規範，請創作者自行確認責任歸屬。
+                    </p>
+                </div>
+
+                <div className="mt-6 flex items-start gap-2">
+                    <input
+                        id="confirm"
+                        type="checkbox"
+                        checked={confirmed}
+                        onChange={() => setConfirmed(!confirmed)}
+                        className="mt-1"
+                    />
+                    <label htmlFor="confirm" className="text-sm text-gray-700">
+                        我已閱讀並同意{" "}
+                        <a
+                            href="/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800"
+                        >
+                            隱私權政策
+                        </a>
+                        ，我了解本站僅會讀取公開資料並進行分析
+                    </label>
+
+                </div>
+
+                <div className="mt-6">
+                    <button
+                        onClick={handleAuthorize}
+                        disabled={!confirmed}
+                        className={`font-semibold py-2 px-4 rounded shadow transition ${confirmed
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
+                    >
+                        使用 Google 帳號授權
+                    </button>
+                </div>
+            </div>
+        </MainLayout>
+    );
+};
+
+export default AuthorizeChannelPage;
