@@ -8,6 +8,7 @@ import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import VideoExplorerPage from "./pages/VideoExplorerPage";
 import ThanksPage from "./pages/ThanksPage";
 import AuthorizeChannelPage from "./pages/AuthorizeChannelPage";
+import AuthLoadingPage from "./pages/AuthLoadingPage";
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -18,20 +19,20 @@ const queryClient = new QueryClient();
 
 /* --- 只有在正式環境啟用 persist 快取（跨重整）--- */
 //if (!import.meta.env.DEV) {
-  // ⬇️ 延遲匯入持久化工具，只在 production 才加載
-  import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => {
-    import("@tanstack/query-sync-storage-persister").then(({ createSyncStoragePersister }) => {
-      const localStoragePersister = createSyncStoragePersister({
-        storage: window.localStorage,
-      });
+// ⬇️ 延遲匯入持久化工具，只在 production 才加載
+import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => {
+  import("@tanstack/query-sync-storage-persister").then(({ createSyncStoragePersister }) => {
+    const localStoragePersister = createSyncStoragePersister({
+      storage: window.localStorage,
+    });
 
-      persistQueryClient({
-        queryClient,
-        persister: localStoragePersister,
-        maxAge: 1000 * 60 * 60 * 12,
-      });
+    persistQueryClient({
+      queryClient,
+      persister: localStoragePersister,
+      maxAge: 1000 * 60 * 60 * 12,
     });
   });
+});
 //}
 
 /* --- 可選：提供給 DevTools Console 測試 invalidate 用 --- */
@@ -71,6 +72,8 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             {enableSettings && CategoryEditor && (
               <Route path="/settings" element={<CategoryEditor />} />
             )}
+
+            <Route path="/auth-loading" element={<AuthLoadingPage />} />
 
             {/* 其他路徑 → redirect 提示 */}
             <Route

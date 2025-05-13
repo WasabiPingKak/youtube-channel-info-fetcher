@@ -43,7 +43,7 @@ def init_oauth_callback_route(app):
             logging.info(f"✅ 頻道授權成功：{channel_id}")
 
             frontend_base = current_app.config.get("FRONTEND_BASE_URL", "https://your-frontend.com")
-            redirect_url = f"{frontend_base}/videos?channel={channel_id}"
+            redirect_url = f"{frontend_base}/auth-loading?channel={channel_id}"
             return redirect(redirect_url)
 
         except Exception as e:

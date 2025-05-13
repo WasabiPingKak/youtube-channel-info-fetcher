@@ -98,12 +98,15 @@ const AuthorizeChannelPage = () => {
                 </div>
 
                 <div className="mt-6">
-                    <button
-                        disabled
-                        title="🚧 功能尚未開放，敬請期待"
-                        className="font-semibold py-2 px-4 rounded shadow bg-gray-300 text-gray-500 cursor-not-allowed"
+                <button
+                        onClick={handleAuthorize}
+                        disabled={!confirmed}
+                        className={`font-semibold py-2 px-4 rounded shadow transition ${confirmed
+                            ? "bg-blue-600 hover:bg-blue-700 text-white"
+                            : "bg-gray-300 text-gray-500 cursor-not-allowed"
+                            }`}
                     >
-                        使用 Google 帳號授權（尚未開放）
+                        使用 Google 帳號授權
                     </button>
                 </div>
             </div>
