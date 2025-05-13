@@ -10,11 +10,6 @@ const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 const SidebarMenu = ({ collapsed, setCollapsed }) => {
     const navigate = useNavigate();
 
-    const handleOpenChannelDrawer = () => {
-        // 派發事件給外層開 Drawer（你可依實作方式改成 props 控制）
-        window.dispatchEvent(new CustomEvent("open-channel-drawer"));
-    };
-
     const menuItems = [
         {
             label: "首頁",

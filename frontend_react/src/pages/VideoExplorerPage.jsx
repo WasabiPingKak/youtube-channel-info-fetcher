@@ -6,7 +6,6 @@ import { useClassifiedVideos } from "../hooks/useClassifiedVideos";
 import { useVideoBrowseState } from "../hooks/useVideoBrowseState";
 import { useChartControlState } from "../hooks/useChartControlState";
 
-import ChannelDrawer from "../components/common/ChannelDrawer";
 import ChannelInfoCard from "../components/common/ChannelInfoCard";
 import TopLevelTabs from "../components/common/TopLevelTabs";
 import SubCategoryTabs from "../components/common/SubCategoryTabs";
@@ -98,8 +97,6 @@ const VideoExplorerPage = () => {
   /* ---------------- 7. 主要畫面 ---------------- */
   return (
     <MainLayout>
-      {/* 👉 ChannelDrawer & ChannelInfo */}
-      <ChannelDrawer open={drawerOpen} setOpen={setDrawerOpen} showTriggerButton={false} />
       <ChannelInfoCard />
 
       {/* Tabs */}

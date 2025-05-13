@@ -8,7 +8,6 @@ import GameTagsGroup from "@/components/CategoryEditor/GameTagsGroup";
 import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
 import EditTabSwitcher from "@/components/CategoryEditor/EditTabSwitcher";
 import ChannelInfoCard from "@/components/common/ChannelInfoCard"; // ✅ 頻道資訊卡（隨切換變動）
-import ChannelDrawer from "@/components/common/ChannelDrawer"; // ✅ 新增：頻道切換抽屜
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"; // ✅ 預設頻道 ID
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
@@ -105,8 +104,6 @@ const CategoryEditor = () => {
 
   return (
     <div className="p-4 max-w-3xl relative">
-      {/* ✅ 頻道選擇抽屜 */}
-      <ChannelDrawer />
 
       {/* ✅ 頻道資訊卡 */}
       <ChannelInfoCard />
