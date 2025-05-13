@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { FaYoutube, FaTwitter, FaHome, FaGithub } from "react-icons/fa";
 import { RiSidebarUnfoldFill } from "react-icons/ri";
 import { GrAnalytics } from "react-icons/gr";
+import { MdPrivacyTip } from "react-icons/md";
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
@@ -103,6 +104,13 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
                 >
                     <span>💖</span>
                     {!collapsed && <span>感謝者名單</span>}
+                </button>
+                <button
+                    onClick={() => navigate("/privacy")}
+                    className="flex items-center w-full px-4 py-3 gap-3 text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded"
+                >
+                    <MdPrivacyTip className="w-5 h-5" />
+                    {!collapsed && <span>隱私權政策</span>}
                 </button>
             </nav>
 

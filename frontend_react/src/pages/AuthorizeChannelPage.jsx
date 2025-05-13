@@ -25,7 +25,7 @@ const AuthorizeChannelPage = () => {
     return (
         <MainLayout>
             <div className="max-w-2xl mx-auto mt-10 px-4">
-                <h1 className="text-2xl font-bold mb-6">授權你的頻道給本站分析</h1>
+                <h1 className="text-2xl font-bold mb-6">頻道授權分析</h1>
 
                 <div className="space-y-4 text-gray-800 text-base">
                     <p>
@@ -93,12 +93,22 @@ const AuthorizeChannelPage = () => {
                         className="mt-1"
                     />
                     <label htmlFor="confirm" className="text-sm text-gray-700">
-                        我了解本站僅會讀取公開資料並進行分析
+                        我已閱讀並同意{" "}
+                        <a
+                            href="/privacy"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 underline hover:text-blue-800"
+                        >
+                            隱私權政策
+                        </a>
+                        ，我了解本站僅會讀取公開資料並進行分析
                     </label>
+
                 </div>
 
                 <div className="mt-6">
-                <button
+                    <button
                         onClick={handleAuthorize}
                         disabled={!confirmed}
                         className={`font-semibold py-2 px-4 rounded shadow transition ${confirmed
