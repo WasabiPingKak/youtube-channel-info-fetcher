@@ -6,7 +6,7 @@ import clsx from "clsx";
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
-const SidebarMenu = ({ collapsed, setCollapsed }) => {
+const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
     const navigate = useNavigate();
 
     const menuItems = [
@@ -43,15 +43,19 @@ const SidebarMenu = ({ collapsed, setCollapsed }) => {
     return (
         <aside
             className={clsx(
+                isMobile ? "w-full max-w-[240px]" : "hidden md:block",
                 "fixed top-14 left-0 h-[calc(100%-56px)] bg-white dark:bg-zinc-900 shadow-lg z-40 border-r border-gray-200 dark:border-zinc-800 transition-all duration-300 overflow-y-auto",
-                collapsed ? "w-16" : "w-60"
+                !isMobile && (collapsed ? "w-16" : "w-60")
             )}
         >
             <nav className="flex flex-col gap-1 text-sm py-4 px-2">
                 {menuItems.map((item) => (
                     <button
                         key={item.label}
-                        onClick={item.action}
+                        onClick={() => {
+                            if (onItemClick) onItemClick();
+                            item.action();
+                        }}
                         className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
                     >
                         {item.icon}
