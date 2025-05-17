@@ -32,12 +32,14 @@ def init_video_routes(app, db):
     @video_bp.route("/api/videos/check-update", methods=["GET"])
     def check_update():
         try:
+            from services.youtube.fetcher import get_video_data
+
             channel_id = request.args.get("channelId")
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
 
-            cache_meta_ref = db.document(f"channel_data/{channel_id}/channel_info/cache_meta")
-            cache_meta_doc = cache_meta_ref.get()
+            index_ref = db.collection("channel_sync_index").document("index_list")
+            doc = index_ref.get()
             now = datetime.now(timezone.utc)
             now_iso = now.isoformat()
 
@@ -45,22 +47,58 @@ def init_video_routes(app, db):
             last_video_sync_at = None
             should_update = False
 
-            if not cache_meta_doc.exists:
+            if not doc.exists:
+                # 初始化文件 + 該頻道
+                videos = get_video_data(input_channel=channel_id)
+                latest_sync = max(
+                    (v["snippet"]["publishedAt"] for v in videos),
+                    default=None
+                )
+                index_ref.set({
+                    "channels": [{
+                        "channel_id": channel_id,
+                        "lastCheckedAt": now_iso,
+                        "lastVideoSyncAt": latest_sync
+                    }]
+                })
                 should_update = True
-                cache_meta_ref.set({"lastCheckedAt": now_iso}, merge=True)
+                last_video_sync_at = latest_sync
             else:
-                data = cache_meta_doc.to_dict()
-                last_checked_at = data.get("lastCheckedAt")
-                last_video_sync_at = data.get("lastVideoSyncAt")
-                if not last_checked_at:
-                    should_update = True
-                else:
-                    last_checked_dt = datetime.fromisoformat(last_checked_at)
-                    if now - last_checked_dt > timedelta(hours=12):
-                        should_update = True
+                data = doc.to_dict()
+                channels = data.get("channels", [])
+                found = False
+                for ch in channels:
+                    if ch.get("channel_id") == channel_id:
+                        last_checked_at = ch.get("lastCheckedAt")
+                        last_video_sync_at = ch.get("lastVideoSyncAt")
+                        found = True
 
-                if should_update:
-                    cache_meta_ref.update({"lastCheckedAt": now_iso})
+                        if not last_checked_at:
+                            should_update = True
+                        else:
+                            last_checked_dt = datetime.fromisoformat(last_checked_at)
+                            if now - last_checked_dt > timedelta(hours=12):
+                                should_update = True
+
+                        if should_update:
+                            ch["lastCheckedAt"] = now_iso
+                        break
+
+                if not found:
+                    videos = get_video_data(input_channel=channel_id)
+                    latest_sync = max(
+                        (v["snippet"]["publishedAt"] for v in videos),
+                        default=None
+                    )
+                    channels.append({
+                        "channel_id": channel_id,
+                        "lastCheckedAt": now_iso,
+                        "lastVideoSyncAt": latest_sync
+                    })
+                    should_update = True
+                    last_video_sync_at = latest_sync
+
+                index_ref.set({"channels": channels})
 
             response = {
                 "shouldUpdate": should_update,
