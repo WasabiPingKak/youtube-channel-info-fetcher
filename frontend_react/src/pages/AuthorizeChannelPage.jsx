@@ -120,6 +120,17 @@ const AuthorizeChannelPage = () => {
                     </button>
                 </div>
             </div>
+            {/* 其他授權方式說明 */}
+            <div className="mt-8 text-sm text-gray-700 space-y-3 border-t pt-6">
+                <p className="font-semibold text-black">其他授權方式</p>
+                <p>
+                    如果你不信任自動化的 Google 授權流程，亦可選擇以其他方式加入本站分析服務。你可以透過能證明本人身分的私人帳號（如 Twitter、電子信箱等）主動聯繫本站管理者，表示你願意提供頻道資料。
+                    本站僅會向你索取頻道網址，不會要求提供其他額外資訊。
+                </p>
+                <p>
+                    本站並未採用開放表單收集頻道資訊，是因為表單無法保證填寫者即為頻道所有者，而透過上述方式可明確且具書面證據地取得授權同意，較能保障雙方權益。
+                </p>
+            </div>
         </MainLayout>
     );
 };

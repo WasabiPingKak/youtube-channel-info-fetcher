@@ -8,13 +8,15 @@ export default function TopLevelTabs({ activeType, onTypeChange }) {
   const tabs = ["live", "videos", "shorts"];
 
   return (
-    <div className="flex space-x-2 mb-4 px-4">
+    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mb-4 px-4">
       {tabs.map((tab) => (
         <button
           key={tab}
           onClick={() => onTypeChange && onTypeChange(tab)}
-          className={`px-4 py-2 rounded ${
-            activeType === tab ? "bg-blue-600 text-white" : "bg-gray-200"
+          className={`w-full sm:w-auto px-4 py-2 rounded text-sm sm:text-base ${
+            activeType === tab
+              ? "bg-blue-600 text-white"
+              : "bg-gray-200 text-gray-800"
           }`}
         >
           {tab === "live" && "📺 直播"}

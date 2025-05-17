@@ -8,7 +8,6 @@ import { useChannelList } from '../../../hooks/useChannelList';
 import type { VideoType } from '../types/editor';
 
 import ChannelInfoCard from '../../common/ChannelInfoCard';
-import ChannelDrawer from '../../common/ChannelDrawer';
 import SaveAllButton from './SaveAllButton';
 import KeywordSuggestPanel from './KeywordSuggestPanel';
 import FilteredVideoList from './FilteredVideoList';
@@ -89,7 +88,6 @@ export default function EditorLayout() {
       <Toaster position="top-right" reverseOrder={false} />
 
       <div className="flex flex-col gap-4 px-4 py-6 max-w-6xl mx-auto">
-        <ChannelDrawer />
         <ChannelInfoCard />
         <KeywordSuggestPanel />
         <VideoTypeTabs />
