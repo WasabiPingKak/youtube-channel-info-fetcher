@@ -53,10 +53,18 @@ const AuthorizeChannelPage = () => {
 
                         <div>
                             <p className="font-semibold text-black">
-                                本站不會取得任何操作權限：
+                                本站不會取得頻道的任何操作權限：
                             </p>
                             <p className="pl-4">
-                                無法發佈影片、留言、修改播放清單或變更設定，也不會發送社群貼文。
+                                無法發佈、修改、刪除任何影片、留言、播放清單或變更其他設定，也無法發送社群貼文。
+                            </p>
+                        </div>
+                        <div>
+                            <p className="font-semibold text-black">
+                                本站無法取得非公開的頻道資訊：
+                            </p>
+                            <p className="pl-4">
+                                無法取得會員限定內容、不公開影片、私人影片、不公開的播放清單、私人播放清單。
                             </p>
                         </div>
 
@@ -116,7 +124,7 @@ const AuthorizeChannelPage = () => {
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                             }`}
                     >
-                        使用 Google 帳號授權
+                        使用 Google 帳號連結 Youtube
                     </button>
                 </div>
             </div>
@@ -124,7 +132,7 @@ const AuthorizeChannelPage = () => {
             <div className="mt-8 text-sm text-gray-700 space-y-3 border-t pt-6">
                 <p className="font-semibold text-black">其他授權方式</p>
                 <p>
-                    如果你不信任自動化的 Google 授權流程，亦可選擇以其他方式加入本站分析服務。你可以透過能證明本人身分的私人帳號（如 Twitter、電子信箱等）主動聯繫本站管理者，表示你願意提供頻道資料。
+                    如果你不信任自動化的 Google OAuth 2.0 授權流程，亦可選擇以其他方式加入本站分析服務。你可以透過能證明本人身分的私人帳號（如 Twitter、電子信箱等）主動聯繫本站管理者，表示你願意提供頻道資料。
                     本站僅會向你索取頻道網址，不會要求提供其他額外資訊。
                 </p>
                 <p>
