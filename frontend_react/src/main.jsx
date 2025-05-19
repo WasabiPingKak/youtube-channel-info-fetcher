@@ -11,6 +11,8 @@ import AuthorizeChannelPage from "./pages/AuthorizeChannelPage";
 import AuthLoadingPage from "./pages/AuthLoadingPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ChannelSelectorPage from "./pages/ChannelSelectorPage";
+import TrendingGamesPage from "./pages/TrendingGamesPage";
+
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -68,6 +70,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/authorize-channel" element={<AuthorizeChannelPage />} />
             <Route path="/thanks" element={<ThanksPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
+            <Route path="/trending" element={<TrendingGamesPage />} />
 
             {/* 新版分類編輯器 */}
             <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
