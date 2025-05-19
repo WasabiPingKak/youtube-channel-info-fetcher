@@ -8,7 +8,6 @@ from firebase_admin import firestore
 
 from services.firebase_init_service import init_firestore
 from routes.base_routes import init_base_routes
-from routes.cache_routes import init_cache_routes
 from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
 from routes.category_editor_routes import init_category_editor_routes
@@ -38,7 +37,6 @@ except Exception:
 
 # 初始化各路由模組
 init_base_routes(app)
-init_cache_routes(app, db)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app)
