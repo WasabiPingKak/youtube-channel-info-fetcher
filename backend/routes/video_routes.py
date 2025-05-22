@@ -41,6 +41,7 @@ def init_video_routes(app, db):
             index_ref = db.collection("channel_sync_index").document("index_list")
             doc = index_ref.get()
             now = datetime.now(timezone.utc)
+            now_iso = now.isoformat()
 
             last_checked_at = None
             last_video_sync_at = None
@@ -50,13 +51,13 @@ def init_video_routes(app, db):
                 # 初始化文件 + 該頻道
                 videos = get_video_data(input_channel=channel_id)
                 latest_sync = max(
-                    (datetime.fromisoformat(v["snippet"]["publishedAt"]) for v in videos),
+                    (v["snippet"]["publishedAt"] for v in videos),
                     default=None
                 )
                 index_ref.set({
                     "channels": [{
                         "channel_id": channel_id,
-                        "lastCheckedAt": now,
+                        "lastCheckedAt": now_iso,
                         "lastVideoSyncAt": latest_sync
                     }]
                 })
@@ -80,7 +81,7 @@ def init_video_routes(app, db):
                                 should_update = True
 
                         if should_update:
-                            ch["lastCheckedAt"] = now
+                            ch["lastCheckedAt"] = now_iso
                         break
 
                 if not found:
@@ -91,7 +92,7 @@ def init_video_routes(app, db):
                     )
                     channels.append({
                         "channel_id": channel_id,
-                        "lastCheckedAt": now,
+                        "lastCheckedAt": now_iso,
                         "lastVideoSyncAt": latest_sync
                     })
                     should_update = True
@@ -102,7 +103,7 @@ def init_video_routes(app, db):
             response = {
                 "shouldUpdate": should_update,
                 "channelId": channel_id,
-                "lastCheckedAt": now if should_update else last_checked_at,
+                "lastCheckedAt": now_iso if should_update else last_checked_at,
                 "lastVideoSyncAt": last_video_sync_at
             }
 
@@ -110,7 +111,7 @@ def init_video_routes(app, db):
                 # 產生簡單 token 並寫入 update_token 文件
                 import secrets
                 token = secrets.token_urlsafe(24)
-                expires_at = (now + timedelta(minutes=2))
+                expires_at = (now + timedelta(minutes=2)).isoformat()
                 update_token_ref = db.document(f"channel_data/{channel_id}/channel_info/update_token")
                 update_token_ref.set({
                     "token": token,

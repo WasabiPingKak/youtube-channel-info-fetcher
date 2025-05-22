@@ -64,7 +64,7 @@ def update_index_entry(
     updated = False
     for entry in index_data["channels"]:
         if entry.get("channel_id") == channel_id:
-            entry["lastCheckedAt"] = checked_at
+            entry["lastCheckedAt"] = checked_at.isoformat()
             if sync_at:
                 entry["lastVideoSyncAt"] = sync_at
             updated = True
@@ -73,8 +73,8 @@ def update_index_entry(
     if not updated:
         index_data["channels"].append({
             "channel_id": channel_id,
-            "lastCheckedAt": checked_at,
-            "lastVideoSyncAt": sync_at or checked_at
+            "lastCheckedAt": checked_at.isoformat(),
+            "lastVideoSyncAt": sync_at or checked_at.isoformat()
         })
 
 def run_daily_channel_refresh(

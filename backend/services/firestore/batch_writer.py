@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, timezone
+from datetime import datetime
 from dateutil.parser import parse
 from google.cloud.firestore import Client
 from typing import List, Dict
@@ -120,7 +120,7 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: List[Dict]) -
         return None
 
     try:
-        latest = max(parse(v["snippet"]["publishedAt"]).astimezone(timezone.utc) for v in new_videos)
+        latest = max(v["snippet"]["publishedAt"] for v in new_videos)
 
         index_ref = db.collection("channel_sync_index").document("index_list")
         doc = index_ref.get()
