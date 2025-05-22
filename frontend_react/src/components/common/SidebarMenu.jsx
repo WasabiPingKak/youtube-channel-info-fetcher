@@ -85,7 +85,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
                     className="flex items-center gap-3 px-3 py-2 rounded text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800"
                 >
                     <span>🔗</span>
-                    {!collapsed && <span>授權我的頻道(未開放)</span>}
+                    {!collapsed && <span>授權我的頻道(驗證中)</span>}
                 </button>
 
                 <a
