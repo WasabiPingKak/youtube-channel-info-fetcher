@@ -37,6 +37,11 @@ def get_video_data(date_ranges=None, input_channel=None):
 
     all_videos = fetch_video_details(youtube, video_ids)
 
+    if date_ranges:
+        logging.info("🔎 啟用日期篩選，範圍如下：")
+        for i, (start, end) in enumerate(date_ranges):
+            logging.info(f"  ⏳ 區間 {i+1}: {start.isoformat()} ～ {end.isoformat()}")
+
     results = []
     skipped = 0
     for video in all_videos:

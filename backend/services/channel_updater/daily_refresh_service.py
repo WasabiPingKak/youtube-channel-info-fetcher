@@ -81,7 +81,8 @@ def run_daily_channel_refresh(
     db: Client,
     limit: int = DEFAULT_REFRESH_LIMIT,
     include_recent: bool = False,
-    dry_run: bool = False
+    dry_run: bool = False,
+    ignore_sync_time: bool = False
 ) -> Dict:
     index_ref = db.collection("channel_sync_index").document("index_list")
     index_doc = index_ref.get()
@@ -111,11 +112,15 @@ def run_daily_channel_refresh(
         try:
             logger.info(f"📡 更新頻道 {channel_id}")
 
-            last_sync_time = get_last_video_sync_time(db, channel_id)
-            safe_sync_time = last_sync_time + timedelta(seconds=1) if last_sync_time else None
-            date_ranges = [(safe_sync_time, now)] if safe_sync_time else None
+            if ignore_sync_time:
+                date_ranges = None  # 強制重新撈整份清單
+            else:
+                last_sync_time = get_last_video_sync_time(db, channel_id)
+                safe_sync_time = last_sync_time + timedelta(seconds=1) if last_sync_time else None
+                date_ranges = [(safe_sync_time, now)] if safe_sync_time else None
 
             new_videos = get_video_data(date_ranges=date_ranges, input_channel=channel_id)
+            logger.info(f"📥 頻道 {channel_id} 抓取影片數量：{len(new_videos)}")
 
             if not new_videos:
                 logger.info(f"📭 頻道 {channel_id} 無新影片")
