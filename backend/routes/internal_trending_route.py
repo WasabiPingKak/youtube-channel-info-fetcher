@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 
 from services.trending.daily_builder import build_trending_for_date_range
 from services.channel_updater.daily_refresh_service import (
@@ -18,12 +18,15 @@ def init_internal_trending_route(app, db: Client):
     def build_daily_trending_api():
         try:
             data = request.get_json(force=True)
+
+            # 🟡 預設為昨天
             start_date = data.get("startDate")
+            if not start_date:
+                start_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+
             days = int(data.get("days", 1))
             force = bool(data.get("force", False))
 
-            if not start_date:
-                return jsonify({"error": "請提供 startDate 參數（YYYY-MM-DD）"}), 400
             if days <= 0:
                 return jsonify({"error": "days 參數必須為正整數"}), 400
 
