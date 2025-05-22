@@ -1,6 +1,6 @@
 import React, { Suspense } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
@@ -65,6 +65,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
         <Suspense fallback={<div>Loading…</div>}>
           <Routes>
             {/* 公開頁面 */}
+            <Route path="/" element={<Navigate to="/trending" replace />} />
             <Route path="/videos" element={<VideoExplorerPage />} />
             <Route path="/channels" element={<ChannelSelectorPage />} />
             <Route path="/authorize-channel" element={<AuthorizeChannelPage />} />

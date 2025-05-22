@@ -9,11 +9,14 @@ const AuthLoadingPage = () => {
   const [error, setError] = useState(null);
   const [errorCode, setErrorCode] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [initSuccess, setInitSuccess] = useState(false);
+  const [countdown, setCountdown] = useState(5);
 
   const initChannel = async () => {
     setLoading(true);
     setError(null);
     setErrorCode(null);
+    setInitSuccess(false);
 
     try {
       const res = await fetch(`/api/init-channel?channel=${channelId}`);
@@ -24,7 +27,19 @@ const AuthLoadingPage = () => {
         throw new Error(data.error || `初始化失敗：${res.status}`);
       }
 
-      navigate(`/videos?channel=${channelId}`);
+      setInitSuccess(true);
+      setLoading(false);
+      let seconds = 5;
+      setCountdown(seconds);
+
+      const interval = setInterval(() => {
+        seconds -= 1;
+        setCountdown(seconds);
+        if (seconds <= 0) {
+          clearInterval(interval);
+          navigate(`/videos?channel=${channelId}`);
+        }
+      }, 1000);
     } catch (err) {
       setError(err.message);
       setErrorCode(err?.code || null);
@@ -58,6 +73,12 @@ const AuthLoadingPage = () => {
         <p>正在初始化你的頻道資料，請稍候...</p>
 
         {loading && <p className="text-sm text-gray-500">載入中...</p>}
+
+        {initSuccess && (
+          <p className="text-green-600">
+            ✅ 初始化完成，{countdown} 秒後將自動跳轉到影片頁...
+          </p>
+        )}
 
         {error && (
           <div className="mt-6 text-red-600 space-y-4">
