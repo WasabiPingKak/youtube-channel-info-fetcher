@@ -12,6 +12,7 @@ import AuthLoadingPage from "./pages/AuthLoadingPage";
 import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ChannelSelectorPage from "./pages/ChannelSelectorPage";
 import TrendingGamesPage from "./pages/TrendingGamesPage";
+import GameAliasPage from "./pages/GameAliasPage";
 
 import "./style.css";
 
@@ -72,6 +73,7 @@ ReactDOM.createRoot(document.getElementById("root")).render(
             <Route path="/thanks" element={<ThanksPage />} />
             <Route path="/privacy" element={<PrivacyPolicyPage />} />
             <Route path="/trending" element={<TrendingGamesPage />} />
+            <Route path="/game-aliases" element={<GameAliasPage />} />
 
             {/* 新版分類編輯器 */}
             <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
