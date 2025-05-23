@@ -2,12 +2,8 @@ import logging
 from typing import List, Dict, Any
 
 def normalize(text: str) -> str:
-    """
-    將文字轉為小寫並移除全形／半形空白，方便比對。
-    """
     return text.lower().replace(" ", "").replace("　", "")
 
-# 類型映射：轉為統一比對格式
 TYPE_MAP = {
     "直播檔": "live",
     "直播": "live",
@@ -74,10 +70,15 @@ def match_category_and_game(
 
                 # 全部別名 + game_name 一同比對
                 all_keywords = keywords + ([game_name] if game_name else [])
-                if any(normalize(kw) in normalized_title for kw in all_keywords):
-                    matched_game_name = game_name
-                    logging.debug("🎮 命中遊戲 [%s] via keywords %s", game_name, all_keywords)
-                    break  # 命中第一個即停；陣列順序代表優先序
+                for kw in all_keywords:
+                    if normalize(kw) in normalized_title:
+                        matched_game_name = game_name
+                        matched_keywords.append(kw)  # ✅ 加入實際命中的 keyword
+                        logging.debug("🎮 命中遊戲 [%s] via keyword [%s]", game_name, kw)
+                        break  # 命中第一個即停；陣列順序代表優先序
+
+                if matched_game_name:
+                    break  # 命中一款遊戲後即停止搜尋
 
         # ────────────────────────────────────────────────
         # 3️⃣ 統整結果
@@ -86,9 +87,6 @@ def match_category_and_game(
             matched_game = matched_game_name
             if "遊戲" not in matched_categories:                       # 追加不覆蓋
                 matched_categories.append("遊戲")
-
-            if matched_game_name and matched_game_name not in matched_keywords:
-                matched_keywords.append(matched_game_name)
         else:
             # 若未命中遊戲，確保不殘留「遊戲」分類
             matched_categories = [
