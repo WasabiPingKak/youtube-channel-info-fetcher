@@ -52,16 +52,16 @@ def init_internal_trending_route(app, db: Client):
             # 🔹 dry_run：是否為模擬模式
             dry_run = bool(data.get("dry_run", False))
 
-            # 🔹 ignore_sync_time：是否忽略已同步時間，強制重新撈取整份影片清單
-            ignore_sync_time = bool(data.get("ignore_sync_time", False))
+            # 🔹 full_scan：是否完整抓取整份播放清單（否則只抓最近兩頁）
+            full_scan = bool(data.get("full_scan", False))
 
-            logger.info(f"🌀 啟動每日快取刷新任務 | limit={limit} | include_recent={include_recent} | dry_run={dry_run} | ignore_sync_time={ignore_sync_time}")
+            logger.info(f"🌀 啟動每日快取刷新任務 | limit={limit} | include_recent={include_recent} | dry_run={dry_run} | full_scan={full_scan}")
             result = run_daily_channel_refresh(
                 db,
                 limit=limit,
                 include_recent=include_recent,
                 dry_run=dry_run,
-                ignore_sync_time=ignore_sync_time
+                full_scan=full_scan
             )
             return jsonify(result)
 

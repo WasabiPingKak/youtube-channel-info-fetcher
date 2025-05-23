@@ -1,8 +1,10 @@
 import logging
 
-def get_video_ids_from_playlist(youtube, playlist_id):
+def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int = None):
     video_ids = []
     next_page_token = None
+    page_count = 0
+
     logging.info(f"📥 開始抓取播放清單影片 ID：{playlist_id}")
     try:
         while True:
@@ -15,12 +17,22 @@ def get_video_ids_from_playlist(youtube, playlist_id):
             response = request.execute()
             ids_in_page = [item['contentDetails']['videoId'] for item in response['items']]
             video_ids += ids_in_page
-            logging.info(f"📄 取得 {len(ids_in_page)} 筆影片 ID，目前累計：{len(video_ids)}")
-            next_page_token = response.get('nextPageToken')
-            if not next_page_token:
+            page_count += 1
+
+            logging.info(f"📄 第 {page_count} 頁：取得 {len(ids_in_page)} 筆影片 ID，目前累計：{len(video_ids)}")
+
+            if not response.get('nextPageToken'):
                 break
+
+            if max_pages is not None and page_count >= max_pages:
+                logging.info(f"⛔ 已達最大頁數限制 max_pages={max_pages}，停止抓取")
+                break
+
+            next_page_token = response['nextPageToken']
+
     except Exception as e:
         logging.error("🔥 [get_video_ids_from_playlist] 抓取播放清單影片 ID 發生錯誤: %s", e, exc_info=True)
+
     return video_ids
 
 def fetch_video_details(youtube, video_ids):

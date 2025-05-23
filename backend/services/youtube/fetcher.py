@@ -5,9 +5,9 @@ import logging
 
 from services.youtube.client import get_youtube_service, get_channel_id, get_uploads_playlist_id
 from services.youtube.videos import get_video_ids_from_playlist, fetch_video_details
-from utils.youtube_utils import convert_duration_to_hms, get_video_publish_date, get_video_type
+from utils.youtube_utils import get_video_type
 
-def get_video_data(date_ranges=None, input_channel=None):
+def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
     api_key = os.getenv("API_KEY")
 
     if not api_key:
@@ -30,7 +30,7 @@ def get_video_data(date_ranges=None, input_channel=None):
         logging.error("🔥 無法取得上傳清單 ID")
         return []
 
-    video_ids = get_video_ids_from_playlist(youtube, playlist_id)
+    video_ids = get_video_ids_from_playlist(youtube, playlist_id, max_pages=limit_pages)
     if not video_ids:
         logging.warning("⚠️ 該清單中無影片")
         return []
