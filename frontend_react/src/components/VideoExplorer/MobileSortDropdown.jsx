@@ -5,7 +5,6 @@ const SORT_OPTIONS = [
   { value: "publishDate", label: "發布時間" },
   { value: "duration", label: "時長" },
   { value: "title", label: "標題" },
-  { value: "game", label: "遊戲" },
 ];
 
 const MobileSortDropdown = ({

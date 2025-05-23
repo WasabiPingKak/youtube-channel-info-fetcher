@@ -1,5 +1,6 @@
 // src/components/VideoCard/VideoCardMobile.jsx
 import React from "react";
+import VideoBadge from "../common/VideoBadge"; // ✅ 新增匯入
 
 const VideoCardMobile = ({ video, durationUnit }) => {
   const {
@@ -9,6 +10,7 @@ const VideoCardMobile = ({ video, durationUnit }) => {
     duration,
     game,
     matchedKeywords = [],
+    matchedCategories = [],
   } = video;
 
   // 時長格式化
@@ -20,6 +22,15 @@ const VideoCardMobile = ({ video, durationUnit }) => {
   // 發布日期格式化
   const formattedDate = publishDate?.slice(0, 10) || "-";
 
+  // ⛏️ 組合分類徽章
+  const main = matchedCategories[0] || "未分類";
+
+  const badge = {
+    main,
+    keyword: main === "遊戲" ? game : matchedKeywords[0],
+    tooltip: main === "遊戲" ? matchedKeywords.join(", ") : undefined,
+  };
+
   return (
     <div className="px-4 py-3 border-b text-sm space-y-1">
       {/* 標題 */}
@@ -30,11 +41,10 @@ const VideoCardMobile = ({ video, durationUnit }) => {
         📅 {formattedDate} ｜ ⏱️ {formattedDuration}
       </div>
 
-      {/* 遊戲名稱 */}
-      <div>🎮 {game || "-"}</div>
-
-      {/* 關鍵字 */}
-      <div>🔍 {matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "-"}</div>
+      {/* 分類徽章 */}
+      <div>
+        <VideoBadge badge={badge} />
+      </div>
 
       {/* 前往連結 */}
       <div className="text-right pt-1">

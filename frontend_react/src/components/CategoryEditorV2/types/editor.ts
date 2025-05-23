@@ -23,8 +23,9 @@ export type BadgeMain = MainCategory | '未分類';
  * - 未分類：{ main: '未分類' } (keyword 省略)
  */
 export type Badge =
-  | { main: MainCategory; keyword: string }
-  | { main: '未分類'; keyword?: undefined };
+  | { main: '未分類'; keyword?: undefined; tooltip?: undefined }
+  | { main: '遊戲'; keyword: string; tooltip?: string }
+  | { main: Exclude<MainCategory, '遊戲'>; keyword: string; tooltip?: undefined };
 
 export interface CategoryConfig {
   live?: CategorySettings;

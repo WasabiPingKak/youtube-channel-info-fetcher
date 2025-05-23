@@ -1,5 +1,6 @@
 // src/components/VideoCard/VideoCardDesktop.jsx
 import React from "react";
+import VideoBadge from "../common/VideoBadge"; // ✅ 新增引入
 
 // 桌機用影片卡片（橫向排列）
 const VideoCardDesktop = ({ video, durationUnit }) => {
@@ -10,6 +11,7 @@ const VideoCardDesktop = ({ video, durationUnit }) => {
     duration,
     game,
     matchedKeywords = [],
+    matchedCategories = [],
   } = video;
 
   // 時長格式化
@@ -20,6 +22,15 @@ const VideoCardDesktop = ({ video, durationUnit }) => {
 
   // 發布日期格式化
   const formattedDate = publishDate?.slice(0, 10) || "-";
+
+  // ⛏️ 組合分類徽章資訊
+  const main = matchedCategories[0] || "未分類";
+
+  const badge = {
+    main,
+    keyword: main === "遊戲" ? game : matchedKeywords[0],
+    tooltip: main === "遊戲" ? matchedKeywords.join(", ") : undefined,
+  };
 
   return (
     <div
@@ -40,17 +51,9 @@ const VideoCardDesktop = ({ video, durationUnit }) => {
       {/* 時長 */}
       <div className="basis-28 whitespace-nowrap">{formattedDuration}</div>
 
-      {/* 遊戲 */}
-      <div className="basis-28 truncate" title={game || "-"}>
-        {game || "-"}
-      </div>
-
-      {/* 關鍵字 */}
-      <div
-        className="basis-40 truncate"
-        title={matchedKeywords.join(", ") || "-"}
-      >
-        {matchedKeywords.length > 0 ? matchedKeywords.join(", ") : "-"}
+      {/* 分類徽章 */}
+      <div className="basis-56 truncate">
+        <VideoBadge badge={badge} />
       </div>
 
       {/* 連結 */}
