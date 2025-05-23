@@ -46,30 +46,36 @@ const TrendingGameList = ({ topGames, details, summaryStats, channelInfo }) => {
                 {Object.entries(gameDetails).length === 0 ? (
                   <div className="text-sm text-gray-400">（無資料）</div>
                 ) : (
-                  Object.entries(gameDetails).map(([channelId, videos]) => {
-                    const key = `${game}::${channelId}`;
-                    const isExpanded = expandedChannels[key];
+                  Object.entries(gameDetails)
+                    .sort(([, aVideos], [, bVideos]) => {
+                      const aDate = new Date(aVideos?.[0]?.publishDate || 0);
+                      const bDate = new Date(bVideos?.[0]?.publishDate || 0);
+                      return bDate - aDate;
+                    })
+                    .map(([channelId, videos]) => {
+                      const key = `${game}::${channelId}`;
 
-                    const safeVideos = Array.isArray(videos) ? videos : [];
-                    const first = safeVideos[0];
-                    const rest = safeVideos.slice(1);
+                      const safeVideos = Array.isArray(videos) ? videos : [];
+                      const sortedVideos = [...safeVideos].sort(
+                        (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
+                      );
 
-                    const info = channelInfo?.[channelId];
-                    if (!info) {
-                      console.warn(`⚠️ 找不到頻道資訊: ${channelId}`);
-                      return null;
-                    }
+                      const info = channelInfo?.[channelId];
+                      if (!info) {
+                        console.warn(`⚠️ 找不到頻道資訊: ${channelId}`);
+                        return null;
+                      }
 
-                    return (
-                      <div key={channelId} className="space-y-2">
-                        <ChannelCard
-                        channelId={channelId}
-                        channelInfo={info}
-                        videos={safeVideos}
-                        />
-                      </div>
-                    );
-                  })
+                      return (
+                        <div key={channelId} className="space-y-2">
+                          <ChannelCard
+                            channelId={channelId}
+                            channelInfo={info}
+                            videos={sortedVideos}
+                          />
+                        </div>
+                      );
+                    })
                 )}
               </div>
             )}
