@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaYoutube, FaTwitter, FaHome, FaGithub } from "react-icons/fa";
+import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine } from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
 import { TbSwitch } from "react-icons/tb";
 import clsx from "clsx";
@@ -11,13 +11,13 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
 
     const menuItems = [
         {
-            label: "首頁",
-            icon: <FaHome className="w-5 h-5" />,
-            action: () => navigate(`/videos?channel=${DEFAULT_CHANNEL_ID}`),
+            label: "頻道遊戲趨勢",
+            icon: <FaChartLine className="w-5 h-5" />,
+            action: () => navigate("/trending"),
         },
         {
-            label: "切換頻道",
-            icon: <TbSwitch className="w-5 h-5" />,
+            label: "檢視個別頻道",
+            icon: <FaUser className="w-5 h-5" />,
             action: () => navigate("/channels"),
         },
     ];
@@ -85,7 +85,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
                     className="flex items-center gap-3 px-3 py-2 rounded text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800"
                 >
                     <span>🔗</span>
-                    {!collapsed && <span>授權我的頻道(未開放)</span>}
+                    {!collapsed && <span>授權我的頻道(審核中)</span>}
                 </button>
 
                 <a

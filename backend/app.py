@@ -8,7 +8,6 @@ from firebase_admin import firestore
 
 from services.firebase_init_service import init_firestore
 from routes.base_routes import init_base_routes
-from routes.cache_routes import init_cache_routes
 from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
 from routes.category_editor_routes import init_category_editor_routes
@@ -18,6 +17,8 @@ from routes.video_update_route import init_video_update_route
 from routes.oauth_callback_route import init_oauth_callback_route
 from routes.init_channel_route import init_channel_route
 from routes.channel_index_route import init_channel_index_route
+from routes.internal_trending_route import init_internal_trending_route
+from routes.public_trending_route import init_public_trending_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -36,7 +37,6 @@ except Exception:
 
 # 初始化各路由模組
 init_base_routes(app)
-init_cache_routes(app, db)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app)
@@ -46,6 +46,8 @@ init_video_update_route(app, db)
 init_oauth_callback_route(app)
 init_channel_route(app)
 init_channel_index_route(app, db)
+init_internal_trending_route(app, db)
+init_public_trending_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():
