@@ -22,12 +22,14 @@ def match_category_and_game(
     {
         "matchedCategories": List[str],  # e.g. ["遊戲", "雜談"]
         "game": Optional[str],          # e.g. "GeoGuessr"
-        "matchedKeywords": List[str]    # 實際命中的關鍵字
+        "matchedKeywords": List[str],   # 實際命中的關鍵字
+        "matchedPairs": List[Dict]      # e.g. [{main: "遊戲", keyword: "GeoGuessr"}]
     }
     """
     try:
         matched_categories: List[str] = []
         matched_keywords: List[str] = []
+        matched_pairs: List[Dict[str, str]] = []
         matched_game: str | None = None
 
         logging.debug("🧪 settings 結構：%s", settings.keys())
@@ -55,6 +57,7 @@ def match_category_and_game(
                     if category not in matched_categories:            # 避免重複
                         matched_categories.append(category)
                     matched_keywords.append(kw)
+                    matched_pairs.append({"main": category, "keyword": kw})  # ✅ 新增配對記錄
                     logging.debug("🏷️ 命中分類 [%s] via keyword [%s]", category, kw)
 
         # ────────────────────────────────────────────────
@@ -74,6 +77,7 @@ def match_category_and_game(
                     if normalize(kw) in normalized_title:
                         matched_game_name = game_name
                         matched_keywords.append(kw)  # ✅ 加入實際命中的 keyword
+                        matched_pairs.append({"main": "遊戲", "keyword": kw})  # ✅ 新增配對記錄
                         logging.debug("🎮 命中遊戲 [%s] via keyword [%s]", game_name, kw)
                         break  # 命中第一個即停；陣列順序代表優先序
 
@@ -102,13 +106,14 @@ def match_category_and_game(
             matched_categories = ["其他"]
             logging.debug("➕ 無命中分類，自動套用 [其他]")
 
-        logging.debug("✅ [match] 結果 | Categories: %s | Game: %s | Keywords: %s",
-                      matched_categories, matched_game, matched_keywords)
+        logging.debug("✅ [match] 結果 | Categories: %s | Game: %s | Keywords: %s | Pairs: %s",
+                      matched_categories, matched_game, matched_keywords, matched_pairs)
 
         return {
             "matchedCategories": matched_categories,
             "game": matched_game,
             "matchedKeywords": matched_keywords,
+            "matchedPairs": matched_pairs
         }
 
     except Exception:  # noqa: BLE001
@@ -119,4 +124,5 @@ def match_category_and_game(
             "matchedCategories": ["其他"],
             "game": None,
             "matchedKeywords": [],
+            "matchedPairs": [{"main": "其他", "keyword": ""}]
         }

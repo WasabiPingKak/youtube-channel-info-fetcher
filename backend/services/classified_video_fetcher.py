@@ -57,10 +57,10 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
                 logger.warning("⚠️ normalize_video_item 失敗: %s", raw_item)
                 continue
 
-            #actual_type = type_map.get(item.get("type"), item.get("type"))
-            #if actual_type != video_type:
-            #    logger.debug("🚫 類型不符: %s ≠ %s | %s", actual_type, video_type, item.get("title"))
-            #    continue
+            # actual_type = type_map.get(item.get("type"), item.get("type"))
+            # if actual_type != video_type:
+            #     logger.debug("🚫 類型不符: %s ≠ %s | %s", actual_type, video_type, item.get("title"))
+            #     continue
 
             result = match_category_and_game(item["title"], item["type"], settings)
 
@@ -72,7 +72,8 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
                 "type": item["type"],
                 "matchedCategories": result["matchedCategories"],
                 "game": result["game"],
-                "matchedKeywords": result["matchedKeywords"]
+                "matchedKeywords": result["matchedKeywords"],
+                "matchedPairs": result.get("matchedPairs", [])  # ✅ 加入新的欄位
             }
 
             logger.debug("🎯 命中分類: %s", video_data)
