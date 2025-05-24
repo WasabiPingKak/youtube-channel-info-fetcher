@@ -5,7 +5,7 @@ import ChartTypePie from "./ChartTypePie";
  * ChartWithLegend
  * 圓餅 + 圖例卡片（桌機為表格，手機為雙行對齊）
  */
-const ChartWithLegend = ({ data = [], dataKey, unit = "部" }) => {
+const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
   const safeData = Array.isArray(data) ? data : [];
 
   if (safeData.length === 0) {
@@ -36,7 +36,13 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部" }) => {
       <div className="flex flex-col sm:flex-row justify-center items-center gap-y-4 gap-x-2">
         {/* —— 甜甜圈圖 —— */}
         <div className="flex-shrink-0 w-full sm:w-[50%] xl:w-[45%] max-w-[320px] ">
-          <ChartTypePie data={safeData} dataKey={dataKey} unit={unit} hideLegend />
+          <ChartTypePie
+            data={safeData}
+            dataKey={dataKey}
+            unit={unit}
+            hideLegend
+            videos={videos} // 傳入原始影片列表，供 Pie 中心加總去重複
+          />
         </div>
 
         {/* —— 桌機版表格圖例 —— */}

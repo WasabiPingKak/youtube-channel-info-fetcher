@@ -16,7 +16,20 @@ const CategoryChartSection = ({
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
   const typeLabel = VIDEO_TYPE_MAP[videoType];
 
-  // 統一處理主分類 or 細分類圖表資料
+  // 🎯 用於傳入 Chart 作為去重複加總基礎資料
+  const filteredVideos = useMemo(() => {
+    return videos.filter((video) => {
+      if (video.type !== typeLabel) return false;
+
+      if (activeCategory === "全部") return true;
+
+      if (activeCategory === "遊戲") return Boolean(video.game);
+
+      return video.matchedCategories?.includes(activeCategory);
+    });
+  }, [videos, typeLabel, activeCategory]);
+
+  // 統計圖表資料：分類數與總時長（秒）
   const { countData, durationData } = useMemo(() => {
     const counts = {};
 
@@ -55,7 +68,6 @@ const CategoryChartSection = ({
       }
     });
 
-    // 排序：先多到少，"其他" 永遠放最後
     const sorted = Object.values(counts).sort((a, b) => {
       if (a.category === "其他") return 1;
       if (b.category === "其他") return -1;
@@ -66,7 +78,7 @@ const CategoryChartSection = ({
       countData: sorted.map((d) => ({ category: d.category, count: d.count })),
       durationData: sorted.map((d) => ({
         category: d.category,
-        duration: d.duration || 0, // 原始秒數，交由圖表元件轉換顯示單位
+        duration: d.duration || 0,
       })),
     };
   }, [videos, typeLabel, activeCategory, categorySettings, videoType, showAllKeywords]);
@@ -124,6 +136,7 @@ const CategoryChartSection = ({
             durationData={durationData}
             chartType={chartType}
             durationUnit={durationUnit}
+            videos={filteredVideos}
           />
         </>
       ) : (

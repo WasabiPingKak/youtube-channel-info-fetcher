@@ -10,12 +10,14 @@ import ChartTypeBar from "./ChartTypeBar";
  * @param {Array} durationData   - 各分類影片秒數
  * @param {"pie"|"bar"} chartType
  * @param {"minutes"|"hours"} durationUnit
+ * @param {Array} videos         - 原始影片清單（提供圓心加總時用來去重複）
  */
 const CategoryChart = ({
   countData,
   durationData,
   chartType,
   durationUnit,
+  videos = [],
 }) => {
   // 轉換秒數到指定單位
   const convertedDurationData = useMemo(() => {
@@ -54,7 +56,12 @@ const CategoryChart = ({
     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 mt-4">
       <div>
         <h3 className="text-base font-semibold mb-4">分類次數統計圖</h3>
-        <ChartWithLegend data={countData} dataKey="count" unit="部" />
+        <ChartWithLegend
+          data={countData}
+          dataKey="count"
+          unit="部"
+          videos={videos}
+        />
       </div>
       <div>
         <h3 className="text-base font-semibold mb-4">
@@ -64,6 +71,7 @@ const CategoryChart = ({
           data={convertedDurationData}
           dataKey="duration"
           unit={durationUnitLabel}
+          videos={videos}
         />
       </div>
     </div>
