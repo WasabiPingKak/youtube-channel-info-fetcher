@@ -30,25 +30,18 @@ const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false, videos 
     "#8dd1e1",
   ];
 
-// ✅ 根據 videoId 去重複後加總
-console.log("[PieChart] 原始影片數量", videos?.length);
+  // ✅ 根據 videoId 去重複後加總
+  const deduplicated = Array.from(
+    new Map(
+      videos.map((v) => [v.videoId, v])
+    ).values()
+  );
 
-const deduplicated = Array.from(
-  new Map(
-    videos.map((v) => [v.videoId, v])
-  ).values()
-);
+  const total =
+    dataKey === "count"
+      ? deduplicated.length
+      : deduplicated.reduce((sum, v) => sum + (v.duration || 0), 0);
 
-console.log("[PieChart] 去重複後影片數量", deduplicated.length);
-if (dataKey === "duration") {
-  const rawSum = deduplicated.reduce((sum, v) => sum + (v.duration || 0), 0);
-  console.log("[PieChart] duration 總秒數", rawSum);
-}
-
-const total =
-  dataKey === "count"
-    ? deduplicated.length
-    : deduplicated.reduce((sum, v) => sum + (v.duration || 0), 0);
   const isEmpty = data.length === 0 || data.every((d) => (d[dataKey] || 0) === 0);
 
   /* ---------- 自訂 Legend（表格式三欄） ---------- */

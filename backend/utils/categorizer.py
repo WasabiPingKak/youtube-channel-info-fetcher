@@ -23,13 +23,13 @@ def match_category_and_game(
         "matchedCategories": List[str],  # e.g. ["遊戲", "雜談"]
         "game": Optional[str],          # e.g. "GeoGuessr"
         "matchedKeywords": List[str],   # 實際命中的關鍵字
-        "matchedPairs": List[Dict]      # e.g. [{main: "遊戲", keyword: "GeoGuessr"}]
+        "matchedPairs": List[Dict]      # e.g. [{main: "遊戲", keyword: "GeoGuessr", hitKeywords: ["mc", "麥塊"]}]
     }
     """
     try:
         matched_categories: List[str] = []
         matched_keywords: List[str] = []
-        matched_pairs: List[Dict[str, str]] = []
+        matched_pairs: List[Dict[str, Any]] = []
         matched_game: str | None = None
 
         logging.debug("🧪 settings 結構：%s", settings.keys())
@@ -54,10 +54,10 @@ def match_category_and_game(
 
             for kw in keywords:
                 if normalize(kw) in normalized_title:
-                    if category not in matched_categories:            # 避免重複
+                    if category not in matched_categories:
                         matched_categories.append(category)
                     matched_keywords.append(kw)
-                    matched_pairs.append({"main": category, "keyword": kw})  # ✅ 新增配對記錄
+                    matched_pairs.append({"main": category, "keyword": kw})
                     logging.debug("🏷️ 命中分類 [%s] via keyword [%s]", category, kw)
 
         # ────────────────────────────────────────────────
@@ -65,43 +65,45 @@ def match_category_and_game(
         # ────────────────────────────────────────────────
         game_entries = category_settings.get("遊戲", [])
         matched_game_name: str | None = None
+        hit_keywords: List[str] = []
 
         if isinstance(game_entries, list):
             for game_entry in game_entries:
                 game_name = game_entry.get("game")
                 keywords = game_entry.get("keywords", [])
-
-                # 全部別名 + game_name 一同比對
                 all_keywords = keywords + ([game_name] if game_name else [])
+
                 for kw in all_keywords:
                     if normalize(kw) in normalized_title:
                         matched_game_name = game_name
-                        matched_keywords.append(kw)  # ✅ 加入實際命中的 keyword
-                        matched_pairs.append({"main": "遊戲", "keyword": kw})  # ✅ 新增配對記錄
+                        matched_keywords.append(kw)
+                        hit_keywords.append(kw)
                         logging.debug("🎮 命中遊戲 [%s] via keyword [%s]", game_name, kw)
-                        break  # 命中第一個即停；陣列順序代表優先序
+                        break
 
                 if matched_game_name:
-                    break  # 命中一款遊戲後即停止搜尋
+                    matched_pairs.append({
+                        "main": "遊戲",
+                        "keyword": game_name,
+                        "hitKeywords": hit_keywords  # ✅ 新增命中關鍵字
+                    })
+                    break
 
         # ────────────────────────────────────────────────
         # 3️⃣ 統整結果
         # ────────────────────────────────────────────────
         if matched_game_name:
             matched_game = matched_game_name
-            if "遊戲" not in matched_categories:                       # 追加不覆蓋
+            if "遊戲" not in matched_categories:
                 matched_categories.append("遊戲")
         else:
-            # 若未命中遊戲，確保不殘留「遊戲」分類
             matched_categories = [
                 cat for cat in matched_categories if cat != "遊戲"
             ]
 
-        # 去重（保序）
         matched_categories = list(dict.fromkeys(matched_categories))
         matched_keywords = list(dict.fromkeys(matched_keywords))
 
-        # 若無任何命中且設定有「其他」，回填「其他」
         if not matched_categories and "其他" in category_settings:
             matched_categories = ["其他"]
             logging.debug("➕ 無命中分類，自動套用 [其他]")
@@ -117,12 +119,10 @@ def match_category_and_game(
         }
 
     except Exception:  # noqa: BLE001
-        logging.error(
-            "🔥 [match_category_and_game] 發生分類錯誤", exc_info=True
-        )
+        logging.error("🔥 [match_category_and_game] 發生分類錯誤", exc_info=True)
         return {
             "matchedCategories": ["其他"],
             "game": None,
             "matchedKeywords": [],
-            "matchedPairs": [{"main": "其他", "keyword": ""}]
+            "matchedPairs": [{"main": "其他", "keyword": "", "hitKeywords": []}]
         }
