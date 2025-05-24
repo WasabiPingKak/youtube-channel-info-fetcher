@@ -1,6 +1,5 @@
-// src/components/VideoCard/VideoCardMobile.jsx
 import React from "react";
-import VideoBadge from "../common/VideoBadge"; // ✅ 新增匯入
+import VideoBadge from "../common/VideoBadge";
 
 const VideoCardMobile = ({ video, durationUnit }) => {
   const {
@@ -10,43 +9,36 @@ const VideoCardMobile = ({ video, durationUnit }) => {
     duration,
     game,
     matchedKeywords = [],
-    matchedCategories = [],
+    matchedPairs = [],
   } = video;
 
-  // 時長格式化
   const formattedDuration =
     durationUnit === "hours"
       ? `${(duration / 3600).toFixed(1)} 小時`
       : `${Math.round(duration / 60)} 分鐘`;
 
-  // 發布日期格式化
   const formattedDate = publishDate?.slice(0, 10) || "-";
 
-  // ⛏️ 組合分類徽章
-  const main = matchedCategories[0] || "未分類";
-
-  const badge = {
-    main,
-    keyword: main === "遊戲" ? game : matchedKeywords[0],
-    tooltip: main === "遊戲" ? matchedKeywords.join(", ") : undefined,
-  };
+  const badges =
+    matchedPairs.length > 0
+      ? matchedPairs.map((pair) => ({
+          main: pair.main,
+          keyword: pair.keyword,
+          tooltip: pair.main === "遊戲" ? matchedKeywords.join(", ") : undefined,
+        }))
+      : [{ main: "未分類" }];
 
   return (
     <div className="px-4 py-3 border-b text-sm space-y-1">
-      {/* 標題 */}
       <div className="font-semibold text-base">{title}</div>
-
-      {/* 發布時間與時長 */}
       <div className="text-gray-500">
         📅 {formattedDate} ｜ ⏱️ {formattedDuration}
       </div>
-
-      {/* 分類徽章 */}
-      <div>
-        <VideoBadge badge={badge} />
+      <div className="flex flex-wrap gap-1">
+        {badges.map((badge, index) => (
+          <VideoBadge key={index} badge={badge} />
+        ))}
       </div>
-
-      {/* 前往連結 */}
       <div className="text-right pt-1">
         <a
           href={`https://www.youtube.com/watch?v=${videoId}`}

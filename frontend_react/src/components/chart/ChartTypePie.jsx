@@ -17,8 +17,9 @@ import {
  * @param {string} dataKey  - 欄位名稱："count" | "duration"
  * @param {"部" | "分鐘" | "小時"} unit - 單位文字
  * @param {boolean} hideLegend - 是否隱藏內建 Legend（交由外層處理）
+ * @param {Array<Object>} videos - 原始影片資料，用來對 videoId 去重複後計算圓心總和
  */
-const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false }) => {
+const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false, videos = [] }) => {
   const COLORS = [
     "#8884d8",
     "#82ca9d",
@@ -29,8 +30,18 @@ const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false }) => {
     "#8dd1e1",
   ];
 
-  // 計算總和數值
-  const total = data.reduce((sum, d) => sum + (d[dataKey] || 0), 0);
+  // ✅ 根據 videoId 去重複後加總
+  const deduplicated = Array.from(
+    new Map(
+      videos.map((v) => [v.videoId, v])
+    ).values()
+  );
+
+  const total =
+    dataKey === "count"
+      ? deduplicated.length
+      : deduplicated.reduce((sum, v) => sum + (v.duration || 0), 0);
+
   const isEmpty = data.length === 0 || data.every((d) => (d[dataKey] || 0) === 0);
 
   /* ---------- 自訂 Legend（表格式三欄） ---------- */
@@ -107,7 +118,9 @@ const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false }) => {
           ))}
           {/* —— 中央統計文字 —— */}
           <Label
-            value={`共 ${unit === "小時" ? total.toFixed(1) : total} ${unit}`}
+            value={`共 ${
+              unit === "小時" ? (total / 3600).toFixed(1) : dataKey === "duration" ? Math.round(total / 60) : total
+            } ${unit}`}
             position="center"
             style={{ fontSize: "1rem", fontWeight: 600, fill: "#374151" }}
           />

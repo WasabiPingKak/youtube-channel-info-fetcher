@@ -28,7 +28,9 @@ const KEYWORD_COLOR_CLASS: Record<NonNullable<Badge['main']>, string> = {
 };
 
 interface VideoBadgeProps {
-  badge: Badge;
+  badge: Badge & {
+    hitKeywords?: string[];
+  };
   className?: string;
 }
 
@@ -39,10 +41,15 @@ export default function VideoBadge({ badge, className = '' }: VideoBadgeProps) {
     return <span className={outerClasses}>未分類</span>;
   }
 
-  // ✅ 只有遊戲類型才顯示 tooltip
+  // ✅ 只有遊戲類別才顯示 tooltip，優先使用 hitKeywords
+  const tooltipText =
+    badge.main === '遊戲' && badge.hitKeywords?.length
+      ? badge.hitKeywords.join(', ')
+      : badge.tooltip;
+
   const wrapperProps =
-    badge.main === '遊戲' && badge.tooltip
-      ? { title: `命中關鍵字：${badge.tooltip}` }
+    badge.main === '遊戲' && tooltipText
+      ? { title: `命中關鍵字：${tooltipText}` }
       : {};
 
   return (
