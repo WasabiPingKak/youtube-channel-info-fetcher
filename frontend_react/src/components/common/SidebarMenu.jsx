@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine, FaClipboardList } from "react-icons/fa";
+import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine, FaClipboardList, FaTools } from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
 import { TbSwitch } from "react-icons/tb";
 import clsx from "clsx";
@@ -24,6 +24,11 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
             label: "遊戲別名總表",
             icon: <FaClipboardList className="w-5 h-5" />,
             action: () => navigate("/game-aliases"),
+        },
+        {
+            label: "更新紀錄",
+            icon: <FaTools className="w-5 h-5" />,
+            action: () => navigate("/changelog"),
         },
     ];
 

@@ -16,6 +16,8 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ChannelSelectorPage from "./pages/ChannelSelectorPage";
 import TrendingGamesPage from "./pages/TrendingGamesPage";
 import GameAliasPage from "./pages/GameAliasPage";
+import ChangelogPage from "./pages/ChangelogPage";
+
 
 import "./style.css";
 
@@ -84,6 +86,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/trending" element={<TrendingGamesPage />} />
         <Route path="/game-aliases" element={<GameAliasPage />} />
+        <Route path="/changelog" element={<ChangelogPage />} />
 
         {/* 新版分類編輯器 */}
         <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
