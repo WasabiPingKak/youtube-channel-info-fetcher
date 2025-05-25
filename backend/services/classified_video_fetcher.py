@@ -2,7 +2,10 @@ from typing import List, Dict
 from firebase_admin.firestore import Client
 from utils.categorizer import match_category_and_game
 from utils.youtube_utils import normalize_video_item
-from utils.settings_preparer import prepare_settings_with_aliases  # ✅ 加入別名合併工具
+from utils.settings_preparer import (
+    merge_game_category_aliases,
+    merge_with_default_categories
+)
 import logging
 
 logger = logging.getLogger(__name__)
@@ -37,8 +40,11 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
 
         settings = settings_doc.to_dict()
 
-        # 🔁 套用遊戲別名合併（使用中央資料 + 使用者自訂）
-        settings = prepare_settings_with_aliases(settings)
+        # 🧩 合併 default_categories_config（主分類設定）
+        settings = merge_with_default_categories(db, settings)
+
+        # 🔁 合併遊戲別名（中央別名 + 使用者自訂）
+        settings = merge_game_category_aliases(settings)
 
         # 2️⃣ 讀取所有 batch 文件
         batch_ref = db.collection("channel_data").document(channel_id).collection("videos_batch")
@@ -57,11 +63,6 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
                 logger.warning("⚠️ normalize_video_item 失敗: %s", raw_item)
                 continue
 
-            # actual_type = type_map.get(item.get("type"), item.get("type"))
-            # if actual_type != video_type:
-            #     logger.debug("🚫 類型不符: %s ≠ %s | %s", actual_type, video_type, item.get("title"))
-            #     continue
-
             result = match_category_and_game(item["title"], item["type"], settings)
 
             video_data = {
@@ -73,7 +74,7 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
                 "matchedCategories": result["matchedCategories"],
                 "game": result["game"],
                 "matchedKeywords": result["matchedKeywords"],
-                "matchedPairs": result.get("matchedPairs", [])  # ✅ 加入新的欄位
+                "matchedPairs": result.get("matchedPairs", [])
             }
 
             logger.debug("🎯 命中分類: %s", video_data)
