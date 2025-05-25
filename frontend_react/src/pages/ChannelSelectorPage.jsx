@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelectableChannelList } from "../hooks/useSelectableChannelList";
 import MainLayout from "../components/layout/MainLayout";
-import ChannelSelectorCard from "../components/channels/ChannelSelectorCard";
-import RecentChannelsSection from "../components/channels/RecentChannelsSection";
 import { addRecentChannel } from "../utils/recentChannels";
+import {
+  ChannelSelectorCard,
+  RecentChannelsSection,
+  NewlyJoinedChannelsSection,
+} from "../components/channels";
 
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
 
-  const { isLoading, channels, error } = useSelectableChannelList(searchText);
+  const { isLoading, channels, newlyJoinedChannels, error } = useSelectableChannelList(searchText);
 
   const handleClick = (channelId) => {
     addRecentChannel(channelId);
@@ -34,10 +37,16 @@ const ChannelSelectorPage = () => {
 
         {/* ✅ 最近使用清單（只有搜尋為空時才顯示） */}
         {!isLoading && searchText === "" && (
-          <RecentChannelsSection
-            channels={channels}
-            onClick={handleClick}
-          />
+          <>
+            <RecentChannelsSection
+              channels={channels}
+              onClick={handleClick}
+            />
+            <NewlyJoinedChannelsSection
+              channels={newlyJoinedChannels}
+              onClick={handleClick}
+            />
+          </>
         )}
 
         {/* 🕘 Loading 狀態 */}
