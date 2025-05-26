@@ -1,6 +1,7 @@
-from flask import Blueprint, request, redirect, current_app, jsonify
+from flask import Blueprint, request, redirect, current_app, jsonify, make_response
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
 from services.firestore.auth_service import save_channel_auth
+from utils.jwt_util import generate_jwt
 import logging
 
 def init_oauth_callback_route(app):
@@ -42,9 +43,21 @@ def init_oauth_callback_route(app):
             save_channel_auth(channel_id, refresh_token)
             logging.info(f"✅ 頻道授權成功：{channel_id}")
 
+            # 🎯 簽出 JWT 並寫入登入 cookie
+            jwt_token = generate_jwt(channel_id)
             frontend_base = current_app.config.get("FRONTEND_BASE_URL", "https://your-frontend.com")
             redirect_url = f"{frontend_base}/auth-loading?channel={channel_id}"
-            return redirect(redirect_url)
+
+            response = make_response(redirect(redirect_url))
+            response.set_cookie(
+                "auth_token",
+                jwt_token,
+                max_age=60 * 60 * 24 * 30,  # 30 天
+                httponly=True,
+                secure=True,
+                samesite="Lax"
+            )
+            return response
 
         except Exception as e:
             logging.exception("❌ OAuth callback 過程失敗")

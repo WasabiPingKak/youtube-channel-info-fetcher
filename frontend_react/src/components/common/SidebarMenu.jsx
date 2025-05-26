@@ -1,13 +1,23 @@
 import { useNavigate } from "react-router-dom";
 import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine, FaClipboardList, FaTools } from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
-import { TbSwitch } from "react-icons/tb";
 import clsx from "clsx";
+import { useCurrentUser } from "@/hooks/useCurrentUser";
 
 const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
     const navigate = useNavigate();
+    const { data: user, isLoading, isError, error } = useCurrentUser();
+
+    const isLoggedIn = !!user;
+
+    console.log("🧪 useCurrentUser:", {
+        isLoading,
+        isError,
+        user,
+        error,
+    });
 
     const menuItems = [
         {
@@ -91,13 +101,23 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
 
                     <hr className="my-3 border-gray-300 dark:border-zinc-700" />
 
-                    <button
-                        onClick={() => navigate("/authorize-channel")}
-                        className="flex items-center gap-3 px-3 py-2 rounded text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800"
-                    >
-                        <span>🔗</span>
-                        {!collapsed && <span>授權我的頻道</span>}
-                    </button>
+                    {isLoggedIn ? (
+                        <button
+                            onClick={() => navigate("/my_settings")}
+                            className="flex items-center gap-3 px-3 py-2 rounded text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-zinc-800"
+                        >
+                            <span>⚙️</span>
+                            {!collapsed && <span>我的頻道設定</span>}
+                        </button>
+                    ) : (
+                        <button
+                            onClick={() => navigate("/authorize-channel")}
+                            className="flex items-center gap-3 px-3 py-2 rounded text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800"
+                        >
+                            <span>🔗</span>
+                            {!collapsed && <span>授權我的頻道</span>}
+                        </button>
+                    )}
 
                     <a
                         href="https://forms.gle/QU3tMBTu7MgucSgZ7"

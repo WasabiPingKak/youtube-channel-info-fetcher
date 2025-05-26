@@ -1,8 +1,20 @@
 #!/bin/bash
 
-# ✅ 載入 .env 中的環境變數
+# ✅ 根據參數選擇要載入的 .env 檔案
+ENV_FILE=".env.local"
+
+if [ "$1" == "--prod" ]; then
+  ENV_FILE=".env.production"
+elif [ "$1" == "--dev" ]; then
+  ENV_FILE=".env.local"
+else
+  echo "❗請指定部署環境參數：--dev 或 --prod"
+  exit 1
+fi
+
+echo "📂 載入環境設定：$ENV_FILE"
 set -o allexport
-source .env.local
+source "$ENV_FILE"
 set +o allexport
 
 # ✅ 自訂參數
@@ -39,7 +51,9 @@ gcloud run deploy "$SERVICE_NAME" \
     GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,\
     GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET,\
     GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI,\
-    FRONTEND_BASE_URL=$FRONTEND_BASE_URL"
+    FRONTEND_BASE_URL=$FRONTEND_BASE_URL,\
+    JWT_SECRET=$JWT_SECRET,\
+    ALLOWED_ORIGINS=$ALLOWED_ORIGINS"
 
 if [ $? -ne 0 ]; then
   echo "❌ 後端部署失敗"

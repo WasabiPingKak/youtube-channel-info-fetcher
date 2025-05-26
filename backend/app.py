@@ -19,12 +19,19 @@ from routes.init_channel_route import init_channel_route
 from routes.channel_index_route import init_channel_index_route
 from routes.internal_trending_route import init_internal_trending_route
 from routes.public_trending_route import init_public_trending_route
+from routes.me_route import init_me_route
+from routes.logout_route import init_logout_route
 
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
 print("✅ [app.py] Flask app created")
-CORS(app)
+
+allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
+allowed_origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]
+print(f"🔓 CORS 允許來源：{allowed_origins}")
+CORS(app, origins=allowed_origins, supports_credentials=True)
+
 app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
 app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "https://your-frontend.com")
 
@@ -48,6 +55,8 @@ init_channel_route(app)
 init_channel_index_route(app, db)
 init_internal_trending_route(app, db)
 init_public_trending_route(app, db)
+init_me_route(app)
+init_logout_route(app)
 
 @app.route("/test-firestore")
 def test_firestore():

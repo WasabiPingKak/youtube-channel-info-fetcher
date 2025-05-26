@@ -10,3 +10,4 @@ google-cloud-firestore
 pytest-cov
 python-dateutil
 python-dotenv
+PyJWT
