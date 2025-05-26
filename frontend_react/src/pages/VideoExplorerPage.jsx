@@ -32,7 +32,7 @@ const VideoExplorerPage = () => {
   const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID;
 
   /* ---------------- 2. 讀取影片與分類快取 ---------------- */
-  const { videos, loading, error, categorySettings } = useClassifiedVideos(
+  const { videos, loading, error } = useClassifiedVideos(
     channelId,
     "videos"
   );
@@ -45,7 +45,7 @@ const VideoExplorerPage = () => {
     activeCategory,
     setActiveCategory,
     filteredVideos,
-  } = useVideoBrowseState(videos, categorySettings);
+  } = useVideoBrowseState(videos);
 
   const sortedVideos = useMemo(() => {
     const list = [...filteredVideos];
@@ -139,7 +139,6 @@ const VideoExplorerPage = () => {
         durationUnit={durationUnit}
         setDurationUnit={setDurationUnit}
         activeCategory={activeCategory}
-        categorySettings={categorySettings}
       />
 
       {/* 影片數量提示 */}
