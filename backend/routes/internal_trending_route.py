@@ -1,7 +1,8 @@
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 import logging
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timedelta
+from pytz import timezone
 
 from services.trending.daily_builder import build_trending_for_date_range
 from services.channel_updater.daily_refresh_service import (
@@ -18,30 +19,40 @@ def init_internal_trending_route(app, db: Client):
     def build_daily_trending_api():
         try:
             data = request.get_json(force=True)
+            if data is None:
+                raise ValueError("請求缺少 JSON body，或格式不正確")
 
-            # 🟡 預設為昨天
+            # 🟡 預設為台灣時間的昨天
             start_date = data.get("startDate")
             if not start_date:
-                start_date = (datetime.now(timezone.utc) - timedelta(days=1)).strftime("%Y-%m-%d")
+                taipei_tz = timezone("Asia/Taipei")
+                now_taipei = datetime.now(taipei_tz)
+                start_date = (now_taipei - timedelta(days=1)).strftime("%Y-%m-%d")
 
             days = int(data.get("days", 1))
             force = bool(data.get("force", False))
 
             if days <= 0:
-                return jsonify({"error": "days 參數必須為正整數"}), 400
+                raise ValueError("days 參數必須為正整數")
 
             logger.info(f"🚀 開始處理 build_daily_trending | start={start_date} | days={days} | force={force}")
             result = build_trending_for_date_range(start_date, days, db, force=force)
             return jsonify(result)
 
+        except ValueError as e:
+            logger.warning(f"⚠️ 參數錯誤: {e}")
+            return jsonify({"error": str(e)}), 400
+
         except Exception as e:
-            logger.error("❌ /build-daily-trending 發生錯誤", exc_info=True)
+            logger.error("❌ /build-daily-trending 發生未預期錯誤", exc_info=True)
             return jsonify({"error": str(e)}), 500
 
     @bp.route("/refresh-daily-cache", methods=["POST"])
     def refresh_daily_cache_api():
         try:
             data = request.get_json(force=True)
+            if data is None:
+                raise ValueError("請求缺少 JSON body，或格式不正確")
 
             # 🔹 limit：最多要同步幾個頻道
             limit = int(data.get("limit", DEFAULT_REFRESH_LIMIT))
@@ -65,8 +76,12 @@ def init_internal_trending_route(app, db: Client):
             )
             return jsonify(result)
 
+        except ValueError as e:
+            logger.warning(f"⚠️ 參數錯誤: {e}")
+            return jsonify({"error": str(e)}), 400
+
         except Exception as e:
-            logger.error("❌ /refresh-daily-cache 發生錯誤", exc_info=True)
+            logger.error("❌ /refresh-daily-cache 發生未預期錯誤", exc_info=True)
             return jsonify({"error": str(e)}), 500
 
     app.register_blueprint(bp)
