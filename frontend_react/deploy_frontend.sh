@@ -10,9 +10,9 @@ echo "🔖 目前 Git Commit Hash: $commit_hash"
 # --- 備份原本的 index.html ---
 cp index.html index.html.bak
 
-# --- 插入 Hash 到 <title> 中 ---
-sed -i'' -E "s|(<title>[^<]*)</title>|\1 ($commit_hash)</title>|" index.html
-echo "📝 已將 Commit Hash 加入到 index.html 標題"
+# --- 插入 Hash 為 HTML 註解（加在 </head> 前）---
+sed -i'' -E "s|</head>|  <!-- Deployed Git Commit: $commit_hash -->\n</head>|" index.html
+echo "📝 已將 Commit Hash 以註解方式加入到 index.html"
 
 # --- 建立正式版 build ---
 echo ""

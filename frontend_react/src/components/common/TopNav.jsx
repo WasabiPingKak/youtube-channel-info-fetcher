@@ -25,7 +25,7 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
 
       <div className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
         <GrAnalytics className="w-6 h-6" />
-        <span>Vtuber 頻道分析 Beta</span>
+        <span>Vtuber 頻道分析</span>
       </div>
     </header>
   );

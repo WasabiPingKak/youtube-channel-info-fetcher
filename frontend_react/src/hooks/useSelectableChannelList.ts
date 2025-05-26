@@ -10,6 +10,7 @@ export type ChannelIndexEntry = {
     thumbnail: string;
     priority?: number;
     enabled?: boolean;
+    joinedAt?: string;
 };
 
 const normalize = (text: string) =>
@@ -17,10 +18,10 @@ const normalize = (text: string) =>
 
 export function useSelectableChannelList(searchText: string = '') {
     const {
-        data: allChannels = [],
+        data: allChannelsData,
         isLoading,
         error,
-    } = useQuery<ChannelIndexEntry[]>({
+    } = useQuery<{ channels: ChannelIndexEntry[]; newly_joined_channels: ChannelIndexEntry[] }>({
         queryKey: ['selectable-channel-list'],
         queryFn: async () => {
             const res = await fetch(`${API_BASE}/api/channels/index`);
@@ -31,10 +32,16 @@ export function useSelectableChannelList(searchText: string = '') {
             if (!result.success) {
                 throw new Error(result.error || '無法取得頻道清單');
             }
-            return result.channels;
+            return {
+                channels: result.channels,
+                newly_joined_channels: result.newly_joined_channels || [],
+            };
         },
-        gcTime: 1000 * 60 * 10, // 快取 10 分鐘
+        gcTime: 1000 * 60 * 3, // 快取 3 分鐘
     });
+
+    const allChannels = allChannelsData?.channels || [];
+    const newlyJoinedChannels = searchText === "" ? (allChannelsData?.newly_joined_channels || []) : [];
 
     const filtered = useMemo(() => {
         if (!searchText) {
@@ -61,5 +68,6 @@ export function useSelectableChannelList(searchText: string = '') {
         isLoading,
         error,
         channels: filtered,
+        newlyJoinedChannels,
     };
 }

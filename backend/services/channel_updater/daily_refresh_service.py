@@ -154,5 +154,7 @@ def run_daily_channel_refresh(
         "status": "success",
         "processed": len(processed),
         "skipped": len(skipped),
-        "updated_channels": processed
+        "updated_channels": [
+            ch for ch in processed if ch.get("videos_written", 0) > 0
+        ]
     }

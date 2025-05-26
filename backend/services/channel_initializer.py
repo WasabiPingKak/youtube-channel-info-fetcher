@@ -6,6 +6,7 @@ from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+from datetime import datetime, timezone
 
 db = firestore.Client()
 
@@ -139,6 +140,9 @@ def append_channel_to_batch(channel_id: str, info_data: dict):
             current_channels = []
             logging.info(f"[Batch] 🔄 上一 batch 已滿，建立新 batch：{last_batch_id}")
 
+        # 🔧 取得 ISO8601 格式時間字串
+        now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+
         # 寫入新頻道
         new_entry = {
             "channel_id": channel_id,
@@ -147,6 +151,7 @@ def append_channel_to_batch(channel_id: str, info_data: dict):
             "url": info_data["url"],
             "enabled": True,
             "priority": 1 if channel_id == SPECIAL_CHANNEL_ID else 100,
+            "joinedAt": now_iso
         }
 
         current_channels.append(new_entry)

@@ -10,7 +10,7 @@ const SORT_FIELDS = {
 
 type SortField = typeof SORT_FIELDS[keyof typeof SORT_FIELDS];
 
-export const useVideoBrowseState = (videos: any[], categorySettings: any) => {
+export const useVideoBrowseState = (videos: any[]) => {
   const [videoType, setVideoType] = useState<"live" | "videos" | "shorts">("live");
   const [activeCategory, setActiveCategory] = useState("全部");
   const [sortField, setSortField] = useState<SortField>(SORT_FIELDS.PUBLISH_DATE);

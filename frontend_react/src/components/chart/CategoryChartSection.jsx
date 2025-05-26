@@ -10,7 +10,6 @@ const CategoryChartSection = ({
   durationUnit,
   setDurationUnit,
   activeCategory,
-  categorySettings,
 }) => {
   const [showAllKeywords, setShowAllKeywords] = useState(false);
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
@@ -36,35 +35,32 @@ const CategoryChartSection = ({
     videos.forEach((video) => {
       if (video.type !== typeLabel) return;
 
-      const inCategory = video.matchedCategories?.includes(activeCategory);
+      const isGame = activeCategory === "遊戲";
+      const isAll = activeCategory === "全部";
+      const isSpecific = !isGame && !isAll;
 
-      if (activeCategory && activeCategory !== "全部") {
-        const isGame = activeCategory === "遊戲";
+      if (isGame && video.game) {
+        const key = video.game;
+        if (!counts[key]) counts[key] = { category: key, count: 0, duration: 0 };
+        counts[key].count += 1;
+        counts[key].duration += video.duration || 0;
+      } else if (isSpecific && Array.isArray(video.matchedPairs)) {
+        const seen = new Set();
+        video.matchedPairs.forEach(({ keyword, main }) => {
+          if (main !== activeCategory) return;
+          if (!showAllKeywords && seen.has(keyword)) return;
+          seen.add(keyword);
 
-        if (isGame && video.game) {
-          const key = video.game;
-          if (!counts[key]) counts[key] = { category: key, count: 0, duration: 0 };
-          counts[key].count += 1;
-          counts[key].duration += video.duration || 0;
-        } else if (inCategory && Array.isArray(video.matchedKeywords)) {
-          const keywords = categorySettings?.[videoType]?.[activeCategory] || [];
-          video.matchedKeywords.forEach((kw) => {
-            if (showAllKeywords || keywords.includes(kw)) {
-              if (!counts[kw]) counts[kw] = { category: kw, count: 0, duration: 0 };
-              counts[kw].count += 1;
-              counts[kw].duration += video.duration || 0;
-            }
-          });
-        }
-      } else {
-        // 主分類統計邏輯，包括 activeCategory === "全部"
-        if (Array.isArray(video.matchedCategories)) {
-          video.matchedCategories.forEach((cat) => {
-            if (!counts[cat]) counts[cat] = { category: cat, count: 0, duration: 0 };
-            counts[cat].count += 1;
-            counts[cat].duration += video.duration || 0;
-          });
-        }
+          if (!counts[keyword]) counts[keyword] = { category: keyword, count: 0, duration: 0 };
+          counts[keyword].count += 1;
+          counts[keyword].duration += video.duration || 0;
+        });
+      } else if (isAll && Array.isArray(video.matchedCategories)) {
+        video.matchedCategories.forEach((cat) => {
+          if (!counts[cat]) counts[cat] = { category: cat, count: 0, duration: 0 };
+          counts[cat].count += 1;
+          counts[cat].duration += video.duration || 0;
+        });
       }
     });
 
@@ -81,7 +77,7 @@ const CategoryChartSection = ({
         duration: d.duration || 0,
       })),
     };
-  }, [videos, typeLabel, activeCategory, categorySettings, videoType, showAllKeywords]);
+  }, [videos, typeLabel, activeCategory, showAllKeywords]);
 
   const sectionTitle =
     activeCategory && activeCategory !== "遊戲"

@@ -2,16 +2,19 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelectableChannelList } from "../hooks/useSelectableChannelList";
 import MainLayout from "../components/layout/MainLayout";
-import ChannelSelectorCard from "../components/channels/ChannelSelectorCard";
-import RecentChannelsSection from "../components/channels/RecentChannelsSection";
 import { addRecentChannel } from "../utils/recentChannels";
+import {
+  ChannelSelectorCard,
+  RecentChannelsSection,
+  NewlyJoinedChannelsSection,
+} from "../components/channels";
 
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
   const navigate = useNavigate();
 
-  const { isLoading, channels, error } = useSelectableChannelList(searchText);
+  const { isLoading, channels, newlyJoinedChannels, error } = useSelectableChannelList(searchText);
 
   const handleClick = (channelId) => {
     addRecentChannel(channelId);
@@ -34,10 +37,18 @@ const ChannelSelectorPage = () => {
 
         {/* ✅ 最近使用清單（只有搜尋為空時才顯示） */}
         {!isLoading && searchText === "" && (
-          <RecentChannelsSection
-            channels={channels}
-            onClick={handleClick}
-          />
+          <>
+            {/*
+            <RecentChannelsSection
+              channels={channels}
+              onClick={handleClick}
+            />
+            */}
+            <NewlyJoinedChannelsSection
+              channels={newlyJoinedChannels}
+              onClick={handleClick}
+            />
+          </>
         )}
 
         {/* 🕘 Loading 狀態 */}
@@ -61,21 +72,21 @@ const ChannelSelectorPage = () => {
 
         {/* ✅ 結果清單 */}
         {!isLoading && channels.length > 0 && (
-        <>
+          <>
             <h2 className="text-sm font-bold text-gray-700 mb-3">全部頻道</h2>
             <p className="text-xs text-gray-400 mb-3">
-            按照頻道名稱字典順序排列
+              按照頻道名稱字典順序排列
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {channels.map((channel) => (
+              {channels.map((channel) => (
                 <ChannelSelectorCard
-                key={channel.channel_id}
-                channel={channel}
-                onClick={handleClick}
+                  key={channel.channel_id}
+                  channel={channel}
+                  onClick={handleClick}
                 />
-            ))}
+              ))}
             </div>
-        </>
+          </>
         )}
 
         {!isLoading && channels.length === 0 && (
