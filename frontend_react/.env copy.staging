@@ -1,0 +1,5 @@
+VITE_DEFAULT_CHANNEL_ID=UCLxa0YOtqi8IR5r2dSLXPng
+VITE_API_BASE=https://youtube-api-staging-service-3n3a4tzx3q-de.a.run.app
+VITE_ENABLE_SETTINGS=true
+VITE_GOOGLE_CLIENT_ID=309119867924-m2u3t49dpm8uohnnn9e5j15mmu4cagd1.apps.googleusercontent.com
+VITE_GOOGLE_REDIRECT_URI=https://vtuber-analyzer-staging.web.app/oauth/callback

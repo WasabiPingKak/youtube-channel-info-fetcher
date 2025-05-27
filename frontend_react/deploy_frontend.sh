@@ -31,7 +31,13 @@ echo "🔖 目前 Git Commit Hash: $commit_hash"
 # --- 備份原本的 index.html ---
 cp index.html index.html.bak
 
-# --- 插入 Hash 為 HTML 註解（加在 </head> 前）---
+# --- 若為 staging，修改 index.html 的 <title> ---
+if [ "$MODE" == "staging" ]; then
+  echo "🧩 替換 <title> 為『Vtuber 頻道分析 staging』"
+  sed -i'' -E 's|<title>Vtuber 頻道分析</title>|<title>Vtuber 頻道分析 staging</title>|' index.html
+fi
+
+# --- 插入 Git Hash 註解於 </head> 前 ---
 sed -i'' -E "s|</head>|  <!-- Deployed Git Commit: $commit_hash -->\n</head>|" index.html
 echo "📝 已將 Commit Hash 以註解方式加入到 index.html"
 
@@ -44,7 +50,7 @@ npm run build -- --mode $MODE
 mv index.html.bak index.html
 echo "♻️ 已還原原本的 index.html"
 
-# --- 部署到指定 Firebase Hosting target ---
+# --- 部署到 Firebase Hosting target ---
 echo ""
 echo "🚀 正在部署到 Firebase Hosting [$TARGET]..."
 output=$(firebase deploy --only hosting:$TARGET)
@@ -54,7 +60,7 @@ echo ""
 echo "🎯 Hosting URL："
 echo "$output" | grep -Eo 'https://[a-zA-Z0-9.-]+\.web\.app'
 
-# --- 自動打開瀏覽器（支援 Linux / Mac / Windows Git Bash）---
+# --- 自動打開網址（支援 mac / linux / git bash）---
 if command -v xdg-open > /dev/null; then
   xdg-open "$(echo "$output" | grep -Eo 'https://[a-zA-Z0-9.-]+\.web\.app')"
 elif command -v open > /dev/null; then

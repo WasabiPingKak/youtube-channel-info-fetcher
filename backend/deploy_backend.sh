@@ -22,21 +22,23 @@ else
   exit 1
 fi
 
-# ✅ 載入共用設定（預設從 .env.local）
+# ✅ 先載入 .env.staging 作為預設值
 if [ ! -f ".env.local" ]; then
   echo "❌ 找不到 .env.local"
   exit 1
 fi
+echo "📂 載入預設參數：.env.local"
 set -o allexport
 source .env.local
 set +o allexport
 
-# ✅ 若為 production，覆蓋正式參數
+# ✅ 若為 production，進一步覆蓋正式參數
 if [ "$ENV_MODE" == "production" ]; then
   if [ ! -f ".env.production" ]; then
     echo "❌ 找不到 .env.production"
     exit 1
   fi
+  echo "📂 覆蓋 production 參數：.env.production"
   set -o allexport
   source .env.production
   set +o allexport

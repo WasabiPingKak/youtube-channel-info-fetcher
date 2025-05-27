@@ -9,7 +9,7 @@ def init_logout_route(app):
     def logout():
         response = make_response("", 204)  # No Content
         response.set_cookie(
-            "auth_token",
+            "__session",
             "",
             max_age=0,            # ⏳ 立即過期
             path="/",

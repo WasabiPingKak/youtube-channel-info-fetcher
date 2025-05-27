@@ -50,7 +50,7 @@ def init_oauth_callback_route(app):
 
             response = make_response(redirect(redirect_url))
             response.set_cookie(
-                "auth_token",
+                "__session",
                 jwt_token,
                 max_age=60 * 60 * 24 * 30,  # 30 天
                 httponly=True,

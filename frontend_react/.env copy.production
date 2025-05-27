@@ -1,4 +1,4 @@
 VITE_DEFAULT_CHANNEL_ID=UCLxa0YOtqi8IR5r2dSLXPng
-VITE_API_BASE=
+VITE_API_BASE=https://youtube-api-service-3n3a4tzx3q-de.a.run.app
 VITE_ENABLE_SETTINGS=false
 VITE_GOOGLE_REDIRECT_URI=https://youtube-api-service-3n3a4tzx3q-de.a.run.app/oauth/callback

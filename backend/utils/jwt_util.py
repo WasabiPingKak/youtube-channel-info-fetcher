@@ -35,7 +35,7 @@ def verify_jwt(token: str) -> dict:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:
-        logging.warning("JWT token has expired")
-    except jwt.InvalidTokenError:
-        logging.warning("Invalid JWT token")
+        logging.warning("❌ JWT token 已過期")
+    except jwt.InvalidTokenError as e:
+        logging.warning(f"❌ 無效 JWT token: {e}")
     return None
