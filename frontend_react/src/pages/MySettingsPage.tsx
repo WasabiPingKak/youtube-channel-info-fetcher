@@ -27,7 +27,15 @@ export default function MySettingsPage() {
 
     const navigate = useNavigate();
 
-    // ✅ 權限驗證與未登入處理
+    // ✅ 匿名未登入使用者處理
+    useEffect(() => {
+        if (!meLoading && me?.channelId === null) {
+            toast.error("請先登入以編輯頻道設定");
+            navigate("/");
+        }
+    }, [meLoading, me]);
+
+    // ✅ 權限驗證：登入者只能看自己的頻道設定
     useEffect(() => {
         const myId = me?.channelId;
         const targetId = channelInfo?.channel_id;
@@ -52,8 +60,8 @@ export default function MySettingsPage() {
         }
     };
 
-    // ✅ 只處理資料還沒完成載入的狀況
-    if (meLoading || !me || !channelInfo?.channel_id) {
+    // ✅ 載入狀態
+    if (meLoading || !channelInfo?.channel_id) {
         return (
             <MainLayout>
                 <div className="max-w-xl mx-auto p-6 text-center text-gray-500">
@@ -61,6 +69,11 @@ export default function MySettingsPage() {
                 </div>
             </MainLayout>
         );
+    }
+
+    // ✅ 匿名者導向中（避免畫面閃爍）
+    if (me?.channelId === null) {
+        return null;
     }
 
     return (
