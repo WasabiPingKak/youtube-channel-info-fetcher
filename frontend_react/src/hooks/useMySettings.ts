@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
 
@@ -12,7 +12,7 @@ interface MySettingsResponse {
 }
 
 export function useMySettings() {
-  const { data: user } = useCurrentUser();
+  const { data: user } = useMyChannelId();
   const [enabled, setEnabled] = useState<boolean>(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
   const [loading, setLoading] = useState<boolean>(true);

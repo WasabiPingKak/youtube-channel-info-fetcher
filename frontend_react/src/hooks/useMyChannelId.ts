@@ -1,4 +1,4 @@
-// hooks/useCurrentUser.ts
+// hooks/useMyChannelId.ts
 import { useQuery } from "@tanstack/react-query"
 
 type UserInfo = {
@@ -7,7 +7,7 @@ type UserInfo = {
 
 const BASE_URL = import.meta.env.VITE_API_BASE || "";
 
-export function useCurrentUser() {
+export function useMyChannelId() {
   return useQuery<UserInfo>({
     queryKey: ["currentUser"],
     queryFn: async () => {

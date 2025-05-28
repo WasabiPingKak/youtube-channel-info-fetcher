@@ -2,13 +2,13 @@ import { useNavigate } from "react-router-dom";
 import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine, FaClipboardList, FaTools } from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
 import clsx from "clsx";
-import { useCurrentUser } from "@/hooks/useCurrentUser";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 
 const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
     const navigate = useNavigate();
-    const { data: user, isLoading, isError, error } = useCurrentUser();
+    const { data: user, isLoading, isError, error } = useMyChannelId();
 
     const isLoggedIn = !!user;
 
