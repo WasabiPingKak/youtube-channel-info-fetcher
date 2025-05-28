@@ -81,13 +81,6 @@ def init_my_settings_route(app):
                 "channels": target_channels
             })
 
-            # ✅ 同步更新 channel_info/info 中的 countryCode 與 enabled
-            info_doc_ref = db.collection("channel_data").document(channel_id).collection("channel_info").document("info")
-            info_doc_ref.set({
-                "countryCode": country_code,
-                "enabled": enabled
-            }, merge=True)
-
             # ✅ 新增：同步寫入 channel_index/{channelId}
             index_doc_ref = db.collection("channel_index").document(channel_id)
             index_doc_ref.set({

@@ -1,5 +1,5 @@
 import { useParams, useSearchParams } from "react-router-dom";
-import { useChannelInfo } from "../../hooks/useChannelInfo";
+import { useChannelIndex } from "../../hooks/useChannelIndex";
 import { FaEyeSlash } from "react-icons/fa6";
 
 const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
@@ -12,7 +12,7 @@ export default function ChannelInfoCard() {
   // 優先使用路由參數，再用 query string，最後 fallback 預設頻道
   const finalChannelId = paramId || queryId || ADMIN_CHANNEL_ID;
 
-  const { data, isLoading, error } = useChannelInfo(finalChannelId);
+  const { data, isLoading, error } = useChannelIndex(finalChannelId);
   const isAuthor = finalChannelId === ADMIN_CHANNEL_ID;
 
   if (isLoading) {

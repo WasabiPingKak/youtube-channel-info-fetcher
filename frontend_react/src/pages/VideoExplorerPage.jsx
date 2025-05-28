@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import { useMyChannelId } from "@/hooks/useMyChannelId";
-import { useChannelInfo } from "@/hooks/useChannelInfo";
+import { useChannelIndex } from "@/hooks/useChannelIndex";
 import MainLayout from "../components/layout/MainLayout";
 import VideoExplorerContent from "./VideoExplorerContent";
 
@@ -14,7 +14,7 @@ const VideoExplorerPage = () => {
   const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
 
   const { data: me, isLoading: meLoading, error: meError } = useMyChannelId();
-  const { data: channelInfo, isLoading: infoLoading } = useChannelInfo(channelId);
+  const { data: channelInfo, isLoading: infoLoading } = useChannelIndex(channelId);
 
   const navigate = useNavigate();
 
