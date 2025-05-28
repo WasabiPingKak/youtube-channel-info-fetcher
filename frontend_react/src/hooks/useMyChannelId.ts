@@ -9,7 +9,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE || "";
 
 export function useMyChannelId() {
   return useQuery<UserInfo>({
-    queryKey: ["currentUser"],
+    queryKey: ["myChannelId"],
     queryFn: async () => {
       const res = await fetch(`${BASE_URL}/api/me`, {
         credentials: "include",
