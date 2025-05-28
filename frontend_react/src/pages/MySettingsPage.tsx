@@ -41,6 +41,17 @@ export default function MySettingsPage() {
         }
     }, [meLoading, me, meError, channelInfo?.channel_id]);
 
+    const handleLogout = async () => {
+        try {
+            const res = await fetch("/api/logout", { method: "POST" });
+            if (!res.ok) throw new Error("Logout failed");
+            toast.success("已成功登出");
+            navigate("/");
+        } catch (err) {
+            toast.error("登出失敗，請稍後再試");
+        }
+    };
+
     // ✅ 只處理資料還沒完成載入的狀況
     if (meLoading || !me || !channelInfo?.channel_id) {
         return (
@@ -90,6 +101,13 @@ export default function MySettingsPage() {
                     className="mt-4 bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
                 >
                     儲存設定
+                </button>
+
+                <button
+                    onClick={handleLogout}
+                    className="mt-4 ml-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                >
+                    登出
                 </button>
             </div>
         </MainLayout>

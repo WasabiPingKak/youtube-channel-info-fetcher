@@ -37,7 +37,7 @@ const AuthLoadingPage = () => {
         setCountdown(seconds);
         if (seconds <= 0) {
           clearInterval(interval);
-          navigate(`/videos?channel=${channelId}`);
+          navigate("/my-settings");
         }
       }, 1000);
     } catch (err) {
@@ -76,7 +76,7 @@ const AuthLoadingPage = () => {
 
         {initSuccess && (
           <p className="text-green-600">
-            ✅ 初始化完成，{countdown} 秒後將自動跳轉到影片頁...
+            ✅ 初始化完成，{countdown} 秒後將自動跳轉到設定頁...
           </p>
         )}
 
