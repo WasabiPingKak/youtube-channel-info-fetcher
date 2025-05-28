@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
 import {
@@ -18,11 +18,44 @@ import {
 import { sortVideos } from "../utils/sortVideos";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
 import MainLayout from "../components/layout/MainLayout";
+import { useChannelInfo } from "@/hooks/useChannelInfo";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-// ✅ 若 URL 無指定 channel，使用預設頻道
+// ✅ 若 URL 無指定 channel，使用開發者預設頻道
 const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const VideoExplorerPage = () => {
+  const [searchParams] = useSearchParams();
+  const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
+
+  // 🔒 讀取目前登入者的頻道 ID
+  const { data: me, isLoading: meLoading, error: meError } = useMyChannelId();
+
+  // 🔒 取得該頻道的公開資訊
+  const { data: channelInfo, isLoading: infoLoading } = useChannelInfo(channelId);
+
+  const navigate = useNavigate();
+
+  // 🔒 權限檢查：頻道不公開且非本人 → 導回首頁
+  useEffect(() => {
+    const myId = me?.channelId;
+    const targetId = channelInfo?.channel_id;
+
+    console.log("📌 [權限檢查] me =", myId);
+    console.log("📌 [權限檢查] channel =", targetId, "| enabled =", channelInfo?.enabled);
+
+    if (
+      !meLoading &&
+      !infoLoading &&
+      channelInfo?.enabled === false &&
+      (!me || meError || me.channelId !== channelId)
+    ) {
+      // 非公開且非本人 → 禁止進入
+      toast.error("您沒有權限查看這個頻道頁面");
+      navigate("/");
+    }
+
+  }, [meLoading, infoLoading, me, meError, channelInfo, navigate]);
 
   const {
     sortField,
@@ -30,19 +63,12 @@ const VideoExplorerPage = () => {
     handleSortChange,
   } = useVideoSortControl("publishDate");
 
-  /* ---------------- 解析 URL 參數 ---------------- */
-  const [searchParams] = useSearchParams();
-  const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
-
-  /* ---------------- 讀取影片與分類快取 ---------------- */
   const { videos, loading, error } = useClassifiedVideos(
     channelId,
     "videos"
   );
 
-  /* ---------------- 處理瀏覽狀態 ---------------- */
   const {
-    SORT_FIELDS,
     videoType,
     setVideoType,
     activeCategory,
@@ -55,7 +81,6 @@ const VideoExplorerPage = () => {
     [filteredVideos, sortField, sortOrder]
   );
 
-  /* ---------------- 圖表控制 ---------------- */
   const {
     chartType,
     setChartType,
@@ -63,27 +88,21 @@ const VideoExplorerPage = () => {
     setDurationUnit,
   } = useChartControlState();
 
-  /* ---------------- 切換頻道完成後關閉 Toast ---------------- */
-  useEffect(() => {
-    if (!loading) toast.dismiss("channel-switch");
-  }, [loading]);
-
-  const [setDrawerOpen] = useState(false);
-
-  useEffect(() => {
-    const handler = () => setDrawerOpen(true);
-    window.addEventListener("open-channel-drawer", handler);
-    return () => window.removeEventListener("open-channel-drawer", handler);
-  }, []);
-
   useAutoUpdateVideos(channelId);
 
-  /* ---------------- 主要畫面 ---------------- */
+  // 🔒 避免權限未判斷完成就顯示資料
+  if (infoLoading || !channelInfo) {
+    return (
+      <MainLayout>
+        <div className="px-4 py-10 text-center text-gray-500">載入中...</div>
+      </MainLayout>
+    );
+  }
+
   return (
     <MainLayout>
       <ChannelInfoCard />
 
-      {/* Tabs */}
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
       <SubCategoryTabs
         activeType={videoType}
@@ -92,7 +111,6 @@ const VideoExplorerPage = () => {
         videos={videos}
       />
 
-      {/* 圖表區 */}
       <CategoryChartSection
         videos={videos}
         videoType={videoType}
@@ -103,7 +121,6 @@ const VideoExplorerPage = () => {
         activeCategory={activeCategory}
       />
 
-      {/* 影片數量提示 */}
       <div className="px-4 py-2 text-sm text-gray-600">
         {activeCategory
           ? `共顯示 ${filteredVideos.length} 部影片`
@@ -116,7 +133,6 @@ const VideoExplorerPage = () => {
         <p className="px-4 text-gray-500">目前無影片</p>
       )}
 
-      {/* 影片列表 */}
       <VideoTableHeader
         sortField={sortField}
         sortOrder={sortOrder}
@@ -128,11 +144,10 @@ const VideoExplorerPage = () => {
         sortOrder={sortOrder}
         onSortChange={handleSortChange}
         onToggleOrder={() =>
-          handleSortChange(sortField) // 再次點擊同欄位會切換升降序
+          handleSortChange(sortField)
         }
       />
 
-      {/* 資料列 */}
       {sortedVideos.map((video) => (
         <VideoCard
           key={video.videoId}
