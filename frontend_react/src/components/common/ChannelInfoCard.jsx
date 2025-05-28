@@ -2,7 +2,7 @@ import { useParams, useSearchParams } from "react-router-dom";
 import { useChannelInfo } from "../../hooks/useChannelInfo";
 import { FaEyeSlash } from "react-icons/fa6";
 
-const DEFAULT_CHANNEL_ID = import.meta.env.VITE_DEFAULT_CHANNEL_ID;
+const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
 export default function ChannelInfoCard() {
   const { channelId: paramId } = useParams();
@@ -10,10 +10,10 @@ export default function ChannelInfoCard() {
   const queryId = searchParams.get("channel");
 
   // 優先使用路由參數，再用 query string，最後 fallback 預設頻道
-  const finalChannelId = paramId || queryId || DEFAULT_CHANNEL_ID;
+  const finalChannelId = paramId || queryId || ADMIN_CHANNEL_ID;
 
   const { data, isLoading, error } = useChannelInfo(finalChannelId);
-  const isAuthor = finalChannelId === DEFAULT_CHANNEL_ID;
+  const isAuthor = finalChannelId === ADMIN_CHANNEL_ID;
 
   if (isLoading) {
     return (

@@ -1,10 +1,10 @@
 import React from "react";
 import { FaEyeSlash } from "react-icons/fa6";
 
-const DEFAULT_CHANNEL_ID = import.meta.env.VITE_DEFAULT_CHANNEL_ID;
+const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
 const ChannelSelectorCard = ({ channel, onClick }) => {
-  const isAuthor = channel.channel_id === DEFAULT_CHANNEL_ID;
+  const isAuthor = channel.channel_id === ADMIN_CHANNEL_ID;
 
   return (
     <div

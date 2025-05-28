@@ -17,7 +17,7 @@ import VideoTableHeader from "../components/VideoExplorer/VideoTableHeader";
 import MobileSortDropdown from "../components/VideoExplorer/MobileSortDropdown";
 
 // ✅ 若 URL 無指定 channel，使用預設頻道
-const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const VideoExplorerPage = () => {
 
@@ -29,7 +29,7 @@ const VideoExplorerPage = () => {
 
   /* ---------------- 1. 解析 URL 參數 ---------------- */
   const [searchParams] = useSearchParams();
-  const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID;
+  const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
 
   /* ---------------- 2. 讀取影片與分類快取 ---------------- */
   const { videos, loading, error } = useClassifiedVideos(

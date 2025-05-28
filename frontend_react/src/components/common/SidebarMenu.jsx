@@ -4,7 +4,7 @@ import { MdPrivacyTip } from "react-icons/md";
 import clsx from "clsx";
 import { useCurrentUser } from "@/hooks/useCurrentUser";
 
-const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
     const navigate = useNavigate();
