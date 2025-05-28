@@ -17,8 +17,9 @@ import ChannelSelectorPage from "./pages/ChannelSelectorPage";
 import TrendingGamesPage from "./pages/TrendingGamesPage";
 import GameAliasPage from "./pages/GameAliasPage";
 import ChangelogPage from "./pages/ChangelogPage";
+import MySettingsPage from "./pages/MySettingsPage";
 
-
+import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
 
 /* --- 條件編譯：是否載入 /settings --- */
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="/trending" element={<TrendingGamesPage />} />
         <Route path="/game-aliases" element={<GameAliasPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
+        <Route path="/my-settings" element={<MySettingsPage />} />
 
         {/* 新版分類編輯器 */}
         <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />

@@ -1,4 +1,5 @@
 import React from "react";
+import { FaEyeSlash } from "react-icons/fa6";
 
 const DEFAULT_CHANNEL_ID = import.meta.env.VITE_DEFAULT_CHANNEL_ID;
 
@@ -17,7 +18,15 @@ const ChannelSelectorCard = ({ channel, onClick }) => {
       />
       <div className="flex flex-col gap-1">
         {/* 頻道名稱 */}
-        <div className="font-bold text-base text-gray-900">{channel.name}</div>
+        <div className="font-bold text-base text-gray-900 flex items-center gap-2">
+          {channel.name}
+          {channel.enabled !== true && (
+            <span className="flex items-center gap-1 text-gray-500 text-sm">
+              <FaEyeSlash className="inline-block" />
+              此頻道未公開
+            </span>
+          )}
+        </div>
 
         {/* 開發者徽章（下方顯示） */}
         {isAuthor && (
@@ -28,6 +37,19 @@ const ChannelSelectorCard = ({ channel, onClick }) => {
             >
               💻 本站開發者
             </span>
+          </div>
+        )}
+
+        {/* 顯示自訂國旗徽章 */}
+        {Array.isArray(channel.countryCode) && channel.countryCode.length > 0 && (
+          <div className="flex flex-wrap gap-1 mt-1">
+            {channel.countryCode.map((code) => (
+              <span
+                key={code}
+                className={`fi fi-${code.toLowerCase()} w-5 h-3 rounded-sm border`}
+                title={code}
+              />
+            ))}
           </div>
         )}
       </div>

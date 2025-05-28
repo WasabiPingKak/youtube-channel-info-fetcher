@@ -49,7 +49,9 @@ def init_channel_index_route(app, db):
                         "url": entry.get("url"),
                         "thumbnail": entry.get("thumbnail"),
                         "priority": entry.get("priority", 0),
-                        "joinedAt": joined_at  # 保留原始值（可能是字串或 timestamp）
+                        "joinedAt": joined_at,  # 保留原始值（可能是字串或 timestamp）
+                        "countryCode": entry.get("countryCode", []),
+                        "enabled": entry.get("enabled", True),
                     })
 
             # 排序所有資料

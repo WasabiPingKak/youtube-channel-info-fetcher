@@ -12,13 +12,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
 
     const isLoggedIn = !!user;
 
-    console.log("🧪 useCurrentUser:", {
-        isLoading,
-        isError,
-        user,
-        error,
-    });
-
     const menuItems = [
         {
             label: "頻道遊戲趨勢",
@@ -103,7 +96,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
 
                     {isLoggedIn ? (
                         <button
-                            onClick={() => navigate("/my_settings")}
+                            onClick={() => navigate("/my-settings")}
                             className="flex items-center gap-3 px-3 py-2 rounded text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-zinc-800"
                         >
                             <span>⚙️</span>

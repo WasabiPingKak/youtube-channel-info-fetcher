@@ -6,6 +6,8 @@ export interface ChannelInfo {
   name: string;
   url: string;
   thumbnail: string;
+  countryCode?: string[];
+  enabled: boolean;
 }
 
 export function useChannelInfo(channelId: string) {
@@ -30,6 +32,10 @@ export function useChannelInfo(channelId: string) {
 
         if (docSnap.exists()) {
           const raw = docSnap.data();
+          console.log("📦 channelId = ", channelId);
+          console.log("📦 countryCode = ", raw?.countryCode);
+          console.log("📦 enabled = ", raw?.enabled);
+
           console.log("✅ 取得資料：", raw);
           setData(raw as ChannelInfo);
         } else {
