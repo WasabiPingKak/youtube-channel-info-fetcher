@@ -10,7 +10,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
     const navigate = useNavigate();
     const { data: user, isLoading, isError, error } = useMyChannelId();
 
-    const isLoggedIn = !!user;
+    const isLoggedIn = !!user?.channelId;
 
     const menuItems = [
         {

@@ -32,11 +32,6 @@ export function useChannelInfo(channelId: string) {
 
         if (docSnap.exists()) {
           const raw = docSnap.data();
-          console.log("📦 channelId = ", channelId);
-          console.log("📦 countryCode = ", raw?.countryCode);
-          console.log("📦 enabled = ", raw?.enabled);
-
-          console.log("✅ 取得資料：", raw);
           setData(raw as ChannelInfo);
         } else {
           console.warn("⚠️ 找不到該頻道資訊文件");
