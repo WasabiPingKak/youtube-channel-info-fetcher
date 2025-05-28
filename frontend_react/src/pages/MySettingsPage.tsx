@@ -1,10 +1,12 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useMySettings } from "@/hooks/useMySettings";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { PublicToggleSection } from "@/components/profile_settings/PublicToggleSection";
 import { CountryFlagSelector } from "@/components/profile_settings/CountryFlagSelector";
 import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-hot-toast";
 
 export default function MySettingsPage() {
     const {
@@ -16,6 +18,39 @@ export default function MySettingsPage() {
         handleSave,
         channelInfo,
     } = useMySettings();
+
+    const {
+        data: me,
+        isLoading: meLoading,
+        error: meError,
+    } = useMyChannelId();
+
+    const navigate = useNavigate();
+
+    // ✅ 權限驗證與未登入處理
+    useEffect(() => {
+        const myId = me?.channelId;
+        const targetId = channelInfo?.channel_id;
+
+        if (
+            meError ||
+            (!meLoading && myId && targetId && myId !== targetId)
+        ) {
+            toast.error("您沒有權限查看設定頁面");
+            navigate("/");
+        }
+    }, [meLoading, me, meError, channelInfo?.channel_id]);
+
+    // ✅ 只處理資料還沒完成載入的狀況
+    if (meLoading || !me || !channelInfo?.channel_id) {
+        return (
+            <MainLayout>
+                <div className="max-w-xl mx-auto p-6 text-center text-gray-500">
+                    載入中...
+                </div>
+            </MainLayout>
+        );
+    }
 
     return (
         <MainLayout>
