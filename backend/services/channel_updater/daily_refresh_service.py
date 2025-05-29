@@ -4,11 +4,8 @@ from typing import List, Dict, Optional
 
 from google.cloud.firestore import Client
 from services.youtube.fetcher import get_video_data
-from services.firestore.batch_writer import (
-    get_last_video_sync_time,
-    write_batches_to_firestore,
-    update_last_sync_time
-)
+from services.firestore.batch_writer import write_batches_to_firestore
+from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
 
 DEFAULT_REFRESH_LIMIT = 100
 
