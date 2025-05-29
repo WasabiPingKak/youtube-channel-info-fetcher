@@ -3,31 +3,9 @@ from datetime import datetime, timedelta, date, timezone
 from typing import List, Dict, Any
 
 from google.cloud.firestore import Client
+from .firestore_date_utils import parse_firestore_date
 
 logger = logging.getLogger(__name__)
-
-def document_exists(db: Client, path: str) -> bool:
-    try:
-        parts = path.split("/")
-        doc_ref = db.collection(parts[0])
-        for i in range(1, len(parts) - 1, 2):
-            doc_ref = doc_ref.document(parts[i]).collection(parts[i + 1])
-        doc = doc_ref.document(parts[-1]).get()
-        return doc.exists
-    except Exception as e:
-        logger.warning("⚠️ 無法檢查文件是否存在 [%s]: %s", path, e)
-        return False
-
-
-def write_document(db: Client, path: str, data: dict):
-    try:
-        parts = path.split("/")
-        doc_ref = db.collection(parts[0])
-        for i in range(1, len(parts) - 1, 2):
-            doc_ref = doc_ref.document(parts[i]).collection(parts[i + 1])
-        doc_ref.document(parts[-1]).set(data)
-    except Exception as e:
-        logger.error("❌ 寫入文件失敗 [%s]: %s", path, e, exc_info=True)
 
 def get_active_channels(db: Client) -> List[Dict[str, Any]]:
     try:
@@ -76,33 +54,3 @@ def get_active_channels(db: Client) -> List[Dict[str, Any]]:
     except Exception as e:
         logger.error("❌ 讀取活躍頻道失敗: %s", e, exc_info=True)
         return []
-
-
-def load_videos_for_date(db: Client, channel_id: str, target_date: date) -> List[Dict[str, Any]]:
-    try:
-        videos = []
-        batch_ref = db.collection("channel_data").document(channel_id).collection("videos_batch")
-        docs = batch_ref.stream()
-
-        for doc in docs:
-            items = doc.to_dict().get("videos", [])
-            for video in items:
-                publish_date = parse_firestore_date(video.get("publishDate"))
-                if publish_date and publish_date.date() == target_date:
-                    videos.append(video)
-
-        return videos
-    except Exception as e:
-        logger.warning("⚠️ 載入影片失敗 [%s]: %s", channel_id, e)
-        return []
-
-
-def parse_firestore_date(raw) -> datetime | None:
-    if isinstance(raw, str):
-        try:
-            return datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        except ValueError:
-            return None
-    elif hasattr(raw, "to_datetime"):
-        return raw.to_datetime()
-    return None
