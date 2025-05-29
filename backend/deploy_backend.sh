@@ -53,6 +53,11 @@ IMAGE_URI="gcr.io/$PROJECT_ID/$SERVICE_NAME:latest"
 gcloud config set project "$PROJECT_ID"
 gcloud services enable run.googleapis.com containerregistry.googleapis.com
 
+# ✅ 寫入 Git Commit Hash 至 version.txt
+commit_hash=$(git rev-parse --short=6 HEAD)
+echo "🔖 寫入 Git Commit Hash: $commit_hash"
+echo "$commit_hash" > version.txt
+
 echo ""
 echo "📦 建立 Container 映像..."
 gcloud builds submit --tag "$IMAGE_URI"

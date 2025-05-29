@@ -53,7 +53,11 @@ echo "♻️ 已還原原本的 index.html"
 # --- 部署到 Firebase Hosting target ---
 echo ""
 echo "🚀 正在部署到 Firebase Hosting [$TARGET]..."
-output=$(firebase deploy --only hosting:$TARGET)
+if ! output=$(firebase deploy --only hosting:$TARGET 2>&1); then
+  echo "❌ Firebase 部署失敗："
+  echo "$output"
+  exit 1
+fi
 
 # --- 顯示部署完成後的 Hosting 網址 ---
 echo ""

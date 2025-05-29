@@ -5,11 +5,11 @@
   "targets": {
     "vtuber-channel-analyzer-v3": {
       "hosting": {
-        "prod": [
-          "vtuber-analyzer"
-        ],
         "staging": [
           "vtuber-analyzer-staging"
+        ],
+        "prod": [
+          "vtuber-channel-analyzer-v3"
         ]
       }
     }
