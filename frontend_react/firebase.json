@@ -10,6 +10,13 @@
       ],
       "rewrites": [
         {
+          "source": "/oauth/callback",
+          "run": {
+            "serviceId": "youtube-api-service",
+            "region": "asia-east1"
+          }
+        },
+        {
           "source": "/api/**",
           "run": {
             "serviceId": "youtube-api-service",
