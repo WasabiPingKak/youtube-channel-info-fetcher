@@ -29,6 +29,11 @@ export function PublicToggleSection({ enabled, onChange }: Props) {
                 <div className="text-sm text-muted-foreground mt-1">
                     啟用後，你的頻道會出現在首頁頻道列表，並可透過網址分享。
                 </div>
+                <div className="text-sm text-muted-foreground mt-1">
+                    若您選擇關閉公開，您的頻道資訊將會在所有頁面中立即隱藏，無法被他人瀏覽。
+                    不過，與排行榜或熱門趨勢相關的統計資料，因系統快取機制，
+                    可能會延遲數小時才更新，屆時數值才會完全反映非公開狀態。
+                </div>
             </div>
         </section>
     );

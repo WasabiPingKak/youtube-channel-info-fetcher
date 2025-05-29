@@ -3,6 +3,14 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-05-29",
+    items: [
+      "實裝登入功能",
+      "可以切換頻道的可見性，新註冊使用者預設為不公開",
+      "可以設定頻道小卡的國旗顯示，最多十個",
+    ],
+  },
+  {
     date: "2025-05-26",
     items: [
       "新增更新紀錄頁面 /changelog",

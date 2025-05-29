@@ -44,7 +44,11 @@ const AuthorizeChannelPage = () => {
                     <ul className="list-disc list-inside text-sm text-gray-700 leading-relaxed space-y-1">
                         <li>若你是第一次授權，系統將建立一份你的頻道分析資料。</li>
                         <li>若你已授權過，按下按鈕會再次登入，並確認你仍授權本網站使用。</li>
-                        <li>登入後會跳轉至你的頻道設定，預設瀏覽權限為不公開直到你在設定中明確啟用</li>
+                        <li>
+                            登入後會跳轉至你的頻道設定，
+                            <span className="text-red-600 font-bold">預設瀏覽權限為不公開</span>
+                            ，直到你在設定中明確啟用。
+                        </li>
                     </ul>
 
                     {/* 授權內容簡要條列 */}
