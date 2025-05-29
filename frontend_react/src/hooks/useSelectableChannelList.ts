@@ -11,6 +11,7 @@ export type ChannelIndexEntry = {
     priority?: number;
     enabled?: boolean;
     joinedAt?: string;
+    countryCode?: string[];
 };
 
 const normalize = (text: string) =>

@@ -79,12 +79,8 @@ def run_channel_initialization(channel_id: str):
             "thumbnail": thumbnail_url,
             "updatedAt": firestore.SERVER_TIMESTAMP,
             "url": f"https://www.youtube.com/channel/{channel_id}",
+            "enabled": False,
         }
-
-        # ✍️ 寫入 channel_info/info
-        info_ref = db.document(FIRESTORE_INFO_PATH.format(channel_id=channel_id))
-        info_ref.set(info_data)
-        logging.info(f"[Init] ✅ 寫入 channel_info/info 成功：{channel_id}")
 
         # ✅ 初始化設定（如尚未存在）
         init_config_if_absent(channel_id, info_data["name"])
@@ -113,53 +109,58 @@ def append_channel_to_batch(channel_id: str, info_data: dict):
             data = doc.to_dict()
             channels = data.get("channels", [])
             if any(c.get("channel_id") == channel_id for c in channels):
-                logging.info(f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入")
-                return
+                logging.info(f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入 batch")
+                break
+        else:
+            # 找出最後一個 batch 編號（排除 batch_0）
+            valid_batches = [doc for doc in docs if doc.id != "batch_0"]
+            max_batch_number = 0
+            for doc in valid_batches:
+                try:
+                    n = int(doc.id.replace("batch_", ""))
+                    if n > max_batch_number:
+                        max_batch_number = n
+                except Exception:
+                    logging.warning(f"[Batch] ❓ 無法解析 batch ID：{doc.id}")
 
-        # 找出最後一個 batch 編號（排除 batch_0）
-        valid_batches = [doc for doc in docs if doc.id != "batch_0"]
-        max_batch_number = 0
-        for doc in valid_batches:
-            try:
-                n = int(doc.id.replace("batch_", ""))
-                if n > max_batch_number:
-                    max_batch_number = n
-            except Exception:
-                logging.warning(f"[Batch] ❓ 無法解析 batch ID：{doc.id}")
-
-        last_batch_id = f"batch_{max_batch_number or 1}"
-        last_batch_ref = root_ref.document(last_batch_id)
-        last_batch_data = last_batch_ref.get().to_dict() or {}
-        current_channels = last_batch_data.get("channels", [])
-        logging.info(f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）")
-
-        # 若已滿 1000 筆，開新 batch
-        if len(current_channels) >= 1000:
-            last_batch_id = f"batch_{max_batch_number + 1}"
+            last_batch_id = f"batch_{max_batch_number or 1}"
             last_batch_ref = root_ref.document(last_batch_id)
-            current_channels = []
-            logging.info(f"[Batch] 🔄 上一 batch 已滿，建立新 batch：{last_batch_id}")
+            last_batch_data = last_batch_ref.get().to_dict() or {}
+            current_channels = last_batch_data.get("channels", [])
+            logging.info(f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）")
 
-        # 🔧 取得 ISO8601 格式時間字串
-        now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            # 若已滿 1000 筆，開新 batch
+            if len(current_channels) >= 1000:
+                last_batch_id = f"batch_{max_batch_number + 1}"
+                last_batch_ref = root_ref.document(last_batch_id)
+                current_channels = []
+                logging.info(f"[Batch] 🔄 上一 batch 已滿，建立新 batch：{last_batch_id}")
 
-        # 寫入新頻道
-        new_entry = {
-            "channel_id": channel_id,
-            "name": info_data["name"],
-            "thumbnail": info_data["thumbnail"],
-            "url": info_data["url"],
-            "enabled": True,
-            "priority": 1 if channel_id == SPECIAL_CHANNEL_ID else 100,
-            "joinedAt": now_iso
-        }
+            now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            new_entry = {
+                "channel_id": channel_id,
+                "name": info_data["name"],
+                "thumbnail": info_data["thumbnail"],
+                "url": info_data["url"],
+                "enabled": False,
+                "priority": 1 if channel_id == SPECIAL_CHANNEL_ID else 100,
+                "joinedAt": now_iso
+            }
 
-        current_channels.append(new_entry)
-        last_batch_ref.set({
-            "channels": current_channels,
-            "updatedAt": firestore.SERVER_TIMESTAMP
-        })
-        logging.info(f"[Batch] ✅ 寫入成功：{channel_id} → {last_batch_id}（總筆數：{len(current_channels)}）")
+            current_channels.append(new_entry)
+            last_batch_ref.set({
+                "channels": current_channels,
+                "updatedAt": firestore.SERVER_TIMESTAMP
+            })
+            logging.info(f"[Batch] ✅ 寫入成功：{channel_id} → {last_batch_id}（總筆數：{len(current_channels)}）")
+
+        # ✍️ 寫入 channel_index/{channel_id}（若不存在）
+        index_ref = db.document(f"channel_index/{channel_id}")
+        if not index_ref.get().exists:
+            index_ref.set(info_data)
+            logging.info(f"[Index] ✅ 寫入 channel_index 成功：{channel_id}")
+        else:
+            logging.info(f"[Index] ⚠️ channel_index/{channel_id} 已存在，略過寫入")
 
     except Exception:
-        logging.exception(f"[Batch] ❌ 寫入 batch 索引失敗：{channel_id}")
+        logging.exception(f"[Batch] ❌ 寫入 batch 索引或 channel_index 失敗：{channel_id}")

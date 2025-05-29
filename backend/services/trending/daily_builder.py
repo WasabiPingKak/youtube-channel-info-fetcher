@@ -3,16 +3,14 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List
 
 from google.cloud.firestore import Client
-from services.trending.utils import (
-    document_exists,
-    write_document,
-    get_active_channels,
-)
+from .firestore_path_tools import document_exists, write_document
+from .channel_status_loader import get_active_channels
+from .firestore_date_utils import parse_firestore_date
+
 from utils.settings_preparer import merge_game_category_aliases
 from utils.categorizer import match_category_and_game
 
 logger = logging.getLogger(__name__)
-
 
 def build_trending_for_date_range(
     start_date: str, days: int, db: Client, force: bool = False
@@ -141,14 +139,3 @@ def build_trending_for_date_range(
     except Exception as e:
         logger.error("🔥 批次建立 trending_games_daily 發生錯誤", exc_info=True)
         return {"error": str(e), "startDate": start_date}
-
-
-def parse_firestore_date(raw) -> datetime | None:
-    if isinstance(raw, str):
-        try:
-            return datetime.fromisoformat(raw.replace("Z", "+00:00"))
-        except ValueError:
-            return None
-    elif hasattr(raw, "to_datetime"):
-        return raw.to_datetime()
-    return None

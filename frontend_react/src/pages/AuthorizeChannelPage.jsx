@@ -40,6 +40,17 @@ const AuthorizeChannelPage = () => {
                         點擊下方按鈕後，我會引導你使用 Google 帳號授權。你授權的內容與用途如下：
                     </p>
 
+                    <p className="font-semibold text-black">授權流程說明：</p>
+                    <ul className="list-disc list-inside text-sm text-gray-700 leading-relaxed space-y-1">
+                        <li>若你是第一次授權，系統將建立一份你的頻道分析資料。</li>
+                        <li>若你已授權過，按下按鈕會再次登入，並確認你仍授權本網站使用。</li>
+                        <li>
+                            登入後會跳轉至你的頻道設定，
+                            <span className="text-red-600 font-bold">預設瀏覽權限為不公開</span>
+                            ，直到你在設定中明確啟用。
+                        </li>
+                    </ul>
+
                     {/* 授權內容簡要條列 */}
                     <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
                         <div>
@@ -124,7 +135,7 @@ const AuthorizeChannelPage = () => {
                             : "bg-gray-300 text-gray-500 cursor-not-allowed"
                             }`}
                     >
-                        使用 Google 帳號連結 Youtube
+                        使用 Google 帳號登入並授權我的 Youtube 頻道
                     </button>
                 </div>
             </div>

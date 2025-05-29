@@ -1,6 +1,17 @@
 #!/bin/bash
 
-SERVICE_NAME="youtube-api-service"
+# ✅ 解析參數
+if [ "$1" == "--staging" ]; then
+  SERVICE_NAME="youtube-api-staging-service"
+  echo "🟡 切換至 Staging 環境"
+elif [ "$1" == "--prod" ]; then
+  SERVICE_NAME="youtube-api-service"
+  echo "🔵 切換至 Production 環境"
+else
+  echo "❌ 請指定部署目標：--staging 或 --prod"
+  exit 1
+fi
+
 REGION="asia-east1"
 
 echo "🔍 取得目前 revision 狀態..."

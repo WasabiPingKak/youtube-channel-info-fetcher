@@ -2,8 +2,6 @@
 import os
 import requests
 import logging
-from dotenv import load_dotenv
-load_dotenv("../.env.local")
 
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")

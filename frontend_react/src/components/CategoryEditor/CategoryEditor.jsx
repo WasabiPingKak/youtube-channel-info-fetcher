@@ -9,12 +9,12 @@ import UnsavedNoticeBar from "@/components/common/UnsavedNoticeBar";
 import EditTabSwitcher from "@/components/CategoryEditor/EditTabSwitcher";
 import ChannelInfoCard from "@/components/common/ChannelInfoCard"; // ✅ 頻道資訊卡（隨切換變動）
 
-const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"; // ✅ 預設頻道 ID
+const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"; // ✅ 預設頻道 ID
 const FIXED_CATEGORIES = ["雜談", "遊戲", "音樂", "節目", "其他"];
 
 const CategoryEditor = () => {
   const [searchParams] = useSearchParams(); // ✅ 取得 URL 參數
-  const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID; // ✅ 解析當前頻道
+  const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID; // ✅ 解析當前頻道
   const { channelSettings, setChannelSettings, saveSettings, loading } = useChannelSettings(channelId); // ✅ 帶入 channelId
 
   const [activeTab, setActiveTab] = useState("live");

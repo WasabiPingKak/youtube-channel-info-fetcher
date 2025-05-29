@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "vtuber-channel-analyzer-v3"
-  }
+  },
+  "targets": {
+    "vtuber-channel-analyzer-v3": {
+      "hosting": {
+        "staging": [
+          "vtuber-analyzer-staging"
+        ],
+        "prod": [
+          "vtuber-channel-analyzer-v3"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

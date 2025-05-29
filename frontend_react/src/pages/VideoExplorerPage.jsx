@@ -1,185 +1,63 @@
-import React, { useEffect, useState, useMemo } from "react";
-import { useSearchParams } from "react-router-dom";
+import React, { useEffect } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 
-import { useClassifiedVideos } from "../hooks/useClassifiedVideos";
-import { useVideoBrowseState } from "../hooks/useVideoBrowseState";
-import { useChartControlState } from "../hooks/useChartControlState";
-import useVideoSortControl from "../hooks/useVideoSortControl";
-
-import ChannelInfoCard from "../components/common/ChannelInfoCard";
-import TopLevelTabs from "../components/common/TopLevelTabs";
-import SubCategoryTabs from "../components/common/SubCategoryTabs";
-import CategoryChartSection from "../components/chart/CategoryChartSection";
-import VideoCard from "../components/common/VideoCard"
+import { useMyChannelId } from "@/hooks/useMyChannelId";
+import { useChannelIndex } from "@/hooks/useChannelIndex";
 import MainLayout from "../components/layout/MainLayout";
-import VideoTableHeader from "../components/VideoExplorer/VideoTableHeader";
-import MobileSortDropdown from "../components/VideoExplorer/MobileSortDropdown";
+import VideoExplorerContent from "./VideoExplorerContent";
 
-// ✅ 若 URL 無指定 channel，使用預設頻道
-const DEFAULT_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
 
 const VideoExplorerPage = () => {
-
-  const {
-    sortField,
-    sortOrder,
-    handleSortChange,
-  } = useVideoSortControl("publishDate");
-
-  /* ---------------- 1. 解析 URL 參數 ---------------- */
   const [searchParams] = useSearchParams();
-  const channelId = searchParams.get("channel") || DEFAULT_CHANNEL_ID;
+  const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
 
-  /* ---------------- 2. 讀取影片與分類快取 ---------------- */
-  const { videos, loading, error } = useClassifiedVideos(
-    channelId,
-    "videos"
-  );
+  const { data: me, isLoading: meLoading, error: meError } = useMyChannelId();
+  const { data: channelInfo, isLoading: infoLoading } = useChannelIndex(channelId);
 
-  /* ---------------- 3. 處理瀏覽狀態 ---------------- */
-  const {
-    SORT_FIELDS,
-    videoType,
-    setVideoType,
-    activeCategory,
-    setActiveCategory,
-    filteredVideos,
-  } = useVideoBrowseState(videos);
+  const navigate = useNavigate();
 
-  const sortedVideos = useMemo(() => {
-    const list = [...filteredVideos];
-
-    list.sort((a, b) => {
-      const aValue = a[sortField] || "";
-      const bValue = b[sortField] || "";
-
-      if (aValue < bValue) return sortOrder === "asc" ? -1 : 1;
-      if (aValue > bValue) return sortOrder === "asc" ? 1 : -1;
-      return 0;
-    });
-
-    return list;
-  }, [filteredVideos, sortField, sortOrder]);
-
-  /* ---------------- 4. 圖表控制 ---------------- */
-  const {
-    chartType,
-    setChartType,
-    durationUnit,
-    setDurationUnit,
-  } = useChartControlState();
-
-  /* ---------------- 5. 切換頻道完成後關閉 Toast ---------------- */
+  // 🔒 權限判斷：非本人 + 非公開 → 導回首頁
   useEffect(() => {
-    if (!loading) toast.dismiss("channel-switch");
-  }, [loading]);
+    if (!meLoading && !infoLoading) {
+      const isOwner = me?.channelId === channelId;
+      const isPublic = channelInfo?.enabled !== false;
+      const allowAccess = isPublic || isOwner;
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
-  useEffect(() => {
-    const handler = () => setDrawerOpen(true);
-    window.addEventListener("open-channel-drawer", handler);
-    return () => window.removeEventListener("open-channel-drawer", handler);
-  }, []);
-
-  useEffect(() => {
-    const runUpdateCheck = async () => {
-      try {
-        const res = await fetch(
-          `${import.meta.env.VITE_API_BASE}/api/videos/check-update?channelId=${channelId}`
-        );
-        const data = await res.json();
-
-        if (data.shouldUpdate && data.updateToken) {
-          await fetch(`${import.meta.env.VITE_API_BASE}/api/videos/update`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              channelId,
-              updateToken: data.updateToken,
-            }),
-          });
-        }
-      } catch (e) {
-        console.warn("🔁 頻道初始化自動更新失敗", e);
+      if (!allowAccess) {
+        toast.error("您沒有權限查看這個頻道頁面");
+        navigate("/");
       }
-    };
+    }
+  }, [meLoading, infoLoading, me, meError, channelInfo, channelId, navigate]);
 
-    runUpdateCheck();
-  }, [channelId]);
+  // 🌀 初次載入中
+  if (meLoading || infoLoading) {
+    return (
+      <MainLayout>
+        <div className="px-4 py-10 text-center text-gray-500">載入中...</div>
+      </MainLayout>
+    );
+  }
 
-  /* ---------------- 6. 排序箭頭 ---------------- */
-  const arrowOf = (field) => {
-    if (field !== sortField) return null;
-    return sortOrder === "asc" ? "🔼" : "🔽";
-  };
+  if (!channelInfo) {
+    return (
+      <MainLayout>
+        <div className="px-4 py-10 text-center text-red-500">載入頻道資訊失敗</div>
+      </MainLayout>
+    );
+  }
 
-  /* ---------------- 7. 主要畫面 ---------------- */
-  return (
-    <MainLayout>
-      <ChannelInfoCard />
+  const isOwner = me?.channelId === channelId;
+  const isPublic = channelInfo?.enabled !== false;
 
-      {/* Tabs */}
-      <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
-      <SubCategoryTabs
-        activeType={videoType}
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-        videos={videos}
-      />
+  if (!isPublic && !isOwner) {
+    console.log("❌ 渲染前再判斷一次權限：不通過");
+    return null; // toast + redirect 已處理
+  }
 
-      {/* 圖表區 */}
-      <CategoryChartSection
-        videos={videos}
-        videoType={videoType}
-        chartType={chartType}
-        setChartType={setChartType}
-        durationUnit={durationUnit}
-        setDurationUnit={setDurationUnit}
-        activeCategory={activeCategory}
-      />
-
-      {/* 影片數量提示 */}
-      <div className="px-4 py-2 text-sm text-gray-600">
-        {activeCategory
-          ? `共顯示 ${filteredVideos.length} 部影片`
-          : "請選擇分類"}
-      </div>
-
-      {loading && <p className="px-4">載入中...</p>}
-      {error && <p className="px-4 text-red-600">錯誤：{error.message}</p>}
-      {!loading && !error && filteredVideos.length === 0 && activeCategory && (
-        <p className="px-4 text-gray-500">目前無影片</p>
-      )}
-
-      {/* 影片列表 */}
-      <VideoTableHeader
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSortChange={handleSortChange}
-      />
-
-      <MobileSortDropdown
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSortChange={handleSortChange}
-        onToggleOrder={() =>
-          handleSortChange(sortField) // 再次點擊同欄位會切換升降序
-        }
-      />
-
-      {/* 資料列 */}
-      {sortedVideos.map((video) => (
-        <VideoCard
-          key={video.videoId}
-          video={video}
-          durationUnit={durationUnit}
-        />
-      ))}
-    </MainLayout>
-  );
+  return <VideoExplorerContent channelId={channelId} />;
 };
 
 export default VideoExplorerPage;
