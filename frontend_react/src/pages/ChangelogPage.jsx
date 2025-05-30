@@ -3,6 +3,13 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-05-31",
+    items: [
+      "優化頻道頁面載入邏輯 UX",
+      "頻道頁面新增熱力圖",
+    ],
+  },
+  {
     date: "2025-05-29",
     items: [
       "實裝登入功能",
