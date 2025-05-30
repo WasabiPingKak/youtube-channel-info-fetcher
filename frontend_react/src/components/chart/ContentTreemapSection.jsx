@@ -33,9 +33,9 @@ const ContentTreemapSection = ({ videos }) => {
   };
 
   return (
-    <div className="px-4 py-4">
+    <div className="py-4">
       <div className="p4">
-        <h2 className="text-lg font-semibold">頻道內容熱力圖</h2>
+        <h2 className="text-lg font-semibold">頻道熱力圖</h2>
         {selectedCategory && (
           <button
             onClick={() => setSelectedCategory(null)}
@@ -48,11 +48,13 @@ const ContentTreemapSection = ({ videos }) => {
       {!hasContent ? (
         <p className="text-gray-500 px-4">目前沒有足夠的分類資料顯示熱力圖。</p>
       ) : (
-        <ReactECharts
-          option={option}
-          style={{ height: 600 }}
-          onEvents={{ click: handleChartClick }}
-        />
+        <div className="bg-white shadow p-4 border border-gray-200">
+          <ReactECharts
+            option={option}
+            style={{ height: 600 }}
+            onEvents={{ click: handleChartClick }}
+          />
+        </div>
       )}
     </div>
   );

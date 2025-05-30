@@ -33,6 +33,7 @@ export function getTreemapOption({ data, selectedCategory }: TreemapProps) {
         breadcrumb: { show: false },
         label: {
           show: true,
+          fontSize: 16,
           formatter: "{b}",
         },
         upperLabel: {

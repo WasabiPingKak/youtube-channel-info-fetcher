@@ -23,7 +23,8 @@ import {
 
 import { sortVideos } from "../utils/sortVideos";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
-import ContentTreemapSection from "../components/chart/ContentTreemapSection";
+import ContentExportCardSection from "../components/chart/ContentExportCardSection";
+
 import MainLayout from "../components/layout/MainLayout";
 
 const VideoExplorerContent = ({ channelId }) => {
@@ -67,9 +68,11 @@ const VideoExplorerContent = ({ channelId }) => {
 
   return (
     <MainLayout>
-      <ChannelInfoCard />
-
-      <ContentTreemapSection videos={videos} videoType={videoType} />
+      <ContentExportCardSection videos={videos} />
+      {/* 整合到獨立區塊
+        <ChannelInfoCard />
+        <ContentTreemapSection videos={videos} videoType={videoType} />
+      */}
 
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
       <SubCategoryTabs
