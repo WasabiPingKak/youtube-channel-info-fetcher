@@ -4,9 +4,9 @@
  * 主分類對應的原始色碼（100% 活躍度時）
  */
 const BASE_COLORS: Record<string, string> = {
-  "遊戲": "#8884d8", // 紫
-  "雜談": "#82ca9d", // 綠
-  "節目": "#ffc658", // 黃
+  "遊戲": "#504ac6", // 紫
+  "雜談": "#4cb373", // 綠
+  "節目": "#ffac0c", // 黃
   "音樂": "#ff7f50", // 橘
 };
 
@@ -15,9 +15,9 @@ const BASE_COLORS: Record<string, string> = {
  */
 function getSaturationLevel(daysAgo: number): number {
   if (daysAgo <= 7) return 1.0;
-  if (daysAgo <= 14) return 0.8;
-  if (daysAgo <= 30) return 0.6;
-  if (daysAgo <= 90) return 0.4;
+  if (daysAgo <= 30) return 0.8;
+  if (daysAgo <= 90) return 0.6;
+  if (daysAgo <= 180) return 0.4;
   return 0.2;
 }
 
