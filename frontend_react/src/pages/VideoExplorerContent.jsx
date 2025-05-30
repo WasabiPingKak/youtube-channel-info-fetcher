@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 import {
@@ -62,8 +62,23 @@ const VideoExplorerContent = ({ channelId }) => {
 
   useAutoUpdateVideos(channelId);
 
-  if (loading) {
-    toast.dismiss("channel-switch");
+  useEffect(() => {
+    if (loading && !videos.length) {
+      toast.dismiss();
+      toast.loading("影片資料載入中...", { id: "loading-videos" });
+    } else {
+      toast.dismiss("loading-videos");
+    }
+  }, [loading, videos.length]);
+
+  if (loading && !videos.length) {
+    return (
+      <MainLayout>
+        <div className="px-4 py-10 text-center text-gray-500">
+          影片資料載入中...
+        </div>
+      </MainLayout>
+    );
   }
 
   return (
