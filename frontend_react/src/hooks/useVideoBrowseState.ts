@@ -29,7 +29,8 @@ export const useVideoBrowseState = (videos: any[]) => {
       const matchesType = video.type === expectedType;
       if (activeCategory === "全部") return matchesType;
       const matchesCategory =
-        activeCategory && video.matchedCategories?.includes(activeCategory);
+        activeCategory &&
+        video.matchedPairs?.some((pair) => pair.main === activeCategory);
       return matchesType && matchesCategory;
     });
 

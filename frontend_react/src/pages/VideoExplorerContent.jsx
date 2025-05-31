@@ -10,7 +10,6 @@ import {
 } from "../hooks";
 
 import {
-  ChannelInfoCard,
   TopLevelTabs,
   SubCategoryTabs,
   VideoCard,

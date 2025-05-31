@@ -43,7 +43,7 @@ const SubCategoryTabs = ({
     fetchCategories();
   }, [activeType]);
 
-  const orderedCategories = ["全部", ...availableCategories, "其他"];
+  const orderedCategories = ["全部", ...availableCategories, "未分類"];
 
   if (error) return <div className="text-red-500">載入分類失敗</div>;
 

@@ -61,32 +61,55 @@ def merge_with_default_categories(
     settings: Dict[str, Any]
 ) -> Dict[str, Any]:
     """
-    讀取 global_settings/default_categories_config，並將 default 設定合併到 settings 中。
-    - 預設設定為基底
-    - 使用者自訂設定優先，合併後去除重複關鍵字
+    讀取 global_settings/default_categories_config_v2，完全覆蓋使用者分類設定。
+    - 使用 default 設定為唯一依據（雜談、節目、音樂等）
+    - 🔒 暫時跳過使用者自訂分類設定，僅使用 default v2 結構
+    - ✅ 但保留使用者的「遊戲」分類設定，以便後續合併遊戲別名
     """
     try:
-        logger.debug("🔧 merge_with_default_categories() 被呼叫")
+        logger.debug("🔧 merge_with_default_categories() 被呼叫（覆蓋模式）")
 
-        default_ref = db.collection("global_settings").document("default_categories_config")
+        default_ref = db.collection("global_settings").document("default_categories_config_v2")
         default_doc = default_ref.get()
         if not default_doc.exists:
-            logger.warning("⚠️ 找不到 default_categories_config，跳過合併")
+            logger.warning("⚠️ 找不到 default_categories_config_v2，跳過合併")
             return settings
 
         default_config = default_doc.to_dict()
-        logger.debug("📥 成功載入 default_categories_config，主分類數量：%d", len(default_config))
+        logger.debug("📥 成功載入 default_categories_config_v2，主分類數量：%d", len(default_config))
 
         settings = settings.copy()
+
+        # ⏳ 暫存原本的遊戲設定，以便覆蓋後補回
+        preserved_game_config = {
+            video_type: settings.get(video_type, {}).get("遊戲", [])
+            for video_type in ("live", "videos", "shorts")
+        }
+
         for video_type in ("live", "videos", "shorts"):
-            settings.setdefault(video_type, {})
+            logger.debug("🔄 覆蓋 %s 類型的分類設定", video_type)
 
-            for main_category, default_keywords in default_config.items():
-                user_keywords = settings[video_type].get(main_category, [])
-                merged = list(set(default_keywords) | set(user_keywords))
-                settings[video_type][main_category] = merged
+            new_config: Dict[str, Any] = {}
 
-        logger.debug("✅ 主分類 default 設定合併完成")
+            for main_category, default_subcategories in default_config.items():
+                if not isinstance(default_subcategories, dict):
+                    logger.warning("⚠️ default [%s] 非 dict 結構，跳過", main_category)
+                    continue
+
+                new_config[main_category] = {}
+
+                for sub_name, default_keywords in default_subcategories.items():
+                    new_config[main_category][sub_name] = default_keywords
+                    logger.debug("    ✅ %s > %s 條目 %d 個關鍵字", main_category, sub_name, len(default_keywords))
+
+            # ✅ 補回原有的「遊戲」分類設定
+            if preserved_game_config[video_type]:
+                new_config["遊戲"] = preserved_game_config[video_type]
+                logger.debug("🕹️ 保留原有遊戲設定，%s 共 %d 筆", video_type, len(preserved_game_config[video_type]))
+
+            settings[video_type] = new_config
+
+        logger.debug("✅ 全部分類設定已使用 default 覆蓋（含遊戲補回）")
         return settings
 
     except Exception:
