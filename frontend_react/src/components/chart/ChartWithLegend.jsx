@@ -3,7 +3,7 @@ import ChartTypePie from "./ChartTypePie";
 
 /**
  * ChartWithLegend
- * 圓餅 + 圖例卡片（桌機為表格，手機為雙行對齊）
+ * 圓餅 + 圖例卡片（改為桌機與手機皆為雙行對齊）
  */
 const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
   const safeData = Array.isArray(data) ? data : [];
@@ -35,48 +35,18 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
       <div className="flex flex-col sm:flex-row justify-center items-center gap-y-4 gap-x-2">
         {/* —— 甜甜圈圖 —— */}
-        <div className="flex-shrink-0 w-full sm:w-[50%] xl:w-[45%] max-w-[320px] ">
+        <div className="flex-shrink-0 w-full sm:w-[50%] xl:w-[45%] max-w-[320px]">
           <ChartTypePie
             data={safeData}
             dataKey={dataKey}
             unit={unit}
             hideLegend
-            videos={videos} // 傳入原始影片列表，供 Pie 中心加總去重複
+            videos={videos}
           />
         </div>
 
-        {/* —— 桌機版表格圖例 —— */}
-        <div className="hidden md:flex w-auto items-center sm:-ml-10">
-          <table className="text-sm w-auto">
-            <tbody>
-              {safeData.map((item, idx) => {
-                const value = item[dataKey] || 0;
-                const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
-                const color = COLORS[idx % COLORS.length];
-                return (
-                  <tr key={idx} className="leading-5">
-                    <td className="pr-2 whitespace-nowrap">
-                      <span
-                        className="inline-block w-3 h-3 rounded-sm mr-1 align-middle"
-                        style={{ backgroundColor: color }}
-                      />
-                      {item.category}
-                    </td>
-                    <td className="px-1 text-right whitespace-nowrap">
-                      {fmt(value)}{unit}
-                    </td>
-                    <td className="pl-1 text-right whitespace-nowrap">
-                      {percent}%
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        {/* —— 手機版：雙行排版 —— */}
-        <div className="w-full md:hidden">
+        {/* —— 雙行排版（全裝置通用）—— */}
+        <div className="w-full">
           {safeData.map((item, idx) => {
             const value = item[dataKey] || 0;
             const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
