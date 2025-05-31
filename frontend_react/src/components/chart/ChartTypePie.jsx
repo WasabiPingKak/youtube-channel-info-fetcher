@@ -118,9 +118,8 @@ const ChartTypePie = ({ data, dataKey, unit = "部", hideLegend = false, videos 
           ))}
           {/* —— 中央統計文字 —— */}
           <Label
-            value={`共 ${
-              unit === "小時" ? (total / 3600).toFixed(1) : dataKey === "duration" ? Math.round(total / 60) : total
-            } ${unit}`}
+            value={`共 ${unit === "小時" ? (total / 3600).toFixed(1) : dataKey === "duration" ? Math.round(total / 60) : total
+              } ${unit}`}
             position="center"
             style={{ fontSize: "1rem", fontWeight: 600, fill: "#374151" }}
           />
