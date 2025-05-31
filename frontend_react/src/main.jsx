@@ -16,6 +16,7 @@ import PrivacyPolicyPage from "./pages/PrivacyPolicyPage";
 import ChannelSelectorPage from "./pages/ChannelSelectorPage";
 import TrendingGamesPage from "./pages/TrendingGamesPage";
 import GameAliasPage from "./pages/GameAliasPage";
+import CategoryAliasPage from "./pages/CategoryAliasPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import MySettingsPage from "./pages/MySettingsPage";
 
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="/privacy" element={<PrivacyPolicyPage />} />
         <Route path="/trending" element={<TrendingGamesPage />} />
         <Route path="/game-aliases" element={<GameAliasPage />} />
+        <Route path="/category-aliases" element={<CategoryAliasPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/my-settings" element={<MySettingsPage />} />
 
