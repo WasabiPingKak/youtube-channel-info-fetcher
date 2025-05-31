@@ -30,18 +30,18 @@ const SubCategoryTabs = ({
         }
 
         const data = docSnap.data();
-        const raw = Object.keys(data?.[activeType] || {});
+        const raw = Object.keys(data || {});
         const middle = FIXED_CATEGORY_ORDER.filter((cat) => raw.includes(cat));
 
         setAvailableCategories(middle);
       } catch (err) {
-        console.error("無法載入分類設定", err);
+        console.error("❌ 無法載入分類設定", err);
         setError(true);
       }
     };
 
     fetchCategories();
-  }, [activeType]);
+  }, []);
 
   const orderedCategories = ["全部", ...availableCategories, "未分類"];
 
@@ -53,11 +53,10 @@ const SubCategoryTabs = ({
         <button
           key={category}
           onClick={() => onCategoryChange(category)}
-          className={`px-4 py-1 rounded-full border ${
-            activeCategory === category
-              ? "bg-blue-600 text-white"
-              : "bg-white text-gray-700 border-gray-300"
-          }`}
+          className={`px-4 py-1 rounded-full border ${activeCategory === category
+            ? "bg-blue-600 text-white"
+            : "bg-white text-gray-700 border-gray-300"
+            }`}
         >
           {category}
         </button>

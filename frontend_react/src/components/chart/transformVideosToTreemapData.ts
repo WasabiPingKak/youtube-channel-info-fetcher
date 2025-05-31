@@ -96,6 +96,5 @@ export function transformVideosToTreemapData(videos: VideoItem[]): TreemapNode[]
     });
   }
 
-  console.log("[Treemap] 最終轉換結果", result);
   return result;
 }
