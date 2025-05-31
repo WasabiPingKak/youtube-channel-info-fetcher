@@ -43,7 +43,7 @@ export function useClassifiedVideos(
       const classifiedData = await res.json();
       const rawVideos = classifiedData.videos as ClassifiedVideoItem[];
 
-      // ✅ 自動補上「其他」分類（若無命中任何分類）
+      // ✅ 自動補上「未分類」分類（若無命中任何分類）
       const videos = rawVideos.map((v) => {
         const hasNoMatch =
           (!v.matchedCategories || v.matchedCategories.length === 0) &&

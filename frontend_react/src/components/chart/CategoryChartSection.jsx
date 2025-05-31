@@ -65,8 +65,8 @@ const CategoryChartSection = ({
     });
 
     const sorted = Object.values(counts).sort((a, b) => {
-      if (a.category === "其他") return 1;
-      if (b.category === "其他") return -1;
+      if (a.category === "未分類") return 1;
+      if (b.category === "未分類") return -1;
       return b.count - a.count;
     });
 
