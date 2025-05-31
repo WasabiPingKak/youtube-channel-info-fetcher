@@ -27,9 +27,14 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
             action: () => navigate("/channels"),
         },
         {
-            label: "遊戲別名總表",
+            label: "過濾總表｜遊戲",
             icon: <FaClipboardList className="w-5 h-5" />,
             action: () => navigate("/game-aliases"),
+        },
+        {
+            label: "過濾總表｜分類",
+            icon: <FaClipboardList className="w-5 h-5" />,
+            action: () => navigate("/category-aliases"),
         },
         {
             label: "更新紀錄",
