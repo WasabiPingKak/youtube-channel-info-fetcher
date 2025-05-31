@@ -1,5 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { FaYoutube, FaTwitter, FaUser, FaGithub, FaChartLine, FaClipboardList, FaTools } from "react-icons/fa";
+import {
+    FaYoutube, FaTwitter, FaUser, FaGithub,
+    FaChartLine, FaClipboardList, FaTools, FaUserCog
+} from "react-icons/fa";
 import { MdPrivacyTip } from "react-icons/md";
 import clsx from "clsx";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
@@ -97,15 +100,15 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
                     {isLoggedIn ? (
                         <button
                             onClick={() => navigate("/my-settings")}
-                            className="flex items-center gap-3 px-3 py-2 rounded text-indigo-700 dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-zinc-800"
+                            className="flex items-center gap-3 px-3 py-2 rounded dark:text-indigo-300 hover:bg-indigo-50 dark:hover:bg-zinc-800"
                         >
-                            <span>⚙️</span>
+                            <FaUserCog className="w-5 h-5" />
                             {!collapsed && <span>我的頻道設定</span>}
                         </button>
                     ) : (
                         <button
                             onClick={() => navigate("/authorize-channel")}
-                            className="flex items-center gap-3 px-3 py-2 rounded text-green-700 dark:text-green-300 hover:bg-green-50 dark:hover:bg-zinc-800"
+                            className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
                         >
                             <span>🔗</span>
                             {!collapsed && <span>登入與授權我的頻道</span>}
