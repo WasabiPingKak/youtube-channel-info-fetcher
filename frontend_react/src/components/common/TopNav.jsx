@@ -1,6 +1,6 @@
 // src/components/common/TopNav.jsx
 import React from "react";
-import { GrAnalytics } from "react-icons/gr";
+import { PiCompassRoseBold } from "react-icons/pi";
 
 const TopNav = ({ collapsed, toggleCollapsed }) => {
   const isMobile = window.innerWidth < 768;
@@ -24,8 +24,8 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
       </button>
 
       <div className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
-        <GrAnalytics className="w-6 h-6" />
-        <span>Vtuber 頻道分析</span>
+        <PiCompassRoseBold className="w-6 h-6" />
+        <span>VMap 頻道旅圖</span>
       </div>
     </header>
   );
