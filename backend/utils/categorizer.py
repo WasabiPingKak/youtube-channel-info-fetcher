@@ -48,17 +48,36 @@ def match_category_and_game(
         # ────────────────────────────────────────────────
         # 1️⃣ 先處理「非遊戲」主分類
         # ────────────────────────────────────────────────
-        for category, keywords in category_settings.items():
-            if category == "遊戲":
+        # 1️⃣ 處理「非遊戲」主分類（支援主分類 ➝ 子分類 ➝ 關鍵字）
+        for main_category, subcategories in category_settings.items():
+            if main_category == "遊戲":
                 continue
 
-            for kw in keywords:
-                if normalize(kw) in normalized_title:
-                    if category not in matched_categories:
-                        matched_categories.append(category)
-                    matched_keywords.append(kw)
-                    matched_pairs.append({"main": category, "keyword": kw})
-                    logging.debug("🏷️ 命中分類 [%s] via keyword [%s]", category, kw)
+            if not isinstance(subcategories, dict):
+                logging.warning("⚠️ [%s] 不是 dict 結構，略過（可能是舊格式）", main_category)
+                continue
+
+            for sub_name, keywords in subcategories.items():
+                hit_keywords = []
+
+                # 子分類名稱本身也納入比對
+                if normalize(sub_name) in normalized_title:
+                    hit_keywords.append(sub_name)
+
+                for kw in keywords:
+                    if normalize(kw) in normalized_title:
+                        hit_keywords.append(kw)
+
+                if hit_keywords:
+                    if main_category not in matched_categories:
+                        matched_categories.append(main_category)
+                    matched_keywords.extend(hit_keywords)
+                    matched_pairs.append({
+                        "main": main_category,
+                        "keyword": sub_name,
+                        "hitKeywords": hit_keywords
+                    })
+                    logging.debug("🏷️ 命中分類 [%s > %s] via %s", main_category, sub_name, hit_keywords)
 
         # ────────────────────────────────────────────────
         # 2️⃣ 處理「遊戲」主分類

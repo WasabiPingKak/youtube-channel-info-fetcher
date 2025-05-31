@@ -9,7 +9,7 @@ export interface ClassifiedVideoItem {
   matchedCategories: string[];
   game?: string | null;
   matchedKeywords?: string[];
-  matchedPairs?: { keyword: string; main: string }[];
+  matchedPairs?: { main: string; keyword: string; hitKeywords: string[] }[];
   [key: string]: any;
 }
 
@@ -41,12 +41,28 @@ export function useClassifiedVideos(
       }
 
       const classifiedData = await res.json();
-      const videos = classifiedData.videos as ClassifiedVideoItem[];
+      const rawVideos = classifiedData.videos as ClassifiedVideoItem[];
+
+      // ✅ 自動補上「其他」分類（若無命中任何分類）
+      const videos = rawVideos.map((v) => {
+        const hasNoMatch =
+          (!v.matchedCategories || v.matchedCategories.length === 0) &&
+          (!v.matchedPairs || v.matchedPairs.length === 0);
+
+        if (hasNoMatch) {
+          return {
+            ...v,
+            matchedCategories: ["未分類"],
+            matchedPairs: [{ main: "未分類", keyword: "", hitKeywords: [] }],
+          };
+        }
+        return v;
+      });
 
       // ✅ 印出影片總數與關鍵資訊以利除錯
       console.log(`📦 取得 ${videos.length} 部影片（type=${videoType}）`);
       videos.forEach((v) => {
-        // console.log(`🧩 ${v.title} | matchedCategories:`, v.matchedCategories ?? []);
+        //console.log(`🧩 ${v.title} | matchedCategories:`, v.matchedCategories ?? []);
       });
 
       return { videos };

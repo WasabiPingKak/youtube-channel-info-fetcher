@@ -40,7 +40,7 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
 
         settings = settings_doc.to_dict()
 
-        # 🧩 合併 default_categories_config（主分類設定）
+        # 🧩 合併 default_categories_config_v2（主分類設定）
         settings = merge_with_default_categories(db, settings)
 
         # 🔁 合併遊戲別名（中央別名 + 使用者自訂）

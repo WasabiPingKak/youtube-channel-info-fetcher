@@ -1,8 +1,8 @@
-# /backend/tools/upload_default_categories_config.py
+# /backend/tools/upload_default_categories_config_v2.py
 # ---------------------------------------------------
-# CLI 工具：將 default_categories_config.json 寫入 Firestore
+# CLI 工具：將 default_categories_config_v2.json 寫入 Firestore
 # ✅ 從 .env.local 載入 Firebase 金鑰路徑
-# ✅ 寫入 global_settings/default_categories_config
+# ✅ 寫入 global_settings/default_categories_config_v2
 # ---------------------------------------------------
 
 import sys
@@ -27,8 +27,8 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
 # ✅ Firestore 寫入目標
 COLLECTION = "global_settings"
-DOCUMENT_ID = "default_categories_config"
-JSON_FILE_PATH = Path(__file__).parent / "default_categories_config.json"
+DOCUMENT_ID = "default_categories_config_v2"
+JSON_FILE_PATH = Path(__file__).parent / "default_categories_config_v2.json"
 
 def main():
     # ✅ 檢查檔案是否存在

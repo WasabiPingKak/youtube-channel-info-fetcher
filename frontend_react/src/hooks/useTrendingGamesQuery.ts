@@ -29,14 +29,21 @@ export interface TrendingGamesResponse {
     [game: string]: VideoItem[];
   };
   summaryStats: SummaryStats;
+  channelInfo: {
+    [channelId: string]: {
+      name: string;
+      thumbnail: string;
+      url: string;
+    };
+  };
 }
 
-export const useTrendingGamesQuery = () => {
-  return useQuery({
-    queryKey: ["trending-games"],
+export const useTrendingGamesQuery = (days: 7 | 14 | 30 = 30) => {
+  return useQuery<TrendingGamesResponse>({
+    queryKey: ["trending-games", days],
     queryFn: async () => {
       try {
-        const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/trending-games`);
+        const res = await fetch(`${API_BASE}/api/trending-games?days=${days}`);
         if (!res.ok) {
           const errText = await res.text();
           console.error("❌ [API] /trending-games 回應非 200:", errText);
@@ -53,4 +60,3 @@ export const useTrendingGamesQuery = () => {
     gcTime: 1000 * 60 * 30,
   });
 };
-

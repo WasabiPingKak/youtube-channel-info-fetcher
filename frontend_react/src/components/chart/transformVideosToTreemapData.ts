@@ -31,7 +31,7 @@ export function transformVideosToTreemapData(videos: VideoItem[]): TreemapNode[]
     const { duration, publishDate, matchedPairs } = video;
 
     if (!matchedPairs || matchedPairs.length === 0) {
-      console.warn("[Treemap] 跳過無 matchedPairs 的影片", video.videoId);
+      // console.warn("[Treemap] 跳過無 matchedPairs 的影片", video.videoId);
       continue;
     }
 
@@ -40,11 +40,11 @@ export function transformVideosToTreemapData(videos: VideoItem[]): TreemapNode[]
       const keyword = pair.keyword;
 
       if (!category || category === "其他" || !keyword) {
-        console.warn("[Treemap] 忽略分類", { videoId: video.videoId, category, keyword });
+        //console.warn("[Treemap] 忽略分類", { videoId: video.videoId, category, keyword });
         continue;
       }
 
-      console.log("[Treemap] 加入分類", { videoId: video.videoId, category, keyword });
+      //console.log("[Treemap] 加入分類", { videoId: video.videoId, category, keyword });
 
       if (!grouped[category]) grouped[category] = {};
       if (!grouped[category][keyword]) {
@@ -96,6 +96,5 @@ export function transformVideosToTreemapData(videos: VideoItem[]): TreemapNode[]
     });
   }
 
-  console.log("[Treemap] 最終轉換結果", result);
   return result;
 }
