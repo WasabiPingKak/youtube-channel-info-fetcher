@@ -6,49 +6,32 @@ from services.trending.channel_info_loader import load_channel_info_index
 
 logger = logging.getLogger(__name__)
 
-def get_trending_games_summary(db: Client) -> Dict[str, Any]:
+def get_trending_games_summary(db: Client, days: int = 30) -> Dict[str, Any]:
     """
-    從 Firestore trending_games_daily/{YYYY-MM-DD} 讀取過去 30 天資料，
+    從 Firestore trending_games_daily/{YYYY-MM-DD} 讀取指定區間資料，
     整理出各遊戲的影片成長趨勢與頻道活躍資料。
+
+    參數:
+        db: Firestore client 實例
+        days: 查詢區間天數，支援 7、14、30（預設 30）
 
     回傳格式如下：
     {
         "topGames": List[str],
-            # 排名前 10 的熱門遊戲名稱（依影片總數排序）
-
         "chartData": List[Dict[str, Union[str, int]]],
-            # 每日影片數統計資料，用於折線圖繪製
-            # 格式範例：
-            # [
-            #   { "date": "2025-05-01", "Minecraft": 4, "FF14": 2, ... },
-            #   ...
-            # ]
-
         "details": Dict[str, Dict[str, List[VideoItem]]],
-            # 每個遊戲對應頻道的影片清單（已排序，新 → 舊）
-            # e.g. details["Minecraft"]["UCxxxx"] = [VideoItem, VideoItem, ...]
-
         "summaryStats": Dict[str, Dict[str, int]],
-            # 每個遊戲的統計數據
-            # 格式：{ "Minecraft": { "videoCount": 123, "channelCount": 40 }, ... }
-
         "channelInfo": Dict[str, Dict[str, str]],
-            # 每個頻道的基本資訊，供前端渲染 ChannelCard
-            # 格式：
-            # {
-            #   "UCxxxxx": {
-            #       "name": "頻道名稱",
-            #       "thumbnail": "https://...",
-            #       "url": "https://www.youtube.com/channel/UCxxxxx"
-            #   },
-            #   ...
-            # }
     }
     """
     try:
+        if days not in {7, 14, 30}:
+            logger.warning(f"⚠️ 無效的 days 參數：{days}，已自動套用預設值 30")
+            days = 30
+
         today = datetime.now(timezone.utc).date()
-        dates = [(today - timedelta(days=i)).isoformat() for i in range(1, 31)]
-        logger.info(f"📅 準備讀取過去 30 天完整資料：{dates[-1]} ～ {dates[0]}")
+        dates = [(today - timedelta(days=i)).isoformat() for i in range(1, days + 1)]
+        logger.info(f"📅 準備讀取過去 {days} 天資料：{dates[-1]} ～ {dates[0]}")
 
         game_stats: Dict[str, Dict[str, int]] = {}
         game_videos: Dict[str, List[dict]] = {}
@@ -115,7 +98,7 @@ def get_trending_games_summary(db: Client) -> Dict[str, Any]:
             }
             logger.info(f"📦 {game} 頻道數={len(per_channel)}，影片數={total_videos}")
 
-        logger.info("✅ trending_games_summary 統整完成")
+        logger.info(f"✅ trending_games_summary 統整完成（區間 {days} 天）")
         return {
             "topGames": top_game_names,
             "chartData": chart_data,

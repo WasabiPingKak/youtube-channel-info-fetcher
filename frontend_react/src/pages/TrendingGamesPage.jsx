@@ -1,9 +1,8 @@
-import React, { useState, useMemo } from "react";
+import React, { useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { useTrendingGamesQuery } from "../hooks/useTrendingGamesQuery";
 import TrendingChart from "../components/trending/TrendingChart";
 import TrendingGameList from "../components/trending/TrendingGameList";
-import { filterTrendingData } from "../components/trending/filterTrendingData";
 
 const TIME_RANGES = {
     7: "過去 7 天",
@@ -12,12 +11,8 @@ const TIME_RANGES = {
 };
 
 const TrendingGamesPage = () => {
-    const { data, isLoading, isError } = useTrendingGamesQuery();
-    const [days, setDays] = useState(30); // 預設 30 天
-
-    const filteredData = useMemo(() => {
-        return filterTrendingData(data, days);
-    }, [data, days]);
+    const [days, setDays] = useState(30);
+    const { data, isLoading, isError } = useTrendingGamesQuery(days);
 
     return (
         <MainLayout>
@@ -30,7 +25,12 @@ const TrendingGamesPage = () => {
                     <select
                         className="border border-gray-300 rounded px-2 py-1 text-sm"
                         value={days}
-                        onChange={(e) => setDays(parseInt(e.target.value))}
+                        onChange={(e) => {
+                            const value = parseInt(e.target.value);
+                            if ([7, 14, 30].includes(value)) {
+                                setDays(value);
+                            }
+                        }}
                     >
                         {Object.entries(TIME_RANGES).map(([key, label]) => (
                             <option key={key} value={key}>
@@ -47,23 +47,20 @@ const TrendingGamesPage = () => {
                 {isError && (
                     <div className="text-center text-red-500 py-10">
                         ❌ 無法載入資料
-                        {console.error("[/trending] 資料載入失敗", { data, isError })}
+                        {console.error("[/trending] 資料載入失敗", { isError })}
                     </div>
                 )}
 
-                {filteredData && (
+                {data && (
                     <>
-                        <TrendingChart
-                            chartData={filteredData.chartData}
-                            topGames={filteredData.topGames}
-                        />
+                        <TrendingChart chartData={data.chartData} topGames={data.topGames} />
 
                         <div className="mt-10">
                             <TrendingGameList
-                                topGames={filteredData.topGames}
-                                details={filteredData.details}
-                                summaryStats={filteredData.summaryStats}
-                                channelInfo={filteredData.channelInfo}
+                                topGames={data.topGames}
+                                details={data.details}
+                                summaryStats={data.summaryStats}
+                                channelInfo={data.channelInfo}
                             />
                         </div>
                     </>
