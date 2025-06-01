@@ -90,10 +90,8 @@ const VideoExplorerContent = ({ channelId }) => {
 
       <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
       <SubCategoryTabs
-        activeType={videoType}
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
-        videos={videos}
       />
 
       <CategoryChartSection
