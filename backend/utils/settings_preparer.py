@@ -23,6 +23,7 @@ def merge_game_category_aliases(
 ) -> Dict[str, Any]:
     """
     傳入原始 Firestore settings，對所有影片類型（live/videos/shorts）進行遊戲別名合併。
+    即使使用者尚未定義「遊戲」子分類，也會加入中央定義的別名。
     """
     try:
         logger.debug("🔧 merge_game_category_aliases() 被呼叫（合併全部類型）")
@@ -34,16 +35,14 @@ def merge_game_category_aliases(
         for video_type_key in ("live", "videos", "shorts"):
             category_settings = settings.get(video_type_key, {})
 
-            if "遊戲" not in category_settings:
-                logger.debug("🟡 [%s] 中無 [遊戲] 區塊，略過。", video_type_key)
-                continue
-
+            # 若沒有「遊戲」子分類則使用空陣列
             user_config = category_settings.get("遊戲", [])
             logger.debug("📥 [%s] 使用者自訂條目：%d", video_type_key, len(user_config))
 
             merged_games = merge_game_aliases(user_config, global_alias_map)
             logger.debug("🔗 [%s] 合併後條目數：%d", video_type_key, len(merged_games))
 
+            # 寫回「遊戲」子分類
             category_settings["遊戲"] = merged_games
             settings[video_type_key] = category_settings
 
@@ -54,7 +53,6 @@ def merge_game_category_aliases(
     except Exception:
         logger.error("🔥 [merge_game_category_aliases] 全類型合併失敗", exc_info=True)
         return settings
-
 
 def merge_with_default_categories(
     db: Client,
