@@ -1,5 +1,20 @@
 import React from 'react';
 
+const highlightQuery = (text, query) => {
+  if (!query) return text;
+
+  const regex = new RegExp(`(${query})`, 'gi');
+  const parts = text.split(regex);
+
+  return parts.map((part, i) =>
+    part.toLowerCase() === query.toLowerCase() ? (
+      <mark key={i}>{part}</mark>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  );
+};
+
 const MatchedVideosPreview = ({ query, videos = [] }) => {
   if (!query.trim()) return null;
 
@@ -21,7 +36,7 @@ const MatchedVideosPreview = ({ query, videos = [] }) => {
             key={v.videoId || v.title}
             className="bg-white p-2 border rounded text-sm"
           >
-            🎬 {v.title}
+            {highlightQuery(v.title, query)}
           </li>
         ))}
       </ul>

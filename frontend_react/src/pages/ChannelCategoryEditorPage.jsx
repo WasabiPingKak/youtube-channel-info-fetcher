@@ -68,8 +68,10 @@ const ChannelCategoryEditorPage = () => {
 
   return (
     <div className="p-4 max-w-4xl mx-auto">
-      <h1 className="text-xl font-bold mb-4">頻道分類編輯器</h1>
-
+      <h1 className="text-xl font-bold mb-4">頻道自訂分類編輯器</h1>
+      <p className="text-sm text-gray-600 mb-4">
+        本頁面所做的分類設定只會套用在你自己的頻道中，其他人無法共用你的設定。
+      </p>
       {/* Tabs */}
       <div className="flex gap-3 mb-4">
         {FIXED_TABS.map((tab) => (
@@ -142,6 +144,7 @@ const ChannelCategoryEditorPage = () => {
 
       {/* ➕ 新增子分類 modal */}
       <SubcategoryEditorModal
+        title="新增子分類"
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onRename={(_, newName) => handleAddSubcategory(newName)}
@@ -151,6 +154,7 @@ const ChannelCategoryEditorPage = () => {
 
       {/* ✏️ 編輯子分類 modal */}
       <SubcategoryEditorModal
+        title="編輯子分類"
         isOpen={isEditModalOpen}
         onClose={() => setIsEditModalOpen(false)}
         onRename={handleRenameSubcategory}
