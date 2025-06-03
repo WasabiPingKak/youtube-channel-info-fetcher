@@ -72,7 +72,7 @@ def merge_main_categories_with_user_config(
         for video_type in ("live", "videos", "shorts"):
             merged_config = dict(merged_flat)
 
-            # 4️⃣ 加回原本遊戲設定（若存在），否則補空
+            # 4️⃣ 加回原本遊戲設定（若存在），否則補空或從最外層移入
             if (
                 isinstance(settings.get(video_type), dict)
                 and "遊戲" in settings[video_type]
@@ -80,11 +80,19 @@ def merge_main_categories_with_user_config(
             ):
                 merged_config["遊戲"] = settings[video_type]["遊戲"]
                 logger.debug("🕹️ [%s] 保留原有遊戲設定，共 %d 條目", video_type, len(merged_config["遊戲"]))
+            elif "遊戲" in settings and isinstance(settings["遊戲"], dict):
+                merged_config["遊戲"] = settings["遊戲"]
+                logger.debug("🕹️ [%s] 從最外層搬移遊戲設定，共 %d 條目", video_type, len(merged_config["遊戲"]))
             else:
                 merged_config["遊戲"] = {}
                 logger.debug("🕹️ [%s] 無遊戲設定，自動補空", video_type)
 
             settings[video_type] = merged_config
+
+        # 🔚 清除合併後殘留的扁平主分類設定，避免被誤讀
+        for k in list(settings.keys()):
+            if k not in ("live", "videos", "shorts"):
+                del settings[k]
 
         logger.debug("✅ 已完成主分類與子分類合併，應用至 live/videos/shorts")
         return settings
