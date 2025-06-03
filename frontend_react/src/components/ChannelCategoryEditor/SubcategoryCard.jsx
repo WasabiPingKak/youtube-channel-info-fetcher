@@ -10,6 +10,7 @@ const SubcategoryCard = ({
   videos = [],
 }) => {
   const [newKeyword, setNewKeyword] = useState('');
+  const [confirmingDelete, setConfirmingDelete] = useState(false);
 
   const handleAddKeyword = () => {
     const trimmed = newKeyword.trim();
@@ -59,12 +60,35 @@ const SubcategoryCard = ({
           </button>
           <button
             className="text-sm text-red-600 hover:underline"
-            onClick={onDelete}
+            onClick={() => setConfirmingDelete(true)}
           >
             刪除
           </button>
         </div>
       </div>
+
+      {confirmingDelete && (
+        <div className="mt-2 bg-red-50 border border-red-300 text-sm text-red-800 p-3 rounded">
+          <p className="mb-2">確定要刪除子分類「{name}」嗎？此操作無法還原。</p>
+          <div className="flex gap-3">
+            <button
+              className="px-3 py-1 text-sm bg-gray-300 rounded hover:bg-gray-400"
+              onClick={() => setConfirmingDelete(false)}
+            >
+              取消
+            </button>
+            <button
+              className="px-3 py-1 text-sm bg-red-600 text-white rounded hover:bg-red-700"
+              onClick={() => {
+                onDelete();
+                setConfirmingDelete(false);
+              }}
+            >
+              確定刪除
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="text-sm mb-1">關鍵字：</div>
       <div className="flex flex-wrap gap-2 mb-2">

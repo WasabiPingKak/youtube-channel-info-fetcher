@@ -13,6 +13,7 @@ const SubcategoryEditorModal = ({
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const backdropRef = useRef();
+  const inputRef = useRef();
 
   useEffect(() => {
     if (isOpen) {
@@ -20,6 +21,12 @@ const SubcategoryEditorModal = ({
       setError('');
     }
   }, [isOpen, originalName]);
+
+  useEffect(() => {
+    if (isOpen && inputRef.current) {
+      inputRef.current.focus();
+    }
+  }, [isOpen]);
 
   const handleSave = () => {
     const trimmed = name.trim();
@@ -55,6 +62,7 @@ const SubcategoryEditorModal = ({
 
         <label className="block text-sm mb-1">子分類名稱：</label>
         <input
+          ref={inputRef}
           className="border px-3 py-2 rounded w-full mb-2"
           type="text"
           value={name}
