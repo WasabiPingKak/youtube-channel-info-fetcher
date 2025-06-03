@@ -1,9 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import type { Video } from "../types/editor";
 
-/**
- * Hook 回傳影片清單，並維持 12 小時快取
- */
 export function useEditorVideos(channelId?: string) {
   const API_BASE = import.meta.env.VITE_API_BASE || "";
 
@@ -24,7 +21,7 @@ export function useEditorVideos(channelId?: string) {
       return data.videos as Video[];
     },
     // 設定 12 小時快取 (staleTime) 及垃圾回收時間 (gcTime)
-    staleTime: 1000 * 60 * 60 * 0,
-    gcTime: 1000 * 60 * 60 * 0,
+    // staleTime: 1000 * 60 * 60 * 0,
+    // gcTime: 1000 * 60 * 60 * 0,
   });
 }

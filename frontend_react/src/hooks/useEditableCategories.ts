@@ -1,6 +1,9 @@
 import { useEffect, useState } from 'react';
 
-export const useEditableCategories = (categoryData: any, activeTab: string) => {
+export const useEditableCategories = (
+  categoryData: any,
+  activeTab: string,
+) => {
   const [editableData, setEditableData] = useState<Record<string, any>>({});
   const [newSubcatName, setNewSubcatName] = useState('');
 

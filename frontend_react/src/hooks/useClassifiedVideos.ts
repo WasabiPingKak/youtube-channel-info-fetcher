@@ -23,9 +23,9 @@ export function useClassifiedVideos(
     data,
     isLoading,
     error,
+    refetch,
   } = useQuery({
     queryKey: ["classified", channelId, videoType],
-
     queryFn: async () => {
       const res = await fetch(`${BASE_URL}/api/videos/classified`, {
         method: "POST",
@@ -59,16 +59,10 @@ export function useClassifiedVideos(
         return v;
       });
 
-      // ✅ 印出影片總數與關鍵資訊以利除錯
       console.log(`📦 取得 ${videos.length} 部影片（type=${videoType}）`);
-      videos.forEach((v) => {
-        //console.log(`🧩 ${v.title} | matchedCategories:`, v.matchedCategories ?? []);
-      });
-
       return { videos };
     },
-
-    staleTime: import.meta.env.DEV ? 0 : 5 * 60 * 1000,
+    // staleTime: import.meta.env.DEV ? 0 : 1 * 60 * 1000,
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
@@ -77,5 +71,6 @@ export function useClassifiedVideos(
     videos: data?.videos ?? [],
     loading: isLoading,
     error: error as Error | null,
+    refetch,
   };
 }

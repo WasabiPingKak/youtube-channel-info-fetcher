@@ -25,6 +25,7 @@
     "flag-icons": "^7.3.2",
     "html-to-image": "^1.11.13",
     "i18n-iso-countries": "^7.14.0",
+    "lodash.isequal": "^4.5.0",
     "lucide-react": "^0.503.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",

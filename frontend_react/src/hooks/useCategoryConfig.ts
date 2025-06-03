@@ -24,10 +24,17 @@ const getCategoryConfig = async () => {
 };
 
 export const useCategoryConfig = () => {
-  return useQuery({
+  const queryResult = useQuery({
     queryKey: ['category-config', CHANNEL_ID],
     queryFn: getCategoryConfig,
-    staleTime: Infinity,
-    gcTime: Infinity, // ← 依你使用的 TanStack Query v5 寫法
+    // staleTime: Infinity,
+    // gcTime: Infinity, // TanStack Query v5 寫法
   });
+
+  return {
+    data: queryResult.data,
+    isLoading: queryResult.isLoading,
+    isError: queryResult.isError,
+    refetch: queryResult.refetch,
+  };
 };
