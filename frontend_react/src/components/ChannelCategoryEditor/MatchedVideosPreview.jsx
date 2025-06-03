@@ -27,16 +27,16 @@ const MatchedVideosPreview = ({ query, videos = [] }) => {
 
   return (
     <div className="p-2">
-      <strong className="block text-sm mb-2">
-        命中影片預覽（{matched.length}）
+      <strong className="block text-sm mb-2 text-gray-600">
+        🔍 命中影片預覽（{matched.length}）
       </strong>
-      <ul className="space-y-1">
-        {matched.map((v) => (
-          <li
-            key={v.videoId || v.title}
-            className="bg-white p-2 border rounded text-sm"
-          >
-            {highlightQuery(v.title, query)}
+      <ul className="text-sm text-gray-800">
+        {matched.map((v, i) => (
+          <li key={v.videoId || v.title}>
+            <div className="py-1">{highlightQuery(v.title, query)}</div>
+            {i < matched.length - 1 && (
+              <hr className="border-t border-gray-200 my-1" />
+            )}
           </li>
         ))}
       </ul>
