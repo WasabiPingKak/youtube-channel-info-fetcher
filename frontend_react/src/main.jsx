@@ -19,6 +19,7 @@ import GameAliasPage from "./pages/GameAliasPage";
 import CategoryAliasPage from "./pages/CategoryAliasPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import MySettingsPage from "./pages/MySettingsPage";
+import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
@@ -91,6 +92,7 @@ function AppRoutes() {
         <Route path="/category-aliases" element={<CategoryAliasPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/my-settings" element={<MySettingsPage />} />
+        <Route path="/my-category-editor" element={<ChannelCategoryEditorPage />} />
 
         {/* 新版分類編輯器 */}
         <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />

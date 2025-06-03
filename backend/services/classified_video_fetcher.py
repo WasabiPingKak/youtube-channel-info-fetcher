@@ -2,12 +2,10 @@ from typing import List, Dict
 from firebase_admin.firestore import Client
 from utils.categorizer import match_category_and_game
 from utils.youtube_utils import normalize_video_item
-from utils.settings_preparer import (
-    merge_game_category_aliases,
-    merge_with_default_categories
-)
-import logging
+from utils.settings_main_merger import merge_main_categories_with_user_config
+from utils.settings_game_merger import merge_game_categories_with_aliases
 
+import logging
 logger = logging.getLogger(__name__)
 
 # 類型映射：轉為統一比對格式
@@ -19,32 +17,45 @@ type_map = {
     "shorts": "shorts"
 }
 
-def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[Dict]:
+
+def get_merged_settings(db: Client, channel_id: str) -> Dict:
+    """
+    讀取並合併後端設定，包含主分類與遊戲別名。
+    可用於影片分類前的準備，或除錯用途。
+    """
+    settings_ref = (
+        db.collection("channel_data")
+        .document(channel_id)
+        .collection("settings")
+        .document("config")
+    )
+    settings_doc = settings_ref.get()
+    if not settings_doc.exists:
+        logger.warning("⚠️ 無分類設定 config，頻道 %s", channel_id)
+        return {}
+
+    settings = settings_doc.to_dict()
+
+    # 🧩 合併 default_categories_config_v2（主分類設定）
+    settings = merge_main_categories_with_user_config(db, settings)
+
+    # 🔁 合併遊戲別名（中央別名 + 使用者自訂）
+    settings = merge_game_categories_with_aliases(settings)
+
+    return settings
+
+
+def get_classified_videos(db: Client, channel_id: str) -> List[Dict]:
     """
     從 videos_batch 撈出影片，套用分類設定後回傳，格式與舊 API 一致。
     - 不寫入 Firestore
     - 僅回傳符合 video_type 的影片
     """
     try:
-        # 1️⃣ 讀取分類設定
-        settings_ref = (
-            db.collection("channel_data")
-            .document(channel_id)
-            .collection("settings")
-            .document("config")
-        )
-        settings_doc = settings_ref.get()
-        if not settings_doc.exists:
-            logger.warning("⚠️ 無分類設定 config，頻道 %s", channel_id)
+        # 1️⃣ 取得合併後的設定
+        settings = get_merged_settings(db, channel_id)
+        if not settings:
             return []
-
-        settings = settings_doc.to_dict()
-
-        # 🧩 合併 default_categories_config_v2（主分類設定）
-        settings = merge_with_default_categories(db, settings)
-
-        # 🔁 合併遊戲別名（中央別名 + 使用者自訂）
-        settings = merge_game_category_aliases(settings)
 
         # 2️⃣ 讀取所有 batch 文件
         batch_ref = db.collection("channel_data").document(channel_id).collection("videos_batch")
@@ -80,7 +91,7 @@ def get_classified_videos(db: Client, channel_id: str, video_type: str) -> List[
             logger.debug("🎯 命中分類: %s", video_data)
             results.append(video_data)
 
-        logger.info(f"✅ 成功分類 {len(results)} 部影片（type={video_type}）")
+        logger.info(f"✅ 成功分類 {len(results)} 部影片")
         return results
 
     except Exception as e:

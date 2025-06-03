@@ -80,32 +80,31 @@ def match_category_and_game(
                     logging.debug("🏷️ 命中分類 [%s > %s] via %s", main_category, sub_name, hit_keywords)
 
         # ────────────────────────────────────────────────
-        # 2️⃣ 處理「遊戲」主分類
+        # 2️⃣ 處理「遊戲」主分類（新格式：Dict[str, List[str]]）
         # ────────────────────────────────────────────────
-        game_entries = category_settings.get("遊戲", [])
+        game_entries = category_settings.get("遊戲", {})
         matched_game_name: str | None = None
         hit_keywords: List[str] = []
 
-        if isinstance(game_entries, list):
-            for game_entry in game_entries:
-                game_name = game_entry.get("game")
-                keywords = game_entry.get("keywords", [])
-                all_keywords = keywords + ([game_name] if game_name else [])
+        if isinstance(game_entries, dict):
+            for game_name, keywords in game_entries.items():
+                all_keywords = keywords + [game_name]
+                local_hits = []
 
                 for kw in all_keywords:
                     if normalize(kw) in normalized_title:
-                        matched_game_name = game_name
-                        matched_keywords.append(kw)
-                        hit_keywords.append(kw)
-                        logging.debug("🎮 命中遊戲 [%s] via keyword [%s]", game_name, kw)
-                        break
+                        local_hits.append(kw)
 
-                if matched_game_name:
+                if local_hits:
+                    matched_game_name = game_name
+                    matched_keywords.extend(local_hits)
+                    hit_keywords = local_hits
                     matched_pairs.append({
                         "main": "遊戲",
                         "keyword": game_name,
-                        "hitKeywords": hit_keywords  # ✅ 新增命中關鍵字
+                        "hitKeywords": hit_keywords
                     })
+                    logging.debug("🎮 命中遊戲 [%s] via keywords %s", game_name, local_hits)
                     break
 
         # ────────────────────────────────────────────────

@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from services.classified_video_fetcher import get_classified_videos
+from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -12,14 +12,18 @@ def init_video_routes(app, db):
         try:
             data = request.get_json()
             channel_id = data.get("channel_id")
-            video_type = data.get("video_type")
+            only_settings = data.get("only_settings", False)
 
-            if not channel_id or not video_type:
-                return jsonify({"error": "channel_id 與 video_type 為必填"}), 400
+            if not channel_id:
+                return jsonify({"error": "channel_id 為必填"}), 400
 
-            logger.info(f"🔍 取得分類影片清單：{channel_id}, 類型={video_type}")
-            result = get_classified_videos(db, channel_id, video_type)
+            logger.info(f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）")
 
+            if only_settings:
+                settings = get_merged_settings(db, channel_id)
+                return jsonify({"settings": settings})
+
+            result = get_classified_videos(db, channel_id)
             return jsonify({"videos": result})
 
         except Exception as e:
@@ -122,7 +126,6 @@ def init_video_routes(app, db):
                 "error": "發生錯誤",
                 "details": str(e)
             }), 500
-
 
     app.register_blueprint(video_bp)
     logger.info("✅ [video_routes] /api/videos/* 路由已註冊")

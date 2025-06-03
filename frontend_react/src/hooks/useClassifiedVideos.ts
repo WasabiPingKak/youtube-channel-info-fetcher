@@ -17,7 +17,7 @@ const BASE_URL = import.meta.env.VITE_API_BASE || "";
 
 export function useClassifiedVideos(
   channelId: string,
-  videoType: "live" | "videos" | "shorts"
+  videoType?: "live" | "videos" | "shorts"
 ) {
   const {
     data,
