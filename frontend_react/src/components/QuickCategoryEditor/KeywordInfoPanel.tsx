@@ -1,7 +1,9 @@
 import React from 'react';
 import type { SuggestedKeywordCardState } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryEditorStore } from '@/stores/useQuickCategoryEditorStore';
-import VideoBadge from '@/components/common/VideoBadge'; // ✅ 新增匯入
+import VideoBadge from '@/components/common/VideoBadge';
+import SubcategoryNameEditor from './SubcategoryNameEditor';
+import KeywordMainCategoryControls from './KeywordMainCategoryControls';
 
 const MAIN_CATEGORIES = ['雜談', '遊戲', '節目', '音樂'];
 
@@ -47,43 +49,19 @@ const KeywordInfoPanel: React.FC<Props> = ({
           關鍵詞：「{card.keyword}」
         </div>
 
-        <div className="mb-2">
-          {isEditing ? (
-            <div className="flex gap-2 items-center">
-              <input
-                className="border rounded px-2 py-1 w-48"
-                value={editValue}
-                onChange={(e) => setEditValue(e.target.value)}
-              />
-              <button
-                className="text-sm text-blue-600 hover:underline"
-                onClick={handleEditConfirm}
-              >
-                確認
-              </button>
-              <button
-                className="text-sm text-gray-500 hover:underline"
-                onClick={() => setIsEditing(false)}
-              >
-                取消
-              </button>
-              <button
-                className="text-sm text-orange-500 hover:underline"
-                onClick={() => setEditValue(card.keyword)}
-              >
-                還原
-              </button>
-            </div>
-          ) : (
-            <div className={`mb-2 ${card.skipped ? 'text-gray-500' : ''}`}>
-              {card.subcategoryName !== card.keyword && (
-                <span className="text-sm text-gray-500 ml-2">
-                  （標題過濾詞來自「{card.keyword}」）
-                </span>
-              )}
-            </div>
-          )}
-        </div>
+        <SubcategoryNameEditor
+          keyword={card.keyword}
+          subcategoryName={card.subcategoryName}
+          isEditing={isEditing}
+          editValue={editValue}
+          setEditValue={setEditValue}
+          setIsEditing={setIsEditing}
+          onConfirm={(value) => {
+            setSubcategoryName(card.keyword, value.trim());
+            setIsEditing(false);
+          }}
+          skipped={card.skipped}
+        />
 
         {/* ✅ 插入 badge 顯示區塊 */}
         <div className="mb-3 flex gap-2 flex-wrap">
@@ -92,69 +70,19 @@ const KeywordInfoPanel: React.FC<Props> = ({
           ))}
         </div>
 
-        <div className="mb-3 flex gap-2 flex-wrap">
-          {MAIN_CATEGORIES.map((cat) => {
-            const active = card.mainCategories.includes(cat);
-            const disabled = card.skipped;
-            return (
-              <button
-                key={cat}
-                className={`px-3 py-1 rounded border flex items-center gap-1 transition ${active
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100'
-                  } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
-                onClick={() => {
-                  if (!disabled) toggleMainCategory(card.keyword, cat);
-                }}
-                disabled={disabled}
-              >
-                <input type="checkbox" readOnly checked={active} disabled={disabled} />
-                {cat}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="flex gap-4 mb-2 items-center">
-          <button
-            className={`font-bold hover:underline transition ${card.mainCategories.length === 0
-                ? 'text-gray-400 cursor-not-allowed opacity-50'
-                : 'text-green-600'
-              }`}
-            title={card.mainCategories.length === 0 ? '請先選擇主分類' : ''}
-            disabled={card.mainCategories.length === 0 || card.skipped}
-            onClick={() => toggleAgree(card.keyword)}
-          >
-            ✔️ 同意
-          </button>
-
-          <button
-            className={`text-blue-500 hover:underline ${card.skipped ? 'text-gray-400 cursor-not-allowed' : ''
-              }`}
-            disabled={card.skipped}
-            onClick={() => setIsEditing(true)}
-          >
-            ✏️ 編輯要顯示的分類名稱
-          </button>
-
-          <button
-            className={`text-red-500 hover:underline ${card.skipped ? '' : 'opacity-60'
-              }`}
-            onClick={() => toggleSkip(card.keyword)}
-          >
-            ❌ 跳過
-          </button>
-        </div>
-      </div>
-
-      {/* 💾 儲存設定 */}
-      <div className="mt-4">
-        <button
-          className="bg-green-600 text-white px-6 py-2 rounded shadow"
-          onClick={() => { }}
-        >
-          💾 儲存設定
-        </button>
+        <KeywordMainCategoryControls
+          keyword={card.keyword}
+          mainCategories={card.mainCategories}
+          skipped={card.skipped}
+          onToggleMainCategory={toggleMainCategory}
+          onAgree={toggleAgree}
+          onSkip={toggleSkip}
+          onEditStart={() => setIsEditing(true)}
+          onCardFinished={(keyword, action) => {
+            console.log(`${keyword} 被 ${action}，可通知 KeywordCard 收合`);
+            // 在父層實作收合或移除卡片邏輯
+          }}
+        />
       </div>
     </div>
   );
