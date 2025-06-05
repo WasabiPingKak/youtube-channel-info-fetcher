@@ -17,7 +17,8 @@ export interface SuggestedKeywordCardState {
  */
 export function buildSuggestedKeywordCards(
   keywords: SuggestedKeyword[],
-  videos: ClassifiedVideoItem[]
+  videos: ClassifiedVideoItem[],
+  skipKeywords: string[] = []
 ): SuggestedKeywordCardState[] {
   const unclassifiedVideos = videos.filter(
     (v) => v.matchedCategories?.length === 1 && v.matchedCategories[0] === '未分類'
@@ -26,6 +27,7 @@ export function buildSuggestedKeywordCards(
   console.log('[🧩 buildSuggestedKeywordCards]');
   console.log('  keywords.length:', keywords.length);
   console.log('  unclassifiedVideos.length:', unclassifiedVideos.length);
+  console.log('  skipKeywords.length:', skipKeywords.length);
 
   return keywords
     .map(({ keyword, count }) => {
@@ -38,14 +40,12 @@ export function buildSuggestedKeywordCards(
         keyword,
         count,
         agreed: false,
-        skipped: false,
+        skipped: skipKeywords.includes(keyword),
         subcategoryName: keyword,
         mainCategories: [],
         matchedVideos: matched,
       };
     })
     .filter((card) => card.matchedVideos.length > 0)
-    .sort((a, b) => b.matchedVideos.length - a.matchedVideos.length); // ✅ 根據影片命中數排序
-
+    .sort((a, b) => b.matchedVideos.length - a.matchedVideos.length);
 }
-

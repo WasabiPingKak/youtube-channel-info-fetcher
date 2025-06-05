@@ -9,7 +9,7 @@ interface Props {
 
   onToggleMainCategory: (keyword: string, category: string) => void;
   onAgree: (keyword: string) => void;
-  onSkip: (keyword: string) => void;
+  onToggleSkip: (keyword: string, toSkipped: boolean) => void;
   onEditStart: () => void;
 
   onCardFinished?: (keyword: string, action: 'agreed' | 'skipped') => void;
@@ -21,7 +21,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
   skipped,
   onToggleMainCategory,
   onAgree,
-  onSkip,
+  onToggleSkip,
   onEditStart,
   onCardFinished,
 }) => {
@@ -30,8 +30,9 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
     onCardFinished?.(keyword, 'agreed');
   };
 
-  const handleSkip = () => {
-    onSkip(keyword);
+  const handleToggleSkip = () => {
+    const toSkipped = !skipped;
+    onToggleSkip(keyword, toSkipped);
     onCardFinished?.(keyword, 'skipped');
   };
 
@@ -72,7 +73,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
           disabled={mainCategories.length === 0 || skipped}
           onClick={handleAgree}
         >
-          ✔️ 同意
+          ✔️ 儲存此分類
         </button>
 
         <button
@@ -87,9 +88,9 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
         <button
           className={`text-red-500 hover:underline ${skipped ? '' : 'opacity-60'
             }`}
-          onClick={handleSkip}
+          onClick={handleToggleSkip}
         >
-          ❌ 跳過
+          {skipped ? '🔁 撤銷忽略狀態' : '❌ 忽略這個關鍵詞'}
         </button>
       </div>
     </>

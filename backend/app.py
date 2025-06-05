@@ -22,6 +22,7 @@ from routes.public_trending_route import init_public_trending_route
 from routes.me_route import init_me_route
 from routes.logout_route import init_logout_route
 from routes.my_settings_route import init_my_settings_route
+from routes.skip_keyword_routes import init_skip_keyword_routes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -59,6 +60,7 @@ init_public_trending_route(app, db)
 init_me_route(app)
 init_logout_route(app)
 init_my_settings_route(app)
+init_skip_keyword_routes(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

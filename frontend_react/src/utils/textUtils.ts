@@ -38,9 +38,11 @@ export function extractBracketPhrases(text: string): string[] {
  * 停用詞清單（中文）
  */
 export const ZH_STOP_WORDS = [
-  '一個', '更新', '這個',
+  '更新', '這個',
   're',
-  '台v', '男v', '台灣vtuber', '台湾vtuber', '日v', '馬v', 'vtuber', 'ai vtuber',
+  '台v', '男v', '台灣', '台湾', '台灣vtuber', '台湾vtuber',
+  '日v', '馬v', '馬來西亞', '马来西亚', 'vtuber', 'ai vtuber',
+  '新人',
   '初見歡迎', '初見大歓迎', '初見歓迎', '初見',
   '對不起', '天啊', '什麼', '興奮', '遊戲',
   'live', 'shorts',
@@ -68,9 +70,12 @@ export const EN_STOP_WORDS = [
  * 流水號常見前綴詞（中英混用）
  */
 export const SERIAL_PREFIXES = [
-  'no', 'no.', 'ep', 'ep.', 'episode', 'epsode',
+  'no', 'ep', 'episode', 'epsode',
+  'no.', 'ep.',
   'vol', 'vol.',
-  'ch', 'ch.', 'chapter',
+  'part', 'pt',
+  'part.', 'pt.',
+  'ch', 'ch.', 'chapter', 'chapter.', ,
   'day', 'week', 'month', 'season',
   '章節', '章', '集', '部', '篇', '期', '話', '卷'
 ];

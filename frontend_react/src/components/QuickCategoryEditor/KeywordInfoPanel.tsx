@@ -13,6 +13,7 @@ interface Props {
   editValue: string;
   setIsEditing: (v: boolean) => void;
   setEditValue: (v: string) => void;
+  onCardFinished?: (keyword: string, action: 'agreed' | 'skipped') => void;
 }
 
 const KeywordInfoPanel: React.FC<Props> = ({
@@ -21,9 +22,10 @@ const KeywordInfoPanel: React.FC<Props> = ({
   editValue,
   setIsEditing,
   setEditValue,
+  onCardFinished,
 }) => {
   const toggleAgree = useQuickCategoryEditorStore((s) => s.toggleAgree);
-  const toggleSkip = useQuickCategoryEditorStore((s) => s.toggleSkip);
+  const setKeywordSkipped = useQuickCategoryEditorStore((s) => s.setKeywordSkipped);
   const setSubcategoryName = useQuickCategoryEditorStore((s) => s.setSubcategoryName);
   const toggleMainCategory = useQuickCategoryEditorStore((s) => s.toggleMainCategory);
 
@@ -76,11 +78,11 @@ const KeywordInfoPanel: React.FC<Props> = ({
           skipped={card.skipped}
           onToggleMainCategory={toggleMainCategory}
           onAgree={toggleAgree}
-          onSkip={toggleSkip}
+          onToggleSkip={setKeywordSkipped}
           onEditStart={() => setIsEditing(true)}
           onCardFinished={(keyword, action) => {
             console.log(`${keyword} 被 ${action}，可通知 KeywordCard 收合`);
-            // 在父層實作收合或移除卡片邏輯
+            // ⬆️ 未來可從這裡觸發父層移除卡片或動畫
           }}
         />
       </div>
