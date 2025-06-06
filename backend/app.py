@@ -23,6 +23,8 @@ from routes.me_route import init_me_route
 from routes.logout_route import init_logout_route
 from routes.my_settings_route import init_my_settings_route
 from routes.skip_keyword_routes import init_skip_keyword_routes
+from routes.quick_category_apply_route import init_quick_category_apply_route
+from routes.quick_category_remove_route import init_quick_category_remove_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -61,6 +63,8 @@ init_me_route(app)
 init_logout_route(app)
 init_my_settings_route(app)
 init_skip_keyword_routes(app, db)
+init_quick_category_apply_route(app, db)
+init_quick_category_remove_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

@@ -5,7 +5,7 @@ import { useFrequentKeywordSuggestions } from '@/hooks/useFrequentKeywordSuggest
 import { buildSuggestedKeywordCards } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryEditorStore } from '@/stores/useQuickCategoryEditorStore';
 import KeywordCardList from '@/components/QuickCategoryEditor/KeywordCardList';
-import MainLayout from "../components/layout/MainLayout";
+import MainLayout from '../components/layout/MainLayout';
 
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 
@@ -17,7 +17,9 @@ const QuickCategoryEditorPage = () => {
   const hasInitializedRef = useRef(false);
 
   const [skipKeywords, setSkipKeywords] = useState([]);
+  const [configMap, setConfigMap] = useState(new Map());
   const [loadingSkips, setLoadingSkips] = useState(true);
+  const [loadingConfig, setLoadingConfig] = useState(true);
 
   // ✅ 載入略過關鍵字
   useEffect(() => {
@@ -44,36 +46,109 @@ const QuickCategoryEditorPage = () => {
     loadSkipKeywords();
   }, [channelId]);
 
-  // ✅ 初始化卡片（含 skip 標記）
+  // ✅ 載入分類 config
+  useEffect(() => {
+    const loadConfig = async () => {
+      if (!channelId) return;
+      try {
+        const db = getFirestore();
+        const docRef = doc(db, 'channel_data', channelId, 'settings', 'config');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          const data = docSnap.data();
+          const map = new Map();
+
+          for (const mainCategory in data) {
+            const subcategories = data[mainCategory] || {};
+            for (const subcategoryName in subcategories) {
+              const keywords = subcategories[subcategoryName] || [];
+
+              if (keywords.length === 0) {
+                map.set(subcategoryName, { mainCategory, subcategoryName });
+              } else {
+                for (const keyword of keywords) {
+                  map.set(keyword, { mainCategory, subcategoryName });
+                }
+              }
+            }
+          }
+
+          console.log('✅ [Firestore] 取得 config 設定:', map);
+          setConfigMap(map);
+        } else {
+          console.log('ℹ️ [Firestore] 無 config 設定文件');
+        }
+      } catch (err) {
+        console.error('🔥 無法載入 config 設定:', err);
+      } finally {
+        setLoadingConfig(false);
+      }
+    };
+    loadConfig();
+  }, [channelId]);
+
+  // ✅ 初始化卡片（合併 keyword + skip + config）
   useEffect(() => {
     if (
       !loadingVideos &&
       !loadingKeywords &&
       !loadingSkips &&
+      !loadingConfig &&
       !hasInitializedRef.current &&
-      suggestions.length > 0 &&
       videos.length > 0
     ) {
-      const initialCards = buildSuggestedKeywordCards(suggestions, videos, skipKeywords);
+      const keywordSet = new Set([
+        ...suggestions.map((s) => s.keyword),
+        ...Array.from(configMap.keys()),
+        ...skipKeywords,
+      ]);
+
+      const mergedKeywords = Array.from(keywordSet).map((keyword) => ({
+        keyword,
+        count: suggestions.find((s) => s.keyword === keyword)?.count || 0,
+      }));
+
+      const initialCards = buildSuggestedKeywordCards(
+        mergedKeywords,
+        videos,
+        skipKeywords,
+        configMap
+      );
+
       console.log('[🔧 DEBUG] 初始化卡片數量:', initialCards.length);
+      console.log('[🧼 最終卡片]', initialCards.map(c => ({
+        keyword: c.keyword,
+        agreed: c.agreed,
+        skipped: c.skipped,
+        count: c.matchedVideos.length,
+      })));
+
+      useQuickCategoryEditorStore.getState().setChannelId(channelId);
       useQuickCategoryEditorStore.getState().initializeCards(initialCards);
       hasInitializedRef.current = true;
     }
-  }, [videos, suggestions, skipKeywords, loadingVideos, loadingKeywords, loadingSkips]);
-
-  if (loadingVideos || loadingKeywords || loadingSkips) {
-    return <div className="p-6 text-center">🚧 分析中，請稍候...</div>;
-  }
-
-  console.log('[🔍 DEBUG] 取得影片數量:', videos.length);
-  console.log('[🔍 DEBUG] 分析高頻詞:', suggestions);
-  console.log('[🔍 DEBUG] 略過清單:', skipKeywords);
+  }, [
+    videos,
+    suggestions,
+    skipKeywords,
+    configMap,
+    loadingVideos,
+    loadingKeywords,
+    loadingSkips,
+    loadingConfig,
+  ]);
 
   return (
     <MainLayout>
       <div className="p-6 max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">快速分類</h1>
-        <KeywordCardList cards={cards} />
+        {loadingVideos || loadingKeywords || loadingSkips || loadingConfig ? (
+          <div className="text-center">🚧 分析中，請稍候...</div>
+        ) : (
+          <>
+            <h1 className="text-2xl font-bold mb-4">快速分類</h1>
+            <KeywordCardList cards={cards} />
+          </>
+        )}
       </div>
     </MainLayout>
   );

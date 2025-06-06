@@ -24,7 +24,8 @@ const KeywordInfoPanel: React.FC<Props> = ({
   setEditValue,
   onCardFinished,
 }) => {
-  const toggleAgree = useQuickCategoryEditorStore((s) => s.toggleAgree);
+  const applyAgree = useQuickCategoryEditorStore((s) => s.applyAgree);
+  const removeAppliedKeyword = useQuickCategoryEditorStore((s) => s.removeAppliedKeyword);
   const setKeywordSkipped = useQuickCategoryEditorStore((s) => s.setKeywordSkipped);
   const setSubcategoryName = useQuickCategoryEditorStore((s) => s.setSubcategoryName);
   const toggleMainCategory = useQuickCategoryEditorStore((s) => s.toggleMainCategory);
@@ -34,7 +35,6 @@ const KeywordInfoPanel: React.FC<Props> = ({
     setIsEditing(false);
   };
 
-  // ✅ 根據主分類產生 badge 資料
   const badges =
     card.mainCategories.length > 0
       ? card.mainCategories.map((cat) => ({
@@ -47,10 +47,6 @@ const KeywordInfoPanel: React.FC<Props> = ({
     <div className="flex flex-col h-full justify-between">
       {/* 上半部內容 */}
       <div>
-        <div className={`text-lg font-semibold mb-2 ${card.skipped ? 'text-gray-500' : ''}`}>
-          關鍵詞：「{card.keyword}」
-        </div>
-
         <SubcategoryNameEditor
           keyword={card.keyword}
           subcategoryName={card.subcategoryName}
@@ -76,13 +72,15 @@ const KeywordInfoPanel: React.FC<Props> = ({
           keyword={card.keyword}
           mainCategories={card.mainCategories}
           skipped={card.skipped}
+          isSaving={card.isSaving || false}
+          isSuccess={card.isSuccess || false}
           onToggleMainCategory={toggleMainCategory}
-          onAgree={toggleAgree}
+          onAgree={() => applyAgree(card.keyword)}
+          onRemoveAgree={() => removeAppliedKeyword(card.keyword)}
           onToggleSkip={setKeywordSkipped}
           onEditStart={() => setIsEditing(true)}
           onCardFinished={(keyword, action) => {
             console.log(`${keyword} 被 ${action}，可通知 KeywordCard 收合`);
-            // ⬆️ 未來可從這裡觸發父層移除卡片或動畫
           }}
         />
       </div>
