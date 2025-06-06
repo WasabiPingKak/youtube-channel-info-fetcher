@@ -39,6 +39,8 @@ export function buildSuggestedKeywordCards(
       mainCategories = arr.map(x => x.mainCategory);
       agreed = true;
     }
+    // 🔧 fallback: 如果沒命中 configMap，預設使用 keyword 作為子分類名稱
+    if (!subcategoryName) subcategoryName = keyword;
 
     const normalizedKeyword = normalize(keyword);
     const matched = videos.filter((video) => normalize(video.title).includes(normalizedKeyword));

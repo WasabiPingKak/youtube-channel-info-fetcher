@@ -49,17 +49,17 @@ const SubcategoryNameEditor: React.FC<Props> = ({
             還原
           </button>
         </div>
-      ) : (
+      ) : subcategoryName !== keyword ? (
         <div className={`mb-2 ${skipped ? 'text-gray-500' : ''}`}>
-          {subcategoryName !== keyword && (
-            <span className="text-sm text-gray-500 ml-2">
-              （標題過濾詞來自「{keyword}」）
-            </span>
-          )}
+          <span className="text-sm text-gray-500 ml-2">
+            （已自訂分類名稱為「
+            <span className="text-blue-600 italic">{subcategoryName}</span>
+            」，原始關鍵字為「{keyword}」）
+          </span>
         </div>
-      )}
+      ) : null}
     </div>
-  );
+  )
 };
 
 export default SubcategoryNameEditor;

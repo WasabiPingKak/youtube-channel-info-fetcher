@@ -217,7 +217,12 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
     setSubcategoryName: (keyword, newName) =>
       set((state) => ({
         cards: state.cards.map((c) =>
-          c.keyword === keyword ? { ...c, subcategoryName: newName } : c
+          c.keyword === keyword
+            ? {
+              ...c,
+              subcategoryName: newName.trim() === '' ? keyword : newName.trim(),
+            }
+            : c
         ),
       })),
 
