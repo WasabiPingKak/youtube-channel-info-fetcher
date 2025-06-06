@@ -28,22 +28,26 @@ def init_quick_category_apply_route(app, db):
 
             doc = config_ref.get()
             config_data = doc.to_dict() or {}
-
             updated_config = config_data.copy()
+
+            # ✅ 確保四大主分類永遠存在
+            REQUIRED_MAIN_CATEGORIES = ["雜談", "遊戲", "音樂", "節目"]
+            for cat in REQUIRED_MAIN_CATEGORIES:
+                updated_config.setdefault(cat, {})
+
+            # ➤ 寫入分類設定
             for target in targets:
                 main_category = target.get("mainCategory")
                 subcategory_name = target.get("subcategoryName")
 
                 if not main_category or not subcategory_name:
-                    continue  # 跳過無效的項目
+                    continue  # 跳過無效項目
 
                 updated_config.setdefault(main_category, {})
 
                 if subcategory_name == keyword:
-                    # ⛔ 不重複儲存 keyword
                     updated_config[main_category].setdefault(subcategory_name, [])
                 else:
-                    # ✅ 子分類名稱 ≠ keyword，需記錄關鍵字
                     updated_config[main_category].setdefault(subcategory_name, [])
                     if keyword not in updated_config[main_category][subcategory_name]:
                         updated_config[main_category][subcategory_name].append(keyword)
@@ -56,4 +60,5 @@ def init_quick_category_apply_route(app, db):
         except Exception as e:
             logging.error("🔥 快速分類 API 發生錯誤", exc_info=True)
             return jsonify({"status": "error", "message": "內部錯誤，請稍後再試"}), 500
+
 
