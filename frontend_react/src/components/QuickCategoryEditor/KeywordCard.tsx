@@ -17,7 +17,7 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
   const isSkipped = card.skipped;
   const isAgreed = card.agreed;
 
-  // ✅ 畫面邏輯：略過 → 收合；已套用 → 展開；初始 → 展開
+  // ✅ 略過但尚未分類 → 收合；已分類或未略過 → 展開
   const shouldCollapse = isSkipped && !isAgreed;
 
   const bgColor = isSkipped
@@ -28,7 +28,7 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
 
   return (
     <div className={`border rounded-xl p-4 mb-4 shadow-sm ${bgColor}`}>
-      {/* 標題列：顯示關鍵字與狀態 */}
+      {/* 標題列 */}
       <div className="text-lg font-semibold flex flex-wrap items-center gap-2 mb-2">
         <span>關鍵詞：「{card.keyword}」</span>
 
@@ -49,7 +49,7 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
         )}
       </div>
 
-      {/* 若略過尚未套用：收合；其餘狀態展開 */}
+      {/* 主體區塊 */}
       {!shouldCollapse && (
         <div className="md:flex md:gap-6">
           <div className="md:w-1/2">
@@ -63,7 +63,13 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
             />
           </div>
           <div className="md:w-1/2 mt-4 md:mt-0">
-            <KeywordVideoList card={card} showVideos={true} />
+            {card.matchedVideos.length > 0 ? (
+              <KeywordVideoList card={card} showVideos={true} />
+            ) : (
+              <div className="text-sm text-gray-400 italic">
+                目前無命中影片（可能已分類完畢或影片已刪除）
+              </div>
+            )}
           </div>
         </div>
       )}

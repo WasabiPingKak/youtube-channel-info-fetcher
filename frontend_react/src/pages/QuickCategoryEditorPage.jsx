@@ -12,7 +12,7 @@ import { getFirestore, doc, getDoc } from 'firebase/firestore';
 const QuickCategoryEditorPage = () => {
   const { channelId } = useParams();
   const { videos, loading: loadingVideos } = useClassifiedVideos(channelId);
-  const { suggestions, loading: loadingKeywords } = useFrequentKeywordSuggestions(videos);
+  const { suggestions } = useFrequentKeywordSuggestions(videos);
   const cards = useQuickCategoryEditorStore((s) => s.cards);
   const hasInitializedRef = useRef(false);
 
@@ -91,15 +91,16 @@ const QuickCategoryEditorPage = () => {
   useEffect(() => {
     if (
       !loadingVideos &&
-      !loadingKeywords &&
       !loadingSkips &&
       !loadingConfig &&
       !hasInitializedRef.current &&
       videos.length > 0
     ) {
+      const suggestionKeywords = suggestions.map((s) => s.keyword);
+      const configKeywords = Array.from(configMap.keys());
       const keywordSet = new Set([
-        ...suggestions.map((s) => s.keyword),
-        ...Array.from(configMap.keys()),
+        ...suggestionKeywords,
+        ...configKeywords,
         ...skipKeywords,
       ]);
 
@@ -107,6 +108,14 @@ const QuickCategoryEditorPage = () => {
         keyword,
         count: suggestions.find((s) => s.keyword === keyword)?.count || 0,
       }));
+
+      console.group('[🧠 卡片初始化 DEBUG]');
+      console.log('💢 suggestions:', suggestions);
+      console.log('🎯 suggestionKeywords:', suggestionKeywords);
+      console.log('📦 configMap keys:', configKeywords);
+      console.log('🚫 skipKeywords:', skipKeywords);
+      console.log('🧩 合併後 keywords:', mergedKeywords.map(k => k.keyword));
+      console.groupEnd();
 
       const initialCards = buildSuggestedKeywordCards(
         mergedKeywords,
@@ -133,7 +142,6 @@ const QuickCategoryEditorPage = () => {
     skipKeywords,
     configMap,
     loadingVideos,
-    loadingKeywords,
     loadingSkips,
     loadingConfig,
   ]);
@@ -141,7 +149,7 @@ const QuickCategoryEditorPage = () => {
   return (
     <MainLayout>
       <div className="p-6 max-w-4xl mx-auto">
-        {loadingVideos || loadingKeywords || loadingSkips || loadingConfig ? (
+        {loadingVideos || loadingSkips || loadingConfig ? (
           <div className="text-center">🚧 分析中，請稍候...</div>
         ) : (
           <>
