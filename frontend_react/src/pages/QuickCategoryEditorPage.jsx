@@ -56,6 +56,7 @@ const QuickCategoryEditorPage = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
+          // 修正：一個 keyword 對應多個主分類
           const map = new Map();
 
           for (const mainCategory in data) {
@@ -64,19 +65,18 @@ const QuickCategoryEditorPage = () => {
               const keywords = subcategories[subcategoryName] || [];
 
               if (keywords.length === 0) {
-                map.set(subcategoryName, { mainCategory, subcategoryName });
+                // 子分類名稱本身就是 keyword
+                if (!map.has(subcategoryName)) map.set(subcategoryName, []);
+                map.get(subcategoryName).push({ mainCategory, subcategoryName });
               } else {
                 for (const keyword of keywords) {
-                  map.set(keyword, { mainCategory, subcategoryName });
+                  if (!map.has(keyword)) map.set(keyword, []);
+                  map.get(keyword).push({ mainCategory, subcategoryName });
                 }
               }
             }
           }
-
-          console.log('✅ [Firestore] 取得 config 設定:', map);
           setConfigMap(map);
-        } else {
-          console.log('ℹ️ [Firestore] 無 config 設定文件');
         }
       } catch (err) {
         console.error('🔥 無法載入 config 設定:', err);
