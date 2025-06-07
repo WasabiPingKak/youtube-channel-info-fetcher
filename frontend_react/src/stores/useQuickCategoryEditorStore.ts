@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import type { SuggestedKeywordCardState } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryApply } from '@/hooks/useQuickCategoryApply';
 import toast from 'react-hot-toast';
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 interface QuickCategoryEditorStore {
   channelId: string;
@@ -99,7 +100,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       } catch (err) {
         console.error('❌ [applyAgree] API 發送失敗，還原狀態：', err);
         set({ cards: prevCards });
-        toast.error(`分類儲存失敗：「${keyword}」，請稍後再試`);
+        toast.error(`分類儲存失敗：「${keyword}」`);
       }
     },
 
@@ -152,7 +153,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       } catch (err) {
         console.error('🔥 [removeAppliedKeyword] 發送 API 失敗，還原狀態', err);
         set({ cards: prevCards });
-        toast.error(`撤銷分類失敗：「${keyword}」，請稍後再試`);
+        toast.error(`撤銷分類失敗：「${keyword}」`);
       }
     },
 
@@ -212,7 +213,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       } catch (err) {
         console.error('🔥 [setKeywordSkipped] 發送 API 失敗，還原狀態', err);
         set({ cards: prevCards });
-        toast.error(`更新略過狀態失敗：「${keyword}」，請稍後再試`);
+        toast.error(`更新略過狀態失敗：「${keyword}」`);
       }
     },
 

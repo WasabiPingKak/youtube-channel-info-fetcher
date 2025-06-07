@@ -10,6 +10,7 @@ import { useCategoryConfig } from '../hooks/useCategoryConfig';
 import { useEditableCategories } from '../hooks/useEditableCategories';
 import { useClassifiedVideos } from '../hooks/useClassifiedVideos';
 import MainLayout from "../components/layout/MainLayout";
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 import UnclassifiedVideosPreview from '../components/ChannelCategoryEditor/UnclassifiedVideosPreview';
 import SubcategoryListSection from '../components/ChannelCategoryEditor/SubcategoryListSection';
@@ -57,7 +58,7 @@ const ChannelCategoryEditorPage = () => {
   // 2. early return，只負責顯示狀態，不影響 hooks 排序
   useEffect(() => {
     if (!meLoading && me?.channelId === null) {
-      toast.error("請先登入以編輯分類設定");
+      showLoginRequiredToast("請先登入以編輯分類設定");
       navigate("/");
     }
   }, [meLoading, me, navigate]);
@@ -132,7 +133,7 @@ const ChannelCategoryEditorPage = () => {
       }
     } catch (err) {
       console.error('[儲存分類設定失敗]', err);
-      toast.error('❌ 儲存失敗，請稍後再試');
+      showFailureToast('❌ 儲存失敗');
     }
   };
 

@@ -26,7 +26,7 @@ const VideoExplorerPage = () => {
       const allowAccess = isPublic || isOwner;
 
       if (!allowAccess) {
-        toast.error("您沒有權限查看這個頻道頁面");
+        showPermissionDeniedToast("您沒有權限查看這個頻道頁面");
         navigate("/");
       }
     }

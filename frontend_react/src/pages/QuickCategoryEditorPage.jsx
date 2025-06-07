@@ -31,7 +31,7 @@ const QuickCategoryEditorPage = () => {
   // 權限檢查 (未登入/非本人一律導回首頁)
   useEffect(() => {
     if (!meLoading && me?.channelId === null) {
-      toast.error("請先登入以使用快速分類功能");
+      showLoginRequiredToast("請先登入以使用快速分類功能");
       navigate("/");
     }
   }, [meLoading, me, navigate]);
@@ -39,7 +39,7 @@ const QuickCategoryEditorPage = () => {
   useEffect(() => {
     const myId = me?.channelId;
     if (!meLoading && myId && channelId && myId !== channelId) {
-      toast.error("您沒有權限查看此頻道的分類資料");
+      showPermissionDeniedToast("您沒有權限查看此頻道的分類資料");
       navigate("/");
     }
   }, [meLoading, me, channelId, navigate]);
@@ -166,16 +166,11 @@ const QuickCategoryEditorPage = () => {
           <>
             <h1 className="text-2xl font-bold mb-4">快速分類</h1>
             <p className="text-sm text-gray-700 leading-relaxed mb-6">
-              系統會從所有影片標題中自動擷取重複出現的關鍵字，只要出現次數達兩次以上就會列出，並顯示命中的影片清單。<br />
-              已經透過系統預設分類完畢的影片不會顯示在這裡，方便你集中處理還沒分類的部分。<br />
-              <span className="ml-4 block">• 一個關鍵字可以被分類到不同主題中，比如「歌雜」可以同時屬於雜談與音樂</span>
-              <span className="ml-4 block">• 你可以編輯名稱讓圖表顯示你自訂的標籤。
-                <span className="ml-8 block text-gray-600">
-                  - 例如，將「ft」編輯為「連動」，那麼圖表中經由「ft」篩選出來的影片就會以「連動」的標籤呈現。
-                </span>
-              </span>
-              <span className="ml-4 block">• 如果你填的是遊戲的正式名稱，推薦直接從左側填表加入全系統分類，讓其他人也能共用這個遊戲名稱的設定。</span>
-              若還需要手動微調分類影片清單，請改用
+              系統會自動找出在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片，已預設分類的影片不會顯示。<br />
+              <span className="ml-4 block">• 關鍵字可屬於多個主題，例如「歌雜」可同時是雜談與音樂</span>
+              <span className="ml-4 block">• 可編輯名稱作為圖表顯示用的標籤，例如「ft」改成「連動」</span>
+              <span className="ml-4 block">• 若是遊戲名稱，建議透過左側填表加入系統分類，方便全站共用</span>
+              若需手動微調分類結果，請改用
               <a
                 href="/my-category-editor"
                 className="text-blue-600 hover:underline ml-1"

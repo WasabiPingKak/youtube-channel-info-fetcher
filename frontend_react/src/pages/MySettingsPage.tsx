@@ -7,6 +7,7 @@ import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 export default function MySettingsPage() {
   const {
@@ -30,7 +31,7 @@ export default function MySettingsPage() {
   // ✅ 匿名未登入使用者處理
   useEffect(() => {
     if (!meLoading && me?.channelId === null) {
-      toast.error("請先登入以編輯頻道設定");
+      showLoginRequiredToast("請先登入以編輯頻道設定");
       navigate("/");
     }
   }, [meLoading, me]);
@@ -44,7 +45,7 @@ export default function MySettingsPage() {
       meError ||
       (!meLoading && myId && targetId && myId !== targetId)
     ) {
-      toast.error("您沒有權限查看設定頁面");
+      showPermissionDeniedToast("您沒有權限查看設定頁面");
       navigate("/");
     }
   }, [meLoading, me, meError, channelInfo?.channel_id]);
@@ -56,7 +57,7 @@ export default function MySettingsPage() {
       toast.success("已成功登出");
       navigate("/");
     } catch (err) {
-      toast.error("登出失敗，請稍後再試");
+      showFailureToast("登出失敗");
     }
   };
 
