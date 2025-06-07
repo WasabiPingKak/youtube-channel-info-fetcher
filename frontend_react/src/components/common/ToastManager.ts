@@ -3,13 +3,13 @@ import { toast } from "react-hot-toast";
 
 // ✅ 成功訊息後綴詞庫（無 emoji、工程師冷幽默風）
 const successPhrases = [
-  "看來這裡沒有工程師的事",
+  "工程師幹的不錯",
   "看起來今天沒人要加班了 ",
   "機房的乖乖是有用的"
 ];
 
 const failurePhrases = [
-  "你可以 F5 再來一次",
+  "可以 F5 再來一次",
   "也許只是路由器淋到雨",
   "難道乖乖過期了?"
 ];

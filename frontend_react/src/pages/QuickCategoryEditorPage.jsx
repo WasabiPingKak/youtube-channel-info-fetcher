@@ -166,7 +166,7 @@ const QuickCategoryEditorPage = () => {
           <>
             <h1 className="text-2xl font-bold mb-4">快速分類</h1>
             <p className="text-sm text-gray-700 leading-relaxed mb-6">
-              系統會自動找出在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片，已預設分類的影片不會顯示。<br />
+              這裡是系統判斷不出來的影片清單，我們幫你挑出了在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片。<br />
               <span className="ml-4 block">• 關鍵字可屬於多個主題，例如「歌雜」可同時是雜談與音樂</span>
               <span className="ml-4 block">• 可編輯名稱作為圖表顯示用的標籤，例如「ft」改成「連動」</span>
               <span className="ml-4 block">• 若是遊戲名稱，建議透過左側填表加入系統分類，方便全站共用</span>
@@ -175,7 +175,7 @@ const QuickCategoryEditorPage = () => {
                 href="/my-category-editor"
                 className="text-blue-600 hover:underline ml-1"
               >
-                完整版編輯器
+                進階版編輯器
               </a>
               。
             </p>

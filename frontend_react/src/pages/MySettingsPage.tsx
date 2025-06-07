@@ -3,11 +3,13 @@ import { useMySettings } from "@/hooks/useMySettings";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { PublicToggleSection } from "@/components/profile_settings/PublicToggleSection";
 import { CountryFlagSelector } from "@/components/profile_settings/CountryFlagSelector";
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import { MdAnalytics } from "react-icons/md";
+
 
 export default function MySettingsPage() {
   const {
@@ -89,13 +91,29 @@ export default function MySettingsPage() {
         )}
 
         {channelInfo?.channel_id && (
-          <div className="mt-2">
-            <Link
-              to={`/videos?channel=${channelInfo.channel_id}`}
-              className="text-sm text-blue-600 hover:underline"
-            >
-              查看我的頻道頁面
-            </Link>
+          <div className="mt-2 mb-4 space-y-2">
+            <div className="bg-yellow-50 border border-yellow-300 rounded px-4 py-3">
+              <p className="text-sm text-yellow-800">
+                有些影片系統可能分類不出來，看一眼👀{" "}
+                <Link
+                  to={`/quick-category-editor/${channelInfo.channel_id}`}
+                  className="underline font-semibold text-yellow-900 hover:text-yellow-700"
+                >
+                  快速分類
+                </Link>{" "}
+                協助整理，讓分析更精準！
+              </p>
+            </div>
+
+            <div className="bg-gray-50 border border-gray-300 rounded px-4 py-3">
+              <Link
+                to={`/videos?channel=${channelInfo.channel_id}`}
+                className="flex items-center gap-2 text-sm text-gray-800 font-bold underline"
+              >
+                <MdAnalytics className="w-5 h-5" />
+                查看我的頻道頁面
+              </Link>
+            </div>
           </div>
         )}
 
