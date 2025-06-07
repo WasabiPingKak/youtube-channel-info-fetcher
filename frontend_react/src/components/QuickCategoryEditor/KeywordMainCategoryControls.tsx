@@ -46,10 +46,10 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
   const shouldShowError = noCategorySelected && !skipped && !isSuccess;
 
   const agreeButtonText = isSuccess
-    ? '✔️ 已成功套用'
+    ? '✅ 已套用，分類已上傳'
     : isSaving
       ? '儲存中...'
-      : '✔️ 儲存此分類';
+      : '💾 儲存此分類';
 
   const agreeButtonDisabled =
     skipped || noCategorySelected || isSaving || isSuccess;
@@ -65,8 +65,8 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
             <button
               key={cat}
               className={`px-3 py-1 rounded border flex items-center gap-1 transition ${active
-                ? 'bg-blue-600 text-white'
-                : 'bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100'
                 } ${disabled ? 'opacity-40 cursor-not-allowed' : ''}`}
               onClick={() => {
                 if (!disabled) onToggleMainCategory(keyword, cat);
@@ -87,48 +87,58 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
         </p>
       )}
 
-      {/* 操作按鈕列 */}
-      <div className="flex gap-4 mb-2 items-center">
-        <button
-          className={`font-bold transition ${isSuccess
-            ? 'bg-green-600 text-white px-3 py-1 rounded'
-            : 'text-green-600 hover:underline'
-            } ${agreeButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
-          title={shouldShowError ? '請先選擇主分類' : ''}
-          disabled={agreeButtonDisabled}
-          onClick={handleAgree}
-        >
-          {agreeButtonText}
-        </button>
+      {/* 操作區：上下欄排版 */}
+      <div className="flex flex-col gap-2 mb-2">
+        {/* 上欄：次要操作（編輯顯示名稱／撤銷分類） */}
+        <div className="flex gap-4 items-center justify-between flex-wrap">
+          {!skipped && !isSuccess && (
+            <button
+              className={`text-blue-500 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              disabled={isSaving}
+              onClick={onEditStart}
+            >
+              ✏️ 編輯顯示名稱
+            </button>
+          )}
 
-        <button
-          className={`text-blue-500 hover:underline ${skipped || isSaving || isSuccess ? 'text-gray-400 cursor-not-allowed' : ''
-            }`}
-          disabled={skipped || isSaving || isSuccess}
-          onClick={onEditStart}
-        >
-          ✏️ 編輯要顯示的分類名稱
-        </button>
+          {isSuccess && (
+            <button
+              className={`text-yellow-600 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              disabled={isSaving}
+              onClick={() => onRemoveAgree(keyword)}
+            >
+              🗑 撤銷分類
+            </button>
+          )}
+        </div>
 
-        <button
-          className={`text-red-500 hover:underline ${isSaving || isSuccess ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-          disabled={isSaving || isSuccess}
-          onClick={handleToggleSkip}
-        >
-          {skipped ? '🔁 撤銷忽略狀態' : '❌ 忽略這個關鍵詞'}
-        </button>
-
-        {isSuccess && (
+        {/* 下欄：主要操作（儲存／忽略） */}
+        <div className="flex gap-4 items-center flex-wrap">
           <button
-            className={`text-yellow-600 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
-              }`}
-            disabled={isSaving}
-            onClick={() => onRemoveAgree(keyword)}
+            className={`font-bold transition ${isSuccess
+                ? 'text-green-700'
+                : 'text-green-600 hover:underline'
+              } ${agreeButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+            title={shouldShowError ? '請先選擇主分類' : ''}
+            disabled={agreeButtonDisabled}
+            onClick={handleAgree}
           >
-            🗑 撤銷分類
+            {agreeButtonText}
           </button>
-        )}
+
+          {!skipped && !isSuccess && (
+            <button
+              className={`text-red-500 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+                }`}
+              disabled={isSaving}
+              onClick={handleToggleSkip}
+            >
+              ❌ 忽略關鍵詞
+            </button>
+          )}
+        </div>
       </div>
     </>
   );

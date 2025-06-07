@@ -206,10 +206,11 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
         }
 
         console.log(`✅ [setKeywordSkipped] API 成功 (${skipped ? 'add' : 'remove'})`, keyword);
+        toast.success(skipped ? `已略過「${keyword}」` : `已取消略過「${keyword}」`);
       } catch (err) {
         console.error('🔥 [setKeywordSkipped] 發送 API 失敗，還原狀態', err);
         set({ cards: prevCards });
-        alert('更新略過狀態失敗，請稍後再試');
+        toast.error(`更新略過狀態失敗：「${keyword}」，請稍後再試`);
       }
     },
 

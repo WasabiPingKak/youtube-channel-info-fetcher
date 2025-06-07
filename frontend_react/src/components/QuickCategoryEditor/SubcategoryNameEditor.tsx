@@ -54,7 +54,7 @@ const SubcategoryNameEditor: React.FC<Props> = ({
           <span className="text-sm text-gray-500 ml-2">
             （已自訂分類名稱為「
             <span className="text-blue-600 italic">{subcategoryName}</span>
-            」，原始關鍵字為「{keyword}」）
+            」，過濾關鍵字仍為「{keyword}」）
           </span>
         </div>
       ) : null}
