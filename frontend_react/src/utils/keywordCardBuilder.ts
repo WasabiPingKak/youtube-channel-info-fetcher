@@ -32,18 +32,24 @@ export function buildSuggestedKeywordCards(
     let subcategoryName = '';
     let mainCategories: string[] = [];
     let agreed = false;
+    let isSuccess = false;
+    let isSaving = false;
 
     if (configMap.has(keyword)) {
       const arr = configMap.get(keyword)!;
       subcategoryName = arr[0].subcategoryName;
       mainCategories = arr.map(x => x.mainCategory);
       agreed = true;
+      isSuccess = true;
+      isSaving = true;
     }
     // 🔧 fallback: 如果沒命中 configMap，預設使用 keyword 作為子分類名稱
     if (!subcategoryName) subcategoryName = keyword;
 
     const normalizedKeyword = normalize(keyword);
-    const matched = videos.filter((video) => normalize(video.title).includes(normalizedKeyword));
+    const matched = videos.filter((video) =>
+      normalize(video.title).includes(normalizedKeyword)
+    );
 
     return {
       keyword,
@@ -53,16 +59,16 @@ export function buildSuggestedKeywordCards(
       subcategoryName,
       mainCategories,
       matchedVideos: matched,
+      isSuccess,
+      isSaving,
     };
-  })
-    .sort((a, b) => {
-      if (b.matchedVideos.length !== a.matchedVideos.length) {
-        return b.matchedVideos.length - a.matchedVideos.length;
-      }
-      if (b.count !== a.count) {
-        return b.count - a.count;
-      }
-      return a.keyword.localeCompare(b.keyword);
-    });
+  }).sort((a, b) => {
+    if (b.matchedVideos.length !== a.matchedVideos.length) {
+      return b.matchedVideos.length - a.matchedVideos.length;
+    }
+    if (b.count !== a.count) {
+      return b.count - a.count;
+    }
+    return a.keyword.localeCompare(b.keyword);
+  });
 }
-

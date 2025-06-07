@@ -129,6 +129,8 @@ const QuickCategoryEditorPage = () => {
         keyword: c.keyword,
         agreed: c.agreed,
         skipped: c.skipped,
+        isSuccess: c.isSuccess,
+        isSaving: c.isSaving,
         count: c.matchedVideos.length,
       })));
 

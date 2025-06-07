@@ -43,7 +43,6 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       const initialized = newCards.map((card) => ({
         ...card,
         isSaving: false,
-        isSuccess: false,
       }));
       set({ cards: initialized });
     },
