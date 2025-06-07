@@ -125,6 +125,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
             channelId: state.channelId,
             keyword,
           }),
+          credentials: 'include',
         });
 
         if (!res.ok) {
@@ -197,6 +198,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ channelId, keyword }),
+          credentials: 'include',
         });
 
         if (!res.ok) {

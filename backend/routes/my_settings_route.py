@@ -1,28 +1,55 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 import logging
+from utils.jwt_util import verify_jwt
 
 logger = logging.getLogger(__name__)
 
 def init_my_settings_route(app):
     bp = Blueprint("my_settings", __name__, url_prefix="/api/my-settings")
 
+    def verify_auth():
+        token = request.cookies.get("__session")
+        if not token:
+            logger.warning("🔒 未提供 __session cookie")
+            return None, (jsonify({"error": "未登入或權限不足"}), 401)
+
+        decoded = verify_jwt(token)
+        if not decoded:
+            logger.warning("🔒 無效的 __session token")
+            return None, (jsonify({"error": "無效的 token"}), 403)
+
+        channel_id = decoded.get("channelId")
+        if not channel_id:
+            logger.warning("🔒 token 中缺少 channelId")
+            return None, (jsonify({"error": "無效的使用者身份"}), 403)
+
+        return channel_id, None
+
     @bp.route("/get", methods=["GET"])
     def get_my_settings():
+        user_channel_id, error = verify_auth()
+        if error:
+            return error
+
+        logger.info(f"✅ /my-settings/get 驗證成功，channel_id = {user_channel_id}")
+
         channel_id = request.args.get("channelId")
         if not channel_id:
             return jsonify({"error": "Missing channelId"}), 400
 
+        if channel_id != user_channel_id:
+            logger.warning(f"⛔ get_my_settings 嘗試讀取他人頻道設定：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+            return jsonify({"error": "無權限存取此頻道"}), 403
+
         db = firestore.client()
         try:
-            # 搜尋所有 batch 文件
             batch_docs = db.collection("channel_index_batch").stream()
 
             for doc in batch_docs:
                 batch = doc.to_dict()
                 for item in batch.get("channels", []):
                     if item.get("channel_id") == channel_id:
-                        # 🔄 回傳完整頻道卡片需要的欄位
                         return jsonify({
                             "enabled": item.get("enabled", False),
                             "countryCode": item.get("countryCode", []),
@@ -40,6 +67,12 @@ def init_my_settings_route(app):
 
     @bp.route("/update", methods=["POST"])
     def update_my_settings():
+        user_channel_id, error = verify_auth()
+        if error:
+            return error
+
+        logger.info(f"✅ /my-settings/update 驗證成功，channel_id = {user_channel_id}")
+
         try:
             data = request.get_json()
             channel_id = data.get("channelId")
@@ -48,6 +81,9 @@ def init_my_settings_route(app):
 
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
+            if channel_id != user_channel_id:
+                logger.warning(f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+                return jsonify({"error": "無權限修改此頻道資料"}), 403
 
             if isinstance(country_code, list):
                 country_code = country_code[:10]
@@ -56,17 +92,14 @@ def init_my_settings_route(app):
             target_doc_ref = None
             target_channels = []
 
-            # 🔍 找出該 channel 所在的 batch 文件
             batch_docs = db.collection("channel_index_batch").stream()
             for doc in batch_docs:
                 doc_data = doc.to_dict()
                 channels = doc_data.get("channels", [])
                 for i, item in enumerate(channels):
                     if item.get("channel_id") == channel_id:
-                        # ✅ 找到了，就記錄下來
                         target_doc_ref = doc.reference
                         target_channels = channels
-                        # 更新欄位
                         target_channels[i]["enabled"] = enabled
                         target_channels[i]["countryCode"] = country_code
                         break
@@ -76,12 +109,10 @@ def init_my_settings_route(app):
             if not target_doc_ref:
                 return jsonify({"error": "Channel not found"}), 404
 
-            # 📝 寫回更新後的陣列
             target_doc_ref.update({
                 "channels": target_channels
             })
 
-            # ✅ 新增：同步寫入 channel_index/{channelId}
             index_doc_ref = db.collection("channel_index").document(channel_id)
             index_doc_ref.set({
                 "countryCode": country_code,
@@ -93,6 +124,5 @@ def init_my_settings_route(app):
         except Exception as e:
             logger.exception("❌ update_my_settings 發生例外錯誤")
             return jsonify({"error": str(e)}), 500
-
 
     app.register_blueprint(bp)

@@ -23,7 +23,9 @@ export function useMySettings() {
   const fetchSettings = async (channelId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/my-settings/get?channelId=${channelId}`);
+      const res = await fetch(`/api/my-settings/get?channelId=${channelId}`, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error("Fetch failed");
       const data: MySettingsResponse = await res.json();
       setChannelInfo(data);
@@ -52,6 +54,7 @@ export function useMySettings() {
           enabled,
           countryCode: selectedCountries,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) throw new Error();
