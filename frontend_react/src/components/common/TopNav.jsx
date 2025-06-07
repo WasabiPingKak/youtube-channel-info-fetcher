@@ -25,7 +25,7 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
 
       <div className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
         <PiCompassRoseBold className="w-6 h-6" />
-        <span>VMap 頻道旅圖</span>
+        <span>VTMap 頻道旅圖 Vtuber TrailMap</span>
       </div>
     </header>
   );
