@@ -12,7 +12,6 @@ from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
 from routes.category_editor_routes import init_category_editor_routes
 from routes.video_routes import init_video_routes
-from routes.editor_data_v2_route import init_editor_data_v2_route
 from routes.video_update_route import init_video_update_route
 from routes.oauth_callback_route import init_oauth_callback_route
 from routes.init_channel_route import init_channel_route
@@ -51,7 +50,6 @@ init_base_routes(app)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app)
-init_editor_data_v2_route(app, db)
 init_video_routes(app, db)
 init_video_update_route(app, db)
 init_oauth_callback_route(app)
