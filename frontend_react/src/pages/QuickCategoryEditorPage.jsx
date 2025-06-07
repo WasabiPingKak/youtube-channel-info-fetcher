@@ -1,16 +1,23 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useClassifiedVideos } from '@/hooks/useClassifiedVideos';
 import { useFrequentKeywordSuggestions } from '@/hooks/useFrequentKeywordSuggestions';
 import { buildSuggestedKeywordCards } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryEditorStore } from '@/stores/useQuickCategoryEditorStore';
 import KeywordCardList from '@/components/QuickCategoryEditor/KeywordCardList';
 import MainLayout from '../components/layout/MainLayout';
-
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
+import { useMyChannelId } from '@/hooks/useMyChannelId';
+import { toast } from 'react-hot-toast';
 
 const QuickCategoryEditorPage = () => {
   const { channelId } = useParams();
+  const navigate = useNavigate();
+
+  // 權限驗證（登入與 channelId 檢查）
+  const { data: me, isLoading: meLoading } = useMyChannelId();
+
+  // hooks 不能包在 if 裡，需先呼叫
   const { videos, loading: loadingVideos } = useClassifiedVideos(channelId);
   const { suggestions } = useFrequentKeywordSuggestions(videos);
   const cards = useQuickCategoryEditorStore((s) => s.cards);
@@ -21,7 +28,23 @@ const QuickCategoryEditorPage = () => {
   const [loadingSkips, setLoadingSkips] = useState(true);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
-  // ✅ 載入略過關鍵字
+  // 權限檢查 (未登入/非本人一律導回首頁)
+  useEffect(() => {
+    if (!meLoading && me?.channelId === null) {
+      toast.error("請先登入以使用快速分類功能");
+      navigate("/");
+    }
+  }, [meLoading, me, navigate]);
+
+  useEffect(() => {
+    const myId = me?.channelId;
+    if (!meLoading && myId && channelId && myId !== channelId) {
+      toast.error("您沒有權限查看此頻道的分類資料");
+      navigate("/");
+    }
+  }, [meLoading, me, channelId, navigate]);
+
+  // Firestore 略過關鍵字
   useEffect(() => {
     const loadSkipKeywords = async () => {
       if (!channelId) return;
@@ -32,10 +55,7 @@ const QuickCategoryEditorPage = () => {
         if (docSnap.exists()) {
           const data = docSnap.data();
           const skips = data.skipped || [];
-          console.log('✅ [Firestore] 取得略過關鍵字:', skips);
           setSkipKeywords(skips);
-        } else {
-          console.log('ℹ️ [Firestore] 無略過關鍵字設定文件');
         }
       } catch (err) {
         console.error('🔥 無法載入 skip_keywords:', err);
@@ -46,7 +66,7 @@ const QuickCategoryEditorPage = () => {
     loadSkipKeywords();
   }, [channelId]);
 
-  // ✅ 載入分類 config
+  // Firestore 分類 config
   useEffect(() => {
     const loadConfig = async () => {
       if (!channelId) return;
@@ -56,16 +76,13 @@ const QuickCategoryEditorPage = () => {
         const docSnap = await getDoc(docRef);
         if (docSnap.exists()) {
           const data = docSnap.data();
-          // 修正：一個 keyword 對應多個主分類
+          // 一個 keyword 對應多個主分類
           const map = new Map();
-
           for (const mainCategory in data) {
             const subcategories = data[mainCategory] || {};
             for (const subcategoryName in subcategories) {
               const keywords = subcategories[subcategoryName] || [];
-
               if (keywords.length === 0) {
-                // 子分類名稱本身就是 keyword
                 if (!map.has(subcategoryName)) map.set(subcategoryName, []);
                 map.get(subcategoryName).push({ mainCategory, subcategoryName });
               } else {
@@ -87,7 +104,7 @@ const QuickCategoryEditorPage = () => {
     loadConfig();
   }, [channelId]);
 
-  // ✅ 初始化卡片（合併 keyword + skip + config）
+  // 初始化卡片（合併 keyword + skip + config）
   useEffect(() => {
     if (
       !loadingVideos &&
@@ -103,37 +120,16 @@ const QuickCategoryEditorPage = () => {
         ...configKeywords,
         ...skipKeywords,
       ]);
-
       const mergedKeywords = Array.from(keywordSet).map((keyword) => ({
         keyword,
         count: suggestions.find((s) => s.keyword === keyword)?.count || 0,
       }));
-
-      console.group('[🧠 卡片初始化 DEBUG]');
-      console.log('💢 suggestions:', suggestions);
-      console.log('🎯 suggestionKeywords:', suggestionKeywords);
-      console.log('📦 configMap keys:', configKeywords);
-      console.log('🚫 skipKeywords:', skipKeywords);
-      console.log('🧩 合併後 keywords:', mergedKeywords.map(k => k.keyword));
-      console.groupEnd();
-
       const initialCards = buildSuggestedKeywordCards(
         mergedKeywords,
         videos,
         skipKeywords,
         configMap
       );
-
-      console.log('[🔧 DEBUG] 初始化卡片數量:', initialCards.length);
-      console.log('[🧼 最終卡片]', initialCards.map(c => ({
-        keyword: c.keyword,
-        agreed: c.agreed,
-        skipped: c.skipped,
-        isSuccess: c.isSuccess,
-        isSaving: c.isSaving,
-        count: c.matchedVideos.length,
-      })));
-
       useQuickCategoryEditorStore.getState().setChannelId(channelId);
       useQuickCategoryEditorStore.getState().initializeCards(initialCards);
       hasInitializedRef.current = true;
@@ -146,7 +142,20 @@ const QuickCategoryEditorPage = () => {
     loadingVideos,
     loadingSkips,
     loadingConfig,
+    channelId,
   ]);
+
+  // hooks 一律呼叫，UI 才 return
+  if (me?.channelId === null) return null;
+  if (meLoading || !channelId) {
+    return (
+      <MainLayout>
+        <div className="p-6 max-w-xl mx-auto text-center text-gray-500">
+          讀取中...
+        </div>
+      </MainLayout>
+    );
+  }
 
   return (
     <MainLayout>
@@ -174,7 +183,6 @@ const QuickCategoryEditorPage = () => {
                 完整版編輯器
               </a>
               。
-
             </p>
             <KeywordCardList cards={cards} />
           </>

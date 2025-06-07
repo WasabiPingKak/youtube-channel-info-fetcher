@@ -11,10 +11,16 @@ def init_video_routes(app, db):
     def get_classified():
         try:
             data = request.get_json()
+            if data is None:
+                logger.warning("⚠️ 無法解析 JSON，可能缺少 Content-Type: application/json")
+
+            logger.info(f"📥 請求內容：{data}")
+
             channel_id = data.get("channel_id")
             only_settings = data.get("only_settings", False)
 
             if not channel_id:
+                logger.warning("⚠️ 缺少 channel_id")
                 return jsonify({"error": "channel_id 為必填"}), 400
 
             logger.info(f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）")

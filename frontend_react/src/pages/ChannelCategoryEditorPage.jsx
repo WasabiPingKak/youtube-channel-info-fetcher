@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { doc, setDoc } from 'firebase/firestore';
 import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
 import isEqual from 'lodash.isequal';
 
+import { useMyChannelId } from '@/hooks/useMyChannelId';
 import { useCategoryConfig } from '../hooks/useCategoryConfig';
 import { useEditableCategories } from '../hooks/useEditableCategories';
 import { useClassifiedVideos } from '../hooks/useClassifiedVideos';
@@ -17,7 +19,11 @@ import DiscardChangesDialog from '../components/ChannelCategoryEditor/DiscardCha
 const FIXED_TABS = ['雜談', '遊戲', '節目', '音樂'];
 
 const ChannelCategoryEditorPage = () => {
-  const { data: categoryData, isLoading, isError, refetch } = useCategoryConfig();
+  const navigate = useNavigate();
+
+  // 1. hooks 只能寫在最上層
+  const { data: me, isLoading: meLoading } = useMyChannelId();
+  const { data: categoryData, isLoading, isError, refetch } = useCategoryConfig(me?.channelId);
   const [activeTab, setActiveTab] = useState('雜談');
   const [pendingTab, setPendingTab] = useState(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -40,13 +46,21 @@ const ChannelCategoryEditorPage = () => {
     loading: videoLoading,
     error: videoError,
     refetch: refetchVideos,
-  } = useClassifiedVideos('UCLxa0YOtqi8IR5r2dSLXPng');
+  } = useClassifiedVideos(me?.channelId);
 
   const existingNames = Object.keys(editableData?.[activeTab] || {});
 
   const isCurrentTabDirty = () => {
     return !isEqual(editableData?.[activeTab], categoryData?.[activeTab]);
   };
+
+  // 2. early return，只負責顯示狀態，不影響 hooks 排序
+  useEffect(() => {
+    if (!meLoading && me?.channelId === null) {
+      toast.error("請先登入以編輯分類設定");
+      navigate("/");
+    }
+  }, [meLoading, me, navigate]);
 
   useEffect(() => {
     const handleBeforeUnload = (e) => {
@@ -59,6 +73,20 @@ const ChannelCategoryEditorPage = () => {
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
   }, [editableData, categoryData, activeTab]);
 
+  if (me?.channelId === null) return null;
+  if (meLoading || !me?.channelId) {
+    return (
+      <MainLayout>
+        <div className="p-6 max-w-xl mx-auto text-center text-gray-500">
+          讀取中...
+        </div>
+      </MainLayout>
+    );
+  }
+  if (isLoading) return <div>🔄 載入分類資料中...</div>;
+  if (isError || !categoryData) return <div>❌ 無法載入分類資料。</div>;
+
+  // 3. 正常 render
   const handleAddSubcategory = (newName) => {
     const updated = {
       ...editableData[activeTab],
@@ -89,18 +117,14 @@ const ChannelCategoryEditorPage = () => {
       const configRef = doc(
         db,
         'channel_data',
-        'UCLxa0YOtqi8IR5r2dSLXPng',
+        me.channelId,
         'settings',
         'config'
       );
-
       await setDoc(configRef, editableData);
-
       toast.success('✅ 已儲存分類設定，重新整理中...');
-
       const result = await refetch();
       await refetchVideos();
-
       if (result.data) {
         setEditableData(structuredClone(result.data));
       } else {
@@ -114,7 +138,6 @@ const ChannelCategoryEditorPage = () => {
 
   const onTabChange = (newTab) => {
     if (newTab === activeTab) return;
-
     if (isCurrentTabDirty()) {
       setPendingTab(newTab);
       setIsDialogOpen(true);
@@ -138,11 +161,7 @@ const ChannelCategoryEditorPage = () => {
     setIsDialogOpen(false);
   };
 
-  if (isLoading) return <div>🔄 載入分類資料中...</div>;
-  if (isError || !categoryData) return <div>❌ 無法載入分類資料。</div>;
-
   return (
-
     <MainLayout>
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-xl font-bold mb-4">自訂頻道分類</h1>
@@ -154,7 +173,6 @@ const ChannelCategoryEditorPage = () => {
         {isCurrentTabDirty() && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm px-4 py-2 rounded mb-4">
             ⚠ 尚未儲存變更，離開此頁或切換分頁前請記得儲存。
-            {/* 💾 儲存設定 */}
             <div className="flex justify-start">
               <button
                 className="bg-green-600 text-white px-6 py-2 rounded shadow"
@@ -196,7 +214,6 @@ const ChannelCategoryEditorPage = () => {
           {isCurrentTabDirty() && (
             <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm px-4 py-2 rounded mb-4">
               ⚠ 尚未儲存變更，離開此頁或切換分頁前請記得儲存。
-              {/* 💾 儲存設定 */}
               <div className="flex justify-start">
                 <button
                   className="bg-green-600 text-white px-6 py-2 rounded shadow"
