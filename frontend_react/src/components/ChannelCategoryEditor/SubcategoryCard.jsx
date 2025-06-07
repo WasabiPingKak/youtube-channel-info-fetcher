@@ -1,6 +1,26 @@
 import React, { useMemo, useState } from 'react';
 import MatchedVideosPreview from './MatchedVideosPreview';
 
+const highlightMatchedText = (text, keywords) => {
+  if (!keywords.length) return text;
+
+  const escaped = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
+  const regex = new RegExp(`(${escaped.join('|')})`, 'gi');
+  const parts = text.split(regex);
+
+  return (
+    <>
+      {parts.map((part, i) =>
+        keywords.some(k => k.toLowerCase() === part.toLowerCase()) ? (
+          <mark key={i} className="bg-yellow-200">{part}</mark>
+        ) : (
+          <span key={i}>{part}</span>
+        )
+      )}
+    </>
+  );
+};
+
 const SubcategoryCard = ({
   name,
   keywords,
@@ -11,6 +31,7 @@ const SubcategoryCard = ({
 }) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const handleAddKeyword = () => {
     const trimmed = newKeyword.trim();
@@ -30,26 +51,33 @@ const SubcategoryCard = ({
     }
   };
 
-  const matchedCount = useMemo(() => {
-    const matched = new Set();
+  const { matchedVideos, count } = useMemo(() => {
+    const result = [];
+    const baseKeywords = [name, ...keywords].map(k => k.toLowerCase());
 
     for (const video of videos) {
       const title = video.title.toLowerCase();
-      const base = [name, ...keywords];
-      if (base.some((text) => title.includes(text.toLowerCase()))) {
-        matched.add(video.videoId);
+      if (baseKeywords.some(k => title.includes(k))) {
+        result.push(video);
       }
     }
 
-    return matched.size;
+    return { matchedVideos: result, count: result.length };
   }, [name, keywords, videos]);
 
   return (
     <div className="border rounded p-4 mb-4 bg-white shadow-sm">
-      {/* 標題 + 命中數 + 編輯/刪除 */}
+      {/* 標題 + 命中數 + 展開 + 編輯/刪除 */}
       <div className="flex justify-between items-center mb-2">
-        <div className="text-base font-semibold">
-          {name} <span className="text-sm text-gray-500">({matchedCount})</span>
+        <div className="text-base font-semibold flex items-center gap-2">
+          {name}
+          <span className="text-sm text-gray-500">({count})</span>
+          <button
+            className="text-sm text-blue-600 hover:underline"
+            onClick={() => setIsExpanded(prev => !prev)}
+          >
+            {isExpanded ? '收合影片' : '顯示影片'}
+          </button>
         </div>
         <div className="flex gap-2">
           <button
@@ -66,6 +94,16 @@ const SubcategoryCard = ({
           </button>
         </div>
       </div>
+
+      {isExpanded && (
+        <div className="border rounded mb-3 p-2 bg-gray-50 max-h-60 overflow-y-auto text-sm divide-y">
+          {matchedVideos.map((video) => (
+            <div key={video.videoId} className="py-2">
+              {highlightMatchedText(video.title, [name, ...keywords])}
+            </div>
+          ))}
+        </div>
+      )}
 
       {confirmingDelete && (
         <div className="mt-2 bg-red-50 border border-red-300 text-sm text-red-800 p-3 rounded">

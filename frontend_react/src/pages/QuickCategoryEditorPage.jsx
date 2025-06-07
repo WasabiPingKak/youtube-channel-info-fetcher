@@ -158,8 +158,9 @@ const QuickCategoryEditorPage = () => {
             <h1 className="text-2xl font-bold mb-4">快速分類</h1>
             <p className="text-sm text-gray-700 leading-relaxed mb-6">
               系統會從所有影片標題中自動擷取重複出現的關鍵字，只要出現次數達兩次以上就會列出，並顯示命中的影片清單。<br />
-              一個關鍵字可以被分類到不同主題中，比如「歌雜」可以同時屬於雜談與音樂<br />
               已經透過系統預設分類完畢的影片不會顯示在這裡，方便你集中處理還沒分類的部分。<br />
+              <span className="ml-4 block">• 一個關鍵字可以被分類到不同主題中，比如「歌雜」可以同時屬於雜談與音樂</span>
+              <span className="ml-4 block">• 編輯名稱可以讓它在圖表中用你指定的詞顯示，比如把「ft」透過編輯改成「連動」，圖表就會把用「ft」篩選出來的影片標記為「連動」</span>
               若還需要手動微調分類影片清單，請改用
               <a
                 href="/my-category-editor"

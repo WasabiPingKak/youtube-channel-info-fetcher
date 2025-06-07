@@ -147,11 +147,22 @@ const ChannelCategoryEditorPage = () => {
       <div className="p-4 max-w-4xl mx-auto">
         <h1 className="text-xl font-bold mb-4">自訂頻道分類</h1>
         <p className="text-sm text-gray-600 mb-4">
-          本頁面所做的分類設定只會套用在你自己的頻道中，其他人無法共用你的設定。
+          自訂分類功能提供完全的客製關鍵字過濾功能，本站的分類邏輯僅依靠關鍵字比對標題。<br />
+          本頁面所做的分類設定只會套用在你自己的頻道中，其他人無法共用你的設定。<br />
+          遊戲的標題如果你用的是官方正式名稱，推薦從左側填表加入全系統分類，讓其他人共用遊戲名稱的設定。<br />
         </p>
         {isCurrentTabDirty() && (
           <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm px-4 py-2 rounded mb-4">
             ⚠ 尚未儲存變更，離開此頁或切換分頁前請記得儲存。
+            {/* 💾 儲存設定 */}
+            <div className="flex justify-start">
+              <button
+                className="bg-green-600 text-white px-6 py-2 rounded shadow"
+                onClick={handleSave}
+              >
+                💾 儲存設定
+              </button>
+            </div>
           </div>
         )}
 
@@ -180,23 +191,27 @@ const ChannelCategoryEditorPage = () => {
           }}
         />
 
-        {/* ➕ 新增子分類 */}
-        <div className="flex justify-end mb-8">
+        {/* 💾 儲存設定 ＋ ➕ 新增子分類（同一行） */}
+        <div className="flex justify-between items-center mb-8">
+          {isCurrentTabDirty() && (
+            <div className="bg-yellow-100 border border-yellow-400 text-yellow-800 text-sm px-4 py-2 rounded mb-4">
+              ⚠ 尚未儲存變更，離開此頁或切換分頁前請記得儲存。
+              {/* 💾 儲存設定 */}
+              <div className="flex justify-start">
+                <button
+                  className="bg-green-600 text-white px-6 py-2 rounded shadow"
+                  onClick={handleSave}
+                >
+                  💾 儲存設定
+                </button>
+              </div>
+            </div>
+          )}
           <button
             className="bg-blue-600 text-white px-4 py-2 rounded"
             onClick={() => setIsAddModalOpen(true)}
           >
             ➕ 新增子分類
-          </button>
-        </div>
-
-        {/* 💾 儲存設定 */}
-        <div className="flex justify-end">
-          <button
-            className="bg-green-600 text-white px-6 py-2 rounded shadow"
-            onClick={handleSave}
-          >
-            💾 儲存設定
           </button>
         </div>
 
