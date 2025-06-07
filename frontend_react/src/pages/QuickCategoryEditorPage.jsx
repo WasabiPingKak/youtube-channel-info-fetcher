@@ -160,7 +160,12 @@ const QuickCategoryEditorPage = () => {
               系統會從所有影片標題中自動擷取重複出現的關鍵字，只要出現次數達兩次以上就會列出，並顯示命中的影片清單。<br />
               已經透過系統預設分類完畢的影片不會顯示在這裡，方便你集中處理還沒分類的部分。<br />
               <span className="ml-4 block">• 一個關鍵字可以被分類到不同主題中，比如「歌雜」可以同時屬於雜談與音樂</span>
-              <span className="ml-4 block">• 編輯名稱可以讓它在圖表中用你指定的詞顯示，比如把「ft」透過編輯改成「連動」，圖表就會把用「ft」篩選出來的影片標記為「連動」</span>
+              <span className="ml-4 block">• 你可以編輯名稱讓圖表顯示你自訂的標籤。
+                <span className="ml-8 block text-gray-600">
+                  - 例如，將「ft」編輯為「連動」，那麼圖表中經由「ft」篩選出來的影片就會以「連動」的標籤呈現。
+                </span>
+              </span>
+              <span className="ml-4 block">• 如果你填的是遊戲的正式名稱，推薦直接從左側填表加入全系統分類，讓其他人也能共用這個遊戲名稱的設定。</span>
               若還需要手動微調分類影片清單，請改用
               <a
                 href="/my-category-editor"
@@ -169,6 +174,7 @@ const QuickCategoryEditorPage = () => {
                 完整版編輯器
               </a>
               。
+
             </p>
             <KeywordCardList cards={cards} />
           </>
