@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-07",
+    items: [
+      "新增自訂影片分類工具",
+    ],
+  },
+  {
     date: "2025-05-31",
     items: [
       "優化頻道頁面載入邏輯 UX",
