@@ -97,21 +97,19 @@ const CategoryChartSection = ({
           <div className="inline-flex rounded border p-1 bg-gray-100 text-sm font-medium">
             <button
               onClick={() => setShowAllKeywords(false)}
-              className={`px-3 py-1 rounded transition ${
-                !showAllKeywords
+              className={`px-3 py-1 rounded transition ${!showAllKeywords
                   ? "bg-blue-500 text-white shadow"
                   : "text-gray-700 hover:bg-white"
-              }`}
+                }`}
             >
               主分類
             </button>
             <button
               onClick={() => setShowAllKeywords(true)}
-              className={`px-3 py-1 rounded transition ${
-                showAllKeywords
+              className={`px-3 py-1 rounded transition ${showAllKeywords
                   ? "bg-blue-500 text-white shadow"
                   : "text-gray-700 hover:bg-white"
-              }`}
+                }`}
             >
               顯示所有交叉命中關鍵字
             </button>

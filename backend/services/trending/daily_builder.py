@@ -7,7 +7,7 @@ from .firestore_path_tools import document_exists, write_document
 from .channel_status_loader import get_active_channels
 from .firestore_date_utils import parse_firestore_date
 
-from utils.settings_preparer import merge_game_category_aliases
+from utils.settings_game_merger import merge_game_categories_with_aliases
 from utils.categorizer import match_category_and_game
 
 logger = logging.getLogger(__name__)
@@ -45,7 +45,7 @@ def build_trending_for_date_range(
                 .get()
             )
             raw_settings = config_doc.to_dict() if config_doc.exists else {}
-            merged_settings = merge_game_category_aliases(raw_settings)
+            merged_settings = merge_game_categories_with_aliases(raw_settings)
             channel_settings_map[channel_id] = merged_settings
 
             # 載入並快取所有影片（合併所有 batch）

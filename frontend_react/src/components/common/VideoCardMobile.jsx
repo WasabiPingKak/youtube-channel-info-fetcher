@@ -22,10 +22,10 @@ const VideoCardMobile = ({ video, durationUnit }) => {
   const badges =
     matchedPairs.length > 0
       ? matchedPairs.map((pair) => ({
-          main: pair.main,
-          keyword: pair.keyword,
-          tooltip: pair.main === "遊戲" ? matchedKeywords.join(", ") : undefined,
-        }))
+        main: pair.main,
+        keyword: pair.keyword,
+        tooltip: pair.main === "遊戲" ? matchedKeywords.join(", ") : undefined,
+      }))
       : [{ main: "未分類" }];
 
   return (

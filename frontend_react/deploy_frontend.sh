@@ -33,8 +33,8 @@ cp index.html index.html.bak
 
 # --- 若為 staging，修改 index.html 的 <title> ---
 if [ "$MODE" == "staging" ]; then
-  echo "🧩 替換 <title> 為『VMap 頻道旅圖 staging』"
-  sed -i'' -E 's|<title>VMap 頻道旅圖</title>|<title>VMap 頻道旅圖 staging</title>|' index.html
+  echo "🧩 替換 <title> 為『VTMap 頻道旅圖 staging』"
+  sed -i'' -E 's|<title>VTMap 頻道旅圖</title>|<title>VTMap 頻道旅圖 staging</title>|' index.html
 fi
 
 # --- 插入 Git Hash 註解於 </head> 前 ---

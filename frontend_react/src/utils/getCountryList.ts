@@ -5,15 +5,15 @@ countries.registerLocale(enLocale);
 
 export const getCountryList = () => {
 
-    const en = countries.getNames("en", { select: "official" });
+  const en = countries.getNames("en", { select: "official" });
 
-    return Object.entries(en).map(([code, name]) => {
+  return Object.entries(en).map(([code, name]) => {
 
-        if (code === "TW") name = "Taiwan";
+    if (code === "TW") name = "Taiwan";
 
-        return {
-            code,
-            name,
-        };
-    });
+    return {
+      code,
+      name,
+    };
+  });
 };

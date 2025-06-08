@@ -19,6 +19,8 @@ import GameAliasPage from "./pages/GameAliasPage";
 import CategoryAliasPage from "./pages/CategoryAliasPage";
 import ChangelogPage from "./pages/ChangelogPage";
 import MySettingsPage from "./pages/MySettingsPage";
+import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
+import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
@@ -51,19 +53,6 @@ if (import.meta.env.DEV) {
   window.queryClient = queryClient;
 }
 
-/* --- 動態載入：舊版 CategoryEditor（/settings） --- */
-let CategoryEditor = null;
-if (enableSettings) {
-  CategoryEditor = React.lazy(() =>
-    import("./components/CategoryEditor/CategoryEditor")
-  );
-}
-
-/* --- 動態載入：新版 CategoryEditorV2（/editor/:channelId） --- */
-const CategoryEditorV2 = React.lazy(() =>
-  import("./components/CategoryEditorV2/components/EditorLayout")
-);
-
 /* ✅ 自訂 Hook：每次頁面切換時上報 GA page_view */
 function usePageTracking() {
   const location = useLocation();
@@ -91,15 +80,8 @@ function AppRoutes() {
         <Route path="/category-aliases" element={<CategoryAliasPage />} />
         <Route path="/changelog" element={<ChangelogPage />} />
         <Route path="/my-settings" element={<MySettingsPage />} />
-
-        {/* 新版分類編輯器 */}
-        <Route path="/editor/:channelId" element={<CategoryEditorV2 />} />
-
-        {/* 舊版管理頁（僅在開啟時加入） */}
-        {enableSettings && CategoryEditor && (
-          <Route path="/settings" element={<CategoryEditor />} />
-        )}
-
+        <Route path="/my-category-editor" element={<ChannelCategoryEditorPage />} />
+        <Route path="/quick-category-editor/:channelId" element={<QuickCategoryEditorPage />} />
         <Route path="/auth-loading" element={<AuthLoadingPage />} />
 
         {/* 其他路徑 → redirect 提示 */}

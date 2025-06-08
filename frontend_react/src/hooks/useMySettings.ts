@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 interface MySettingsResponse {
   enabled: boolean;
@@ -23,7 +24,9 @@ export function useMySettings() {
   const fetchSettings = async (channelId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/my-settings/get?channelId=${channelId}`);
+      const res = await fetch(`/api/my-settings/get?channelId=${channelId}`, {
+        credentials: 'include',
+      });
       if (!res.ok) throw new Error("Fetch failed");
       const data: MySettingsResponse = await res.json();
       setChannelInfo(data);
@@ -52,10 +55,11 @@ export function useMySettings() {
           enabled,
           countryCode: selectedCountries,
         }),
+        credentials: 'include',
       });
 
       if (!res.ok) throw new Error();
-      toast.success("✅ 設定已儲存");
+      showSuccessToast("設定已儲存");
 
       // ✅ 同步刷新 /api/my-settings/get 設定資料
       if (user?.channelId) {
@@ -63,7 +67,7 @@ export function useMySettings() {
         queryClient.invalidateQueries({ queryKey: ["channel-info", user.channelId] });
       }
     } catch {
-      toast.error("❌ 儲存失敗");
+      showFailureToast("❌ 儲存失敗");
     }
   };
 

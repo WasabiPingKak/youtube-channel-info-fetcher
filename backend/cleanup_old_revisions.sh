@@ -1,7 +1,17 @@
 #!/bin/bash
 
-# ⚙️ 參數設定
-SERVICE_NAME="youtube-api-service"
+# ✅ 解析參數
+if [ "$1" == "--staging" ]; then
+  SERVICE_NAME="youtube-api-staging-service"
+  echo "🟡 清理 Staging 環境的舊 revision"
+elif [ "$1" == "--prod" ]; then
+  SERVICE_NAME="youtube-api-service"
+  echo "🔵 清理 Production 環境的舊 revision"
+else
+  echo "❌ 請指定部署目標：--staging 或 --prod"
+  exit 1
+fi
+
 REGION="asia-east1"
 RESERVE_COUNT=10
 

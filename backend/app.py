@@ -12,7 +12,6 @@ from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
 from routes.category_editor_routes import init_category_editor_routes
 from routes.video_routes import init_video_routes
-from routes.editor_data_v2_route import init_editor_data_v2_route
 from routes.video_update_route import init_video_update_route
 from routes.oauth_callback_route import init_oauth_callback_route
 from routes.init_channel_route import init_channel_route
@@ -22,6 +21,9 @@ from routes.public_trending_route import init_public_trending_route
 from routes.me_route import init_me_route
 from routes.logout_route import init_logout_route
 from routes.my_settings_route import init_my_settings_route
+from routes.skip_keyword_routes import init_skip_keyword_routes
+from routes.quick_category_apply_route import init_quick_category_apply_route
+from routes.quick_category_remove_route import init_quick_category_remove_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -48,7 +50,6 @@ init_base_routes(app)
 init_firestore_settings_routes(app)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app)
-init_editor_data_v2_route(app, db)
 init_video_routes(app, db)
 init_video_update_route(app, db)
 init_oauth_callback_route(app)
@@ -59,6 +60,9 @@ init_public_trending_route(app, db)
 init_me_route(app)
 init_logout_route(app)
 init_my_settings_route(app)
+init_skip_keyword_routes(app, db)
+init_quick_category_apply_route(app, db)
+init_quick_category_remove_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

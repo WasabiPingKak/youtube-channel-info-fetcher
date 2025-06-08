@@ -1,6 +1,7 @@
 import React, { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
+import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { useChannelIndex } from "@/hooks/useChannelIndex";
@@ -26,7 +27,7 @@ const VideoExplorerPage = () => {
       const allowAccess = isPublic || isOwner;
 
       if (!allowAccess) {
-        toast.error("您沒有權限查看這個頻道頁面");
+        showPermissionDeniedToast("您沒有權限查看這個頻道頁面");
         navigate("/");
       }
     }
