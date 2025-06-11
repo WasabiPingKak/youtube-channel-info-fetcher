@@ -6,6 +6,7 @@ const changelog = [
     date: "2025-06-12",
     items: [
       "預設頻道清單以最近更新時間排序",
+      "使用正式網域：vtubertrailmap.com",
     ],
   },
   {
