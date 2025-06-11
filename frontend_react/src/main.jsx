@@ -105,15 +105,22 @@ function AppRoutes() {
 
 ReactDOM.createRoot(document.getElementById("root")).render(
   <React.StrictMode>
-    <QueryClientProvider client={queryClient}>
-      <BrowserRouter>
-        <AppRoutes />
-      </BrowserRouter>
-
-      <Toaster position="top-center" />
-
-      {/* React Query Devtools（僅在開發環境顯示） */}
-      {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
-    </QueryClientProvider>
+    {(() => {
+      const currentHost = window.location.hostname;
+      if (currentHost === "vtuber-channel-analyzer-v3.web.app") {
+        window.location.href =
+          "https://www.vtubertrailmap.com" + window.location.pathname + window.location.search;
+        return null;
+      }
+      return (
+        <QueryClientProvider client={queryClient}>
+          <BrowserRouter>
+            <AppRoutes />
+          </BrowserRouter>
+          <Toaster position="top-center" />
+          {import.meta.env.DEV && <ReactQueryDevtools initialIsOpen={false} />}
+        </QueryClientProvider>
+      );
+    })()}
   </React.StrictMode>
 );
