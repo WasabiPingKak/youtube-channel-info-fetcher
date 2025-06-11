@@ -12,12 +12,16 @@ export type ChannelIndexEntry = {
   enabled?: boolean;
   joinedAt?: string;
   countryCode?: string[];
+  lastVideoUploadedAt?: string;
 };
 
 const normalize = (text: string) =>
   text.toLowerCase().replace(/\s/g, '').replace(/　/g, ''); // 全形空白也移除
 
-export function useSelectableChannelList(searchText: string = '') {
+export function useSelectableChannelList(
+  searchText: string = '',
+  sortMode: 'latest' | 'alphabetical' = 'latest'
+) {
   const {
     data: allChannelsData,
     isLoading,
@@ -38,32 +42,38 @@ export function useSelectableChannelList(searchText: string = '') {
         newly_joined_channels: result.newly_joined_channels || [],
       };
     },
-    gcTime: 1000 * 60 * 3, // 快取 3 分鐘
+    // gcTime: 1000 * 60 * 3, // 快取 3 分鐘
   });
 
   const allChannels = allChannelsData?.channels || [];
   const newlyJoinedChannels = searchText === "" ? (allChannelsData?.newly_joined_channels || []) : [];
 
   const filtered = useMemo(() => {
-    if (!searchText) {
-      return allChannels
-        .slice()
-        .sort((a, b) =>
-          a.priority !== b.priority
-            ? a.priority - b.priority
-            : a.name.localeCompare(b.name, 'zh-Hant')
-        );
-    }
-
     const norm = normalize(searchText);
-    return allChannels
-      .filter((c) => normalize(c.name).includes(norm))
-      .sort((a, b) =>
-        a.priority !== b.priority
-          ? a.priority - b.priority
-          : a.name.localeCompare(b.name, 'zh-Hant')
-      );
-  }, [searchText, allChannels]);
+
+    const matched = !searchText
+      ? allChannels
+      : allChannels.filter((c) => normalize(c.name).includes(norm));
+
+    return matched.slice().sort((a, b) => {
+      const aPriority = a.priority ?? 0;
+      const bPriority = b.priority ?? 0;
+
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+
+      if (sortMode === 'alphabetical') {
+        return a.name.localeCompare(b.name, 'zh-Hant');
+      }
+
+      // sortMode === 'latest'
+      const aTime = a.lastVideoUploadedAt ? new Date(a.lastVideoUploadedAt).getTime() : 0;
+      const bTime = b.lastVideoUploadedAt ? new Date(b.lastVideoUploadedAt).getTime() : 0;
+
+      return bTime - aTime; // 新→舊
+    });
+  }, [searchText, sortMode, allChannels]);
 
   return {
     isLoading,

@@ -1,5 +1,6 @@
 import React from "react";
 import { FaEyeSlash } from "react-icons/fa6";
+import { formatRelativeTime } from "../../utils/formatRelativeTime";
 
 const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
@@ -50,6 +51,13 @@ const ChannelSelectorCard = ({ channel, onClick }) => {
                 title={code}
               />
             ))}
+          </div>
+        )}
+
+        {/* ✅ 最近上片資訊 */}
+        {channel.lastVideoUploadedAt && (
+          <div className="text-xs text-gray-500 mt-1">
+            最近上片：{formatRelativeTime(channel.lastVideoUploadedAt)}
           </div>
         )}
       </div>

@@ -14,8 +14,24 @@ def init_channel_index_route(app, db):
         """
         從所有 batch 檔中抓出 enabled: true 的頻道清單，
         並附帶最近三天內加入的頻道清單 newly_joined_channels。
+        同時附上各頻道最後上片時間 lastVideoUploadedAt。
         """
         try:
+            # 🔹 讀取同步資料（channel_id → lastVideoSyncAt）
+            sync_ref = db.collection("channel_sync_index").document("index_list")
+            sync_doc = sync_ref.get()
+            sync_map = {}
+
+            if sync_doc.exists:
+                sync_list = sync_doc.to_dict().get("channels", [])
+                for item in sync_list:
+                    cid = item.get("channel_id")
+                    sync_time = item.get("lastVideoSyncAt")
+                    if cid and sync_time:
+                        sync_map[cid] = sync_time
+
+
+            # 🔹 讀取所有 batch
             root_ref = db.collection("channel_index_batch")
             docs = root_ref.stream()
 
@@ -29,6 +45,7 @@ def init_channel_index_route(app, db):
                     if entry.get("enabled") is not True:
                         continue
 
+                    channel_id = entry.get("channel_id")
                     joined_at = entry.get("joinedAt")
                     parsed_date = None
 
@@ -44,14 +61,15 @@ def init_channel_index_route(app, db):
                         joined_at_dates.append(parsed_date)
 
                     all_channels.append({
-                        "channel_id": entry.get("channel_id"),
+                        "channel_id": channel_id,
                         "name": entry.get("name"),
                         "url": entry.get("url"),
                         "thumbnail": entry.get("thumbnail"),
                         "priority": entry.get("priority", 0),
-                        "joinedAt": joined_at,  # 保留原始值（可能是字串或 timestamp）
+                        "joinedAt": joined_at,
                         "countryCode": entry.get("countryCode", []),
                         "enabled": entry.get("enabled", True),
+                        "lastVideoUploadedAt": sync_map.get(channel_id),
                     })
 
             # 排序所有資料
