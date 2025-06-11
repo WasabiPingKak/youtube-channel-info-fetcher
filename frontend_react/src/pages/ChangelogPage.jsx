@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-12",
+    items: [
+      "預設頻道清單以最近更新時間排序",
+    ],
+  },
+  {
     date: "2025-06-07",
     items: [
       "新增自訂影片分類工具",
