@@ -5,13 +5,13 @@ import MainLayout from "../components/layout/MainLayout";
 import { addRecentChannel } from "../utils/recentChannels";
 import {
   ChannelSelectorCard,
-  RecentChannelsSection,
   NewlyJoinedChannelsSection,
 } from "../components/channels";
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
   const [sortMode, setSortMode] = useState("latest");
+  const [activeTimePeriod, setActiveTimePeriod] = useState("midnight"); // 子分類預設凌晨
 
   const navigate = useNavigate();
 
@@ -20,7 +20,7 @@ const ChannelSelectorPage = () => {
     channels,
     newlyJoinedChannels,
     error,
-  } = useSelectableChannelList(searchText, sortMode);
+  } = useSelectableChannelList(searchText, sortMode, activeTimePeriod);
 
   const handleClick = (channelId) => {
     addRecentChannel(channelId);
@@ -72,26 +72,60 @@ const ChannelSelectorPage = () => {
         )}
 
         {/* 排序 Tabs */}
-        <div className="flex gap-2 mb-6 text-sm font-medium">
-          <button
-            className={`px-3 py-1 rounded-lg border ${sortMode === "latest"
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
-              }`}
-            onClick={() => setSortMode("latest")}
-          >
-            最後上片
-          </button>
-          <button
-            className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
-              }`}
-            onClick={() => setSortMode("alphabetical")}
-          >
-            字典排序
-          </button>
-        </div>
+        {!isLoading && (
+          <div className="flex gap-2 mb-4 text-sm font-medium">
+            <button
+              className={`px-3 py-1 rounded-lg border ${sortMode === "latest"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-600 border-gray-300"
+                }`}
+              onClick={() => setSortMode("latest")}
+            >
+              最新上片
+            </button>
+            <button
+              className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-600 border-gray-300"
+                }`}
+              onClick={() => setSortMode("alphabetical")}
+            >
+              字典排序
+            </button>
+            <button
+              className={`px-3 py-1 rounded-lg border ${sortMode === "activeTime"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white text-gray-600 border-gray-300"
+                }`}
+              onClick={() => setSortMode("activeTime")}
+            >
+              活動時間
+            </button>
+          </div>
+        )}
+
+        {/* 子分類：活動時段 */}
+        {!isLoading && sortMode === "activeTime" && (
+          <div className="flex gap-2 mb-6 text-xs">
+            {[
+              { label: "凌晨", value: "midnight" },
+              { label: "早上", value: "morning" },
+              { label: "下午", value: "afternoon" },
+              { label: "晚上", value: "evening" },
+            ].map(({ label, value }) => (
+              <button
+                key={value}
+                className={`px-3 py-1 rounded-full border ${activeTimePeriod === value
+                  ? "bg-purple-600 text-white border-purple-600"
+                  : "bg-white text-gray-600 border-gray-300"
+                  }`}
+                onClick={() => setActiveTimePeriod(value)}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* ✅ 結果清單 */}
         {!isLoading && channels.length > 0 && (
@@ -100,7 +134,14 @@ const ChannelSelectorPage = () => {
             <p className="text-xs text-gray-400 mb-3">
               {sortMode === "alphabetical"
                 ? "按照頻道名稱字典順序排列"
-                : "按照最近上片時間排列"}
+                : sortMode === "activeTime"
+                  ? `依照「${{
+                    midnight: "凌晨",
+                    morning: "早上",
+                    afternoon: "下午",
+                    evening: "晚上"
+                  }[activeTimePeriod]}」的活躍度排列`
+                  : "按照最近上片時間排列"}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
               {channels.map((channel) => (

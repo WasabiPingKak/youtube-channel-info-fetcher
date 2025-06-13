@@ -35,7 +35,6 @@ const ContentTreemapSection = ({ videos }) => {
   return (
     <div className="py-4">
       <div className="p4">
-        <h2 className="text-lg font-semibold">頻道熱力圖</h2>
         {selectedCategory && (
           <button
             onClick={() => setSelectedCategory(null)}

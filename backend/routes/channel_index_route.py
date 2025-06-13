@@ -70,6 +70,7 @@ def init_channel_index_route(app, db):
                         "countryCode": entry.get("countryCode", []),
                         "enabled": entry.get("enabled", True),
                         "lastVideoUploadedAt": sync_map.get(channel_id),
+                        "active_time_all": entry.get("active_time_all"),
                     })
 
             # 排序所有資料

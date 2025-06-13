@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-13",
+    items: [
+      "新增頻道活躍時段熱力圖",
+    ],
+  },
+  {
     date: "2025-06-12",
     items: [
       "預設頻道清單以最近更新時間排序",

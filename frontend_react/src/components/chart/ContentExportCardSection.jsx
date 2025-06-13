@@ -4,18 +4,42 @@ import ChannelInfoCard from "../common/ChannelInfoCard";
 import ContentTreemapSection from "./ContentTreemapSection";
 import StyledExportCard from "./StyledExportCard";
 import ExportPreviewModal from "./ExportPreviewModal";
+import VideoUploadHeatmap from "./VideoUploadHeatmap";
 
 const ContentExportCardSection = ({ videos }) => {
   const exportRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
+  const [activeTab, setActiveTab] = useState("treemap");
+
   return (
     <div className="px-4 py-4 relative">
 
-      {/* 畫面展示用卡片（不含設計樣式） */}
+      {/* 頻道基本資訊 */}
       <ChannelInfoCard />
-      <ContentTreemapSection videos={videos} />
 
-      {/* 匯出時使用的離螢幕卡片樣式 */}
+      {/* Tab 選單 */}
+      <div className="flex gap-2 mt-2 mb-2 text-sm font-medium">
+        <button
+          onClick={() => setActiveTab("treemap")}
+          className={`px-3 py-1 rounded ${activeTab === "treemap" ? "bg-gray-200 text-black" : "text-gray-500"
+            }`}
+        >
+          頻道熱力圖
+        </button>
+        <button
+          onClick={() => setActiveTab("heatmap")}
+          className={`px-3 py-1 rounded ${activeTab === "heatmap" ? "bg-gray-200 text-black" : "text-gray-500"
+            }`}
+        >
+          活躍時段
+        </button>
+      </div>
+
+      {/* 顯示內容區塊 */}
+      {activeTab === "treemap" && <ContentTreemapSection videos={videos} />}
+      {activeTab === "heatmap" && <VideoUploadHeatmap videos={videos} />}
+
+      {/* 匯出卡片（固定 offscreen） */}
       <div
         ref={exportRef}
         className="fixed left-[-9999px] top-0 w-[1200px]"

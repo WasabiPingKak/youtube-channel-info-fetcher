@@ -13,14 +13,32 @@ export type ChannelIndexEntry = {
   joinedAt?: string;
   countryCode?: string[];
   lastVideoUploadedAt?: string;
+  active_time_all?: {
+    凌: number;
+    早: number;
+    午: number;
+    晚: number;
+    totalCount: number;
+    updatedAt?: string;
+  };
 };
 
 const normalize = (text: string) =>
   text.toLowerCase().replace(/\s/g, '').replace(/　/g, ''); // 全形空白也移除
 
+const ACTIVE_TIME_FIELD_MAP = {
+  midnight: '凌',
+  morning: '早',
+  afternoon: '午',
+  evening: '晚',
+} as const;
+
+export type ActiveTimePeriod = keyof typeof ACTIVE_TIME_FIELD_MAP;
+
 export function useSelectableChannelList(
   searchText: string = '',
-  sortMode: 'latest' | 'alphabetical' = 'latest'
+  sortMode: 'latest' | 'alphabetical' | 'activeTime' = 'latest',
+  activeTimePeriod: ActiveTimePeriod = 'midnight'
 ) {
   const {
     data: allChannelsData,
@@ -59,6 +77,32 @@ export function useSelectableChannelList(
       const aPriority = a.priority ?? 0;
       const bPriority = b.priority ?? 0;
 
+      if (sortMode === 'activeTime') {
+        const key = ACTIVE_TIME_FIELD_MAP[activeTimePeriod];
+        const getRatio = (c: ChannelIndexEntry): number => {
+          const act = c.active_time_all;
+          if (!act || !act[key] || !act.totalCount) return 0;
+          return act[key] / act.totalCount;
+        };
+
+        const ratioA = getRatio(a);
+        const ratioB = getRatio(b);
+
+        if (ratioA !== ratioB) {
+          return ratioB - ratioA; // 高 → 低
+        }
+
+        const timeA = a.lastVideoUploadedAt ? new Date(a.lastVideoUploadedAt).getTime() : 0;
+        const timeB = b.lastVideoUploadedAt ? new Date(b.lastVideoUploadedAt).getTime() : 0;
+
+        if (timeA !== timeB) {
+          return timeB - timeA; // 新 → 舊
+        }
+
+        return aPriority - bPriority;
+      }
+
+      // latest & alphabetical 共用 priority 第一順位
       if (aPriority !== bPriority) {
         return aPriority - bPriority;
       }
@@ -73,7 +117,7 @@ export function useSelectableChannelList(
 
       return bTime - aTime; // 新→舊
     });
-  }, [searchText, sortMode, allChannels]);
+  }, [searchText, sortMode, activeTimePeriod, allChannels]);
 
   return {
     isLoading,
