@@ -12,12 +12,34 @@ export type ChannelIndexEntry = {
   enabled?: boolean;
   joinedAt?: string;
   countryCode?: string[];
+  lastVideoUploadedAt?: string;
+  active_time_all?: {
+    凌: number;
+    早: number;
+    午: number;
+    晚: number;
+    totalCount: number;
+    updatedAt?: string;
+  };
 };
 
 const normalize = (text: string) =>
   text.toLowerCase().replace(/\s/g, '').replace(/　/g, ''); // 全形空白也移除
 
-export function useSelectableChannelList(searchText: string = '') {
+const ACTIVE_TIME_FIELD_MAP = {
+  midnight: '凌',
+  morning: '早',
+  afternoon: '午',
+  evening: '晚',
+} as const;
+
+export type ActiveTimePeriod = keyof typeof ACTIVE_TIME_FIELD_MAP;
+
+export function useSelectableChannelList(
+  searchText: string = '',
+  sortMode: 'latest' | 'alphabetical' | 'activeTime' = 'latest',
+  activeTimePeriod: ActiveTimePeriod = 'midnight'
+) {
   const {
     data: allChannelsData,
     isLoading,
@@ -38,32 +60,64 @@ export function useSelectableChannelList(searchText: string = '') {
         newly_joined_channels: result.newly_joined_channels || [],
       };
     },
-    gcTime: 1000 * 60 * 3, // 快取 3 分鐘
+    // gcTime: 1000 * 60 * 3, // 快取 3 分鐘
   });
 
   const allChannels = allChannelsData?.channels || [];
   const newlyJoinedChannels = searchText === "" ? (allChannelsData?.newly_joined_channels || []) : [];
 
   const filtered = useMemo(() => {
-    if (!searchText) {
-      return allChannels
-        .slice()
-        .sort((a, b) =>
-          a.priority !== b.priority
-            ? a.priority - b.priority
-            : a.name.localeCompare(b.name, 'zh-Hant')
-        );
-    }
-
     const norm = normalize(searchText);
-    return allChannels
-      .filter((c) => normalize(c.name).includes(norm))
-      .sort((a, b) =>
-        a.priority !== b.priority
-          ? a.priority - b.priority
-          : a.name.localeCompare(b.name, 'zh-Hant')
-      );
-  }, [searchText, allChannels]);
+
+    const matched = !searchText
+      ? allChannels
+      : allChannels.filter((c) => normalize(c.name).includes(norm));
+
+    return matched.slice().sort((a, b) => {
+      const aPriority = a.priority ?? 0;
+      const bPriority = b.priority ?? 0;
+
+      if (sortMode === 'activeTime') {
+        const key = ACTIVE_TIME_FIELD_MAP[activeTimePeriod];
+        const getRatio = (c: ChannelIndexEntry): number => {
+          const act = c.active_time_all;
+          if (!act || !act[key] || !act.totalCount) return 0;
+          return act[key] / act.totalCount;
+        };
+
+        const ratioA = getRatio(a);
+        const ratioB = getRatio(b);
+
+        if (ratioA !== ratioB) {
+          return ratioB - ratioA; // 高 → 低
+        }
+
+        const timeA = a.lastVideoUploadedAt ? new Date(a.lastVideoUploadedAt).getTime() : 0;
+        const timeB = b.lastVideoUploadedAt ? new Date(b.lastVideoUploadedAt).getTime() : 0;
+
+        if (timeA !== timeB) {
+          return timeB - timeA; // 新 → 舊
+        }
+
+        return aPriority - bPriority;
+      }
+
+      // latest & alphabetical 共用 priority 第一順位
+      if (aPriority !== bPriority) {
+        return aPriority - bPriority;
+      }
+
+      if (sortMode === 'alphabetical') {
+        return a.name.localeCompare(b.name, 'zh-Hant');
+      }
+
+      // sortMode === 'latest'
+      const aTime = a.lastVideoUploadedAt ? new Date(a.lastVideoUploadedAt).getTime() : 0;
+      const bTime = b.lastVideoUploadedAt ? new Date(b.lastVideoUploadedAt).getTime() : 0;
+
+      return bTime - aTime; // 新→舊
+    });
+  }, [searchText, sortMode, activeTimePeriod, allChannels]);
 
   return {
     isLoading,

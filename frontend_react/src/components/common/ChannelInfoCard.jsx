@@ -1,6 +1,8 @@
 import { useParams, useSearchParams } from "react-router-dom";
 import { useChannelIndex } from "../../hooks/useChannelIndex";
 import { FaEyeSlash } from "react-icons/fa6";
+import CountryFlags from "@/components/badges/CountryFlags";
+import DeveloperBadge from "@/components/badges/DeveloperBadge";
 
 const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
@@ -54,29 +56,11 @@ export default function ChannelInfoCard() {
             </span>
           )}
 
-          {isAuthor && (
-            <span
-              className="text-xs px-2 py-0.5 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 text-white animate-pulse"
-              title="本站開發者"
-            >
-              💻 本站開發者
-            </span>
-          )}
+          <DeveloperBadge isAuthor={isAuthor} />
         </a>
         <div className="text-sm text-gray-500">前往 YouTube 頻道 ↗</div>
 
-        {/* ✅ 新增：國旗徽章列 */}
-        {Array.isArray(data.countryCode) && data.countryCode.length > 0 && (
-          <div className="flex flex-wrap gap-1 mt-1">
-            {data.countryCode.map((code) => (
-              <span
-                key={code}
-                className={`fi fi-${code.toLowerCase()} w-5 h-3 rounded-sm border`}
-                title={code}
-              />
-            ))}
-          </div>
-        )}
+        <CountryFlags countryCode={data.countryCode} />
       </div>
     </div>
   );
