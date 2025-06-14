@@ -25,7 +25,7 @@ const AuthorizeChannelPage = () => {
   return (
     <MainLayout>
       <div className="max-w-2xl mx-auto mt-10 px-4">
-        <h1 className="text-2xl font-bold mb-6">頻道授權分析</h1>
+        <h1 className="text-2xl font-bold mb-6">綁定頻道分析</h1>
 
         <div className="space-y-4 text-gray-800 text-base">
           <p>
@@ -33,7 +33,7 @@ const AuthorizeChannelPage = () => {
             分類結果僅根據影片標題進行過濾分析，無法讀取影片實際內容。
           </p>
           <p>
-            雖然網站名稱為「Vtuber Channel Analyzer」，但本服務不限 Vtuber 使用，
+            雖然網站名稱為「Vtuber TrailMap」，但本服務不限 Vtuber 使用，
             任何 YouTube 創作者皆可授權使用。
           </p>
           <p>
@@ -135,7 +135,7 @@ const AuthorizeChannelPage = () => {
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
           >
-            使用 Google 帳號登入並授權我的 Youtube 頻道
+            使用 Google 帳號登入並綁定我的 Youtube 頻道
           </button>
         </div>
       </div>
