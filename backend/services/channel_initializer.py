@@ -88,7 +88,6 @@ def run_channel_initialization(channel_id: str):
 
         append_channel_to_batch(channel_id, info_data)
 
-        update_single_channel_heatmap(db, channel_id)
         logging.info(f"[Init] 🎉 頻道初始化完成：{channel_id}")
 
     except HttpError as e:
