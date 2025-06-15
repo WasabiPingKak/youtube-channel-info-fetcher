@@ -9,8 +9,6 @@ const DEFAULT_CATEGORY_STRUCTURE = {
   節目: {},
 };
 
-const CHANNEL_ID = ''; // 目前固定，未來可改成參數傳入
-
 const getCategoryConfig = async (channelId: string) => {
   const configRef = doc(db, 'channel_data', channelId, 'settings', 'config');
   const snapshot = await getDoc(configRef);
