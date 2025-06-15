@@ -25,17 +25,31 @@ const AuthorizeChannelPage = () => {
   return (
     <MainLayout>
       <div className="max-w-2xl mx-auto mt-10 px-4">
-        <h1 className="text-2xl font-bold mb-6">綁定頻道分析</h1>
+        <h1 className="text-2xl font-bold mb-6">綁定頻道</h1>
+        <div className="bg-blue-50 border border-blue-200 text-blue-900 text-sm leading-relaxed p-4 rounded mb-6 space-y-3">
+          <p className="font-semibold text-base">為什麼需要綁定？</p>
+          <p>
+            本站使用 Google 官方授權機制（OAuth 2.0），只是為了確認<b>你是這個頻道的擁有者</b>，我們才能將分析資料<b>只提供給你本人</b>。
+          </p>
+          <p>你不用擔心綁定後資料會立刻被公開，因為：</p>
 
+          <p className="font-semibold text-base">🔒 授權後，我們會做這些事：</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>✅ 分析你頻道中<strong className="font-bold">公開的</strong>影片標題與發佈時間，幫你整理出主題方向與內容分布</li>
+            <li>✅ 分析結果<strong className="font-bold">預設為私人</strong>，只有你本人登入後才能查看</li>
+            <li>✅ 私人狀態的頻道資料不會顯示在頻道清單、排行榜或統計頁；而且即使知道網址，其他人也無法存取</li>
+            <li>✅ 所有資料皆儲存在安全伺服器，絕不會在你明確同意前對外展示</li>
+          </ul>
+
+          <p className="font-semibold text-base">🚫 我們不會做的事（放心，我們做不到）：</p>
+          <ul className="list-disc list-inside space-y-1">
+            <li>❌ 不會在綁定後立刻公開你的頁面，除非<strong className="font-bold">你親自進入設定中啟用展示功能</strong></li>
+            <li>❌ 不會抓取你的非公開、私人、或會員限定影片</li>
+            <li>❌ 不會幫你發文、刪影片、改標題或發推播</li>
+            <li>❌ 不會發送任何訊息、也不會編輯你的頻道資訊</li>
+          </ul>
+        </div>
         <div className="space-y-4 text-gray-800 text-base">
-          <p>
-            本站旨在協助創作者分析自己的 YouTube 頻道內容，主要是影片分類與主題分布。
-            分類結果僅根據影片標題進行過濾分析，無法讀取影片實際內容。
-          </p>
-          <p>
-            雖然網站名稱為「Vtuber TrailMap」，但本服務不限 Vtuber 使用，
-            任何 YouTube 創作者皆可授權使用。
-          </p>
           <p>
             點擊下方按鈕後，我會引導你使用 Google 帳號授權。你授權的內容與用途如下：
           </p>
@@ -50,43 +64,13 @@ const AuthorizeChannelPage = () => {
               ，直到你在設定中明確啟用。
             </li>
           </ul>
-
-          {/* 授權內容簡要條列 */}
-          <div className="space-y-4 text-sm text-gray-800 leading-relaxed">
-            <div>
-              <p className="font-semibold text-black">
-                本站僅會讀取你頻道中原本就公開的資訊：
-              </p>
-              <p className="pl-4">
-                包括頻道名稱、頻道資訊欄、頻道頭像、影片縮圖、影片標題、影片時長、影片資訊欄、播放清單與發佈時間。
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold text-black">
-                本站不會取得頻道的任何操作權限：
-              </p>
-              <p className="pl-4">
-                無法發佈、修改、刪除任何影片、留言、播放清單或變更其他設定，也無法發送社群貼文。
-              </p>
-            </div>
-            <div>
-              <p className="font-semibold text-black">
-                本站無法取得非公開的頻道資訊：
-              </p>
-              <p className="pl-4">
-                無法取得會員限定內容、不公開影片、私人影片、不公開的播放清單、私人播放清單。
-              </p>
-            </div>
-
-            <div>
-              <p className="font-semibold text-black">
-                資料用途：
-              </p>
-              <p className="pl-4">
-                授權資料僅用於本網站的靜態分類分析，不會另作他用。若你希望移除這些資料，請聯絡本站開發者協助刪除。
-              </p>
-            </div>
+          <div>
+            <p className="font-semibold text-black">
+              資料用途：
+            </p>
+            <p className="pl-4">
+              授權資料僅用於本網站的靜態分類分析，不會另作他用。若你希望移除這些資料，請聯絡本站開發者協助刪除。
+            </p>
           </div>
         </div>
 
