@@ -7,6 +7,7 @@ from google.api_core.exceptions import GoogleAPIError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime, timezone
+from services.heatmap_analyzer import update_single_channel_heatmap
 
 db = firestore.Client()
 
@@ -87,6 +88,7 @@ def run_channel_initialization(channel_id: str):
 
         append_channel_to_batch(channel_id, info_data)
 
+        update_single_channel_heatmap(db, channel_id)
         logging.info(f"[Init] 🎉 頻道初始化完成：{channel_id}")
 
     except HttpError as e:

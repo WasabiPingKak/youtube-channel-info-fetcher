@@ -9,10 +9,10 @@ const DEFAULT_CATEGORY_STRUCTURE = {
   節目: {},
 };
 
-const CHANNEL_ID = 'UCLxa0YOtqi8IR5r2dSLXPng'; // 目前固定，未來可改成參數傳入
+const CHANNEL_ID = ''; // 目前固定，未來可改成參數傳入
 
-const getCategoryConfig = async () => {
-  const configRef = doc(db, 'channel_data', CHANNEL_ID, 'settings', 'config');
+const getCategoryConfig = async (channelId: string) => {
+  const configRef = doc(db, 'channel_data', channelId, 'settings', 'config');
   const snapshot = await getDoc(configRef);
 
   if (snapshot.exists()) {
@@ -23,10 +23,10 @@ const getCategoryConfig = async () => {
   }
 };
 
-export const useCategoryConfig = () => {
+export const useCategoryConfig = (channelId: string) => {
   const queryResult = useQuery({
-    queryKey: ['category-config', CHANNEL_ID],
-    queryFn: getCategoryConfig,
+    queryKey: ['category-config', channelId],
+    queryFn: () => getCategoryConfig(channelId),
     // staleTime: Infinity,
     // gcTime: Infinity, // TanStack Query v5 寫法
   });
