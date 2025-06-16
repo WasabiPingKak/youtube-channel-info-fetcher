@@ -26,6 +26,7 @@ from routes.quick_category_apply_route import init_quick_category_apply_route
 from routes.quick_category_remove_route import init_quick_category_remove_route
 from routes.sync_heatmap import init_sync_heatmap_route
 from routes.api_heatmap_route import init_api_heatmap_route
+from routes.admin_init_channel_route import init_admin_init_channel_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -67,6 +68,7 @@ init_quick_category_apply_route(app, db)
 init_quick_category_remove_route(app, db)
 init_sync_heatmap_route(app, db)
 init_api_heatmap_route(app, db)
+init_admin_init_channel_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():
