@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import {
   BarChart,
   Bar,
@@ -11,15 +11,37 @@ import {
 
 import ChartLegend from "./ChartLegend";
 import { COLOR_LIST } from "./chartColors";
+import CustomTooltipWithColor from "./CustomTooltipWithColor";
 
 const TrendingChartDaily = ({
-  chartData,
-  topGames,
+  gameList,
+  contributorsByDateAndGame,
   hiddenGames,
   toggleLine,
   isMobile,
   setHiddenGames,
 }) => {
+  const chartData = useMemo(() => {
+    return Object.entries(contributorsByDateAndGame).map(([date, gameMap]) => {
+      const entry = { date, tooltipData: {} };
+      gameList.forEach((game) => {
+        const channels = gameMap[game];
+        if (channels) {
+          const count = Object.values(channels).reduce(
+            (sum, item) => sum + item.count,
+            0
+          );
+          entry[game] = count;
+          entry.tooltipData[game] = Object.values(channels);
+        } else {
+          entry[game] = 0;
+          entry.tooltipData[game] = [];
+        }
+      });
+      return entry;
+    });
+  }, [contributorsByDateAndGame, gameList]);
+
   return (
     <div className="w-full h-[500px]">
       <ResponsiveContainer width="100%" height="100%">
@@ -42,18 +64,18 @@ const TrendingChartDaily = ({
             }
           />
           <YAxis allowDecimals={false} />
-          <Tooltip formatter={(value, name) => [`${value} 部`, name]} />
+          <Tooltip content={<CustomTooltipWithColor />} />
           <Legend
             content={
               <ChartLegend
-                topGames={topGames}
+                topGames={gameList}
                 hiddenGames={hiddenGames}
                 setHiddenGames={setHiddenGames}
                 toggleLine={toggleLine}
               />
             }
           />
-          {topGames.map((game, index) =>
+          {gameList.map((game, index) =>
             hiddenGames.includes(game) ? null : (
               <Bar
                 key={game}

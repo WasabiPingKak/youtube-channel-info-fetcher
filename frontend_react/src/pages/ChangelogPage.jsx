@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-17",
+    items: [
+      "修改首頁頻道遊戲趨勢 UI 顯示",
+    ],
+  },
+  {
     date: "2025-06-13",
     items: [
       "新增頻道活躍時段熱力圖",
