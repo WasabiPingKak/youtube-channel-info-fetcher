@@ -46,18 +46,49 @@ def build_theme_statistics(
     return theme_stats, theme_videos, theme_channel_stats
 
 def get_theme_top_by_videos(
-    theme_stats: Dict[str, Dict[str, int]],
+    theme_videos: Dict[str, List[Dict[str, Any]]],
     top_n: int = 10
 ) -> List[str]:
     """
-    依影片數排序，取得前 top_n 主題
+    依據主題的「貢獻頻道數」「影片數」「最新影片時間」排序，取得前 top_n 主題。
+    排序邏輯：
+      1. 不同頻道數（越多越前）
+      2. 影片總數（越多越前）
+      3. 最新影片的時間（越新越前）
     """
-    top_items = sorted(
-        theme_stats.items(),
-        key=lambda item: sum(item[1].values()),
+    theme_stats = []
+
+    for theme, videos in theme_videos.items():
+        channel_ids = {v.get("channelId") for v in videos if v.get("channelId")}
+        latest_ts = max(
+            (v.get("publishDate") for v in videos if v.get("publishDate")),
+            default=None
+        )
+
+        # 若無有效發佈時間則跳過（避免影響排序）
+        if not latest_ts:
+            continue
+
+        # 若是 datetime 物件則轉成 timestamp，若是字串則先轉成 datetime
+        if isinstance(latest_ts, str):
+            latest_ts = datetime.fromisoformat(latest_ts)
+
+        theme_stats.append((
+            theme,
+            len(channel_ids),        # 頻道數
+            len(videos),             # 影片數
+            latest_ts.timestamp(),  # 最晚影片時間
+        ))
+
+    # 排序：頻道數多 > 影片數多 > 最新影片時間新
+    sorted_themes = sorted(
+        theme_stats,
+        key=lambda item: (item[1], item[2], item[3]),
         reverse=True
-    )[:top_n]
-    return [theme for theme, _ in top_items]
+    )
+
+    return [theme for theme, _, _, _ in sorted_themes[:top_n]]
+
 
 def build_theme_details(
     theme_names: List[str],
@@ -165,7 +196,7 @@ def analyze_trending_summary(
     logger.info(f"📊 完成彙總主題資料，共發現 {len(theme_stats)} 種主題")
 
     # 以影片數排序的 Top10 主題
-    top_themes_by_video = get_theme_top_by_videos(theme_stats, top_n=10)
+    top_themes_by_video = get_theme_top_by_videos(theme_videos, top_n=10)
     details_by_video = build_theme_details(top_themes_by_video, theme_videos)
     video_count_by_game_and_date = build_chart_data_by_game_and_date(top_themes_by_video, theme_stats, dates)
     contributors_by_date_and_game = build_contributors_by_date_and_game(

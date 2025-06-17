@@ -9,20 +9,28 @@ from services.trending.trending_analyzer import analyze_trending_summary
 
 def get_trending_games_summary(db: Client, days: int = 30) -> Dict[str, Any]:
     """
-    從 Firestore trending_games_daily/{YYYY-MM-DD} 讀取指定區間資料，
-    整理出各遊戲的影片成長趨勢與頻道活躍資料。
+    從 Firestore 的 trending_games_daily/{YYYY-MM-DD} 讀取指定區間資料，
+    統計出熱門遊戲在各日期的影片數量與貢獻頻道，並彙整詳細頻道與影片清單。
 
     參數:
         db: Firestore client 實例
-        days: 查詢區間天數，支援 7、14、30（預設 30）
+        days: 查詢區間天數，支援 7、14、30（預設為 30）
 
-    回傳格式如下：
+    回傳資料格式:
     {
-        "topGames": List[str],
-        "chartData": List[Dict[str, Union[str, int]]],
-        "details": Dict[str, Dict[str, List[VideoItem]]],
-        "summaryStats": Dict[str, Dict[str, int]],
+        "dates": List[str],  # 日期列表，格式為 YYYY-MM-DD，依時間排序
+        "gameList": List[str],  # 熱門遊戲名稱列表，依影片數量排序（最多 10 個）
+        "videoCountByGameAndDate": Dict[str, Dict[str, int]],
+            # 每個遊戲每日的影片數量統計，如 { "Minecraft": { "2025-06-01": 3, ... } }
+
+        "contributorsByDateAndGame": Dict[str, Dict[str, List[str]]],
+            # 每日每個遊戲的貢獻頻道清單，如 { "2025-06-01": { "Minecraft": ["UC123", "UC456", ...] } }
+
+        "details": Dict[str, Dict[str, List[Dict]]],
+            # 各遊戲下的頻道 → 影片清單，如 { "Minecraft": { "UC123": [VideoItem, ...], ... } }
+
         "channelInfo": Dict[str, Dict[str, str]],
+            # 頻道基本資訊，如 { "UC123": { "name": ..., "thumbnail": ..., "url": ... }, ... }
     }
     """
     try:

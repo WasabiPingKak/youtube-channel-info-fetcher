@@ -12,6 +12,7 @@ import {
 import ChartLegend from "./ChartLegend";
 import { COLOR_LIST } from "./chartColors";
 import { accumulateChartData } from "./chartUtils";
+import CustomTooltip from "./CustomTooltip";
 
 const TrendingChartCumulative = ({
   gameList,
@@ -45,7 +46,7 @@ const TrendingChartCumulative = ({
             }
           />
           <YAxis allowDecimals={false} />
-          <Tooltip formatter={(value, name) => [`${value} 部`, name]} />
+          <Tooltip content={<CustomTooltip />} />
           <Legend
             content={
               <ChartLegend

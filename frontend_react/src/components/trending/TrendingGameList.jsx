@@ -40,7 +40,7 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
                 <div className="flex justify-between items-center">
                   <div className="text-lg font-semibold">{game}</div>
                   <div className="text-sm text-gray-600">
-                    🎬 {videoCount} 部　｜　👤 {channelCount} 頻道
+                    👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
                   </div>
                 </div>
 
