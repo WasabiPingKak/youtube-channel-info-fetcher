@@ -4,12 +4,11 @@ import ChannelCard from "./ChannelCard";
 
 /**
  * @param {Object} props
- * @param {string[]} props.topGames
- * @param {Object} props.details  // details[game][channelId] = [VideoItem, ...]
- * @param {Object} props.summaryStats
+ * @param {string[]} props.gameList
+ * @param {Object} props.details  // details[game][channelId] = { channelName, videos: [...] }
  * @param {Object} props.channelInfo  // channelInfo[channelId] = { name, thumbnail, url }
  */
-const TrendingGameList = ({ topGames, details, summaryStats, channelInfo }) => {
+const TrendingGameList = ({ gameList, details, channelInfo }) => {
   const [expandedGames, setExpandedGames] = useState({});
   const [expandedChannels, setExpandedChannels] = useState({});
 
@@ -17,67 +16,102 @@ const TrendingGameList = ({ topGames, details, summaryStats, channelInfo }) => {
     setExpandedGames((prev) => ({ ...prev, [game]: !prev[game] }));
   };
 
-  const toggleChannel = (game, channelId) => {
-    const key = `${game}::${channelId}`;
-    setExpandedChannels((prev) => ({ ...prev, [key]: !prev[key] }));
-  };
-
   return (
     <div className="mt-6 space-y-4">
-      {topGames.map((game) => {
+      {gameList.map((game) => {
         const gameDetails = details[game] || {};
-        const stats = summaryStats[game] || { videoCount: 0, channelCount: 0 };
         const isOpen = expandedGames[game];
+
+        const videoCount = Object.values(gameDetails).reduce(
+          (acc, ch) => acc + ch.videos.length,
+          0
+        );
+        const channelCount = Object.keys(gameDetails).length;
 
         return (
           <div key={game} className="border rounded-xl p-4 shadow-sm bg-white">
-            <div
-              className="flex justify-between items-center cursor-pointer"
-              onClick={() => toggleGame(game)}
-            >
-              <div className="text-lg font-semibold">{game}</div>
-              <div className="text-sm text-gray-600">
-                🎬 {stats.videoCount} 部　｜　👤 {stats.channelCount} 頻道
-              </div>
-            </div>
+            {/* ✅ 可點擊的整體區域（含標題與頭像列） */}
+            {!isOpen && (
+              <div
+                className="cursor-pointer"
+                onClick={() => toggleGame(game)}
+              >
+                {/* 標題列 */}
+                <div className="flex justify-between items-center">
+                  <div className="text-lg font-semibold">{game}</div>
+                  <div className="text-sm text-gray-600">
+                    👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
+                  </div>
+                </div>
 
+                {/* 頻道頭像列 */}
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {Object.keys(gameDetails).map((channelId) => {
+                    const info = channelInfo?.[channelId];
+                    if (!info?.thumbnail) return null;
+                    return (
+                      <img
+                        key={channelId}
+                        src={info.thumbnail}
+                        alt={info.name}
+                        title={info.name}
+                        className="w-8 h-8 rounded-full border object-cover"
+                      />
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+
+            {/* 展開後的詳細列表 */}
             {isOpen && (
-              <div className="mt-4 space-y-6">
-                {Object.entries(gameDetails).length === 0 ? (
-                  <div className="text-sm text-gray-400">（無資料）</div>
-                ) : (
-                  Object.entries(gameDetails)
-                    .sort(([, aVideos], [, bVideos]) => {
-                      const aDate = new Date(aVideos?.[0]?.publishDate || 0);
-                      const bDate = new Date(bVideos?.[0]?.publishDate || 0);
-                      return bDate - aDate;
-                    })
-                    .map(([channelId, videos]) => {
-                      const key = `${game}::${channelId}`;
+              <>
+                {/* 標題列仍顯示在展開狀態 */}
+                <div
+                  className="flex justify-between items-center cursor-pointer"
+                  onClick={() => toggleGame(game)}
+                >
+                  <div className="text-lg font-semibold">{game}</div>
+                  <div className="text-sm text-gray-600">
+                    🎬 {videoCount} 部　｜　👤 {channelCount} 頻道
+                  </div>
+                </div>
 
-                      const safeVideos = Array.isArray(videos) ? videos : [];
-                      const sortedVideos = [...safeVideos].sort(
-                        (a, b) => new Date(b.publishDate) - new Date(a.publishDate)
-                      );
+                <div className="mt-4 space-y-6">
+                  {Object.entries(gameDetails).length === 0 ? (
+                    <div className="text-sm text-gray-400">（無資料）</div>
+                  ) : (
+                    Object.entries(gameDetails)
+                      .sort(([, a], [, b]) => {
+                        const aDate = new Date(a.videos?.[0]?.publishedAt || 0);
+                        const bDate = new Date(b.videos?.[0]?.publishedAt || 0);
+                        return bDate - aDate;
+                      })
+                      .map(([channelId, channelData]) => {
+                        const sortedVideos = [...(channelData?.videos || [])].sort(
+                          (a, b) =>
+                            new Date(b.publishedAt) - new Date(a.publishedAt)
+                        );
 
-                      const info = channelInfo?.[channelId];
-                      if (!info) {
-                        console.warn(`⚠️ 找不到頻道資訊: ${channelId}`);
-                        return null;
-                      }
+                        const info = channelInfo?.[channelId];
+                        if (!info) {
+                          console.warn(`⚠️ 找不到頻道資訊: ${channelId}`);
+                          return null;
+                        }
 
-                      return (
-                        <div key={channelId} className="space-y-2">
-                          <ChannelCard
-                            channelId={channelId}
-                            channelInfo={info}
-                            videos={sortedVideos}
-                          />
-                        </div>
-                      );
-                    })
-                )}
-              </div>
+                        return (
+                          <div key={channelId} className="space-y-2">
+                            <ChannelCard
+                              channelId={channelId}
+                              channelInfo={info}
+                              videos={sortedVideos}
+                            />
+                          </div>
+                        );
+                      })
+                  )}
+                </div>
+              </>
             )}
           </div>
         );

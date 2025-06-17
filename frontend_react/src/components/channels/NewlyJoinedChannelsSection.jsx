@@ -24,17 +24,17 @@ const toDateObj = (raw) => {
 };
 
 /**
- * 格式化為 yyyy-MM-dd（供排序使用）
+ * 使用當地時間格式化為 yyyy-MM-dd（供排序使用）
  */
 const formatDateKey = (dateObj) => {
-  const yyyy = dateObj.getUTCFullYear();
-  const mm = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(dateObj.getUTCDate()).padStart(2, "0");
+  const yyyy = dateObj.getFullYear();
+  const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
+  const dd = String(dateObj.getDate()).padStart(2, "0");
   return `${yyyy}-${mm}-${dd}`;
 };
 
 /**
- * 顯示文字：今天 / 昨天 / yyyy-MM-dd
+ * 顯示文字：今天 / 昨天 / yyyy-MM-dd（以當地時間計算）
  */
 const getDisplayDateLabel = (dateObj) => {
   const today = new Date();
@@ -68,7 +68,7 @@ const groupByJoinedDate = (channels) => {
     if (!groups[dateKey]) {
       groups[dateKey] = {
         label: displayLabel,
-        list: []
+        list: [],
       };
     }
 

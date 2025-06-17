@@ -3,7 +3,11 @@ import ChartLegend from "./ChartLegend";
 import TrendingChartCumulative from "./TrendingChartCumulative";
 import TrendingChartDaily from "./TrendingChartBar";
 
-const TrendingChart = ({ chartData, topGames }) => {
+const TrendingChart = ({
+  gameList,
+  videoCountByGameAndDate,
+  contributorsByDateAndGame,
+}) => {
   const [mode, setMode] = useState("cumulative");
   const [hiddenGames, setHiddenGames] = useState([]);
   const [isMobile, setIsMobile] = useState(false);
@@ -32,17 +36,15 @@ const TrendingChart = ({ chartData, topGames }) => {
         <div className="flex gap-2 text-sm">
           <button
             onClick={() => setMode("daily")}
-            className={`px-2 py-1 rounded border ${
-              mode === "daily" ? "bg-gray-800 text-white" : "text-gray-700"
-            }`}
+            className={`px-2 py-1 rounded border ${mode === "daily" ? "bg-gray-800 text-white" : "text-gray-700"
+              }`}
           >
             📊 每日
           </button>
           <button
             onClick={() => setMode("cumulative")}
-            className={`px-2 py-1 rounded border ${
-              mode === "cumulative" ? "bg-gray-800 text-white" : "text-gray-700"
-            }`}
+            className={`px-2 py-1 rounded border ${mode === "cumulative" ? "bg-gray-800 text-white" : "text-gray-700"
+              }`}
           >
             📈 累計
           </button>
@@ -51,8 +53,8 @@ const TrendingChart = ({ chartData, topGames }) => {
 
       {mode === "cumulative" && (
         <TrendingChartCumulative
-          chartData={chartData}
-          topGames={topGames}
+          gameList={gameList}
+          videoCountByGameAndDate={videoCountByGameAndDate}
           hiddenGames={hiddenGames}
           toggleLine={toggleLine}
           isMobile={isMobile}
@@ -60,11 +62,10 @@ const TrendingChart = ({ chartData, topGames }) => {
         />
       )}
 
-
       {mode === "daily" && (
         <TrendingChartDaily
-          chartData={chartData}
-          topGames={topGames}
+          gameList={gameList}
+          contributorsByDateAndGame={contributorsByDateAndGame}
           hiddenGames={hiddenGames}
           toggleLine={toggleLine}
           isMobile={isMobile}

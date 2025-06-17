@@ -12,16 +12,17 @@ import {
 import ChartLegend from "./ChartLegend";
 import { COLOR_LIST } from "./chartColors";
 import { accumulateChartData } from "./chartUtils";
+import CustomTooltip from "./CustomTooltip";
 
 const TrendingChartCumulative = ({
-  chartData,
-  topGames,
+  gameList,
+  videoCountByGameAndDate,
   hiddenGames,
   toggleLine,
   isMobile,
   setHiddenGames,
 }) => {
-  const displayedData = accumulateChartData(chartData, topGames);
+  const displayedData = accumulateChartData(videoCountByGameAndDate, gameList);
 
   return (
     <div className="w-full h-[500px]">
@@ -39,24 +40,24 @@ const TrendingChartCumulative = ({
             tickFormatter={(_, index) =>
               isMobile
                 ? index % 4 === 0
-                  ? chartData[index].date.slice(5)
+                  ? displayedData[index].date.slice(5)
                   : ""
-                : chartData[index].date.slice(5)
+                : displayedData[index].date.slice(5)
             }
           />
           <YAxis allowDecimals={false} />
-          <Tooltip formatter={(value, name) => [`${value} 部`, name]} />
+          <Tooltip content={<CustomTooltip />} />
           <Legend
             content={
               <ChartLegend
-                topGames={topGames}
+                topGames={gameList}
                 hiddenGames={hiddenGames}
                 setHiddenGames={setHiddenGames}
                 toggleLine={toggleLine}
               />
             }
           />
-          {topGames.map((game, index) => (
+          {gameList.map((game, index) => (
             <Line
               key={game}
               type="monotone"

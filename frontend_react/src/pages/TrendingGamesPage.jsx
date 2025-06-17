@@ -21,12 +21,11 @@ const TrendingGamesPage = () => {
           <h1 className="text-2xl font-bold">
             📈 趨勢遊戲排行榜（{TIME_RANGES[days]}）
           </h1>
-
           <select
             className="border border-gray-300 rounded px-2 py-1 text-sm"
             value={days}
             onChange={(e) => {
-              const value = parseInt(e.target.value);
+              const value = parseInt(e.target.value, 10);
               if ([7, 14, 30].includes(value)) {
                 setDays(value);
               }
@@ -53,13 +52,15 @@ const TrendingGamesPage = () => {
 
         {data && (
           <>
-            <TrendingChart chartData={data.chartData} topGames={data.topGames} />
-
+            <TrendingChart
+              gameList={data.gameList}
+              videoCountByGameAndDate={data.videoCountByGameAndDate}
+              contributorsByDateAndGame={data.contributorsByDateAndGame}
+            />
             <div className="mt-10">
               <TrendingGameList
-                topGames={data.topGames}
+                gameList={data.gameList}
                 details={data.details}
-                summaryStats={data.summaryStats}
                 channelInfo={data.channelInfo}
               />
             </div>

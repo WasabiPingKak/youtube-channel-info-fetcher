@@ -10,6 +10,8 @@ import VideoCardSimple from "./VideoCardSimple";
 const ChannelCard = ({ channelId, channelInfo, videos }) => {
   const [expanded, setExpanded] = useState(false);
 
+  if (!videos || videos.length === 0) return null;
+
   const { name, thumbnail, url } = channelInfo || {};
   const first = videos[0];
   const rest = videos.slice(1);
@@ -32,7 +34,7 @@ const ChannelCard = ({ channelId, channelInfo, videos }) => {
           href={url || `https://www.youtube.com/channel/${channelId}`}
           target="_blank"
           rel="noopener noreferrer"
-          onClick={(e) => e.stopPropagation()} // ✅ 避免點到名稱就展開
+          onClick={(e) => e.stopPropagation()}
           className="font-medium text-sm hover:underline"
         >
           {name || channelId}
@@ -46,16 +48,16 @@ const ChannelCard = ({ channelId, channelInfo, videos }) => {
         {expanded && (
           <div className="space-y-2">
             {rest.map((v) => (
-              <VideoCardSimple key={v.videoId} video={v} />
+              <VideoCardSimple key={v.id} video={v} />
             ))}
           </div>
         )}
 
-        {/* 提示按鈕保留，改為文字提示用途 */}
+        {/* 展開/收合提示按鈕 */}
         {rest.length > 0 && (
           <div
             onClick={(e) => {
-              e.stopPropagation(); // ✅ 防止點擊後再傳給整卡片
+              e.stopPropagation();
               handleToggle();
             }}
             className="text-sm text-blue-600 hover:underline ml-1 cursor-pointer"

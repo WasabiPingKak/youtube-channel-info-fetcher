@@ -2,6 +2,7 @@ from flask import request, jsonify
 from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
 from services.youtube.fetcher import get_video_data
+from services.heatmap_analyzer import update_single_channel_heatmap
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -50,6 +51,7 @@ def init_video_update_route(app, db):
             else:
                 write_result = write_batches_to_firestore(db, channel_id, videos)
                 update_last_sync_time(db, channel_id, videos)
+                update_single_channel_heatmap(db, channel_id)
                 logger.info(f"✅ 成功寫入 {write_result.get('videos_written', 0)} 部影片")
 
             # 刪除 token（一次性使用）

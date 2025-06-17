@@ -22,13 +22,40 @@ export interface ChartDataPoint {
   [game: string]: number | string; // e.g., "Minecraft": 4, ...
 }
 
+export interface ChannelVideoGroup {
+  channelName: string;
+  videos: {
+    id: string;
+    title: string;
+    publishedAt: string;
+    thumbnail: string;
+    url: string;
+  }[];
+}
+
 export interface TrendingGamesResponse {
-  topGames: string[];
-  chartData: ChartDataPoint[];
-  details: {
-    [game: string]: VideoItem[];
+  dates: string[];
+  gameList: string[];
+  videoCountByGameAndDate: {
+    [game: string]: {
+      [date: string]: number;
+    };
   };
-  summaryStats: SummaryStats;
+  contributorsByDateAndGame: {
+    [date: string]: {
+      [game: string]: {
+        [channelId: string]: {
+          channelName: string;
+          count: number;
+        };
+      };
+    };
+  };
+  details: {
+    [game: string]: {
+      [channelId: string]: ChannelVideoGroup;
+    };
+  };
   channelInfo: {
     [channelId: string]: {
       name: string;
@@ -37,6 +64,7 @@ export interface TrendingGamesResponse {
     };
   };
 }
+
 
 export const useTrendingGamesQuery = (days: 7 | 14 | 30 = 30) => {
   return useQuery<TrendingGamesResponse>({

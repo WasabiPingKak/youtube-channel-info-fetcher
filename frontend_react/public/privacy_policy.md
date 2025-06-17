@@ -1,9 +1,9 @@
 # 隱私權政策
 
-**最後更新日期：2025 年 5 月 13 日**
+**最後更新日期：2025 年 6 月 16 日**
 
 ## 簡介
-歡迎來到 **VTuber Channel Analyzer**。我們致力於保護您的隱私。本隱私權政策說明我們在您造訪本網站並使用我們服務時，如何蒐集、使用、揭露及保護您的資訊。請您仔細閱讀本政策，若您不同意其中內容，請勿使用本網站。
+歡迎來到 **VTMap 頻道旅圖｜Vtuber TrailMap**。我們致力於保護您的隱私。本隱私權政策說明我們在您造訪本網站並使用我們服務時，如何蒐集、使用、揭露及保護您的資訊。請您仔細閱讀本政策，若您不同意其中內容，請勿使用本網站。
 
 ## 資料控管者
 負責您個人資料處理的控管者為本網站的經營者。如有疑問，請參閱本政策結尾的「聯絡我們」章節。
@@ -57,7 +57,7 @@
 ## 聯絡我們
 如您對本隱私政策有任何疑問，請透過以下方式聯絡我們：
 
-**網站**：[https://vtuber-channel-analyzer-v3.web.app/](https://vtuber-channel-analyzer-v3.web.app/)
+**網站**：[https://www.vtubertrailmap.com/](https://www.vtubertrailmap.com/)
 
 **公司名稱**：Wasabi PingKak（個人開發者經營）
 
@@ -67,10 +67,10 @@
 
 # Privacy Policy
 
-**Last updated: May 13, 2025**
+**Last updated: Jun 16, 2025**
 
 ## Introduction
-Welcome to **VTuber Channel Analyzer**. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services. Please read this Privacy Policy carefully. If you do not agree with the terms, please do not access the site.
+Welcome to **VTMap 頻道旅圖｜Vtuber TrailMap**. We are committed to protecting your privacy. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website and use our services. Please read this Privacy Policy carefully. If you do not agree with the terms, please do not access the site.
 
 ## Data Controller
 The data controller responsible for your personal data is the individual operating this website. For inquiries, please refer to the “Contact Us” section at the end of this policy.
@@ -124,7 +124,7 @@ To provide you with the best possible experience, this website uses cookies, whi
 ## Contact Us
 If you have any questions or concerns about this Privacy Policy, please contact us at:
 
-**Website**: [https://vtuber-channel-analyzer-v3.web.app/](https://vtuber-channel-analyzer-v3.web.app/)
+**Website**: [https://www.vtubertrailmap.com/](https://www.vtubertrailmap.com/)
 
 **Company**: Wasabi PingKak (Independent Developer)
 
