@@ -21,6 +21,7 @@ import ChangelogPage from "./pages/ChangelogPage";
 import MySettingsPage from "./pages/MySettingsPage";
 import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
+import ChannelActiveTimeExplorerPage from "./pages/ChannelActiveTimeExplorerPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
@@ -83,6 +84,7 @@ function AppRoutes() {
         <Route path="/my-category-editor" element={<ChannelCategoryEditorPage />} />
         <Route path="/quick-category-editor/:channelId" element={<QuickCategoryEditorPage />} />
         <Route path="/auth-loading" element={<AuthLoadingPage />} />
+        <Route path="/active-time" element={<ChannelActiveTimeExplorerPage />} />
 
         {/* 其他路徑 → redirect 提示 */}
         <Route
