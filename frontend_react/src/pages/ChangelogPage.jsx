@@ -3,6 +3,14 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-20",
+    items: [
+      "新增全頻道列表活躍時間篩選功能",
+      "新增全頻道列表依國旗分組功能",
+      "改善連結 UX，現在所有連結皆可用滑鼠中鍵(Ctrl+左鍵)開啟新分頁",
+    ],
+  },
+  {
     date: "2025-06-17",
     items: [
       "修改首頁頻道遊戲趨勢 UI 顯示",
