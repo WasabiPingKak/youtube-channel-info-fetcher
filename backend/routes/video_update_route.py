@@ -3,6 +3,8 @@ from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
 from services.youtube.fetcher import get_video_data
 from services.heatmap_analyzer import update_single_channel_heatmap
+from services.firestore.heatmap_writer import is_channel_heatmap_initialized
+from services.heatmap_cache_writer import append_to_pending_cache
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -37,7 +39,6 @@ def init_video_update_route(app, db):
             if not expires_at or datetime.fromisoformat(expires_at) < now:
                 return jsonify({"error": "Token 已過期"}), 403
 
-            # ✅ 驗證成功，開始匯入影片
             logger.info(f"📦 [update] Token 驗證成功，開始同步頻道 {channel_id} 的影片")
 
             last_sync_time = get_last_video_sync_time(db, channel_id)
@@ -51,10 +52,17 @@ def init_video_update_route(app, db):
             else:
                 write_result = write_batches_to_firestore(db, channel_id, videos)
                 update_last_sync_time(db, channel_id, videos)
+
+                # ✅ 在更新 heatmap 前檢查是否已初始化
+                was_initialized = is_channel_heatmap_initialized(db, channel_id)
+
                 update_single_channel_heatmap(db, channel_id)
                 logger.info(f"✅ 成功寫入 {write_result.get('videos_written', 0)} 部影片")
 
-            # 刪除 token（一次性使用）
+                # ✅ 若首次初始化則寫入 pending 快取
+                if not was_initialized:
+                    append_to_pending_cache(db, channel_id)
+
             token_ref.delete()
 
             return jsonify({"message": "更新完成"})

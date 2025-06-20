@@ -2,6 +2,33 @@ from datetime import datetime, timezone
 import logging
 import json
 
+def is_channel_heatmap_initialized(db, channel_id: str) -> bool:
+    """
+    檢查頻道 heat_map 是否已初始化（即是否含有 all_range 欄位）
+
+    參數:
+        db: Firestore client 實體
+        channel_id: 頻道 ID
+
+    回傳:
+        True 表示已初始化（已存在 all_range 欄位）
+        False 表示未初始化或讀取失敗
+    """
+    try:
+        doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
+        doc = doc_ref.get()
+        if doc.exists:
+            is_initialized = "all_range" in doc.to_dict()
+            if not is_initialized:
+                logging.info(f"🆕 頻道 {channel_id} 尚未初始化 heatmap（無 all_range）")
+            return is_initialized
+        else:
+            logging.info(f"🆕 頻道 {channel_id} heatmap 文件不存在（尚未初始化）")
+            return False
+    except Exception as e:
+        logging.error(f"❗ 檢查 heatmap 初始化狀態失敗：{channel_id} - {e}")
+        return False
+
 def convert_to_nested_map(matrix):
     """
     將 matrix 由 map<string, list<list<string>>> 轉為 map<string, map<string, list<string>>>

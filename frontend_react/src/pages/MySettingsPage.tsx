@@ -9,7 +9,7 @@ import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { MdAnalytics } from "react-icons/md";
-
+import SmartLink from "@/components/common/SmartLink";
 
 export default function MySettingsPage() {
   const {
@@ -86,7 +86,7 @@ export default function MySettingsPage() {
 
         {channelInfo && (
           <div className="mb-6">
-            <ChannelSelectorCard channel={channelInfo} onClick={() => { }} />
+            <ChannelSelectorCard channel={channelInfo} />
           </div>
         )}
 

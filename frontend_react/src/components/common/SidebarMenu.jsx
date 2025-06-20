@@ -7,8 +7,7 @@ import { MdPrivacyTip } from "react-icons/md";
 import { IoFileTrayFull } from "react-icons/io5";
 import clsx from "clsx";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
-
-const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+import SmartLink from "@/components/common/SmartLink";
 
 const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
   const navigate = useNavigate();
@@ -20,27 +19,27 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
     {
       label: "頻道遊戲趨勢",
       icon: <FaChartLine className="w-5 h-5" />,
-      action: () => navigate("/trending"),
+      to: "/trending",
     },
     {
-      label: "檢視個別頻道",
+      label: "檢視所有頻道",
       icon: <FaUser className="w-5 h-5" />,
-      action: () => navigate("/channels"),
+      to: "/channels",
     },
     {
       label: "過濾總表｜遊戲",
       icon: <FaClipboardList className="w-5 h-5" />,
-      action: () => navigate("/game-aliases"),
+      to: "/game-aliases",
     },
     {
       label: "過濾總表｜分類",
       icon: <FaClipboardList className="w-5 h-5" />,
-      action: () => navigate("/category-aliases"),
+      to: "/category-aliases",
     },
     {
       label: "更新紀錄",
       icon: <FaTools className="w-5 h-5" />,
-      action: () => navigate("/changelog"),
+      to: "/changelog",
     },
   ];
 
@@ -73,57 +72,59 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       <div className="flex-1 overflow-y-auto">
         <nav className="flex flex-col gap-1 text-sm py-4 px-2">
           {menuItems.map((item) => (
-            <button
+            <SmartLink
               key={item.label}
-              onClick={() => {
-                if (onItemClick) onItemClick();
-                item.action();
-              }}
+              to={item.to}
+              onClick={onItemClick}
               className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
             >
               {item.icon}
               {!collapsed && <span>{item.label}</span>}
-            </button>
+            </SmartLink>
           ))}
 
           <hr className="my-3 border-gray-300 dark:border-zinc-700" />
 
           {isLoggedIn ? (
             <>
-              <button
-                onClick={() => navigate("/my-settings")}
+              <SmartLink
+                to="/my-settings"
+                onClick={onItemClick}
                 className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
               >
                 <FaUserCog className="w-5 h-5" />
                 {!collapsed && <span>我的頻道設定</span>}
-              </button>
+              </SmartLink>
 
-              <button
-                onClick={() => navigate(`/quick-category-editor/${user.channelId}`)}
+              <SmartLink
+                to={`/quick-category-editor/${user.channelId}`}
+                onClick={onItemClick}
                 className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
               >
                 <IoFileTrayFull className="w-5 h-5" />
                 {!collapsed && <span>自訂影片分類｜快速模式</span>}
-              </button>
+              </SmartLink>
 
-              <button
-                onClick={() => navigate("/my-category-editor")}
+              <SmartLink
+                to="/my-category-editor"
+                onClick={onItemClick}
                 className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
               >
                 <IoFileTrayFull className="w-5 h-5" />
                 {!collapsed && <span>自訂影片分類｜進階模式</span>}
-              </button>
+              </SmartLink>
 
               <hr className="my-3 border-gray-300 dark:border-zinc-700" />
             </>
           ) : (
-            <button
-              onClick={() => navigate("/authorize-channel")}
+            <SmartLink
+              to="/authorize-channel"
+              onClick={onItemClick}
               className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
             >
               <span>🔗</span>
               {!collapsed && <span>綁定我的頻道</span>}
-            </button>
+            </SmartLink>
           )}
 
           <a
@@ -136,21 +137,23 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
             {!collapsed && <span>協助擴增遊戲名單</span>}
           </a>
 
-          <button
-            onClick={() => navigate("/thanks")}
+          <SmartLink
+            to="/thanks"
+            onClick={onItemClick}
             className="flex items-center gap-3 px-3 py-2 rounded text-pink-700 dark:text-pink-300 hover:bg-pink-50 dark:hover:bg-zinc-800"
           >
             <span>💖</span>
             {!collapsed && <span>感謝者名單</span>}
-          </button>
+          </SmartLink>
 
-          <button
-            onClick={() => navigate("/privacy")}
+          <SmartLink
+            to="/privacy"
+            onClick={onItemClick}
             className="flex items-center gap-3 px-3 py-2 rounded text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800"
           >
             <MdPrivacyTip className="w-5 h-5" />
             {!collapsed && <span>隱私權政策</span>}
-          </button>
+          </SmartLink>
 
           <hr className="my-3 border-gray-300 dark:border-zinc-700" />
 
