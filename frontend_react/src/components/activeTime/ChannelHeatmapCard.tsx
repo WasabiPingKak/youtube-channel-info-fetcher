@@ -1,6 +1,7 @@
 import React from "react";
 import ActiveTimeHeatmapMini from "./ActiveTimeHeatmapMini";
 import SmartLink from "@/components/common/SmartLink"; // ← 根據你的專案路徑調整匯入位置
+import CountryFlags from "../badges/CountryFlags";
 
 type Props = {
   channel: {
@@ -36,14 +37,8 @@ export default function ChannelHeatmapCard({
         <div className="flex flex-col">
           <div className="font-semibold">{channel.name}</div>
 
-          <div className="flex gap-1 mt-[2px]">
-            {channel.countryCode?.map((code) => (
-              <span
-                key={code}
-                className={`fi fi-${code.toLowerCase()}`}
-                title={code}
-              />
-            ))}
+          <div className="mt-[2px]">
+            <CountryFlags countryCode={channel.countryCode} />
           </div>
 
           {/* ✅ 顯示熱度分數 */}

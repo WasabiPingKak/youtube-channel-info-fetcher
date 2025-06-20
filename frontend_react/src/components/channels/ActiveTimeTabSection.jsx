@@ -3,8 +3,14 @@ import { useActiveTimeChannels } from "../../hooks/useActiveTimeChannels";
 import { useFilteredActiveChannels } from "../../hooks/useFilteredActiveChannels";
 import ActiveTimeFilterPanel from "../activeTime/ActiveTimeFilterPanel";
 import ChannelHeatmapCard from "../activeTime/ChannelHeatmapCard";
+import GroupedChannelList from "../channels/GroupedChannelList";
+import { groupChannelsByCountry } from "../../utils/groupChannelsByCountry";
 
-export default function ActiveTimeTabSection({ baseChannels }) {
+export default function ActiveTimeTabSection({
+  baseChannels,
+  isFlagGrouping = false,
+  onClick,
+}) {
   const { data, isLoading, isError } = useActiveTimeChannels();
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
   const [selectedPeriods, setSelectedPeriods] = useState([]);
@@ -14,7 +20,6 @@ export default function ActiveTimeTabSection({ baseChannels }) {
 
     const baseMap = new Map();
     baseChannels.forEach((b) => {
-      // 兩種 id 欄位都對應
       const id = b.channelId || b.channel_id;
       if (id) baseMap.set(id, b);
     });
@@ -23,21 +28,18 @@ export default function ActiveTimeTabSection({ baseChannels }) {
       data.channels
         .map((ch) => {
           const ref = baseMap.get(ch.channelId);
-          if (!ref) return null;                          // ✂️ 不在搜尋結果 → 跳過
-          if (ref.enabled === false) return null;         // ✂️ disabled → 跳過
-
+          if (!ref) return null;
+          if (ref.enabled === false) return null;
           return {
             ...ch,
             enabled: true,
             lastVideoUploadedAt: ref.lastVideoUploadedAt ?? null,
           };
         })
-        .filter(Boolean)                                  // 移除 null
+        .filter(Boolean)
     );
   }, [data, baseChannels]);
 
-
-  /* 篩選＆排序 */
   const { filteredChannels } = useFilteredActiveChannels(
     { channels: enrichedChannels },
     selectedWeekdays,
@@ -67,6 +69,20 @@ export default function ActiveTimeTabSection({ baseChannels }) {
       {/* 結果區塊 */}
       {filteredChannels.length === 0 ? (
         <div className="text-center text-gray-500 mt-10">查無符合的頻道</div>
+      ) : isFlagGrouping ? (
+        <GroupedChannelList
+          groupedChannels={groupChannelsByCountry(filteredChannels, () => 0)}
+          onClick={onClick}
+          renderCard={(channel) => (
+            <ChannelHeatmapCard
+              key={channel.channelId}
+              channel={channel}
+              filterApplied={filterApplied}
+              highlightWeekdays={selectedWeekdays}
+              highlightPeriods={selectedPeriods}
+            />
+          )}
+        />
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredChannels.map((channel) => (

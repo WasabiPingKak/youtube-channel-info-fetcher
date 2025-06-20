@@ -8,10 +8,17 @@ import {
   NewlyJoinedChannelsSection,
 } from "../components/channels";
 import ActiveTimeTabSection from "../components/channels/ActiveTimeTabSection";
+import FlagGroupingToggle from "../components/channels/FlagGroupingToggle";
+import GroupedChannelList from "../components/channels/GroupedChannelList";
+import { groupChannelsByCountry } from "../utils/groupChannelsByCountry";
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
   const [sortMode, setSortMode] = useState("latest");
+
+  const [isFlagGrouping, setIsFlagGrouping] = useState(() =>
+    localStorage.getItem("useFlagGrouping") === "true"
+  );
 
   const navigate = useNavigate();
 
@@ -28,6 +35,20 @@ const ChannelSelectorPage = () => {
   };
 
   const isActivityTab = sortMode === "activeTime";
+
+  // 決定分組或平鋪顯示內容
+  const sortedChannels = [...channels];
+  let sortFn = (a, b) => 0;
+  if (sortMode === "latest") {
+    sortFn = (a, b) =>
+      new Date(b.lastUploadAt).getTime() - new Date(a.lastUploadAt).getTime();
+  } else if (sortMode === "alphabetical") {
+    sortFn = (a, b) => a.name.localeCompare(b.name);
+  }
+
+  const groupedChannels = isFlagGrouping
+    ? groupChannelsByCountry(sortedChannels, sortFn)
+    : [];
 
   return (
     <MainLayout>
@@ -50,8 +71,18 @@ const ChannelSelectorPage = () => {
               channels={newlyJoinedChannels}
               onClick={handleClick}
             />
+
           </>
         )}
+
+        {/* 國旗分組開關 */}
+        <FlagGroupingToggle
+          isEnabled={isFlagGrouping}
+          onToggle={(val) => {
+            setIsFlagGrouping(val);
+            localStorage.setItem("useFlagGrouping", String(val));
+          }}
+        />
 
         {/* 排序 Tabs */}
         <div className="flex gap-2 mb-4 text-sm font-medium">
@@ -91,9 +122,13 @@ const ChannelSelectorPage = () => {
           </div>
         )}
 
-        {/* 🧠 活動時間 tab：顯示篩選器與熱圖小卡 */}
+        {/* 🧠 活動時間 tab */}
         {isActivityTab && (
-          <ActiveTimeTabSection baseChannels={channels} />
+          <ActiveTimeTabSection
+            baseChannels={channels}
+            isFlagGrouping={isFlagGrouping}
+            onClick={handleClick}
+          />
         )}
 
         {/* ✅ 其他排序模式 */}
@@ -105,15 +140,23 @@ const ChannelSelectorPage = () => {
                 ? "按照頻道名稱字典順序排列"
                 : "按照最近上片時間排列"}
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-              {channels.map((channel) => (
-                <ChannelSelectorCard
-                  key={channel.channel_id}
-                  channel={channel}
-                  onClick={handleClick}
-                />
-              ))}
-            </div>
+
+            {isFlagGrouping ? (
+              <GroupedChannelList
+                groupedChannels={groupedChannels}
+                onClick={handleClick}
+              />
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                {channels.map((channel) => (
+                  <ChannelSelectorCard
+                    key={channel.channel_id}
+                    channel={channel}
+                    onClick={handleClick}
+                  />
+                ))}
+              </div>
+            )}
           </>
         )}
 
