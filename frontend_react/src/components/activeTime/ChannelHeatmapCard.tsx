@@ -8,12 +8,19 @@ type Props = {
     thumbnail: string;
     countryCode?: string[];
     activeTime: Record<string, Record<string, number>>;
-    matchRatio?: number; // 💡 來自 hook 中的附加欄位
+    matchRatio?: number;
   };
-  filterApplied: boolean; // 💡 由父層告知是否有啟用篩選條件
+  filterApplied?: boolean;
+  highlightWeekdays?: string[];
+  highlightPeriods?: string[];
 };
 
-export default function ChannelHeatmapCard({ channel, filterApplied }: Props) {
+export default function ChannelHeatmapCard({
+  channel,
+  filterApplied,
+  highlightWeekdays = [],
+  highlightPeriods = [],
+}: Props) {
   return (
     <a
       href={`/videos?channel=${channel.channelId}`}
@@ -40,16 +47,20 @@ export default function ChannelHeatmapCard({ channel, filterApplied }: Props) {
             ))}
           </div>
 
-          {/* ✅ 只在篩選有作用時顯示活躍佔比 */}
+          {/* ✅ 顯示熱度分數 */}
           {filterApplied && channel.matchRatio !== undefined && (
             <div className="text-xs text-gray-500 mt-[2px]">
-              活躍佔比：{(channel.matchRatio * 100).toFixed(1)}%
+              活躍熱度：{channel.matchRatio} 分
             </div>
           )}
         </div>
       </div>
 
-      <ActiveTimeHeatmapMini activeTime={channel.activeTime} />
+      <ActiveTimeHeatmapMini
+        activeTime={channel.activeTime}
+        highlightWeekdays={highlightWeekdays}
+        highlightPeriods={highlightPeriods}
+      />
     </a>
   );
 }

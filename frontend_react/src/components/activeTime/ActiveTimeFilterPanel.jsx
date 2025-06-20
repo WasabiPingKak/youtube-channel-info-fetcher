@@ -1,4 +1,5 @@
-import React from "react";
+import React, { useState } from "react";
+import ActiveHeatScoreModal from "./ActiveHeatScoreModal";
 
 const WEEKDAYS = [
   { label: "日", key: "Sun" },
@@ -19,53 +20,81 @@ const TIME_PERIODS = [
 
 export default function ActiveTimeFilterPanel({
   selectedWeekdays,
+  setSelectedWeekdays,
   selectedPeriods,
-  onToggleWeekday,
-  onTogglePeriod,
-  onClear,
+  setSelectedPeriods,
   resultCount,
 }) {
+  const [showHelpModal, setShowHelpModal] = useState(false);
+
+  const toggle = (list, setter, key) => {
+    setter((prev) =>
+      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+    );
+  };
+
+  const clearFilter = () => {
+    setSelectedWeekdays([]);
+    setSelectedPeriods([]);
+  };
+
   return (
-    <div className="mb-4 space-y-3">
+    <div className="border p-4 rounded-xl bg-white dark:bg-zinc-800 space-y-3">
       <div className="flex flex-wrap gap-2">
-        {WEEKDAYS.map(({ label, key }) => (
-          <button
-            key={key}
-            className={`px-3 py-1 rounded-full border ${selectedWeekdays.includes(key)
+        {WEEKDAYS.map(({ label, key }) => {
+          const active = selectedWeekdays.includes(key);
+          return (
+            <button
+              key={key}
+              className={`px-3 py-1 rounded border flex items-center gap-1 transition ${active
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300"
-              }`}
-            onClick={() => onToggleWeekday(key)}
-          >
-            {label}
-          </button>
-        ))}
+                : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100 border-gray-300"
+                }`}
+              onClick={() => toggle(selectedWeekdays, setSelectedWeekdays, key)}
+            >
+              <input type="checkbox" readOnly checked={active} />
+              {label}
+            </button>
+          );
+        })}
       </div>
+
+      <hr className="border-t border-gray-300 dark:border-zinc-600 my-2 w-full" />
+
       <div className="flex flex-wrap gap-2">
-        {TIME_PERIODS.map(({ label, key }) => (
-          <button
-            key={key}
-            className={`px-3 py-1 rounded-full border ${selectedPeriods.includes(key)
+        {TIME_PERIODS.map(({ label, key }) => {
+          const active = selectedPeriods.includes(key);
+          return (
+            <button
+              key={key}
+              className={`px-3 py-1 rounded border flex items-center gap-1 transition ${active
                 ? "bg-purple-600 text-white border-purple-600"
-                : "bg-white text-gray-600 border-gray-300"
-              }`}
-            onClick={() => onTogglePeriod(key)}
-          >
-            {label}
-          </button>
-        ))}
+                : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100 border-gray-300"
+                }`}
+              onClick={() => toggle(selectedPeriods, setSelectedPeriods, key)}
+            >
+              <input type="checkbox" readOnly checked={active} />
+              {label}
+            </button>
+          );
+        })}
       </div>
-      <div className="flex items-center gap-3">
-        <button
-          onClick={onClear}
-          className="text-sm text-gray-600 underline"
-        >
-          清除條件
+
+      <hr className="border-t border-gray-300 dark:border-zinc-600 my-2 w-full" />
+
+      <div className="flex flex-col items-start gap-1">
+        <button onClick={clearFilter} className="text-sm text-gray-600 underline">
+          🗑️清除條件
         </button>
-        <span className="text-sm text-gray-500">
-          目前符合的頻道：{resultCount} 個
-        </span>
+        <button
+          onClick={() => setShowHelpModal(true)}
+          className="text-sm text-blue-600 underline cursor-pointer"
+        >
+          活躍度說明
+        </button>
       </div>
+
+      <ActiveHeatScoreModal open={showHelpModal} onClose={() => setShowHelpModal(false)} />
     </div>
   );
 }

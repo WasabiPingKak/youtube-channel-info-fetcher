@@ -17,6 +17,8 @@ type ActiveTimeChannel = {
   countryCode?: string[];
   activeTime: ActiveTimeMatrix;
   totalCount: number;
+  enabled?: boolean;
+  lastVideoUploadedAt?: string; // ISO 字串
 };
 
 type UseFilteredActiveChannelsProps = {
@@ -29,6 +31,16 @@ type UseFilteredActiveChannelsResult = {
   })[];
 };
 
+function getHeatScore(count: number, max: number): number {
+  if (max === 0) return 0;
+  const ratio = count / max;
+  if (ratio === 0) return 0;
+  if (ratio <= 0.2) return 1;
+  if (ratio <= 0.4) return 2;
+  if (ratio <= 0.7) return 3;
+  return 4;
+}
+
 export function useFilteredActiveChannels(
   data: UseFilteredActiveChannelsProps,
   selectedWeekdays: string[],
@@ -37,20 +49,44 @@ export function useFilteredActiveChannels(
   return useMemo(() => {
     if (!data?.channels) return { filteredChannels: [] };
 
-    // 1. 將每個頻道切成 28 區塊後計算百分比
-    const channelsWithRatio = data.channels.map((ch) => {
+    // ✅ 過濾掉 disabled 的頻道
+    const validChannels = data.channels.filter((ch) => ch.enabled !== false);
+
+    // ✅ 無篩選條件時，用最後上片時間排序
+    const noFilter = selectedWeekdays.length === 0 && selectedPeriods.length === 0;
+
+    if (noFilter) {
+      const sorted = validChannels
+        .filter((ch) => ch.lastVideoUploadedAt)
+        .sort((a, b) =>
+          (b.lastVideoUploadedAt || "").localeCompare(a.lastVideoUploadedAt || "")
+        )
+        .map((ch) => ({ ...ch, matchRatio: 1 }));
+      return { filteredChannels: sorted };
+    }
+
+    const channelsWithRatio = validChannels.map((ch) => {
       const ratioMap: Record<string, number> = {};
-      const total = ch.totalCount || 1;
+
+      let maxCount = 0;
+      for (const day of WEEKDAYS) {
+        const hours = ch.activeTime?.[day] || {};
+        for (const h of Object.keys(hours)) {
+          const v = hours[h];
+          if (v > maxCount) maxCount = v;
+        }
+      }
 
       for (const day of WEEKDAYS) {
         const hours = ch.activeTime?.[day] || {};
         for (const [periodKey, hourList] of Object.entries(TIME_PERIODS)) {
-          const count = hourList.reduce(
-            (sum, h) => sum + (hours?.[h.toString()] || 0),
-            0
-          );
+          const scoreSum = hourList.reduce((sum, h) => {
+            const count = hours?.[h.toString()] || 0;
+            return sum + getHeatScore(count, maxCount);
+          }, 0);
+
           const key = `${day}-${periodKey}`;
-          ratioMap[key] = count / total;
+          ratioMap[key] = scoreSum;
         }
       }
 
@@ -60,7 +96,6 @@ export function useFilteredActiveChannels(
       };
     });
 
-    // 2. 根據條件篩選加總百分比
     const filtered = channelsWithRatio
       .map((ch) => {
         let match = 0;
@@ -82,9 +117,6 @@ export function useFilteredActiveChannels(
           } else if (selectedPeriods.length > 0) {
             // 只選時段
             include = periodMatch;
-          } else {
-            // 沒選擇 → 全部算進來
-            include = true;
           }
 
           if (include) match += ch.ratioMap[key];

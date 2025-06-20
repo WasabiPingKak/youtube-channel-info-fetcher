@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import ChannelSelectorCard from "./ChannelSelectorCard";
 
 /**
@@ -81,29 +81,58 @@ const groupByJoinedDate = (channels) => {
     .map(([_, group]) => group);
 };
 
+const STORAGE_KEY = "newlyJoinedExpanded";
+
 const NewlyJoinedChannelsSection = ({ channels, onClick }) => {
+  const [expanded, setExpanded] = useState(true);
+
+  useEffect(() => {
+    const stored = localStorage.getItem(STORAGE_KEY);
+    if (stored === "false") {
+      setExpanded(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, expanded ? "true" : "false");
+  }, [expanded]);
+
   if (!channels || channels.length === 0) return null;
 
   const grouped = groupByJoinedDate(channels);
 
   return (
     <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-8">
-      <h2 className="text-sm font-bold text-yellow-800 mb-3">新加入的頻道</h2>
+      {/* 標題 + 按鈕緊鄰 */}
+      <div className="flex items-center mb-3">
+        <h2 className="text-sm font-bold text-yellow-800 mr-4">
+          新加入的頻道
+        </h2>
+        <button
+          onClick={() => setExpanded(!expanded)}
+          className="text-xs text-yellow-600 hover:underline"
+        >
+          {expanded ? "隱藏" : "顯示"}
+        </button>
+      </div>
 
-      {grouped.map((group) => (
-        <div key={group.label} className="mb-6">
-          <p className="text-xs font-semibold text-yellow-700 mb-2">{group.label}</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-            {group.list.map((channel) => (
-              <ChannelSelectorCard
-                key={channel.channel_id}
-                channel={channel}
-                onClick={onClick}
-              />
-            ))}
+      {expanded &&
+        grouped.map((group) => (
+          <div key={group.label} className="mb-6">
+            <p className="text-xs font-semibold text-yellow-700 mb-2">
+              {group.label}
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+              {group.list.map((channel) => (
+                <ChannelSelectorCard
+                  key={channel.channel_id}
+                  channel={channel}
+                  onClick={onClick}
+                />
+              ))}
+            </div>
           </div>
-        </div>
-      ))}
+        ))}
     </div>
   );
 };

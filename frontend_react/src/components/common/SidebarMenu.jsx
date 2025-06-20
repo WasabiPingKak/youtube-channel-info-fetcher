@@ -23,7 +23,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       action: () => navigate("/trending"),
     },
     {
-      label: "檢視個別頻道",
+      label: "檢視所有頻道",
       icon: <FaUser className="w-5 h-5" />,
       action: () => navigate("/channels"),
     },
