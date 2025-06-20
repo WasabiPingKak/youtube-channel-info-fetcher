@@ -1,5 +1,6 @@
 import React from "react";
 import ActiveTimeHeatmapMini from "./ActiveTimeHeatmapMini";
+import SmartLink from "@/components/common/SmartLink"; // ← 根據你的專案路徑調整匯入位置
 
 type Props = {
   channel: {
@@ -22,10 +23,8 @@ export default function ChannelHeatmapCard({
   highlightPeriods = [],
 }: Props) {
   return (
-    <a
-      href={`/videos?channel=${channel.channelId}`}
-      target="_blank"
-      rel="noopener noreferrer"
+    <SmartLink
+      to={`/videos?channel=${channel.channelId}`}
       className="block border rounded-xl p-4 hover:shadow transition"
     >
       <div className="flex gap-2 items-start mb-2">
@@ -61,6 +60,6 @@ export default function ChannelHeatmapCard({
         highlightWeekdays={highlightWeekdays}
         highlightPeriods={highlightPeriods}
       />
-    </a>
+    </SmartLink>
   );
 }

@@ -1,6 +1,6 @@
-// src/components/common/TopNav.jsx
 import React from "react";
 import { PiCompassRoseBold } from "react-icons/pi";
+import SmartLink from "@/components/common/SmartLink";
 
 const TopNav = ({ collapsed, toggleCollapsed }) => {
   const isMobile = window.innerWidth < 768;
@@ -23,13 +23,15 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
         ☰
       </button>
 
-      <div className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white">
+      <SmartLink
+        to="/"
+        className="flex items-center gap-2 text-xl font-bold text-gray-800 dark:text-white"
+      >
         <PiCompassRoseBold className="w-6 h-6" />
         <span>VTMap 頻道旅圖｜Vtuber TrailMap</span>
-      </div>
+      </SmartLink>
     </header>
   );
 };
-
 
 export default TopNav;

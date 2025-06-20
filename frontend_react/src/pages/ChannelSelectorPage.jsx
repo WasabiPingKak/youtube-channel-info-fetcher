@@ -65,15 +65,6 @@ const ChannelSelectorPage = () => {
             最新上片
           </button>
           <button
-            className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
-              ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
-              }`}
-            onClick={() => setSortMode("alphabetical")}
-          >
-            字典排序
-          </button>
-          <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "activeTime"
               ? "bg-blue-600 text-white border-blue-600"
               : "bg-white text-gray-600 border-gray-300"
@@ -81,6 +72,15 @@ const ChannelSelectorPage = () => {
             onClick={() => setSortMode("activeTime")}
           >
             活動時間
+          </button>
+          <button
+            className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-600 border-gray-300"
+              }`}
+            onClick={() => setSortMode("alphabetical")}
+          >
+            字典排序
           </button>
         </div>
 
