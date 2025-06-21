@@ -57,6 +57,7 @@ def init_my_settings_route(app):
                             "name": item.get("name"),
                             "thumbnail": item.get("thumbnail"),
                             "url": item.get("url"),
+                            "show_live_status": item.get("show_live_status", True) # 若缺少則預設為 True
                         })
 
             return jsonify({"error": "Channel not found"}), 404
@@ -78,6 +79,7 @@ def init_my_settings_route(app):
             channel_id = data.get("channelId")
             enabled = data.get("enabled")
             country_code = data.get("countryCode")
+            show_live_status = data.get("show_live_status", True)  # 若缺少則預設為 True
 
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
@@ -102,6 +104,7 @@ def init_my_settings_route(app):
                         target_channels = channels
                         target_channels[i]["enabled"] = enabled
                         target_channels[i]["countryCode"] = country_code
+                        target_channels[i]["show_live_status"] = show_live_status
                         break
                 if target_doc_ref:
                     break
@@ -116,7 +119,8 @@ def init_my_settings_route(app):
             index_doc_ref = db.collection("channel_index").document(channel_id)
             index_doc_ref.set({
                 "countryCode": country_code,
-                "enabled": enabled
+                "enabled": enabled,
+                "show_live_status": show_live_status
             }, merge=True)
 
             return jsonify({"status": "ok"}), 200

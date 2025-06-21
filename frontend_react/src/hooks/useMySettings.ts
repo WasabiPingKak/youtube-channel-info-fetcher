@@ -2,7 +2,12 @@ import { useEffect, useState } from "react";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import {
+  showSuccessToast,
+  showFailureToast,
+  showLoginRequiredToast,
+  showPermissionDeniedToast,
+} from "@/components/common/ToastManager";
 
 interface MySettingsResponse {
   enabled: boolean;
@@ -10,12 +15,14 @@ interface MySettingsResponse {
   name: string;
   thumbnail: string;
   channel_id: string;
+  show_live_status?: boolean;
 }
 
 export function useMySettings() {
   const { data: user } = useMyChannelId();
   const [enabled, setEnabled] = useState<boolean>(false);
   const [selectedCountries, setSelectedCountries] = useState<string[]>([]);
+  const [visibleLive, setVisibleLive] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
   const [channelInfo, setChannelInfo] = useState<MySettingsResponse | null>(null);
   const queryClient = useQueryClient();
@@ -25,13 +32,14 @@ export function useMySettings() {
     setLoading(true);
     try {
       const res = await fetch(`/api/my-settings/get?channelId=${channelId}`, {
-        credentials: 'include',
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Fetch failed");
       const data: MySettingsResponse = await res.json();
       setChannelInfo(data);
       setEnabled(data.enabled ?? false);
       setSelectedCountries(data.countryCode ?? []);
+      setVisibleLive(data.show_live_status ?? false); // ✅ 新增欄位處理
     } catch (err) {
       toast("⚠️ 載入設定失敗");
     } finally {
@@ -54,8 +62,9 @@ export function useMySettings() {
           channelId: user?.channelId,
           enabled,
           countryCode: selectedCountries,
+          show_live_status: visibleLive,
         }),
-        credentials: 'include',
+        credentials: "include",
       });
 
       if (!res.ok) throw new Error();
@@ -76,6 +85,8 @@ export function useMySettings() {
     setEnabled,
     selectedCountries,
     setSelectedCountries,
+    visibleLive,
+    setVisibleLive,
     loading,
     handleSave,
     channelInfo,
