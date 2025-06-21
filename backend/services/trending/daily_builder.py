@@ -7,8 +7,9 @@ from .firestore_path_tools import document_exists, write_document
 from .channel_status_loader import get_active_channels
 from .firestore_date_utils import parse_firestore_date
 
-from utils.settings_game_merger import merge_game_categories_with_aliases
 from utils.categorizer import match_category_and_game
+from utils.channel_data_loader import load_channel_settings_and_videos
+from utils.trending_classifier import classify_videos_to_games
 
 logger = logging.getLogger(__name__)
 
@@ -28,36 +29,7 @@ def build_trending_for_date_range(
         active_channels = get_active_channels(db)
         logger.info(f"📡 活躍頻道數量：{len(active_channels)}")
 
-        channel_settings_map = {}
-        channel_videos_map = {}
-
-        for channel in active_channels:
-            channel_id = channel.get("channel_id")
-            if not channel_id:
-                continue
-
-            # 讀取並快取設定
-            config_doc = (
-                db.collection("channel_data")
-                .document(channel_id)
-                .collection("settings")
-                .document("config")
-                .get()
-            )
-            raw_settings = config_doc.to_dict() if config_doc.exists else {}
-            merged_settings = merge_game_categories_with_aliases(raw_settings)
-            channel_settings_map[channel_id] = merged_settings
-
-            # 載入並快取所有影片（合併所有 batch）
-            batch_ref = (
-                db.collection("channel_data")
-                .document(channel_id)
-                .collection("videos_batch")
-            )
-            video_items = []
-            for doc in batch_ref.stream():
-                video_items.extend(doc.to_dict().get("videos", []))
-            channel_videos_map[channel_id] = video_items
+        channel_settings_map, channel_videos_map = load_channel_settings_and_videos(db, active_channels)
 
         # 每日處理
         results = []
@@ -94,31 +66,24 @@ def build_trending_for_date_range(
                     parse_firestore_date(v.get("publishDate")).date() == target_date
                 ]
 
-                for video in videos:
-                    stats["videos_processed"] += 1
+                # 使用共用函式分類
+                game_map_partial, stats_partial = classify_videos_to_games(
+                    videos,
+                    channel_id,
+                    settings,
+                    match_category_and_game,
+                )
 
-                    result = match_category_and_game(
-                        video["title"],
-                        video["type"],
-                        settings
-                    )
-                    game = result.get("game")
-                    if not game:
-                        continue
+                # 合併分類結果
+                for game, vids in game_map_partial.items():
+                    game_map.setdefault(game, []).extend(vids)
 
-                    stats["videos_classified"] += 1
+                # 合併統計
+                stats["videos_processed"] += stats_partial["videos_processed"]
+                stats["videos_classified"] += stats_partial["videos_classified"]
+                for game, count in stats_partial["games_found"].items():
                     stats["games_found"].setdefault(game, 0)
-                    stats["games_found"][game] += 1
-
-                    video_data = {
-                        "videoId": video["videoId"],
-                        "title": video["title"],
-                        "publishDate": video["publishDate"],
-                        "duration": video.get("duration", 0),
-                        "type": video.get("type", ""),
-                        "channelId": channel_id
-                    }
-                    game_map.setdefault(game, []).append(video_data)
+                    stats["games_found"][game] += count
 
             write_document(db, trending_doc_path, game_map)
             logger.info(f"✅ 寫入完成 {date_str}，共 {len(game_map)} 個遊戲")
