@@ -28,6 +28,8 @@ from routes.sync_heatmap import init_sync_heatmap_route
 from routes.api_heatmap_route import init_api_heatmap_route
 from routes.admin_init_channel_route import init_admin_init_channel_route
 from routes.weekly_heatmap_cache_route import init_weekly_heatmap_cache_route
+from routes.websub_notify_route import init_websub_notify_route
+from routes.websub_subscribe_route import init_websub_subscribe_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -71,7 +73,8 @@ init_sync_heatmap_route(app, db)
 init_api_heatmap_route(app, db)
 init_admin_init_channel_route(app, db)
 init_weekly_heatmap_cache_route(app, db)
-
+init_websub_notify_route(app, db)
+init_websub_subscribe_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():
