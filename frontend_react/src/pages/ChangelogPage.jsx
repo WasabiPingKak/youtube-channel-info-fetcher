@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-23",
+    items: [
+      "新增降落轉機塔臺，網站預設首頁改為指向降落塔臺",
+    ],
+  },
+  {
     date: "2025-06-20",
     items: [
       "新增全頻道列表活躍時間篩選功能",

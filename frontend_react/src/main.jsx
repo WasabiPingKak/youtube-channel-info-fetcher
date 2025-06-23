@@ -21,6 +21,7 @@ import ChangelogPage from "./pages/ChangelogPage";
 import MySettingsPage from "./pages/MySettingsPage";
 import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
+import LiveRedirectPage from "./pages/LiveRedirectPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
@@ -69,7 +70,7 @@ function AppRoutes() {
     <Suspense fallback={<div>Loading…</div>}>
       <Routes>
         {/* 公開頁面 */}
-        <Route path="/" element={<Navigate to="/trending" replace />} />
+        <Route path="/" element={<Navigate to="/live-redirect" replace />} />
         <Route path="/videos" element={<VideoExplorerPage />} />
         <Route path="/channels" element={<ChannelSelectorPage />} />
         <Route path="/authorize-channel" element={<AuthorizeChannelPage />} />
@@ -83,6 +84,7 @@ function AppRoutes() {
         <Route path="/my-category-editor" element={<ChannelCategoryEditorPage />} />
         <Route path="/quick-category-editor/:channelId" element={<QuickCategoryEditorPage />} />
         <Route path="/auth-loading" element={<AuthLoadingPage />} />
+        <Route path="/live-redirect" element={<LiveRedirectPage />} />
 
         {/* 其他路徑 → redirect 提示 */}
         <Route

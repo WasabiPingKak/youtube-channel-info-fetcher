@@ -25,13 +25,24 @@ export function LiveStatusToggleSection({ visible, onChange }: Props) {
         </button>
       </div>
       <div>
-        <span className="font-medium">願意公開我正在直播中的狀態（供其他主播導流使用）</span>
+        <span className="font-medium">公開我正在直播中的狀態（供其他主播降落導流使用）</span>
         <div className="text-sm text-muted-foreground mt-1">
-          若開啟，其他人可在導流推薦頁中看到你的頻道正在開台。
+          若開啟，其他人可在
+          <a
+            href="/live-redirect"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-600 hover:underline mx-1"
+          >
+            降落轉機塔臺
+          </a>
+          中看到你的頻道正在開台。
         </div>
         <div className="text-sm text-muted-foreground mt-1">
           這個設定與頻道分析頁互相獨立，與頻道分析頁是否公開無關。
-          你可以關閉頻道分析，但是打開導流推薦，你的直播資訊依然會出現在導流推薦中。
+        </div>
+        <div className="text-sm text-muted-foreground mt-1">
+          你可以關閉頻道分析，但是打開直播中的狀態，你的直播資訊依然會出現在轉機塔臺中。
         </div>
       </div>
     </section>

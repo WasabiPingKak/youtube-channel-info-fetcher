@@ -1,34 +1,31 @@
 import logging
 import os
-import time
 import requests
-from flask import Blueprint, request, Response
+from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 from datetime import datetime, timedelta, timezone
 
-rebuild_bp = Blueprint("live_redirect_rebuild", __name__)
+live_redirect_bp = Blueprint("live_redirect", __name__)
 YOUTUBE_API_KEY = os.getenv("API_KEY")
 CACHE_DOC_PATH = ("live_redirect_cache", "current")
 QUEUE_DOC_PATH = ("live_redirect_notify_queue", "current")
 CHANNEL_INDEX_COLLECTION = "channel_index"
 YOUTUBE_API = "https://www.googleapis.com/youtube/v3/videos"
 
-def build_live_redirect_cache_entries(videos: list, db: Client, force: bool, now: datetime):
+
+def build_live_redirect_cache_entries(videos: list, db: Client, now: datetime):
     output_channels = []
     processed_video_ids = []
 
     for video in videos:
         video_id = video.get("videoId")
         channel_id = video.get("channelId")
-        processed_at = video.get("processedAt")
         if not video_id or not channel_id:
             continue
-        if not force and processed_at:
-            continue
 
-        logging.info(f"🔍 重新查詢影片：{video_id}")
+        logging.info(f"🔍 查詢影片：{video_id}")
 
-        # 呼叫 YouTube videos.list API
+        # 呼叫 YouTube API
         params = {
             "part": "snippet,liveStreamingDetails",
             "id": video_id,
@@ -41,7 +38,7 @@ def build_live_redirect_cache_entries(videos: list, db: Client, force: bool, now
 
         items = yt_resp.json().get("items", [])
         if not items:
-            continue  # 找不到影片
+            continue
 
         item = items[0]
         snippet = item.get("snippet", {})
@@ -73,7 +70,7 @@ def build_live_redirect_cache_entries(videos: list, db: Client, force: bool, now
                 is_upcoming = True
                 start_time = scheduled_start
 
-        logging.info(
+        logging.debug(
             f"🧪 判斷影片狀態 - channel: {channel_id} / video: {video_id}\n"
             f"  actualStartTime: {actual_start}\n"
             f"  scheduledStartTime: {scheduled_start}\n"
@@ -108,15 +105,15 @@ def build_live_redirect_cache_entries(videos: list, db: Client, force: bool, now
             }
         })
 
-        logging.info(f"✅ 寫入快取成功：{channel_id} / {video_id}")
+        logging.info(f"✅ 納入快取：{channel_id} / {video_id}")
         processed_video_ids.append(video_id)
 
     return output_channels, processed_video_ids
 
 
-def init_live_redirect_rebuild_route(app, db: Client):
-    @rebuild_bp.route("/api/live-redirect/rebuild-cache", methods=["GET"])
-    def rebuild_live_redirect_cache():
+def init_live_redirect_route(app, db: Client):
+    @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
+    def get_live_redirect_cache():
         try:
             force = request.args.get("force", "false").lower() == "true"
             now = datetime.now(timezone.utc)
@@ -129,27 +126,38 @@ def init_live_redirect_rebuild_route(app, db: Client):
             if not force and updated_at:
                 updated_time = datetime.fromisoformat(updated_at)
                 if now - updated_time < timedelta(minutes=5):
-                    return Response("✅ 快取未過期，略過重建", status=200)
+                    logging.info("♻️ 快取未過期，直接回傳")
+                    return jsonify(cache_data)
 
             # 讀通知佇列
             queue_ref = db.collection(QUEUE_DOC_PATH[0]).document(QUEUE_DOC_PATH[1])
             queue_data = queue_ref.get().to_dict() or {}
             videos = queue_data.get("videos", [])
 
-            # 封裝處理主體
-            output_channels, processed_video_ids = build_live_redirect_cache_entries(videos, db, force, now)
+            # 備份舊快取資料（僅非 force 模式時合併）
+            existing_channels = cache_data.get("channels", []) if not force else []
+            existing_map = {c["live"]["videoId"]: c for c in existing_channels}
 
-            # 寫入主快取
+            # 所有影片一律重新查詢，但是否更新 processedAt 由 force 控制
+            new_channels, processed_video_ids = build_live_redirect_cache_entries(videos, db, now)
+            for c in new_channels:
+                vid = c["live"]["videoId"]
+                existing_map[vid] = c  # 合併新舊快取
+
+            merged_channels = list(existing_map.values())
+
+            # 寫入快取
             cache_ref.set({
                 "updatedAt": now.isoformat(),
-                "channels": output_channels
+                "channels": merged_channels
             })
 
-            # 更新 processedAt
+            # 更新佇列的 processedAt（只有在 force 時更新）
             new_videos = []
             for v in videos:
-                if v.get("videoId") in processed_video_ids or force:
-                    v["processedAt"] = now.isoformat()
+                if v.get("videoId") in processed_video_ids:
+                    if force or not v.get("processedAt"):
+                        v["processedAt"] = now.isoformat()
                 new_videos.append(v)
 
             queue_ref.set({
@@ -157,26 +165,15 @@ def init_live_redirect_rebuild_route(app, db: Client):
                 "videos": new_videos
             })
 
-            # 彙整處理結果
-            summary_lines = [
-                f"✅ 快取重建完成，共處理 {len(processed_video_ids)} 支影片："
-            ]
-            for entry in output_channels:
-                video_id = entry["live"]["videoId"]
-                channel_id = entry["channel_id"]
-                title = entry["live"].get("title", "(無標題)")
-                summary_lines.append(f"- {channel_id} / {video_id} - {title}")
+            logging.info(f"✅ 快取重建完成，channels={len(merged_channels)}，更新影片={len(processed_video_ids)}")
 
-            summary_text = "\n".join(summary_lines)
+            return jsonify({
+                "updatedAt": now.isoformat(),
+                "channels": merged_channels
+            })
 
-            # 印出處理清單
-            logging.info(summary_text)
+        except Exception:
+            logging.exception("🔥 快取重建流程失敗")
+            return jsonify({"error": "Internal Server Error"}), 500
 
-            # 回傳結果
-            return Response(summary_text, status=200, content_type="text/plain")
-
-        except Exception as e:
-            logging.error("🔥 rebuild-cache 錯誤", exc_info=True)
-            return Response("Internal Server Error", status=500)
-
-    app.register_blueprint(rebuild_bp)
+    app.register_blueprint(live_redirect_bp)
