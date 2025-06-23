@@ -30,6 +30,7 @@ from routes.admin_init_channel_route import init_admin_init_channel_route
 from routes.weekly_heatmap_cache_route import init_weekly_heatmap_cache_route
 from routes.websub_notify_route import init_websub_notify_route
 from routes.websub_subscribe_route import init_websub_subscribe_route
+from routes.live_redirect_rebuild_route import init_live_redirect_rebuild_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -75,6 +76,7 @@ init_admin_init_channel_route(app, db)
 init_weekly_heatmap_cache_route(app, db)
 init_websub_notify_route(app, db)
 init_websub_subscribe_route(app, db)
+init_live_redirect_rebuild_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

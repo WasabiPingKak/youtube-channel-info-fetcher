@@ -50,8 +50,6 @@ def init_websub_notify_route(app, db):
                     new_item = {
                         "videoId": video_id,
                         "channelId": channel_id,
-                        "scheduledStartTime": None,
-                        "actualStartTime": None,
                         "notifiedAt": notified_at,
                         "processedAt": None,
                     }

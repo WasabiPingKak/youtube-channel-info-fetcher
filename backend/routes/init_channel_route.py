@@ -3,6 +3,7 @@ from google.api_core.exceptions import GoogleAPIError
 from services.google_oauth import get_channel_id
 from services.firestore.auth_service import get_refresh_token
 from services.channel_initializer import run_channel_initialization
+from routes.websub_subscribe_route import subscribe_channel_by_id
 import logging
 
 def init_channel_route(app):
@@ -34,6 +35,9 @@ def init_channel_route(app):
             logging.info(f"[InitAPI] ✅ 開始執行初始化流程 for {channel_id}")
             run_channel_initialization(channel_id)
             logging.info(f"[InitAPI] 🎉 初始化完成 for {channel_id}")
+
+            if not subscribe_channel_by_id(channel_id):
+                logging.warning(f"[InitAPI] ⚠️ WebSub 訂閱失敗 for {channel_id}")
 
             return jsonify({
                 "success": True,
