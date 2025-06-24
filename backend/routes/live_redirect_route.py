@@ -1,115 +1,12 @@
 import logging
-import os
-import requests
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 from datetime import datetime, timedelta, timezone
+from services.live_redirect.cache_builder import build_live_redirect_cache_entries
 
 live_redirect_bp = Blueprint("live_redirect", __name__)
-YOUTUBE_API_KEY = os.getenv("API_KEY")
-CACHE_DOC_PATH = ("live_redirect_cache", "current")
-QUEUE_DOC_PATH = ("live_redirect_notify_queue", "current")
-CHANNEL_INDEX_COLLECTION = "channel_index"
-YOUTUBE_API = "https://www.googleapis.com/youtube/v3/videos"
 
-
-def build_live_redirect_cache_entries(videos: list, db: Client, now: datetime):
-    output_channels = []
-    processed_video_ids = []
-
-    for video in videos:
-        video_id = video.get("videoId")
-        channel_id = video.get("channelId")
-        if not video_id or not channel_id:
-            continue
-
-        logging.info(f"🔍 查詢影片：{video_id}")
-
-        # 呼叫 YouTube API
-        params = {
-            "part": "snippet,liveStreamingDetails",
-            "id": video_id,
-            "key": YOUTUBE_API_KEY
-        }
-        yt_resp = requests.get(YOUTUBE_API, params=params)
-        if yt_resp.status_code != 200:
-            logging.warning(f"⚠️ YouTube API 錯誤：{video_id} - {yt_resp.status_code}")
-            continue
-
-        items = yt_resp.json().get("items", [])
-        if not items:
-            continue
-
-        item = items[0]
-        snippet = item.get("snippet", {})
-        live_details = item.get("liveStreamingDetails", {})
-
-        if not live_details:
-            logging.info(f"🟡 不是直播影片，略過但標記為已處理：{channel_id} / {video_id}")
-            processed_video_ids.append(video_id)
-            continue
-
-        actual_start = live_details.get("actualStartTime")
-        scheduled_start = live_details.get("scheduledStartTime")
-        actual_end = live_details.get("actualEndTime")
-        viewers = int(live_details.get("concurrentViewers", "0"))
-
-        is_live = False
-        is_upcoming = False
-        start_time = None
-
-        if actual_end:
-            start_time = actual_start or scheduled_start
-        else:
-            if actual_start and datetime.fromisoformat(actual_start) <= now:
-                is_live = True
-                is_upcoming = False
-                start_time = actual_start
-            elif scheduled_start and datetime.fromisoformat(scheduled_start) <= now + timedelta(minutes=15):
-                is_live = True
-                is_upcoming = True
-                start_time = scheduled_start
-
-        logging.debug(
-            f"🧪 判斷影片狀態 - channel: {channel_id} / video: {video_id}\n"
-            f"  actualStartTime: {actual_start}\n"
-            f"  scheduledStartTime: {scheduled_start}\n"
-            f"  actualEndTime: {actual_end}\n"
-            f"  viewers: {viewers}\n"
-            f"  → 判定結果: is_live={is_live}, is_upcoming={is_upcoming}, start_time={start_time}"
-        )
-
-        if not is_live and not actual_end:
-            continue
-
-        # 取得頻道資料
-        channel_doc = db.collection(CHANNEL_INDEX_COLLECTION).document(channel_id).get()
-        if not channel_doc.exists:
-            logging.warning(f"❗找不到頻道資料：{channel_id}")
-            continue
-        channel_data = channel_doc.to_dict()
-
-        output_channels.append({
-            "channel_id": channel_id,
-            "name": channel_data.get("name"),
-            "thumbnail": channel_data.get("thumbnail"),
-            "badge": channel_data.get("badge"),
-            "countryCode": channel_data.get("countryCode", []),
-            "live": {
-                "videoId": video_id,
-                "title": snippet.get("title"),
-                "startTime": start_time,
-                "viewers": viewers,
-                "isUpcoming": is_upcoming,
-                "endTime": actual_end
-            }
-        })
-
-        logging.info(f"✅ 納入快取：{channel_id} / {video_id}")
-        processed_video_ids.append(video_id)
-
-    return output_channels, processed_video_ids
-
+CACHE_TTL_MINUTES = 15
 
 def init_live_redirect_route(app, db: Client):
     @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
@@ -117,53 +14,88 @@ def init_live_redirect_route(app, db: Client):
         try:
             force = request.args.get("force", "false").lower() == "true"
             now = datetime.now(timezone.utc)
+            today_str = now.date().isoformat()
+            yesterday_str = (now - timedelta(days=1)).date().isoformat()
 
-            # 讀主快取
-            cache_ref = db.collection(CACHE_DOC_PATH[0]).document(CACHE_DOC_PATH[1])
-            cache_data = cache_ref.get().to_dict() or {}
-            updated_at = cache_data.get("updatedAt")
+            # 🔸 快取文件參考
+            today_cache_ref = db.collection("live_redirect_cache").document(today_str)
+            today_cache = today_cache_ref.get().to_dict() or {}
 
+            # ⏳ 若非強制更新且快取未過期，直接回傳
+            updated_at = today_cache.get("updatedAt")
             if not force and updated_at:
                 updated_time = datetime.fromisoformat(updated_at)
-                if now - updated_time < timedelta(minutes=5):
+                if now - updated_time < timedelta(minutes=CACHE_TTL_MINUTES):
                     logging.info("♻️ 快取未過期，直接回傳")
-                    return jsonify(cache_data)
+                    return jsonify(today_cache)
 
-            # 讀通知佇列
-            queue_ref = db.collection(QUEUE_DOC_PATH[0]).document(QUEUE_DOC_PATH[1])
-            queue_data = queue_ref.get().to_dict() or {}
-            videos = queue_data.get("videos", [])
+            # 📥 讀取昨天與今天的通知佇列
+            queue_docs = {
+                date_str: db.collection("live_redirect_notify_queue").document(date_str).get().to_dict() or {}
+                for date_str in [yesterday_str, today_str]
+            }
 
-            # 備份舊快取資料（僅非 force 模式時合併）
-            existing_channels = cache_data.get("channels", []) if not force else []
-            existing_map = {c["live"]["videoId"]: c for c in existing_channels}
+            # 合併 videos，後出現者覆蓋
+            all_videos_map = {}
+            for data in queue_docs.values():
+                for v in data.get("videos", []):
+                    video_id = v.get("videoId")
+                    if video_id:
+                        all_videos_map[video_id] = v
+            videos = list(all_videos_map.values())
 
-            # 所有影片一律重新查詢，但是否更新 processedAt 由 force 控制
-            new_channels, processed_video_ids = build_live_redirect_cache_entries(videos, db, now)
+            # 🔍 第一次處理：build 快取資料（僅處理未處理的影片）
+            new_channels, processed_video_ids = build_live_redirect_cache_entries(
+                videos, db, now,
+                skip_if_processed=True,
+                update_endtime_only=False
+            )
+
+            # 合併舊有快取（同一影片以新資料為準）
+            existing_map = {c["live"]["videoId"]: c for c in today_cache.get("channels", [])}
             for c in new_channels:
-                vid = c["live"]["videoId"]
-                existing_map[vid] = c  # 合併新舊快取
-
+                existing_map[c["live"]["videoId"]] = c
             merged_channels = list(existing_map.values())
 
-            # 寫入快取
-            cache_ref.set({
+            # 🔄 寫入今日快取
+            today_cache_ref.set({
                 "updatedAt": now.isoformat(),
                 "channels": merged_channels
             })
 
-            # 更新佇列的 processedAt（只有在 force 時更新）
-            new_videos = []
-            for v in videos:
-                if v.get("videoId") in processed_video_ids:
-                    if force or not v.get("processedAt"):
+            # 📝 回寫 processedAt 至昨天與今天的 queue
+            for date_str, data in queue_docs.items():
+                new_list = []
+                for v in data.get("videos", []):
+                    if v.get("videoId") in processed_video_ids:
                         v["processedAt"] = now.isoformat()
-                new_videos.append(v)
+                    new_list.append(v)
+                db.collection("live_redirect_notify_queue").document(date_str).set({
+                    "updatedAt": now.isoformat(),
+                    "videos": new_list
+                })
 
-            queue_ref.set({
-                "updatedAt": now.isoformat(),
-                "videos": new_videos
-            })
+            # 🧼 懶更新：處理 endTime 為 null 的快取
+            needs_update = [c for c in merged_channels if not c["live"].get("endTime")]
+            updated_channels, _ = build_live_redirect_cache_entries(
+                needs_update, db, now,
+                skip_if_processed=False,
+                update_endtime_only=True
+            )
+            for c in updated_channels:
+                merged_video_id = c["live"]["videoId"]
+                for i, existing in enumerate(merged_channels):
+                    if existing["live"]["videoId"] == merged_video_id:
+                        merged_channels[i] = c
+                        break
+
+            # 🔄 合併昨天快取的尚未收播影片
+            yesterday_cache = db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
+            for c in yesterday_cache.get("channels", []):
+                vid = c["live"]["videoId"]
+                if vid not in {v["live"]["videoId"] for v in merged_channels}:
+                    if not c["live"].get("endTime"):
+                        merged_channels.append(c)
 
             logging.info(f"✅ 快取重建完成，channels={len(merged_channels)}，更新影片={len(processed_video_ids)}")
 

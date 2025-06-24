@@ -41,7 +41,7 @@ export default function LiveRedirectHelpModal({ open, onClose }) {
         </ul>
 
         <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          ※ 資料每 <strong>5 分鐘</strong> 自動更新一次
+          ※ 資料每 <strong>15 分鐘</strong> 自動更新一次
         </p>
 
         <div className="text-right mt-4">

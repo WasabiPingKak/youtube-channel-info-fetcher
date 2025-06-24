@@ -22,6 +22,8 @@ import MySettingsPage from "./pages/MySettingsPage";
 import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
 import LiveRedirectPage from "./pages/LiveRedirectPage";
+import LiveRedirectMaintenancePage from "@/pages/LiveRedirectMaintenancePage";
+
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";

@@ -110,7 +110,7 @@ const AuthorizeChannelPage = () => {
 
         </div>
 
-        <div className="mt-6">
+        {/* <div className="mt-6">
           <button
             onClick={handleAuthorize}
             disabled={!confirmed}
@@ -120,6 +120,14 @@ const AuthorizeChannelPage = () => {
               }`}
           >
             使用 Google 帳號登入並連結我的 Youtube 頻道
+          </button>
+        </div> */}
+        <div className="mt-6">
+          <button
+            disabled
+            className="font-semibold py-2 px-4 rounded shadow transition bg-gray-300 text-gray-500 cursor-not-allowed"
+          >
+            目前系統瀕臨滿載，暫時關閉連結功能
           </button>
         </div>
       </div>
