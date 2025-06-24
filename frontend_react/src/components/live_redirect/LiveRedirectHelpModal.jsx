@@ -25,9 +25,9 @@ export default function LiveRedirectHelpModal({ open, onClose }) {
           ✅ 顯示條件
         </h3>
         <ul className="list-disc text-sm text-gray-700 dark:text-gray-300 pl-5 space-y-1">
-          <li>您已在本站綁定自己的頻道</li>
+          <li>您已在本站連結自己的頻道</li>
           <li>已在「我的頻道設定」中開啟「願意公開我正在直播中的狀態」</li>
-          <li>只要直播為公開狀態，綁定後的下一次直播即會自動生效</li>
+          <li>只要直播為公開狀態，連結後的下一次直播即會自動生效</li>
           <li>符合條件後，每次開台就會自動出現在此頁，不用提早一天開待機室</li>
         </ul>
 

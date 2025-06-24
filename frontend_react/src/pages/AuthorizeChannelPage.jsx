@@ -25,13 +25,13 @@ const AuthorizeChannelPage = () => {
   return (
     <MainLayout>
       <div className="max-w-2xl mx-auto mt-10 px-4">
-        <h1 className="text-2xl font-bold mb-6">綁定頻道</h1>
+        <h1 className="text-2xl font-bold mb-6">連結頻道</h1>
         <div className="bg-blue-50 border border-blue-200 text-blue-900 text-sm leading-relaxed p-4 rounded mb-6 space-y-3">
-          <p className="font-semibold text-base">為什麼需要綁定？</p>
+          <p className="font-semibold text-base">為什麼需要連結？</p>
           <p>
             本站使用 Google 官方授權機制（OAuth 2.0），只是為了確認<b>你是這個頻道的擁有者</b>，我們才能將分析資料<b>只提供給你本人</b>。
           </p>
-          <p>你不用擔心綁定後資料會立刻被公開，因為：</p>
+          <p>你不用擔心連結後資料會立刻被公開，因為：</p>
 
           <p className="font-semibold text-base">🔒 授權後，我們會做這些事：</p>
           <ul className="list-disc list-inside space-y-1">
@@ -43,7 +43,7 @@ const AuthorizeChannelPage = () => {
 
           <p className="font-semibold text-base">🚫 我們不會做的事（放心，我們做不到）：</p>
           <ul className="list-disc list-inside space-y-1">
-            <li>❌ 不會在綁定後立刻公開你的頁面，除非<strong className="font-bold">你親自進入設定中啟用展示功能</strong></li>
+            <li>❌ 不會在連結後立刻公開你的頁面，除非<strong className="font-bold">你親自進入設定中啟用展示功能</strong></li>
             <li>❌ 不會抓取你的非公開、私人、或會員限定影片</li>
             <li>❌ 不會幫你發文、刪影片、改標題或發推播</li>
             <li>❌ 不會發送任何訊息、也不會編輯你的頻道資訊</li>
@@ -119,7 +119,7 @@ const AuthorizeChannelPage = () => {
               : "bg-gray-300 text-gray-500 cursor-not-allowed"
               }`}
           >
-            使用 Google 帳號登入並綁定我的 Youtube 頻道
+            使用 Google 帳號登入並連結我的 Youtube 頻道
           </button>
         </div>
       </div>
