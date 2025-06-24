@@ -134,7 +134,9 @@ const ChannelSelectorPage = () => {
         {/* ✅ 其他排序模式 */}
         {!isLoading && !isActivityTab && channels.length > 0 && (
           <>
-            <h2 className="text-sm font-bold text-gray-700 mb-3">全部頻道</h2>
+            <h2 className="text-sm font-bold text-gray-700 mb-3">
+              全部頻道（{channels.length}）
+            </h2>
             <p className="text-xs text-gray-400 mb-3">
               {sortMode === "alphabetical"
                 ? "按照頻道名稱字典順序排列"

@@ -7,7 +7,8 @@ from services.youtube.fetcher import get_video_data
 from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
 
-DEFAULT_REFRESH_LIMIT = 100
+DEFAULT_REFRESH_LIMIT = 50
+RECENT_CHECK_INTERVAL_SECONDS = 2 * 86400  # 2 天
 
 logger = logging.getLogger(__name__)
 
@@ -27,8 +28,7 @@ def select_channels_for_scan(
         last_checked_at = entry.get("lastCheckedAt")
         try:
             if not last_checked_at:
-                # ⏱️ 從未檢查過，視為優先處理
-                age = float('inf')  # 排在最前面
+                age = float('inf')  # 從未檢查過，視為最高優先
             else:
                 last_checked_dt = (
                     datetime.fromisoformat(last_checked_at)
@@ -37,15 +37,14 @@ def select_channels_for_scan(
                 )
                 age = (now - last_checked_dt).total_seconds()
 
-                if not include_recent and age < 2 * 86400:
-                    continue  # 略過 2 天內已檢查過者
+                if not include_recent and age < RECENT_CHECK_INTERVAL_SECONDS:
+                    continue  # 太新，不處理
 
             scored.append((age, entry))
 
         except Exception as e:
             logger.warning(f"⚠️ 無法解析時間格式：{last_checked_at} | {e}")
 
-    # 依照 age 遞減排序（越久沒檢查越前面）
     scored.sort(reverse=True, key=lambda x: x[0])
     selected = [entry for _, entry in scored[:limit]]
 
@@ -97,6 +96,10 @@ def run_daily_channel_refresh(
         return {
             "status": "dry_run",
             "candidates": selected_ids,
+            "selected_count": len(selected_ids),
+            "total_channels": len(all_channels),
+            "limit": limit,
+            "include_recent": include_recent,
             "limit_applied": len(selected) < len(all_channels)
         }
 

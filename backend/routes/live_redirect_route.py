@@ -6,7 +6,7 @@ from services.live_redirect.cache_builder import build_live_redirect_cache_entri
 
 live_redirect_bp = Blueprint("live_redirect", __name__)
 
-CACHE_TTL_MINUTES = 15
+CACHE_TTL_MINUTES = 5
 
 def init_live_redirect_route(app, db: Client):
     @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
