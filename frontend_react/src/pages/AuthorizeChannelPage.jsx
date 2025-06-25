@@ -110,7 +110,7 @@ const AuthorizeChannelPage = () => {
 
         </div>
 
-        {/* <div className="mt-6">
+        <div className="mt-6">
           <button
             onClick={handleAuthorize}
             disabled={!confirmed}
@@ -121,15 +121,15 @@ const AuthorizeChannelPage = () => {
           >
             使用 Google 帳號登入並連結我的 Youtube 頻道
           </button>
-        </div> */}
-        <div className="mt-6">
+        </div>
+        {/* <div className="mt-6">
           <button
             disabled
             className="font-semibold py-2 px-4 rounded shadow transition bg-gray-300 text-gray-500 cursor-not-allowed"
           >
             目前系統瀕臨滿載，暫時關閉連結功能
           </button>
-        </div>
+      </div>*/}
       </div>
       {/* 其他授權方式說明 */}
       <div className="mt-8 text-sm text-gray-700 space-y-3 border-t pt-6">
@@ -142,7 +142,7 @@ const AuthorizeChannelPage = () => {
           本站並未採用開放表單收集頻道資訊，是因為表單無法保證填寫者即為頻道所有者，而透過上述方式可明確且具書面證據地取得授權同意，較能保障雙方權益。
         </p>
       </div>
-    </MainLayout>
+    </MainLayout >
   );
 };
 

@@ -75,6 +75,14 @@ def init_live_redirect_route(app, db: Client):
                     "videos": new_list
                 })
 
+            # 🔄 合併昨天快取的尚未收播影片
+            yesterday_cache = db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
+            for c in yesterday_cache.get("channels", []):
+                vid = c["live"]["videoId"]
+                if vid not in {v["live"]["videoId"] for v in merged_channels}:
+                    if not c["live"].get("endTime"):
+                        merged_channels.append(c)
+
             # 🧼 懶更新：處理 endTime 為 null 的快取
             needs_update = [c for c in merged_channels if not c["live"].get("endTime")]
             updated_channels, _ = build_live_redirect_cache_entries(
@@ -88,14 +96,6 @@ def init_live_redirect_route(app, db: Client):
                     if existing["live"]["videoId"] == merged_video_id:
                         merged_channels[i] = c
                         break
-
-            # 🔄 合併昨天快取的尚未收播影片
-            yesterday_cache = db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
-            for c in yesterday_cache.get("channels", []):
-                vid = c["live"]["videoId"]
-                if vid not in {v["live"]["videoId"] for v in merged_channels}:
-                    if not c["live"].get("endTime"):
-                        merged_channels.append(c)
 
             logging.info(f"✅ 快取重建完成，channels={len(merged_channels)}，更新影片={len(processed_video_ids)}")
 
