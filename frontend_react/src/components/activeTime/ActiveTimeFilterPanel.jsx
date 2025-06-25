@@ -83,9 +83,14 @@ export default function ActiveTimeFilterPanel({
       <hr className="border-t border-gray-300 dark:border-zinc-600 my-2 w-full" />
 
       <div className="flex flex-col items-start gap-1">
-        <button onClick={clearFilter} className="text-sm text-gray-600 underline">
-          🗑️清除條件
-        </button>
+        <div className="flex justify-end mb-4">
+          <button
+            onClick={clearFilter}
+            className="flex items-center gap-2 text-sm font-semibold text-red-600 dark:text-red-400 border border-red-300 dark:border-red-500 rounded px-3 py-1 hover:bg-red-50 dark:hover:bg-red-900 transition"
+          >
+            🗑️ 清除條件
+          </button>
+        </div>
         <button
           onClick={() => setShowHelpModal(true)}
           className="text-sm text-blue-600 underline cursor-pointer"

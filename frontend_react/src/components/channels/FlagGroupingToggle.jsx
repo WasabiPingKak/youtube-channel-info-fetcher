@@ -19,7 +19,9 @@ const FlagGroupingToggle = ({ isEnabled, onToggle }) => {
           role="switch"
           aria-checked={isEnabled}
           onClick={() => onToggle(!isEnabled)}
-          className={`ml-2 relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${isEnabled ? "bg-blue-600" : "bg-gray-300 dark:bg-zinc-600"
+          className={`ml-2 relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-blue-400 ${isEnabled
+              ? "bg-blue-600"
+              : "bg-gray-300 dark:bg-zinc-600"
             }`}
         >
           <span

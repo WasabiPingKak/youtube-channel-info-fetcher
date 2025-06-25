@@ -6,16 +6,13 @@ import ChannelSelectorCard from "./ChannelSelectorCard";
  */
 const toDateObj = (raw) => {
   if (!raw) return null;
-
   if (typeof raw === "string") {
     const parsed = new Date(raw);
     return isNaN(parsed) ? null : parsed;
   }
-
   if (typeof raw.toDate === "function") {
     return raw.toDate();
   }
-
   try {
     return new Date(raw);
   } catch {
@@ -57,7 +54,6 @@ const getDisplayDateLabel = (dateObj) => {
  */
 const groupByJoinedDate = (channels) => {
   const groups = {};
-
   channels.forEach((channel) => {
     const dateObj = toDateObj(channel.joinedAt);
     if (!dateObj) return;
@@ -75,7 +71,6 @@ const groupByJoinedDate = (channels) => {
     groups[dateKey].list.push(channel);
   });
 
-  // 回傳依照日期倒序排列
   return Object.entries(groups)
     .sort((a, b) => b[0].localeCompare(a[0]))
     .map(([_, group]) => group);
@@ -102,15 +97,14 @@ const NewlyJoinedChannelsSection = ({ channels, onClick }) => {
   const grouped = groupByJoinedDate(channels);
 
   return (
-    <div className="bg-yellow-50 border border-yellow-200 rounded-xl p-4 mb-8">
-      {/* 標題 + 按鈕緊鄰 */}
+    <div className="bg-yellow-50 dark:bg-yellow-100/10 border border-yellow-200 dark:border-yellow-300/30 rounded-xl p-4 mb-8">
       <div className="flex items-center mb-3">
-        <h2 className="text-sm font-bold text-yellow-800 mr-4">
+        <h2 className="text-sm font-bold text-yellow-800 dark:text-yellow-300 mr-4">
           新加入的頻道
         </h2>
         <button
           onClick={() => setExpanded(!expanded)}
-          className="text-xs text-yellow-600 hover:underline"
+          className="text-xs text-yellow-600 dark:text-yellow-400 hover:underline"
         >
           {expanded ? "隱藏" : "顯示"}
         </button>
@@ -119,7 +113,7 @@ const NewlyJoinedChannelsSection = ({ channels, onClick }) => {
       {expanded &&
         grouped.map((group) => (
           <div key={group.label} className="mb-6">
-            <p className="text-xs font-semibold text-yellow-700 mb-2">
+            <p className="text-xs font-semibold text-yellow-700 dark:text-yellow-300 mb-2">
               {group.label}
             </p>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
