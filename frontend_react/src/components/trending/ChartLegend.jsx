@@ -14,19 +14,19 @@ const ChartLegend = ({ topGames, hiddenGames, setHiddenGames, toggleLine }) => {
       <div className="flex gap-4 text-sm">
         <button
           onClick={() => setHiddenGames([])}
-          className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          className="px-2 py-1 rounded border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700"
         >
           ✅ 全選
         </button>
         <button
           onClick={() => setHiddenGames(topGames)}
-          className="px-2 py-1 rounded border border-gray-300 text-gray-700 hover:bg-gray-100"
+          className="px-2 py-1 rounded border border-gray-300 dark:border-zinc-600 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-700"
         >
           ❌ 清除所有
         </button>
       </div>
 
-      <ul className="flex flex-wrap justify-center gap-4 text-sm">
+      <ul className="flex flex-wrap justify-center gap-4 text-sm mt-2">
         {topGames.map((game, i) => {
           const color = COLOR_LIST[i % COLOR_LIST.length];
           const isHidden = hiddenGames.includes(game);
@@ -34,13 +34,17 @@ const ChartLegend = ({ topGames, hiddenGames, setHiddenGames, toggleLine }) => {
             <li
               key={game}
               onClick={() => toggleLine(game)}
-              className={`cursor-pointer flex items-center gap-2 ${
-                isHidden ? "opacity-40" : "font-semibold"
-              }`}
+              className={`cursor-pointer flex items-center gap-2 ${isHidden
+                  ? "opacity-40 text-gray-700 dark:text-gray-400"
+                  : "font-semibold text-gray-800 dark:text-white"
+                }`}
             >
               <span
                 className="w-3 h-3 inline-block rounded"
-                style={{ backgroundColor: color, border: "1px solid #ccc" }}
+                style={{
+                  backgroundColor: color,
+                  border: "1px solid var(--chart-border, #ccc)",
+                }}
               />
               {game}
             </li>

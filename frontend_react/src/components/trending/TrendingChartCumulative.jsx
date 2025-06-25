@@ -24,8 +24,18 @@ const TrendingChartCumulative = ({
 }) => {
   const displayedData = accumulateChartData(videoCountByGameAndDate, gameList);
 
+  const isDark =
+    typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
   return (
-    <div className="w-full h-[500px]">
+    <div
+      className="w-full h-[500px]"
+      style={{
+        "--recharts-tick-color": isDark ? "#ddd" : "#000",
+        colorScheme: "light dark",
+      }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
           data={displayedData}
@@ -36,7 +46,10 @@ const TrendingChartCumulative = ({
             angle={35}
             interval={0}
             height={50}
-            tick={{ textAnchor: "start" }}
+            tick={{
+              textAnchor: "start",
+              fill: "var(--recharts-tick-color)",
+            }}
             tickFormatter={(_, index) =>
               isMobile
                 ? index % 4 === 0
@@ -45,7 +58,10 @@ const TrendingChartCumulative = ({
                 : displayedData[index].date.slice(5)
             }
           />
-          <YAxis allowDecimals={false} />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fill: "var(--recharts-tick-color)" }}
+          />
           <Tooltip content={<CustomTooltip />} />
           <Legend
             content={
