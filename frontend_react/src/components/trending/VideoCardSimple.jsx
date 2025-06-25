@@ -25,7 +25,7 @@ const VideoCardSimple = ({ video }) => {
 
   return (
     <div
-      className="flex gap-4 items-start cursor-pointer hover:bg-gray-50 rounded-lg p-2 transition"
+      className="flex gap-4 items-start cursor-pointer hover:bg-gray-50 dark:hover:bg-zinc-700 rounded-lg p-2 transition"
       onClick={openInNewTab}
     >
       <img
@@ -35,8 +35,10 @@ const VideoCardSimple = ({ video }) => {
         onError={() => console.error(`❌ 無法載入縮圖：${thumbnail}`)}
       />
       <div className="flex-1 overflow-hidden">
-        <div className="text-sm font-medium truncate">{title}</div>
-        <div className="text-xs text-gray-400">
+        <div className="text-sm font-medium truncate text-gray-800 dark:text-white">
+          {title}
+        </div>
+        <div className="text-xs text-gray-400 dark:text-gray-500">
           {publishedAt
             ? new Date(publishedAt).toLocaleString()
             : "❓ 發佈時間不明"}
