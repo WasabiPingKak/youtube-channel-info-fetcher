@@ -37,12 +37,12 @@ const AliasSearchBar = ({
         placeholder={placeholder}
         value={searchText}
         onChange={(e) => setSearchText(e.target.value)}
-        className="border rounded px-3 py-2 w-full"
+        className="border border-gray-300 dark:border-zinc-600 rounded px-3 py-2 w-full bg-white dark:bg-zinc-800 text-black dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring focus:ring-blue-300 dark:focus:ring-blue-600"
       />
       <select
         value={sortOption}
         onChange={(e) => setSortOption(e.target.value)}
-        className="border rounded px-2 py-2"
+        className="border border-gray-300 dark:border-zinc-600 rounded px-2 py-2 bg-white dark:bg-zinc-800 text-black dark:text-gray-200 focus:outline-none focus:ring focus:ring-blue-300 dark:focus:ring-blue-600"
       >
         {options.map(({ value, label }) => (
           <option key={value} value={value}>

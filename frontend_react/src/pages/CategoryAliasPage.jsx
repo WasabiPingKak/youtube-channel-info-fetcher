@@ -58,7 +58,7 @@ const CategoryAliasPage = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="p-4 text-center text-gray-600">載入中...</div>
+        <div className="p-4 text-center text-gray-600 dark:text-gray-300">載入中...</div>
       </MainLayout>
     );
   }
@@ -75,8 +75,10 @@ const CategoryAliasPage = () => {
   return (
     <MainLayout>
       <div className="p-4 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">📂 主題分類總表（不含遊戲）</h1>
-        <p className="text-sm text-gray-600 mb-6">
+        <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+          📂 主題分類總表（不含遊戲）
+        </h1>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
           以下是所有非遊戲的預設分類列表。
           <br />
           系統會透過比對影片標題中的關鍵字，自動歸類到相應的分類中。
@@ -92,7 +94,7 @@ const CategoryAliasPage = () => {
           mode="category"
         />
 
-        <div className="text-sm text-gray-600 mb-2">
+        <div className="text-sm text-gray-600 dark:text-gray-300 mb-2">
           共 {Object.keys(filteredSortedData).length} 個主分類、{totalSubcategories} 個子分類、{totalAliases} 個別名
         </div>
 
@@ -101,14 +103,14 @@ const CategoryAliasPage = () => {
             const order = ["雜談", "節目", "音樂"];
             const indexA = order.indexOf(a);
             const indexB = order.indexOf(b);
-            if (indexA === -1 && indexB === -1) return a.localeCompare(b); // 都不在指定排序內 → 用字母排序
-            if (indexA === -1) return 1; // a 不在 order 裡 → 放後面
-            if (indexB === -1) return -1; // b 不在 order 裡 → 放後面
-            return indexA - indexB; // 依照 order 排序
+            if (indexA === -1 && indexB === -1) return a.localeCompare(b);
+            if (indexA === -1) return 1;
+            if (indexB === -1) return -1;
+            return indexA - indexB;
           })
           .map(([mainCategory, subList]) => (
             <div key={mainCategory} className="mb-6">
-              <h2 className="text-lg font-semibold text-gray-800 mb-2">
+              <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-2">
                 📁 {mainCategory}
               </h2>
               <div className="space-y-2">
@@ -118,10 +120,10 @@ const CategoryAliasPage = () => {
                     return (
                       <div
                         key={key}
-                        className="border rounded shadow bg-white"
+                        className="border border-gray-300 dark:border-zinc-600 rounded shadow bg-white dark:bg-zinc-800"
                       >
                         <div
-                          className="font-bold px-4 py-2 bg-gray-100 cursor-pointer"
+                          className="font-bold px-4 py-2 bg-gray-100 dark:bg-zinc-700 cursor-pointer text-gray-800 dark:text-gray-100"
                           onClick={() => {
                             const newSet = new Set(openItems);
                             newSet.has(key)
@@ -133,7 +135,7 @@ const CategoryAliasPage = () => {
                           {subCategory} ({aliases.length})
                         </div>
                         {openItems.has(key) && (
-                          <ul className="px-6 py-2 list-disc text-sm text-gray-800">
+                          <ul className="px-6 py-2 list-disc text-sm text-gray-800 dark:text-gray-100">
                             {aliases.map((alias, i) => (
                               <li key={i}>{alias}</li>
                             ))}
@@ -143,7 +145,9 @@ const CategoryAliasPage = () => {
                     );
                   })
                 ) : (
-                  <div className="text-sm text-gray-400 pl-2">（無符合的子分類）</div>
+                  <div className="text-sm text-gray-400 dark:text-gray-500 pl-2">
+                    （無符合的子分類）
+                  </div>
                 )}
               </div>
             </div>
