@@ -4,7 +4,12 @@ import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { PublicToggleSection } from "@/components/profile_settings/PublicToggleSection";
 import { CountryFlagSelector } from "@/components/profile_settings/CountryFlagSelector";
 import { LiveStatusToggleSection } from "@/components/profile_settings/LiveStatusToggleSection";
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import {
+  showSuccessToast,
+  showFailureToast,
+  showLoginRequiredToast,
+  showPermissionDeniedToast,
+} from "@/components/common/ToastManager";
 import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
@@ -22,7 +27,7 @@ export default function MySettingsPage() {
     handleSave,
     channelInfo,
     visibleLive,
-    setVisibleLive
+    setVisibleLive,
   } = useMySettings();
 
   const {
@@ -70,7 +75,7 @@ export default function MySettingsPage() {
   if (meLoading || !channelInfo?.channel_id) {
     return (
       <MainLayout>
-        <div className="max-w-xl mx-auto p-6 text-center text-gray-500">
+        <div className="max-w-xl mx-auto p-6 text-center text-gray-500 dark:text-gray-300">
           載入中...
         </div>
       </MainLayout>
@@ -85,7 +90,9 @@ export default function MySettingsPage() {
   return (
     <MainLayout>
       <div className="max-w-xl mx-auto p-6">
-        <h1 className="text-2xl font-bold mb-6">我的頻道設定</h1>
+        <h1 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">
+          我的頻道設定
+        </h1>
 
         {channelInfo && (
           <div className="mb-6">
@@ -95,12 +102,12 @@ export default function MySettingsPage() {
 
         {channelInfo?.channel_id && (
           <div className="mt-2 mb-4 space-y-2">
-            <div className="bg-yellow-50 border border-yellow-300 rounded px-4 py-3">
-              <p className="text-sm text-yellow-800">
+            <div className="bg-yellow-50 dark:bg-yellow-100/10 border border-yellow-300 dark:border-yellow-300/30 rounded px-4 py-3">
+              <p className="text-sm text-yellow-800 dark:text-yellow-200">
                 有些影片系統可能分類不出來，看一眼👀{" "}
                 <Link
                   to={`/quick-category-editor/${channelInfo.channel_id}`}
-                  className="underline font-semibold text-yellow-900 hover:text-yellow-700"
+                  className="underline font-semibold text-yellow-900 dark:text-yellow-300 hover:text-yellow-700 dark:hover:text-yellow-400"
                 >
                   快速分類
                 </Link>{" "}
@@ -108,10 +115,10 @@ export default function MySettingsPage() {
               </p>
             </div>
 
-            <div className="bg-gray-50 border border-gray-300 rounded px-4 py-3">
+            <div className="bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded px-4 py-3">
               <Link
                 to={`/videos?channel=${channelInfo.channel_id}`}
-                className="flex items-center gap-2 text-sm text-gray-800 font-bold underline"
+                className="flex items-center gap-2 text-sm text-gray-800 dark:text-gray-100 font-bold underline"
               >
                 <MdAnalytics className="w-5 h-5" />
                 查看我的頻道頁面
@@ -145,7 +152,7 @@ export default function MySettingsPage() {
 
         <button
           onClick={handleLogout}
-          className="mt-4 ml-4 bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+          className="mt-4 ml-4 bg-gray-500 dark:bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-600 dark:hover:bg-gray-500"
         >
           登出
         </button>
