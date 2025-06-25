@@ -33,7 +33,6 @@ function formatStartTimeLabel(startTime, endTime) {
   return "剛剛開播";
 }
 
-
 function getStatusLabelAndStyle(channel) {
   const live = channel.live;
   if (live.endTime) {
@@ -61,7 +60,7 @@ export default function LiveChannelCard({ channel }) {
       href={videoUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block border rounded-xl p-4 hover:shadow transition bg-white"
+      className="block border rounded-xl p-4 hover:shadow transition bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
     >
       {/* 頻道資訊 */}
       <div className="flex items-start gap-3 mb-3">
@@ -71,14 +70,18 @@ export default function LiveChannelCard({ channel }) {
           className="w-10 h-10 rounded-full object-cover"
         />
         <div className="flex flex-col">
-          <div className="text-sm font-bold">{channel.name}</div>
+          <div className="text-sm font-bold text-gray-900 dark:text-white">
+            {channel.name}
+          </div>
           {channel.countryCode && channel.countryCode.length > 0 && (
             <div className="mt-1">
               <CountryFlags countryCode={channel.countryCode} />
             </div>
           )}
           {channel.badge && (
-            <div className="text-xs text-gray-500">{channel.badge}</div>
+            <div className="text-xs text-gray-500 dark:text-gray-400">
+              {channel.badge}
+            </div>
           )}
         </div>
       </div>
@@ -90,16 +93,22 @@ export default function LiveChannelCard({ channel }) {
           alt={live.title}
           className="w-full rounded-lg object-cover aspect-video"
         />
-        <div className={`absolute bottom-1 right-2 text-white text-xs px-2 py-0.5 rounded ${labelClass}`}>
+        <div
+          className={`absolute bottom-1 right-2 text-white text-xs px-2 py-0.5 rounded ${labelClass}`}
+        >
           {label}
         </div>
       </div>
 
       {/* 標題與開播資訊 */}
-      <div className="text-sm font-semibold line-clamp-2 mb-1">{live.title}</div>
-      <div className="text-xs text-gray-600">{startTimeLabel}</div>
+      <div className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900 dark:text-white">
+        {live.title}
+      </div>
+      <div className="text-xs text-gray-600 dark:text-gray-400">{startTimeLabel}</div>
       {live.viewers > 0 && (
-        <div className="text-xs text-gray-600">{live.viewers.toLocaleString()} 人正在觀看</div>
+        <div className="text-xs text-gray-600 dark:text-gray-400">
+          {live.viewers.toLocaleString()} 人正在觀看
+        </div>
       )}
     </a>
   );

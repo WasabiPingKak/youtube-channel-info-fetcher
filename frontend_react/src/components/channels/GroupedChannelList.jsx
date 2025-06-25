@@ -49,7 +49,7 @@ const GroupedChannelList = ({ groupedChannels, onClick, renderCard }) => {
             {/* 分組列 */}
             <button
               onClick={() => toggleGroup(group.code)}
-              className="w-full flex items-center gap-2 text-sm font-semibold text-gray-700"
+              className="w-full flex items-center gap-2 text-sm font-semibold text-gray-700 dark:text-gray-200"
             >
               <span className="w-4">{isExpanded ? "▼" : "▶"}</span>
 
@@ -61,7 +61,7 @@ const GroupedChannelList = ({ groupedChannels, onClick, renderCard }) => {
               </span>
 
               {/* 右側延伸線 */}
-              <div className="border-t border-gray-300 flex-grow ml-2" />
+              <div className="border-t border-gray-300 dark:border-zinc-600 flex-grow ml-2" />
             </button>
 
             {/* 分組內容（可收合） */}
