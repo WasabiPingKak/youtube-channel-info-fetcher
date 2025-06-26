@@ -46,24 +46,33 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
     return results
 
 
-def parse_video_status(live_details: dict, now: datetime) -> tuple[bool, bool, str | None]:
+def parse_video_status(live_details: dict, now: datetime) -> tuple[bool, bool, str | None, bool]:
     actual_start = live_details.get("actualStartTime")
     scheduled_start = live_details.get("scheduledStartTime")
     actual_end = live_details.get("actualEndTime")
+
     is_live = False
     is_upcoming = False
+    is_stale_upcoming = False
     start_time = None
+
     if actual_end:
         start_time = actual_start or scheduled_start
     else:
         if actual_start and datetime.fromisoformat(actual_start) <= now:
             is_live = True
             start_time = actual_start
-        elif scheduled_start and datetime.fromisoformat(scheduled_start) <= now + timedelta(minutes=15):
-            is_live = True
-            is_upcoming = True
-            start_time = scheduled_start
-    return is_live, is_upcoming, start_time
+        elif scheduled_start:
+            sched_time = datetime.fromisoformat(scheduled_start)
+            if sched_time <= now + timedelta(minutes=15):
+                is_live = True
+                is_upcoming = True
+                start_time = scheduled_start
+                # 新增條件：已超過 scheduledStartTime + 15 分鐘但尚未開播
+                if not actual_start and now - sched_time > timedelta(minutes=15):
+                    is_stale_upcoming = True
+
+    return is_live, is_upcoming, start_time, is_stale_upcoming
 
 
 def build_lazy_update_entry(video_id: str, channel_id: str, snippet: dict, live_details: dict,
@@ -136,7 +145,18 @@ def build_live_redirect_cache_entries(
     output_channels = []
     processed_video_ids = []
 
+    # 🔸 過濾掉 privacyStatus = unlisted 或 private 的影片
+    filtered_items = []
     for item in items:
+        privacy_status = item.get("status", {}).get("privacyStatus")
+        if privacy_status in ("unlisted", "private"):
+            logging.warning(f"🚫 排除隱私影片 {item['id']}：privacyStatus={privacy_status}")
+            processed_video_ids.append(item["id"])
+            continue
+        filtered_items.append(item)
+
+    # 🟢 正常處理可取得資訊的影片
+    for item in filtered_items:
         video_id = item["id"]
         snippet = item.get("snippet", {})
         live_details = item.get("liveStreamingDetails", {})
@@ -147,7 +167,7 @@ def build_live_redirect_cache_entries(
             processed_video_ids.append(video_id)
             continue
 
-        is_live, is_upcoming, start_time = parse_video_status(live_details, now)
+        is_live, is_upcoming, start_time, is_stale_upcoming = parse_video_status(live_details, now)
         actual_end = live_details.get("actualEndTime")
         viewers = int(live_details.get("concurrentViewers", "0")) if "concurrentViewers" in live_details else 0
 
@@ -157,8 +177,14 @@ def build_live_redirect_cache_entries(
             f"  scheduledStartTime: {live_details.get('scheduledStartTime')}\n"
             f"  actualEndTime: {actual_end}\n"
             f"  viewers: {viewers}\n"
-            f"  → 判定結果: is_live={is_live}, is_upcoming={is_upcoming}, start_time={start_time}"
+            f"  → 判定結果: is_live={is_live}, is_upcoming={is_upcoming}, "
+            f"    is_stale_upcoming={is_stale_upcoming}, start_time={start_time}"
         )
+
+        if is_stale_upcoming:
+            logging.warning(f"⏰ 排除過期待機室影片：{video_id} / scheduledStartTime={live_details.get('scheduledStartTime')}")
+            processed_video_ids.append(video_id)
+            continue
 
         if not is_live and not actual_end:
             continue
@@ -177,5 +203,30 @@ def build_live_redirect_cache_entries(
         output_channels.append(cache_item)
         processed_video_ids.append(video_id)
         logging.info(f"✅ 納入快取：{channel_id} / {video_id}")
+
+    # ❗補上查無資料的影片 fallback entry
+    fetched_ids = {item["id"] for item in items}
+    missing_ids = set(video_ids) - fetched_ids
+
+    for video_id in missing_ids:
+        logging.warning(f"❌ 無法存取影片（可能已變私人或被刪除）：{video_id}")
+        fallback_entry = {
+            "channel_id": None,
+            "name": None,
+            "thumbnail": None,
+            "badge": None,
+            "countryCode": [],
+            "live": {
+                "videoId": video_id,
+                "title": None,
+                "startTime": None,
+                "viewers": 0,
+                "isUpcoming": False,
+                "endTime": None,
+                "isAvailable": False
+            }
+        }
+        output_channels.append(fallback_entry)
+        processed_video_ids.append(video_id)
 
     return output_channels, processed_video_ids
