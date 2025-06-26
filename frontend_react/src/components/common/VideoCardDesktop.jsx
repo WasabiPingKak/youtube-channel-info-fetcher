@@ -31,7 +31,7 @@ const VideoCardDesktop = ({ video, durationUnit }) => {
   return (
     <div
       role="row"
-      className="flex items-center py-2 px-4 border-b hover:bg-gray-100 transition-colors"
+      className="flex items-center py-2 px-4 border-b dark:border-zinc-700 hover:bg-gray-100 dark:hover:bg-zinc-700 transition-colors"
     >
       <div
         className="flex-1 min-w-[240px] max-w-[50%] font-semibold truncate"
@@ -51,7 +51,7 @@ const VideoCardDesktop = ({ video, durationUnit }) => {
           href={`https://www.youtube.com/watch?v=${videoId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 dark:text-blue-400 hover:underline"
         >
           前往
         </a>

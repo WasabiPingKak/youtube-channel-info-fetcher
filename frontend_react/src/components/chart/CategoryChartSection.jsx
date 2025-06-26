@@ -15,23 +15,17 @@ const CategoryChartSection = ({
   const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
   const typeLabel = VIDEO_TYPE_MAP[videoType];
 
-  // 🎯 用於傳入 Chart 作為去重複加總基礎資料
   const filteredVideos = useMemo(() => {
     return videos.filter((video) => {
       if (video.type !== typeLabel) return false;
-
       if (activeCategory === "全部") return true;
-
       if (activeCategory === "遊戲") return Boolean(video.game);
-
       return video.matchedCategories?.includes(activeCategory);
     });
   }, [videos, typeLabel, activeCategory]);
 
-  // 統計圖表資料：分類數與總時長（秒）
   const { countData, durationData } = useMemo(() => {
     const counts = {};
-
     videos.forEach((video) => {
       if (video.type !== typeLabel) return;
 
@@ -50,7 +44,6 @@ const CategoryChartSection = ({
           if (main !== activeCategory) return;
           if (!showAllKeywords && seen.has(keyword)) return;
           seen.add(keyword);
-
           if (!counts[keyword]) counts[keyword] = { category: keyword, count: 0, duration: 0 };
           counts[keyword].count += 1;
           counts[keyword].duration += video.duration || 0;
@@ -94,12 +87,12 @@ const CategoryChartSection = ({
 
       {activeCategory && activeCategory !== "遊戲" && activeCategory !== "全部" && (
         <div className="mb-3 mx-4">
-          <div className="inline-flex rounded border p-1 bg-gray-100 text-sm font-medium">
+          <div className="inline-flex rounded border p-1 bg-gray-100 dark:bg-zinc-700 text-sm font-medium">
             <button
               onClick={() => setShowAllKeywords(false)}
               className={`px-3 py-1 rounded transition ${!showAllKeywords
                   ? "bg-blue-500 text-white shadow"
-                  : "text-gray-700 hover:bg-white"
+                  : "text-gray-700 dark:text-gray-100 hover:bg-white dark:hover:bg-zinc-800"
                 }`}
             >
               主分類
@@ -108,7 +101,7 @@ const CategoryChartSection = ({
               onClick={() => setShowAllKeywords(true)}
               className={`px-3 py-1 rounded transition ${showAllKeywords
                   ? "bg-blue-500 text-white shadow"
-                  : "text-gray-700 hover:bg-white"
+                  : "text-gray-700 dark:text-gray-100 hover:bg-white dark:hover:bg-zinc-800"
                 }`}
             >
               顯示所有交叉命中關鍵字
@@ -134,7 +127,9 @@ const CategoryChartSection = ({
           />
         </>
       ) : (
-        <p className="text-center text-gray-500 py-8">目前沒有資料可顯示</p>
+        <p className="text-center text-gray-500 dark:text-gray-400 py-8">
+          目前沒有資料可顯示
+        </p>
       )}
     </div>
   );

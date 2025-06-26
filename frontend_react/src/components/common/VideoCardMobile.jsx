@@ -29,9 +29,9 @@ const VideoCardMobile = ({ video, durationUnit }) => {
       : [{ main: "未分類" }];
 
   return (
-    <div className="px-4 py-3 border-b text-sm space-y-1">
+    <div className="px-4 py-3 border-b dark:border-zinc-700 text-sm space-y-1">
       <div className="font-semibold text-base">{title}</div>
-      <div className="text-gray-500">
+      <div className="text-gray-500 dark:text-gray-400">
         📅 {formattedDate} ｜ ⏱️ {formattedDuration}
       </div>
       <div className="flex flex-wrap gap-1">
@@ -44,7 +44,7 @@ const VideoCardMobile = ({ video, durationUnit }) => {
           href={`https://www.youtube.com/watch?v=${videoId}`}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-blue-600 hover:underline"
+          className="text-blue-600 dark:text-blue-400 hover:underline"
         >
           前往
         </a>

@@ -116,16 +116,6 @@ export default function ActiveTimeHeatmapMini({
 
   return (
     <div className="text-[10px] text-gray-600 dark:text-gray-300 w-full">
-      {/* 調試信息 */}
-      <div className="mb-2 text-sm">
-        <span>Dark Mode: {isDark ? '✅ 是' : '❌ 否'}</span>
-        <button
-          onClick={() => window.location.reload()}
-          className="ml-4 px-2 py-1 bg-blue-500 text-white rounded text-xs"
-        >
-          重新載入測試
-        </button>
-      </div>
       {/* X 軸：星期 */}
       <div className="ml-[32px] grid grid-cols-7 gap-[1px] mb-[2px]">
         {WEEKDAYS_LABEL.map((label) => (

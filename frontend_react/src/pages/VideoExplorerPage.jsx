@@ -1,7 +1,12 @@
 import React, { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import {
+  showSuccessToast,
+  showFailureToast,
+  showLoginRequiredToast,
+  showPermissionDeniedToast,
+} from "@/components/common/ToastManager";
 
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { useChannelIndex } from "@/hooks/useChannelIndex";
@@ -37,7 +42,9 @@ const VideoExplorerPage = () => {
   if (meLoading || infoLoading) {
     return (
       <MainLayout>
-        <div className="px-4 py-10 text-center text-gray-500">載入中...</div>
+        <div className="px-4 py-10 text-center text-gray-500 dark:text-gray-300">
+          載入中...
+        </div>
       </MainLayout>
     );
   }
@@ -45,7 +52,9 @@ const VideoExplorerPage = () => {
   if (!channelInfo) {
     return (
       <MainLayout>
-        <div className="px-4 py-10 text-center text-red-500">載入頻道資訊失敗</div>
+        <div className="px-4 py-10 text-center text-red-500 dark:text-red-400">
+          載入頻道資訊失敗
+        </div>
       </MainLayout>
     );
   }

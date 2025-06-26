@@ -10,7 +10,7 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
 
   if (safeData.length === 0) {
     return (
-      <div className="flex items-center justify-center h-[250px] text-gray-400 border border-dashed border-gray-300 rounded">
+      <div className="flex items-center justify-center h-[250px] text-gray-400 dark:text-gray-500 border border-dashed border-gray-300 dark:border-zinc-600 rounded">
         尚無可供統計的資料
       </div>
     );
@@ -32,7 +32,7 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
     unit.trim() === "小時" ? Number(val).toFixed(1) : val;
 
   return (
-    <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 shadow-sm">
+    <div className="bg-gray-50 dark:bg-zinc-800 border border-gray-200 dark:border-zinc-600 rounded-lg p-4 shadow-sm">
       <div className="flex flex-col sm:flex-row justify-center items-center gap-y-4 gap-x-2">
         {/* —— 甜甜圈圖 —— */}
         <div className="flex-shrink-0 w-full sm:w-[50%] xl:w-[45%] max-w-[320px]">
@@ -52,9 +52,9 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
             const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
             const color = COLORS[idx % COLORS.length];
             return (
-              <div key={idx} className="py-1 border-b text-sm px-1">
+              <div key={idx} className="py-1 border-b border-gray-100 dark:border-zinc-700 text-sm px-1">
                 {/* 第一行：分類名稱 + 色塊 */}
-                <div className="flex items-center gap-1 text-gray-900">
+                <div className="flex items-center gap-1 text-gray-900 dark:text-gray-100">
                   <span
                     className="inline-block w-3 h-3 rounded-sm"
                     style={{ backgroundColor: color }}
@@ -62,7 +62,7 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
                   <span>{item.category}</span>
                 </div>
                 {/* 第二行：右對齊的時數與比例 */}
-                <div className="flex justify-end text-gray-600 text-xs gap-3 mt-1">
+                <div className="flex justify-end text-gray-600 dark:text-gray-400 text-xs gap-3 mt-1">
                   <span>{fmt(value)}{unit}</span>
                   <span>{percent}%</span>
                 </div>
