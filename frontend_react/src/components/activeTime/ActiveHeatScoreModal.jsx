@@ -34,7 +34,7 @@ export default function ActiveHeatScoreModal({ open, onClose }) {
             例如該頻道在某週的最多活躍次數是 10 次（例如週五晚上 21:00）。
           </li>
           <li>
-            <strong>將每一小時的活躍次數轉換為「熱度分數（0～4分）」：</strong>
+            <strong>將每一小時的活躍次數轉換為「熱度分數（0～10分）」：</strong>
             <table className="mt-2 w-full text-sm border border-gray-300 dark:border-zinc-600">
               <thead>
                 <tr className="bg-gray-100 dark:bg-zinc-700">
@@ -45,9 +45,9 @@ export default function ActiveHeatScoreModal({ open, onClose }) {
               <tbody>
                 <tr><td className="border px-2 py-1">= 0</td><td className="border px-2 py-1">0 分</td></tr>
                 <tr><td className="border px-2 py-1">(0, 0.2]</td><td className="border px-2 py-1">1 分</td></tr>
-                <tr><td className="border px-2 py-1">(0.2, 0.4]</td><td className="border px-2 py-1">2 分</td></tr>
-                <tr><td className="border px-2 py-1">(0.4, 0.7]</td><td className="border px-2 py-1">3 分</td></tr>
-                <tr><td className="border px-2 py-1">&gt; 0.7</td><td className="border px-2 py-1">4 分</td></tr>
+                <tr><td className="border px-2 py-1">(0.2, 0.4]</td><td className="border px-2 py-1">3 分</td></tr>
+                <tr><td className="border px-2 py-1">(0.4, 0.7]</td><td className="border px-2 py-1">6 分</td></tr>
+                <tr><td className="border px-2 py-1">&gt; 0.7</td><td className="border px-2 py-1">10 分</td></tr>
               </tbody>
             </table>
           </li>
@@ -80,12 +80,12 @@ export default function ActiveHeatScoreModal({ open, onClose }) {
             <tr><td className="border px-2 py-1">6</td><td className="border px-2 py-1">0</td><td className="border px-2 py-1">0 分</td></tr>
             <tr><td className="border px-2 py-1">7</td><td className="border px-2 py-1">1</td><td className="border px-2 py-1">1 分</td></tr>
             <tr><td className="border px-2 py-1">8</td><td className="border px-2 py-1">2</td><td className="border px-2 py-1">1 分</td></tr>
-            <tr><td className="border px-2 py-1">9</td><td className="border px-2 py-1">3</td><td className="border px-2 py-1">2 分</td></tr>
-            <tr><td className="border px-2 py-1">10</td><td className="border px-2 py-1">5</td><td className="border px-2 py-1">3 分</td></tr>
-            <tr><td className="border px-2 py-1">11</td><td className="border px-2 py-1">10</td><td className="border px-2 py-1">4 分</td></tr>
+            <tr><td className="border px-2 py-1">9</td><td className="border px-2 py-1">3</td><td className="border px-2 py-1">3 分</td></tr>
+            <tr><td className="border px-2 py-1">10</td><td className="border px-2 py-1">5</td><td className="border px-2 py-1">6 分</td></tr>
+            <tr><td className="border px-2 py-1">11</td><td className="border px-2 py-1">10</td><td className="border px-2 py-1">10 分</td></tr>
           </tbody>
         </table>
-        <p>總熱度分數：<strong>0+1+1+2+3+4 = 11 分</strong></p>
+        <p>總熱度分數：<strong>0+1+1+3+6+10 = 21 分</strong></p>
 
         <h3 className="text-lg font-semibold mt-4">✅ 解讀方式</h3>
         <p>

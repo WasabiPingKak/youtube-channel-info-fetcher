@@ -21,23 +21,31 @@ export default function ActiveTimeTabSection({
     const baseMap = new Map();
     baseChannels.forEach((b) => {
       const id = b.channelId || b.channel_id;
-      if (id) baseMap.set(id, b);
+      if (id) {
+        baseMap.set(id, {
+          ...b,
+          channelId: id,
+        });
+      }
     });
 
-    return (
-      data.channels
-        .map((ch) => {
-          const ref = baseMap.get(ch.channelId);
-          if (!ref) return null;
-          if (ref.enabled === false) return null;
-          return {
-            ...ch,
-            enabled: true,
-            lastVideoUploadedAt: ref.lastVideoUploadedAt ?? null,
-          };
-        })
-        .filter(Boolean)
-    );
+    return data.channels
+      .map((ch) => {
+        const ref = baseMap.get(ch.channelId);
+        if (!ref || ref.enabled === false) return null;
+
+        return {
+          ...ref,
+          ...ch,
+          countryCode:
+            ch.countryCode && ch.countryCode.length > 0
+              ? ch.countryCode
+              : ref.countryCode,
+          enabled: true,
+          lastVideoUploadedAt: ref.lastVideoUploadedAt ?? null,
+        };
+      })
+      .filter(Boolean);
   }, [data, baseChannels]);
 
   const { filteredChannels } = useFilteredActiveChannels(
