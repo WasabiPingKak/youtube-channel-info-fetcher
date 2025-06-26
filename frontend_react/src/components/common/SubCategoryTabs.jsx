@@ -14,8 +14,8 @@ const SubCategoryTabs = ({
           key={category}
           onClick={() => onCategoryChange(category)}
           className={`px-4 py-1 rounded-full border ${activeCategory === category
-            ? "bg-blue-600 text-white"
-            : "bg-white text-gray-700 border-gray-300"
+              ? "bg-blue-600 text-white"
+              : "bg-white text-gray-700 border-gray-300 dark:bg-zinc-800 dark:text-gray-100 dark:border-zinc-600"
             }`}
         >
           {category}

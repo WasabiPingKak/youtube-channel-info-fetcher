@@ -53,7 +53,9 @@ const ChannelSelectorPage = () => {
   return (
     <MainLayout>
       <div className="max-w-5xl mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold mb-4">頻道列表</h1>
+        <h1 className="text-2xl font-bold mb-4 text-gray-800 dark:text-gray-100">
+          頻道列表
+        </h1>
 
         {/* 🔍 搜尋欄 */}
         <input
@@ -61,7 +63,7 @@ const ChannelSelectorPage = () => {
           placeholder="輸入頻道名稱..."
           value={searchText}
           onChange={(e) => setSearchText(e.target.value)}
-          className="w-full px-4 py-2 rounded-lg border border-gray-300 mb-4"
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 text-black dark:text-gray-200 placeholder-gray-400 dark:placeholder-gray-500 mb-4"
         />
 
         {/* ✅ 最近使用清單 */}
@@ -71,7 +73,6 @@ const ChannelSelectorPage = () => {
               channels={newlyJoinedChannels}
               onClick={handleClick}
             />
-
           </>
         )}
 
@@ -89,7 +90,7 @@ const ChannelSelectorPage = () => {
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "latest"
               ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("latest")}
           >
@@ -98,7 +99,7 @@ const ChannelSelectorPage = () => {
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "activeTime"
               ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("activeTime")}
           >
@@ -107,7 +108,7 @@ const ChannelSelectorPage = () => {
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
               ? "bg-blue-600 text-white border-blue-600"
-              : "bg-white text-gray-600 border-gray-300"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("alphabetical")}
           >
@@ -117,7 +118,7 @@ const ChannelSelectorPage = () => {
 
         {/* ❌ 錯誤狀態 */}
         {error && (
-          <div className="text-red-600 font-semibold mb-4">
+          <div className="text-red-600 dark:text-red-400 font-semibold mb-4">
             無法載入頻道資料：{error.message}
           </div>
         )}
@@ -134,10 +135,10 @@ const ChannelSelectorPage = () => {
         {/* ✅ 其他排序模式 */}
         {!isLoading && !isActivityTab && channels.length > 0 && (
           <>
-            <h2 className="text-sm font-bold text-gray-700 mb-3">
+            <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
               全部頻道（{channels.length}）
             </h2>
-            <p className="text-xs text-gray-400 mb-3">
+            <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
               {sortMode === "alphabetical"
                 ? "按照頻道名稱字典順序排列"
                 : "按照最近上片時間排列"}
@@ -163,7 +164,9 @@ const ChannelSelectorPage = () => {
         )}
 
         {!isLoading && !isActivityTab && channels.length === 0 && (
-          <div className="text-center text-gray-500 mt-10">查無符合的頻道</div>
+          <div className="text-center text-gray-500 dark:text-gray-400 mt-10">
+            查無符合的頻道
+          </div>
         )}
       </div>
     </MainLayout>

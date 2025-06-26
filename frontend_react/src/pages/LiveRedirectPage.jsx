@@ -33,8 +33,8 @@ export default function LiveRedirectPage() {
     return (
       <MainLayout>
         <div className="max-w-5xl mx-auto px-4 py-6">
-          {isLoading && <div className="text-gray-500">載入中...</div>}
-          {isError && <div className="text-red-600">資料載入失敗，請稍後再試。</div>}
+          {isLoading && <div className="text-gray-500 dark:text-gray-300">載入中...</div>}
+          {isError && <div className="text-red-600 dark:text-red-400">資料載入失敗，請稍後再試。</div>}
         </div>
       </MainLayout>
     );
@@ -51,11 +51,10 @@ export default function LiveRedirectPage() {
         {/* 說明按鈕 */}
         <button
           onClick={() => setShowHelp(true)}
-          className="flex items-center gap-2 px-4 py-2 mb-4 text-sm text-gray-800 bg-gray-50 border border-gray-300 rounded hover:bg-gray-100"
+          className="flex items-center gap-2 px-4 py-2 mb-4 text-sm text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded hover:bg-gray-100 dark:hover:bg-zinc-700"
         >
-          <span className="inline-block w-5 h-5 text-gray-600">
-            {/* 這裡你可以選用任何 icon，例如： */}
-            <FaInfoCircle className="w-5 h-5 text-gray-600" />
+          <span className="inline-block w-5 h-5 text-gray-600 dark:text-gray-300">
+            <FaInfoCircle className="w-5 h-5" />
           </span>
           <span className="underline">誰會出現在這裡？</span>
         </button>
@@ -81,12 +80,12 @@ export default function LiveRedirectPage() {
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 mb-6 text-sm font-medium">
           {/* 排序依據 */}
           <div className="flex gap-2 items-center mb-2 sm:mb-0">
-            <span className="text-gray-700">排序依據：</span>
+            <span className="text-gray-700 dark:text-gray-300">排序依據：</span>
             <button
               onClick={() => setSortMode("time")}
               className={`px-3 py-1 rounded-lg border ${sortMode === "time"
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               開播時間
@@ -95,21 +94,21 @@ export default function LiveRedirectPage() {
               onClick={() => setSortMode("viewers")}
               className={`px-3 py-1 rounded-lg border ${sortMode === "viewers"
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               觀看人數
             </button>
-          </div>
+          </div >
 
           {/* 排序方向 */}
-          <div className="flex gap-2 items-center">
-            <span className="text-gray-700">排序方向：</span>
+          < div className="flex gap-2 items-center" >
+            <span className="text-gray-700 dark:text-gray-300">排序方向：</span>
             <button
               onClick={() => setSortAsc(true)}
               className={`px-3 py-1 rounded-lg border ${sortAsc
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               ⬆️ 遞增
@@ -118,13 +117,13 @@ export default function LiveRedirectPage() {
               onClick={() => setSortAsc(false)}
               className={`px-3 py-1 rounded-lg border ${!sortAsc
                 ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               ⬇️ 遞減
             </button>
-          </div>
-        </div>
+          </div >
+        </div >
 
         {showUpcoming && data.upcoming.length > 0 && (
           <LiveRedirectSection
@@ -135,30 +134,35 @@ export default function LiveRedirectPage() {
             sortMode={sortMode}
             sortAsc={sortAsc}
           />
-        )}
+        )
+        }
 
-        {data.live.length > 0 && (
-          <LiveRedirectSection
-            title="🪂 降落目標"
-            type="live"
-            channels={data.live}
-            groupByCountry={groupByCountry}
-            sortMode={sortMode}
-            sortAsc={sortAsc}
-          />
-        )}
+        {
+          data.live.length > 0 && (
+            <LiveRedirectSection
+              title="🪂 降落目標"
+              type="live"
+              channels={data.live}
+              groupByCountry={groupByCountry}
+              sortMode={sortMode}
+              sortAsc={sortAsc}
+            />
+          )
+        }
 
-        {showEnded && data.ended.length > 0 && (
-          <LiveRedirectSection
-            title="📁 已收播"
-            type="ended"
-            channels={data.ended}
-            groupByCountry={groupByCountry}
-            sortMode={sortMode}
-            sortAsc={sortAsc}
-          />
-        )}
-      </div>
-    </MainLayout>
+        {
+          showEnded && data.ended.length > 0 && (
+            <LiveRedirectSection
+              title="📁 已收播"
+              type="ended"
+              channels={data.ended}
+              groupByCountry={groupByCountry}
+              sortMode={sortMode}
+              sortAsc={sortAsc}
+            />
+          )
+        }
+      </div >
+    </MainLayout >
   );
 }

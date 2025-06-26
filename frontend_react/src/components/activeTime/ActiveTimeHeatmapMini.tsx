@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 
 const WEEKDAYS_LABEL = ["日", "一", "二", "三", "四", "五", "六"];
 const WEEKDAYS_KEY = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
@@ -12,9 +12,22 @@ const TIME_PERIODS: Record<string, number[]> = {
   evening: [18, 19, 20, 21, 22, 23],
 };
 
-// 遮罩樣式
 const MASK_COLOR = "bg-black";
-const MASK_OPACITY = "opacity-45"; // 值越大遮罩越深
+const MASK_OPACITY = "opacity-45";
+
+function useIsDarkMode(): boolean {
+  const [isDark, setIsDark] = useState(false);
+
+  useEffect(() => {
+    const match = window.matchMedia("(prefers-color-scheme: dark)");
+    setIsDark(match.matches);
+    const listener = (e: MediaQueryListEvent) => setIsDark(e.matches);
+    match.addEventListener("change", listener);
+    return () => match.removeEventListener("change", listener);
+  }, []);
+
+  return isDark;
+}
 
 function getMaxCount(activeTime: Record<string, Record<string, number>>) {
   let max = 0;
@@ -28,13 +41,23 @@ function getMaxCount(activeTime: Record<string, Record<string, number>>) {
   return max;
 }
 
-function getHeatLevelClass(count: number, max: number) {
+// 修改這個函數，讓它回傳顏色值而不是 class 名稱
+function getLightModeColor(count: number, max: number): string {
   const ratio = max === 0 ? 0 : count / max;
-  if (ratio === 0) return "bg-gray-100";
-  if (ratio <= 0.2) return "bg-purple-100";
-  if (ratio <= 0.4) return "bg-purple-300";
-  if (ratio <= 0.7) return "bg-purple-500";
-  return "bg-purple-700";
+  if (ratio === 0) return "#f3f4f6";      // bg-gray-100
+  if (ratio <= 0.2) return "#ede9fe";     // bg-purple-100
+  if (ratio <= 0.4) return "#c4b5fd";     // bg-purple-300
+  if (ratio <= 0.7) return "#8b5cf6";     // bg-purple-500
+  return "#6d28d9";                       // bg-purple-700
+}
+
+function getDarkModeColor(count: number, max: number): string {
+  const ratio = max === 0 ? 0 : count / max;
+  if (ratio === 0) return "#161b22";
+  if (ratio <= 0.25) return "#0e4429";
+  if (ratio <= 0.5) return "#006d32";
+  if (ratio <= 0.75) return "#26a641";
+  return "#39d353";
 }
 
 function isHighlightedCell(
@@ -71,18 +94,37 @@ export default function ActiveTimeHeatmapMini({
   highlightPeriods = [],
 }: Props) {
   const max = getMaxCount(activeTime);
+  const isDark = useIsDarkMode();
   const highlightEnabled = highlightWeekdays.length > 0 || highlightPeriods.length > 0;
 
+  // 模擬一些測試數據
+  const testData = {
+    Mon: { "0": 5, "8": 15, "14": 8, "20": 12 },
+    Tue: { "9": 20, "13": 10, "19": 7 },
+    Wed: { "10": 25, "15": 18, "21": 9 },
+    Thu: { "7": 12, "12": 22, "18": 14 },
+    Fri: { "11": 30, "16": 6, "22": 11 },
+    Sat: { "13": 8, "17": 16, "23": 4 },
+    Sun: { "14": 12, "19": 20, "1": 3 }
+  };
+
+  // 使用測試數據或傳入的數據
+  const dataToUse = Object.keys(activeTime).length > 0 ? activeTime : testData;
+  const maxCount = getMaxCount(dataToUse);
+
+  console.log('isDark:', isDark); // 調試用
+
   return (
-    <div className="text-[10px] text-gray-600 w-full">
+    <div className="text-[10px] text-gray-600 dark:text-gray-300 w-full">
       {/* X 軸：星期 */}
       <div className="ml-[32px] grid grid-cols-7 gap-[1px] mb-[2px]">
         {WEEKDAYS_LABEL.map((label) => (
-          <div key={label} className="text-center text-xs text-gray-500">
+          <div key={label} className="text-center text-xs text-gray-500 dark:text-gray-400">
             {label}
           </div>
         ))}
       </div>
+
       {/* 主體：Y 軸 + heatmap */}
       <div className="grid grid-cols-[32px_1fr] gap-[1px]">
         {/* Y 軸 */}
@@ -90,29 +132,37 @@ export default function ActiveTimeHeatmapMini({
           {HOUR_LABELS.map((label, i) => (
             <div
               key={label}
-              className={`pr-1 text-right leading-[6px] ${i % 6 === 0 ? "" : "text-transparent"}`}
+              className={`pr-1 text-right leading-[6px] ${i % 6 === 0 ? "text-gray-500 dark:text-gray-400" : "text-transparent"
+                }`}
             >
               {label}
             </div>
           ))}
         </div>
+
         {/* Heatmap 主體 */}
-        <div className="grid grid-cols-7 grid-rows-24 gap-[1px] h-[160px] border border-gray-200 rounded overflow-hidden bg-white">
+        <div className="grid grid-cols-7 grid-rows-24 gap-[1px] h-[160px] border border-gray-200 dark:border-zinc-600 rounded overflow-hidden bg-white dark:bg-zinc-800">
           {HOUR_ORDER.map((hourStr) =>
             WEEKDAYS_KEY.map((day) => {
               const hour = parseInt(hourStr, 10);
-              const count = activeTime?.[day]?.[hourStr] || 0;
-              const levelClass = getHeatLevelClass(count, max);
+              const count = dataToUse?.[day]?.[hourStr] || 0;
+              // 修改這裡：統一使用 backgroundColor
+              const backgroundColor = isDark
+                ? getDarkModeColor(count, maxCount)
+                : getLightModeColor(count, maxCount);
               const highlight = isHighlightedCell(day, hour, highlightWeekdays, highlightPeriods);
 
               return (
                 <div
                   key={`${day}-${hour}`}
-                  className={`relative ${levelClass}`}
+                  className="relative"
                   title={`${day} ${hour}:00 - ${count} activities`}
-                  style={{ width: "100%", height: "100%" }}
+                  style={{
+                    width: "100%",
+                    height: "100%",
+                    backgroundColor,
+                  }}
                 >
-                  {/* 遮罩，只在啟用篩選時且不是 highlight 區域時顯示 */}
                   {highlightEnabled && !highlight && (
                     <div
                       className={`absolute inset-0 ${MASK_COLOR} ${MASK_OPACITY} pointer-events-none`}

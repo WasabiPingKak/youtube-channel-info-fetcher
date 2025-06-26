@@ -18,11 +18,11 @@ const TrendingGamesPage = () => {
     <MainLayout>
       <div className="max-w-5xl mx-auto px-4 py-8">
         <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             📈 趨勢遊戲排行榜（{TIME_RANGES[days]}）
           </h1>
           <select
-            className="border border-gray-300 rounded px-2 py-1 text-sm"
+            className="border border-gray-300 dark:border-zinc-600 dark:bg-zinc-800 dark:text-white rounded px-2 py-1 text-sm"
             value={days}
             onChange={(e) => {
               const value = parseInt(e.target.value, 10);
@@ -40,11 +40,13 @@ const TrendingGamesPage = () => {
         </div>
 
         {isLoading && (
-          <div className="text-center text-gray-500 py-10">資料載入中...</div>
+          <div className="text-center text-gray-500 dark:text-gray-400 py-10">
+            資料載入中...
+          </div>
         )}
 
         {isError && (
-          <div className="text-center text-red-500 py-10">
+          <div className="text-center text-red-500 dark:text-red-400 py-10">
             ❌ 無法載入資料
             {console.error("[/trending] 資料載入失敗", { isError })}
           </div>

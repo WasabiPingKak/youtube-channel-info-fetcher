@@ -14,7 +14,7 @@ const ChannelSelectorCard = ({ channel }) => {
   return (
     <SmartLink
       to={`/videos?channel=${channel.channel_id}`}
-      className="block bg-white rounded-xl shadow hover:shadow-md p-4 transition-all"
+      className="block bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-md p-4 transition-all"
     >
       <div className="flex items-center gap-4">
         <img
@@ -27,10 +27,10 @@ const ChannelSelectorCard = ({ channel }) => {
           <DeveloperBadge isAuthor={isAuthor} />
 
           {/* 頻道名稱 */}
-          <div className="font-bold text-base text-gray-900 flex items-center gap-2">
+          <div className="font-bold text-base text-gray-900 dark:text-gray-100 flex items-center gap-2">
             {channel.name}
             {channel.enabled !== true && (
-              <span className="flex items-center gap-1 text-gray-500 text-sm">
+              <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
                 <FaEyeSlash className="inline-block" />
                 此頻道未公開
               </span>
@@ -42,7 +42,7 @@ const ChannelSelectorCard = ({ channel }) => {
 
           {/* 最近上片 */}
           {channel.lastVideoUploadedAt && (
-            <div className="text-xs text-gray-500 mt-1">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
               最近上片：{formatRelativeTime(channel.lastVideoUploadedAt)}
             </div>
           )}

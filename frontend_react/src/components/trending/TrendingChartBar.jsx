@@ -42,8 +42,18 @@ const TrendingChartDaily = ({
     });
   }, [contributorsByDateAndGame, gameList]);
 
+  const isDark = typeof window !== "undefined" &&
+    document.documentElement.classList.contains("dark");
+
   return (
-    <div className="w-full h-[500px]">
+    <div
+      className="w-full h-[500px]"
+      style={{
+        "--recharts-tick-color": isDark ? "#ddd" : "#000",
+        "--recharts-tooltip-bg": isDark ? "#1f2937" : "#fff", // Tailwind zinc-800
+        colorScheme: "light dark",
+      }}
+    >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
@@ -54,7 +64,10 @@ const TrendingChartDaily = ({
             angle={35}
             interval={0}
             height={50}
-            tick={{ textAnchor: "start" }}
+            tick={{
+              textAnchor: "start",
+              fill: "var(--recharts-tick-color)",
+            }}
             tickFormatter={(_, index) =>
               isMobile
                 ? index % 4 === 0
@@ -63,7 +76,10 @@ const TrendingChartDaily = ({
                 : chartData[index].date.slice(5)
             }
           />
-          <YAxis allowDecimals={false} />
+          <YAxis
+            allowDecimals={false}
+            tick={{ fill: "var(--recharts-tick-color)" }}
+          />
           <Tooltip content={<CustomTooltipWithColor />} />
           <Legend
             content={

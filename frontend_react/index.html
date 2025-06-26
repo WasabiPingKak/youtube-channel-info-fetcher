@@ -2,6 +2,20 @@
 <html lang="zh-Hant">
 
 <head>
+    <script>
+        // 🌓 預先套用 dark class，避免初始畫面閃爍
+        try {
+            const theme = localStorage.getItem("theme");
+            if (theme === "dark") {
+                document.documentElement.classList.add("dark");
+            } else {
+                document.documentElement.classList.remove("dark");
+            }
+        } catch (e) {
+            console.warn("無法讀取主題設定", e);
+        }
+    </script>
+
     <meta charset="UTF-8" />
     <meta name="google-site-verification" content="gS23lxy8S2g24-OYxKFRD5skjZ_jfghkjzPO4XfxWBg" />
     <meta name="publisher" content="Vtuber TrailMap" />

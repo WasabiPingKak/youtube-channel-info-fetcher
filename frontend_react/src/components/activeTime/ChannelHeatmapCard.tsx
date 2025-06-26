@@ -1,6 +1,6 @@
 import React from "react";
 import ActiveTimeHeatmapMini from "./ActiveTimeHeatmapMini";
-import SmartLink from "@/components/common/SmartLink"; // ← 根據你的專案路徑調整匯入位置
+import SmartLink from "@/components/common/SmartLink";
 import CountryFlags from "../badges/CountryFlags";
 
 type Props = {
@@ -26,7 +26,7 @@ export default function ChannelHeatmapCard({
   return (
     <SmartLink
       to={`/videos?channel=${channel.channelId}`}
-      className="block border rounded-xl p-4 hover:shadow transition"
+      className="block border border-gray-300 dark:border-zinc-600 bg-white dark:bg-zinc-800 rounded-xl p-4 hover:shadow transition"
     >
       <div className="flex gap-2 items-start mb-2">
         <img
@@ -35,7 +35,7 @@ export default function ChannelHeatmapCard({
           className="w-6 h-6 rounded-full"
         />
         <div className="flex flex-col">
-          <div className="font-semibold">{channel.name}</div>
+          <div className="font-semibold text-gray-900 dark:text-gray-100">{channel.name}</div>
 
           <div className="mt-[2px]">
             <CountryFlags countryCode={channel.countryCode} />
@@ -43,7 +43,7 @@ export default function ChannelHeatmapCard({
 
           {/* ✅ 顯示熱度分數 */}
           {filterApplied && channel.matchRatio !== undefined && (
-            <div className="text-xs text-gray-500 mt-[2px]">
+            <div className="text-xs text-gray-500 dark:text-gray-400 mt-[2px]">
               活躍熱度：{channel.matchRatio} 分
             </div>
           )}

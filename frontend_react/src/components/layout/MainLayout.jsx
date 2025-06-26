@@ -29,7 +29,7 @@ const MainLayout = ({ children }) => {
   }, []);
 
   return (
-    <>
+    <div className="bg-background text-foreground min-h-screen">
       {/* ✅ 固定頂部導覽列 */}
       <TopNav collapsed={collapsed} toggleCollapsed={() => setCollapsed((c) => !c)} />
       <MobileSidebarDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} />
@@ -45,7 +45,7 @@ const MainLayout = ({ children }) => {
           {children}
         </main>
       </div>
-    </>
+    </div>
   );
 };
 

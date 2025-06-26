@@ -37,14 +37,14 @@ const GameAliasPage = () => {
   if (isLoading) {
     return (
       <MainLayout>
-        <div className="p-4 text-center text-gray-600">載入中...</div>
+        <div className="p-4 text-center text-gray-600 dark:text-gray-400">載入中...</div>
       </MainLayout>
     );
   }
   if (error) {
     return (
       <MainLayout>
-        <div className="p-4 text-center text-red-500">
+        <div className="p-4 text-center text-red-500 dark:text-red-400">
           載入失敗：{error.message}
         </div>
       </MainLayout>
@@ -65,8 +65,8 @@ const GameAliasPage = () => {
   return (
     <MainLayout>
       <div className="p-4 max-w-3xl mx-auto">
-        <h1 className="text-2xl font-bold mb-4">🎮 遊戲分類總表</h1>
-        <p className="text-sm text-gray-600 mb-6">
+        <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-white">🎮 遊戲分類總表</h1>
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-6">
           如果你沒有在這個表裡面找到你要的名字，請由左側填表新增。<br />
           由於快取機制的關係，最慢一小時會自動更新。
         </p>
@@ -79,21 +79,21 @@ const GameAliasPage = () => {
           mode="game"
         />
 
-        <div className="text-sm text-gray-600 mb-2">
+        <div className="text-sm text-gray-600 dark:text-gray-400 mb-2">
           共 {filteredSortedData.length} 筆遊戲、{totalAliases} 個別名
         </div>
 
         <div className="space-y-2">
           {filteredSortedData.map(({ name, aliases }) => (
-            <div key={name} className="border rounded shadow bg-white">
+            <div key={name} className="border rounded shadow bg-white dark:bg-zinc-800 dark:border-zinc-600">
               <div
-                className="font-bold px-4 py-2 bg-gray-100 cursor-pointer"
+                className="font-bold px-4 py-2 bg-gray-100 dark:bg-zinc-700 cursor-pointer"
                 onClick={() => toggleItem(name)}
               >
                 {name} ({aliases.length})
               </div>
               {openItems.has(name) && (
-                <ul className="px-6 py-2 list-disc text-sm text-gray-800">
+                <ul className="px-6 py-2 list-disc text-sm text-gray-800 dark:text-gray-200">
                   {aliases.map((alias, i) => (
                     <li key={i}>{alias}</li>
                   ))}
@@ -103,7 +103,7 @@ const GameAliasPage = () => {
           ))}
         </div>
       </div>
-    </MainLayout>
+    </MainLayout >
   );
 };
 

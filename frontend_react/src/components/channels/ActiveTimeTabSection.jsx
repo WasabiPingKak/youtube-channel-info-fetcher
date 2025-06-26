@@ -48,8 +48,8 @@ export default function ActiveTimeTabSection({
 
   const filterApplied = selectedWeekdays.length > 0 || selectedPeriods.length > 0;
 
-  if (isLoading) return <div>載入中...</div>;
-  if (isError) return <div className="text-red-500">無法載入活動時間快取資料</div>;
+  if (isLoading) return <div className="text-gray-600 dark:text-gray-300">載入中...</div>;
+  if (isError) return <div className="text-red-500 dark:text-red-400">無法載入活動時間快取資料</div>;
 
   return (
     <div className="mt-6">
@@ -62,13 +62,15 @@ export default function ActiveTimeTabSection({
         resultCount={filteredChannels.length}
       />
 
-      <p className="text-xs text-gray-400 mt-4 mb-2">
+      <p className="text-xs text-gray-400 dark:text-gray-500 mt-4 mb-2">
         依據你選擇的活動時間區段，依活躍佔比排序
       </p>
 
       {/* 結果區塊 */}
       {filteredChannels.length === 0 ? (
-        <div className="text-center text-gray-500 mt-10">查無符合的頻道</div>
+        <div className="text-center text-gray-500 dark:text-gray-400 mt-10">
+          查無符合的頻道
+        </div>
       ) : isFlagGrouping ? (
         <GroupedChannelList
           groupedChannels={groupChannelsByCountry(filteredChannels, () => 0)}

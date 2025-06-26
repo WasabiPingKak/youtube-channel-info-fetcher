@@ -11,7 +11,6 @@ export default function ChannelInfoCard() {
   const [searchParams] = useSearchParams();
   const queryId = searchParams.get("channel");
 
-  // 優先使用路由參數，再用 query string，最後 fallback 預設頻道
   const finalChannelId = paramId || queryId || ADMIN_CHANNEL_ID;
 
   const { data, isLoading, error } = useChannelIndex(finalChannelId);
@@ -19,20 +18,20 @@ export default function ChannelInfoCard() {
 
   if (isLoading) {
     return (
-      <div className="rounded-2xl bg-gray-100 animate-pulse h-20 w-full mb-4 max-w-xl mx-auto" />
+      <div className="rounded-2xl bg-gray-100 dark:bg-zinc-800 animate-pulse h-20 w-full mb-4 max-w-xl mx-auto" />
     );
   }
 
   if (error || !data) {
     return (
-      <div className="rounded-2xl bg-red-100 text-red-700 p-4 mb-4 max-w-xl mx-auto">
+      <div className="rounded-2xl bg-red-100 text-red-700 dark:bg-red-950 dark:text-red-300 p-4 mb-4 max-w-xl mx-auto">
         頻道資訊載入失敗
       </div>
     );
   }
 
   return (
-    <div className="bg-gray-50 w-full max-w-xl flex items-center gap-4 rounded-2xl shadow p-4 mb-4">
+    <div className="bg-gray-50 dark:bg-zinc-800 w-full max-w-xl flex items-center gap-4 rounded-2xl shadow p-4 mb-4">
       <a href={data.url} target="_blank" rel="noopener noreferrer">
         <img
           src={data.thumbnail}
@@ -50,7 +49,7 @@ export default function ChannelInfoCard() {
           {data.name}
 
           {data.enabled === false && (
-            <span className="flex items-center gap-1 text-gray-500 text-sm">
+            <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-sm">
               <FaEyeSlash className="inline-block" />
               此頻道未公開
             </span>
@@ -58,7 +57,9 @@ export default function ChannelInfoCard() {
 
           <DeveloperBadge isAuthor={isAuthor} />
         </a>
-        <div className="text-sm text-gray-500">前往 YouTube 頻道 ↗</div>
+        <div className="text-sm text-gray-500 dark:text-gray-400">
+          前往 YouTube 頻道 ↗
+        </div>
 
         <CountryFlags countryCode={data.countryCode} />
       </div>

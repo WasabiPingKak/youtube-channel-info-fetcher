@@ -29,17 +29,17 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
         const channelCount = Object.keys(gameDetails).length;
 
         return (
-          <div key={game} className="border rounded-xl p-4 shadow-sm bg-white">
+          <div
+            key={game}
+            className="border rounded-xl p-4 shadow-sm bg-white dark:bg-zinc-800 dark:border-zinc-600"
+          >
             {/* ✅ 可點擊的整體區域（含標題與頭像列） */}
             {!isOpen && (
-              <div
-                className="cursor-pointer"
-                onClick={() => toggleGame(game)}
-              >
+              <div className="cursor-pointer" onClick={() => toggleGame(game)}>
                 {/* 標題列 */}
                 <div className="flex justify-between items-center">
                   <div className="text-lg font-semibold">{game}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
                   </div>
                 </div>
@@ -66,20 +66,21 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
             {/* 展開後的詳細列表 */}
             {isOpen && (
               <>
-                {/* 標題列仍顯示在展開狀態 */}
                 <div
                   className="flex justify-between items-center cursor-pointer"
                   onClick={() => toggleGame(game)}
                 >
                   <div className="text-lg font-semibold">{game}</div>
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm text-gray-600 dark:text-gray-300">
                     👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
                   </div>
                 </div>
 
                 <div className="mt-4 space-y-6">
                   {Object.entries(gameDetails).length === 0 ? (
-                    <div className="text-sm text-gray-400">（無資料）</div>
+                    <div className="text-sm text-gray-400 dark:text-gray-500">
+                      （無資料）
+                    </div>
                   ) : (
                     Object.entries(gameDetails)
                       .sort(([, a], [, b]) => {

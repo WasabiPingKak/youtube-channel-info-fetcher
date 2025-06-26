@@ -16,13 +16,12 @@ const VideoTableHeader = ({ sortField, sortOrder, onSortChange }) => {
   };
 
   return (
-    <div className="hidden md:flex px-4 py-2 text-xs text-gray-500 font-semibold border-b border-gray-200 select-none">
+    <div className="hidden md:flex px-4 py-2 text-xs text-gray-500 dark:text-gray-400 font-semibold border-b border-gray-200 dark:border-zinc-600 select-none">
       {headers.map(({ key, label, className, disableSort }) => (
         <div
           key={label}
-          className={`${
-            disableSort ? "cursor-default" : "cursor-pointer"
-          } ${className}`}
+          className={`${disableSort ? "cursor-default" : "cursor-pointer"
+            } ${className}`}
           onClick={() => !disableSort && key && onSortChange(key)}
         >
           {label} {!disableSort && renderSortArrow(key)}

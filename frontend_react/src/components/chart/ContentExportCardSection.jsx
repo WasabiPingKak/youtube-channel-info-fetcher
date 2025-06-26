@@ -21,14 +21,18 @@ const ContentExportCardSection = ({ videos }) => {
       <div className="flex gap-2 mt-2 mb-2 text-sm font-medium">
         <button
           onClick={() => setActiveTab("treemap")}
-          className={`px-3 py-1 rounded ${activeTab === "treemap" ? "bg-gray-200 text-black" : "text-gray-500"
+          className={`px-3 py-1 rounded transition ${activeTab === "treemap"
+              ? "bg-gray-200 text-black dark:bg-zinc-700 dark:text-white"
+              : "text-gray-500 dark:text-gray-400"
             }`}
         >
           頻道熱力圖
         </button>
         <button
           onClick={() => setActiveTab("heatmap")}
-          className={`px-3 py-1 rounded ${activeTab === "heatmap" ? "bg-gray-200 text-black" : "text-gray-500"
+          className={`px-3 py-1 rounded transition ${activeTab === "heatmap"
+              ? "bg-gray-200 text-black dark:bg-zinc-700 dark:text-white"
+              : "text-gray-500 dark:text-gray-400"
             }`}
         >
           活躍時段

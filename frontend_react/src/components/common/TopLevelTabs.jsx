@@ -13,11 +13,10 @@ export default function TopLevelTabs({ activeType, onTypeChange }) {
         <button
           key={tab}
           onClick={() => onTypeChange && onTypeChange(tab)}
-          className={`w-full sm:w-auto px-4 py-2 rounded text-sm sm:text-base ${
-            activeType === tab
+          className={`w-full sm:w-auto px-4 py-2 rounded text-sm sm:text-base ${activeType === tab
               ? "bg-blue-600 text-white"
-              : "bg-gray-200 text-gray-800"
-          }`}
+              : "bg-gray-200 text-gray-800 dark:bg-zinc-700 dark:text-gray-100"
+            }`}
         >
           {tab === "live" && "📺 直播"}
           {tab === "videos" && "🎞️ 影片"}

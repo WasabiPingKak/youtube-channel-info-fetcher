@@ -21,7 +21,7 @@ const ChannelCard = ({ channelId, channelInfo, videos }) => {
   return (
     <div
       onClick={handleToggle}
-      className="cursor-pointer border rounded-xl p-3 bg-zinc-50 shadow-sm space-y-3"
+      className="cursor-pointer border rounded-xl p-3 bg-zinc-50 dark:bg-zinc-800 dark:border-zinc-600 shadow-sm space-y-3"
     >
       {/* 頻道頭部 */}
       <div className="flex items-center gap-3">
@@ -35,7 +35,7 @@ const ChannelCard = ({ channelId, channelInfo, videos }) => {
           target="_blank"
           rel="noopener noreferrer"
           onClick={(e) => e.stopPropagation()}
-          className="font-medium text-sm hover:underline"
+          className="font-medium text-sm hover:underline text-gray-800 dark:text-white"
         >
           {name || channelId}
         </a>
@@ -60,7 +60,7 @@ const ChannelCard = ({ channelId, channelInfo, videos }) => {
               e.stopPropagation();
               handleToggle();
             }}
-            className="text-sm text-blue-600 hover:underline ml-1 cursor-pointer"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline ml-1 cursor-pointer"
           >
             {expanded ? "收合其他影片" : `+${rest.length} 更多`}
           </div>

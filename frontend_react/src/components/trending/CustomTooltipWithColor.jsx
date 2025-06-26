@@ -7,7 +7,7 @@ const CustomTooltipWithColor = ({ active, payload, label }) => {
   if (!tooltipData) return null;
 
   return (
-    <div className="bg-white border rounded shadow-md p-3 text-sm max-w-xs">
+    <div className="bg-white dark:bg-zinc-800 border border-gray-300 dark:border-zinc-600 rounded shadow-md p-3 text-sm max-w-xs text-gray-800 dark:text-gray-100">
       {/* 日期 */}
       <div className="font-bold mb-2">📅 {label}</div>
 
@@ -25,20 +25,20 @@ const CustomTooltipWithColor = ({ active, payload, label }) => {
                 className="inline-block w-3 h-3 rounded-full"
                 style={{ backgroundColor: entry.color }}
               ></span>
-              <span
-                className="font-semibold"
-                style={{ color: entry.color }}
-              >
+              <span className="font-semibold" style={{ color: entry.color }}>
                 {game}
               </span>
             </div>
 
             {/* 頻道列表 */}
-            <ul className="ml-5 list-disc text-gray-700 space-y-0.5">
+            <ul className="ml-5 list-disc space-y-0.5">
               {channels.map((c, idx) => (
                 <li key={idx}>
                   {c.channelName || "（未知頻道）"}：
-                  <span className="text-gray-500"> {c.count} 部</span>
+                  <span className="text-gray-500 dark:text-gray-400">
+                    {" "}
+                    {c.count} 部
+                  </span>
                 </li>
               ))}
             </ul>

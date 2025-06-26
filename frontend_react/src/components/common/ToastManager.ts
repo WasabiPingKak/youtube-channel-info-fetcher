@@ -19,7 +19,7 @@ const loginRequiredPhrases = [
 
 const permissionDeniedPhrases = [
   "你發現了一條隱藏小路，但路被擋住了",
-  "找到了隱藏關卡，但暫時沒有解法",
+  "找到了隱藏關卡，但沒有解法",
 ];
 
 export function showSuccessToast(baseMessage: string) {
