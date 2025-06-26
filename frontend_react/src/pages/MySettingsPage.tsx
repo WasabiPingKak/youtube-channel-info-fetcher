@@ -3,6 +3,7 @@ import { useMySettings } from "@/hooks/useMySettings";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { PublicToggleSection } from "@/components/profile_settings/PublicToggleSection";
 import { CountryFlagSelector } from "@/components/profile_settings/CountryFlagSelector";
+import { LiveStatusToggleSection } from "@/components/profile_settings/LiveStatusToggleSection";
 import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
@@ -20,6 +21,8 @@ export default function MySettingsPage() {
     loading,
     handleSave,
     channelInfo,
+    visibleLive,
+    setVisibleLive
   } = useMySettings();
 
   const {
@@ -120,6 +123,11 @@ export default function MySettingsPage() {
         <PublicToggleSection
           enabled={enabled}
           onChange={setEnabled}
+        />
+
+        <LiveStatusToggleSection
+          visible={visibleLive}
+          onChange={setVisibleLive}
         />
 
         <CountryFlagSelector

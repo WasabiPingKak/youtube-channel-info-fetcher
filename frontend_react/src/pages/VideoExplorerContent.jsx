@@ -113,7 +113,10 @@ const VideoExplorerContent = ({ channelId }) => {
       {loading && <p className="px-4">載入中...</p>}
       {error && <p className="px-4 text-red-600">錯誤：{error.message}</p>}
       {!loading && !error && filteredVideos.length === 0 && activeCategory && (
-        <p className="px-4 text-gray-500">目前無影片</p>
+        <p className="px-4 text-gray-500">
+          目前無影片。若是剛連結頻道的新用戶，資料庫初始化可能需等待數十分鐘。<br />
+          若連結已超過一天仍無任何資料，請聯絡管理者協助處理。
+        </p>
       )}
 
       <VideoTableHeader

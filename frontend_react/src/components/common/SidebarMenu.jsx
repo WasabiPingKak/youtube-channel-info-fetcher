@@ -3,6 +3,7 @@ import {
   FaYoutube, FaTwitter, FaUser, FaGithub,
   FaChartLine, FaClipboardList, FaTools, FaUserCog
 } from "react-icons/fa";
+import { PiAirplaneLandingFill } from "react-icons/pi";
 import { MdPrivacyTip } from "react-icons/md";
 import { IoFileTrayFull } from "react-icons/io5";
 import clsx from "clsx";
@@ -16,6 +17,11 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
   const isLoggedIn = !!user?.channelId;
 
   const menuItems = [
+    {
+      label: "降落轉機塔臺",
+      icon: <PiAirplaneLandingFill className="w-5 h-5" />,
+      to: "/live-redirect",
+    },
     {
       label: "頻道遊戲趨勢",
       icon: <FaChartLine className="w-5 h-5" />,
@@ -123,7 +129,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
               className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
             >
               <span>🔗</span>
-              {!collapsed && <span>綁定我的頻道</span>}
+              {!collapsed && <span>連結我的頻道</span>}
             </SmartLink>
           )}
 
