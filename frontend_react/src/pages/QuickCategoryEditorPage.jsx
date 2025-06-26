@@ -148,10 +148,11 @@ const QuickCategoryEditorPage = () => {
 
   // hooks 一律呼叫，UI 才 return
   if (me?.channelId === null) return null;
+
   if (meLoading || !channelId) {
     return (
       <MainLayout>
-        <div className="p-6 max-w-xl mx-auto text-center text-gray-500">
+        <div className="p-6 max-w-xl mx-auto text-center text-gray-500 dark:text-gray-300">
           讀取中...
         </div>
       </MainLayout>
@@ -162,11 +163,15 @@ const QuickCategoryEditorPage = () => {
     <MainLayout>
       <div className="p-6 max-w-4xl mx-auto">
         {loadingVideos || loadingSkips || loadingConfig ? (
-          <div className="text-center">🚧 分析中，請稍候...</div>
+          <div className="text-center text-gray-700 dark:text-gray-200">
+            🚧 分析中，請稍候...
+          </div>
         ) : (
           <>
-            <h1 className="text-2xl font-bold mb-4">快速分類</h1>
-            <p className="text-sm text-gray-700 leading-relaxed mb-6">
+            <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
+              快速分類
+            </h1>
+            <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
               這裡是系統判斷不出來的影片清單，我們幫你挑出了在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片。<br />
               <span className="ml-4 block">• 關鍵字可屬於多個主題，例如「歌雜」可同時是雜談與音樂</span>
               <span className="ml-4 block">• 可編輯名稱作為圖表顯示用的標籤，例如「ft」改成「連動」</span>
@@ -174,7 +179,7 @@ const QuickCategoryEditorPage = () => {
               若需手動微調分類結果，請改用
               <a
                 href="/my-category-editor"
-                className="text-blue-600 hover:underline ml-1"
+                className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
               >
                 進階版編輯器
               </a>

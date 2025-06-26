@@ -8,7 +8,7 @@ const highlightQuery = (text, query) => {
 
   return parts.map((part, i) =>
     part.toLowerCase() === query.toLowerCase() ? (
-      <mark key={i}>{part}</mark>
+      <mark key={i} className="bg-yellow-200">{part}</mark>
     ) : (
       <span key={i}>{part}</span>
     )
@@ -26,16 +26,16 @@ const MatchedVideosPreview = ({ query, videos = [] }) => {
   if (matched.length === 0) return null;
 
   return (
-    <div className="p-2">
-      <strong className="block text-sm mb-2 text-gray-600">
+    <div className="p-2 border border-gray-200 dark:border-zinc-600 rounded bg-gray-50 dark:bg-zinc-800 mt-3">
+      <strong className="block text-sm mb-2 text-gray-600 dark:text-gray-300">
         🔍 命中影片預覽（{matched.length}）
       </strong>
-      <ul className="text-sm text-gray-800">
+      <ul className="text-sm text-gray-800 dark:text-gray-100">
         {matched.map((v, i) => (
           <li key={v.videoId || v.title}>
             <div className="py-1">{highlightQuery(v.title, query)}</div>
             {i < matched.length - 1 && (
-              <hr className="border-t border-gray-200 my-1" />
+              <hr className="border-t border-gray-200 dark:border-zinc-700 my-1" />
             )}
           </li>
         ))}

@@ -20,23 +20,24 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
   // ✅ 略過但尚未分類 → 收合；已分類或未略過 → 展開
   const shouldCollapse = isSkipped && !isAgreed;
 
+  // 🌗 使用更明顯的背景色表示卡片狀態
   const bgColor = isSkipped
-    ? 'bg-red-50 dark:bg-zinc-800'
+    ? 'bg-red-50 dark:bg-red-500/10'
     : isAgreed
-      ? 'bg-green-50'
+      ? 'bg-green-50 dark:bg-green-500/10'
       : 'bg-white dark:bg-zinc-800';
 
   return (
-    <div className={`border rounded-xl p-4 mb-4 shadow-sm ${bgColor}`}>
+    <div className={`border border-gray-300 dark:border-zinc-600 rounded-xl p-4 mb-4 shadow-sm ${bgColor}`}>
       {/* 標題列 */}
-      <div className="text-lg font-semibold flex flex-wrap items-center gap-2 mb-2">
+      <div className="text-lg font-semibold flex flex-wrap items-center gap-2 mb-2 text-gray-900 dark:text-gray-100">
         <span>關鍵詞：「{card.keyword}」</span>
 
         {isSkipped && (
           <>
-            <span className="text-sm text-gray-500">(已略過)</span>
+            <span className="text-sm text-gray-500 dark:text-gray-400">(已略過)</span>
             <button
-              className="text-sm text-blue-500 hover:underline"
+              className="text-sm text-blue-500 dark:text-blue-400 hover:underline"
               onClick={() => setKeywordSkipped(card.keyword, false)}
             >
               🔁 撤銷忽略狀態
@@ -45,7 +46,7 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
         )}
 
         {!isSkipped && isAgreed && (
-          <span className="text-sm text-green-600">(已套用)</span>
+          <span className="text-sm text-green-600 dark:text-green-400">(已套用)</span>
         )}
       </div>
 
@@ -66,7 +67,7 @@ const KeywordCard: React.FC<Props> = ({ card }) => {
             {card.matchedVideos.length > 0 ? (
               <KeywordVideoList card={card} showVideos={true} />
             ) : (
-              <div className="text-sm text-gray-400 italic">
+              <div className="text-sm text-gray-400 dark:text-gray-500 italic">
                 目前無命中影片（可能已分類完畢或影片已刪除）
               </div>
             )}

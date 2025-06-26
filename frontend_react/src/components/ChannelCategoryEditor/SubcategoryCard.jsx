@@ -66,14 +66,14 @@ const SubcategoryCard = ({
   }, [name, keywords, videos]);
 
   return (
-    <div className="border rounded p-4 mb-4 bg-white shadow-sm">
-      {/* 標題 + 命中數 + 展開 + 編輯/刪除 */}
+    <div className="border border-gray-300 dark:border-zinc-600 rounded p-4 mb-4 bg-white dark:bg-zinc-800 shadow-sm text-gray-900 dark:text-gray-100">
+      {/* 標題列 */}
       <div className="flex justify-between items-center mb-2">
         <div className="text-base font-semibold flex items-center gap-2">
           {name}
-          <span className="text-sm text-gray-500">({count})</span>
+          <span className="text-sm text-gray-500 dark:text-gray-400">({count})</span>
           <button
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             onClick={() => setIsExpanded(prev => !prev)}
           >
             {isExpanded ? '收合影片' : '顯示影片'}
@@ -81,13 +81,13 @@ const SubcategoryCard = ({
         </div>
         <div className="flex gap-2">
           <button
-            className="text-sm text-blue-600 hover:underline"
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
             onClick={() => onEdit?.(name)}
           >
             編輯
           </button>
           <button
-            className="text-sm text-red-600 hover:underline"
+            className="text-sm text-red-600 dark:text-red-400 hover:underline"
             onClick={() => setConfirmingDelete(true)}
           >
             刪除
@@ -95,8 +95,9 @@ const SubcategoryCard = ({
         </div>
       </div>
 
+      {/* 命中影片列表 */}
       {isExpanded && (
-        <div className="border rounded mb-3 p-2 bg-gray-50 max-h-60 overflow-y-auto text-sm divide-y">
+        <div className="border border-gray-200 dark:border-zinc-600 rounded mb-3 p-2 bg-gray-50 dark:bg-zinc-700 max-h-60 overflow-y-auto text-sm divide-y divide-gray-200 dark:divide-zinc-600">
           {matchedVideos.map((video) => (
             <div key={video.videoId} className="py-2">
               {highlightMatchedText(video.title, [name, ...keywords])}
@@ -105,12 +106,13 @@ const SubcategoryCard = ({
         </div>
       )}
 
+      {/* 刪除確認 */}
       {confirmingDelete && (
-        <div className="mt-2 bg-red-50 border border-red-300 text-sm text-red-800 p-3 rounded">
+        <div className="mt-2 bg-red-50 dark:bg-red-500/10 border border-red-300 dark:border-red-400 text-sm text-red-800 dark:text-red-300 p-3 rounded">
           <p className="mb-2">確定要刪除子分類「{name}」嗎？此操作無法還原。</p>
           <div className="flex gap-3">
             <button
-              className="px-3 py-1 text-sm bg-gray-300 rounded hover:bg-gray-400"
+              className="px-3 py-1 text-sm bg-gray-300 dark:bg-zinc-600 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-zinc-500"
               onClick={() => setConfirmingDelete(false)}
             >
               取消
@@ -128,16 +130,17 @@ const SubcategoryCard = ({
         </div>
       )}
 
+      {/* 關鍵字 */}
       <div className="text-sm mb-1">關鍵字：</div>
       <div className="flex flex-wrap gap-2 mb-2">
         {keywords.map((kw) => (
           <span
             key={kw}
-            className="bg-gray-300 text-sm px-2 py-1 rounded flex items-center"
+            className="bg-gray-300 dark:bg-zinc-600 text-sm px-2 py-1 rounded flex items-center text-gray-900 dark:text-white"
           >
             {kw}
             <button
-              className="ml-1 text-xs text-red-600 hover:text-red-800"
+              className="ml-1 text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300"
               onClick={() => handleRemoveKeyword(kw)}
               title="移除"
             >
@@ -147,17 +150,18 @@ const SubcategoryCard = ({
         ))}
       </div>
 
+      {/* 新增關鍵字 */}
       <div className="flex gap-2">
         <input
           type="text"
-          className="border px-2 py-1 rounded w-full"
+          className="border border-gray-300 dark:border-zinc-600 px-2 py-1 rounded w-full bg-white dark:bg-zinc-800 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500"
           placeholder="輸入關鍵字並按 Enter"
           value={newKeyword}
           onChange={(e) => setNewKeyword(e.target.value)}
           onKeyDown={handleKeyDown}
         />
         <button
-          className="bg-blue-600 text-white px-3 rounded"
+          className="bg-blue-600 text-white px-3 rounded hover:bg-blue-700"
           onClick={handleAddKeyword}
         >
           ➕

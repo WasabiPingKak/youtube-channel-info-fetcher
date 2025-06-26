@@ -10,9 +10,9 @@ const SubcategoryListSection = ({
   videos = [],
 }) => {
   return (
-    <div className="bg-white rounded shadow p-4 mb-4">
+    <div className="bg-white dark:bg-zinc-800 rounded shadow p-4 mb-4">
       {Object.entries(subcategories).length === 0 ? (
-        <div className="text-gray-400 italic">尚未設定任何子分類</div>
+        <div className="text-gray-400 dark:text-gray-500 italic">尚未設定任何子分類</div>
       ) : (
         Object.entries(subcategories).map(([subcatName, keywords]) => (
           <SubcategoryCard
@@ -20,9 +20,7 @@ const SubcategoryListSection = ({
             name={subcatName}
             keywords={keywords}
             onNameChange={(newName) => onNameChange(subcatName, newName)}
-            onKeywordsChange={(kwList) =>
-              onKeywordsChange(subcatName, kwList)
-            }
+            onKeywordsChange={(kwList) => onKeywordsChange(subcatName, kwList)}
             onEdit={onEdit ? () => onEdit(subcatName) : undefined}
             onDelete={() => onDeleteSubcategory(subcatName)}
             videos={videos}

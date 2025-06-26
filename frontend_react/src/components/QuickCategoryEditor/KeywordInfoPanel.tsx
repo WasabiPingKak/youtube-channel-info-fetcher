@@ -44,7 +44,7 @@ const KeywordInfoPanel: React.FC<Props> = ({
       : [{ main: '未分類' as const }];
 
   return (
-    <div className="flex flex-col h-full justify-between">
+    <div className="flex flex-col h-full justify-between text-gray-900 dark:text-gray-100">
       {/* 上半部內容 */}
       <div>
         <SubcategoryNameEditor

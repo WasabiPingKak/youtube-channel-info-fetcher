@@ -82,7 +82,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
 
       {/* ⛔ 主分類錯誤提示 */}
       {shouldShowError && (
-        <p className="text-red-500 text-sm mb-2">
+        <p className="text-red-500 dark:text-red-400 text-sm mb-2">
           請選擇至少一個主分類才能繼續
         </p>
       )}
@@ -93,7 +93,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
         <div className="flex gap-4 items-center justify-between flex-wrap">
           {!skipped && !isSuccess && (
             <button
-              className={`text-blue-500 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+              className={`text-blue-500 dark:text-blue-400 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               disabled={isSaving}
               onClick={onEditStart}
@@ -104,7 +104,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
 
           {isSuccess && (
             <button
-              className={`text-yellow-600 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+              className={`text-yellow-600 dark:text-yellow-400 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               disabled={isSaving}
               onClick={() => onRemoveAgree(keyword)}
@@ -118,8 +118,8 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
         <div className="flex gap-4 items-center flex-wrap">
           <button
             className={`font-bold transition ${isSuccess
-                ? 'text-green-700'
-                : 'text-green-600 hover:underline'
+                ? 'text-green-700 dark:text-green-400'
+                : 'text-green-600 dark:text-green-400 hover:underline'
               } ${agreeButtonDisabled ? 'opacity-50 cursor-not-allowed' : ''}`}
             title={shouldShowError ? '請先選擇主分類' : ''}
             disabled={agreeButtonDisabled}
@@ -130,7 +130,7 @@ const KeywordMainCategoryControls: React.FC<Props> = ({
 
           {!skipped && !isSuccess && (
             <button
-              className={`text-red-500 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
+              className={`text-red-500 dark:text-red-400 hover:underline ${isSaving ? 'opacity-50 cursor-not-allowed' : ''
                 }`}
               disabled={isSaving}
               onClick={handleToggleSkip}
