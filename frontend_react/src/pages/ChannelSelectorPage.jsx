@@ -89,8 +89,8 @@ const ChannelSelectorPage = () => {
         <div className="flex gap-2 mb-4 text-sm font-medium">
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "latest"
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("latest")}
           >
@@ -98,8 +98,8 @@ const ChannelSelectorPage = () => {
           </button>
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "activeTime"
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("activeTime")}
           >
@@ -107,8 +107,8 @@ const ChannelSelectorPage = () => {
           </button>
           <button
             className={`px-3 py-1 rounded-lg border ${sortMode === "alphabetical"
-                ? "bg-blue-600 text-white border-blue-600"
-                : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
+              ? "bg-blue-600 text-white border-blue-600"
+              : "bg-white text-gray-600 border-gray-300 dark:bg-zinc-800 dark:text-gray-200 dark:border-zinc-600"
               }`}
             onClick={() => setSortMode("alphabetical")}
           >

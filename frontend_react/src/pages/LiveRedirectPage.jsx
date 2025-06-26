@@ -84,8 +84,8 @@ export default function LiveRedirectPage() {
             <button
               onClick={() => setSortMode("time")}
               className={`px-3 py-1 rounded-lg border ${sortMode === "time"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               開播時間
@@ -93,22 +93,22 @@ export default function LiveRedirectPage() {
             <button
               onClick={() => setSortMode("viewers")}
               className={`px-3 py-1 rounded-lg border ${sortMode === "viewers"
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               觀看人數
             </button>
-          </div>
+          </div >
 
           {/* 排序方向 */}
-          <div className="flex gap-2 items-center">
+          < div className="flex gap-2 items-center" >
             <span className="text-gray-700 dark:text-gray-300">排序方向：</span>
             <button
               onClick={() => setSortAsc(true)}
               className={`px-3 py-1 rounded-lg border ${sortAsc
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               ⬆️ 遞增
@@ -116,14 +116,14 @@ export default function LiveRedirectPage() {
             <button
               onClick={() => setSortAsc(false)}
               className={`px-3 py-1 rounded-lg border ${!sortAsc
-                  ? "bg-blue-600 text-white border-blue-600"
-                  : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
+                ? "bg-blue-600 text-white border-blue-600"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600"
                 }`}
             >
               ⬇️ 遞減
             </button>
-          </div>
-        </div>
+          </div >
+        </div >
 
         {showUpcoming && data.upcoming.length > 0 && (
           <LiveRedirectSection
@@ -134,30 +134,35 @@ export default function LiveRedirectPage() {
             sortMode={sortMode}
             sortAsc={sortAsc}
           />
-        )}
+        )
+        }
 
-        {data.live.length > 0 && (
-          <LiveRedirectSection
-            title="🪂 降落目標"
-            type="live"
-            channels={data.live}
-            groupByCountry={groupByCountry}
-            sortMode={sortMode}
-            sortAsc={sortAsc}
-          />
-        )}
+        {
+          data.live.length > 0 && (
+            <LiveRedirectSection
+              title="🪂 降落目標"
+              type="live"
+              channels={data.live}
+              groupByCountry={groupByCountry}
+              sortMode={sortMode}
+              sortAsc={sortAsc}
+            />
+          )
+        }
 
-        {showEnded && data.ended.length > 0 && (
-          <LiveRedirectSection
-            title="📁 已收播"
-            type="ended"
-            channels={data.ended}
-            groupByCountry={groupByCountry}
-            sortMode={sortMode}
-            sortAsc={sortAsc}
-          />
-        )}
-      </div>
-    </MainLayout>
+        {
+          showEnded && data.ended.length > 0 && (
+            <LiveRedirectSection
+              title="📁 已收播"
+              type="ended"
+              channels={data.ended}
+              groupByCountry={groupByCountry}
+              sortMode={sortMode}
+              sortAsc={sortAsc}
+            />
+          )
+        }
+      </div >
+    </MainLayout >
   );
 }
