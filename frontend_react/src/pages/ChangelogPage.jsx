@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-06-26",
+    items: [
+      "新增深色模式",
+      "降落轉機塔臺會正確排除權限是非公開狀態的直播"
+    ],
+  }, {
     date: "2025-06-23",
     items: [
       "新增降落轉機塔臺，網站預設首頁改為指向降落塔臺",
