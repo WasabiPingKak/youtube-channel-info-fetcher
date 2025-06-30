@@ -39,15 +39,6 @@ export default function ChannelHeatmapCard({
 
           <div className="mt-[2px]">
             <CountryFlags countryCode={channel.countryCode} />
-
-            {/* 🧪 Debug 用：顯示實際 countryCode 值 */}
-            {channel.countryCode && (
-              <div className="text-xs text-red-500 mt-1">
-                [Debug] 國碼：{Array.isArray(channel.countryCode)
-                  ? channel.countryCode.join(", ")
-                  : channel.countryCode}
-              </div>
-            )}
           </div>
 
           {/* ✅ 顯示熱度分數 */}

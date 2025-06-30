@@ -43,7 +43,7 @@ export function useLiveRedirectData() {
       const now = new Date();
       const nowMs = now.getTime();
       const upcomingLimitMs = nowMs + 15 * 60 * 1000;
-      const endedLimitMs = nowMs - 60 * 60 * 12000; // 12 小時內
+      const endedLimitMs = nowMs - 60 * 60 * 12000;
 
       const upcoming: ChannelData[] = [];
       const live: ChannelData[] = [];
@@ -53,19 +53,20 @@ export function useLiveRedirectData() {
         const info = channel.live;
         if (!info) continue;
 
+        const startTimeMs = Date.parse(info.startTime);
+        if (isNaN(startTimeMs)) continue;
+
         if (info.endTime) {
           const endTimeMs = Date.parse(info.endTime);
           if (!isNaN(endTimeMs) && endTimeMs >= endedLimitMs) {
             ended.push(channel);
           }
         } else if (info.isUpcoming) {
-          const startTimeMs = Date.parse(info.startTime);
-          if (!isNaN(startTimeMs) && startTimeMs <= upcomingLimitMs) {
+          if (startTimeMs <= upcomingLimitMs) {
             upcoming.push(channel);
           }
         } else {
-          const startTimeMs = Date.parse(info.startTime);
-          if (!isNaN(startTimeMs) && startTimeMs <= nowMs) {
+          if (startTimeMs <= nowMs) {
             live.push(channel);
           }
         }
@@ -82,5 +83,3 @@ export function useLiveRedirectData() {
     retry: false,
   });
 }
-
-

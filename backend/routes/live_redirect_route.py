@@ -1,12 +1,11 @@
-import logging
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 from datetime import datetime, timedelta, timezone
-from services.live_redirect.cache_builder import build_live_redirect_cache_entries
+import logging
+from services.live_redirect.notify_queue_reader import get_pending_video_ids
+from services.live_redirect.cache_updater import process_video_ids
 
 live_redirect_bp = Blueprint("live_redirect", __name__)
-
-CACHE_TTL_MINUTES = 5
 
 def init_live_redirect_route(app, db: Client):
     @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
@@ -14,98 +13,53 @@ def init_live_redirect_route(app, db: Client):
         try:
             force = request.args.get("force", "false").lower() == "true"
             now = datetime.now(timezone.utc)
-            today_str = now.date().isoformat()
-            yesterday_str = (now - timedelta(days=1)).date().isoformat()
 
-            # 🔸 快取文件參考
-            today_cache_ref = db.collection("live_redirect_cache").document(today_str)
-            today_cache = today_cache_ref.get().to_dict() or {}
+            # 🔍 檢查是否已有新鮮快取
+            cached = check_and_return_fresh_cache(db, now, force)
+            if cached is not None:
+                return jsonify(cached)
 
-            # ⏳ 若非強制更新且快取未過期，直接回傳
-            updated_at = today_cache.get("updatedAt")
-            if not force and updated_at:
-                updated_time = datetime.fromisoformat(updated_at)
-                if now - updated_time < timedelta(minutes=CACHE_TTL_MINUTES):
-                    logging.info("♻️ 快取未過期，直接回傳")
-                    return jsonify(today_cache)
+            # 📥 取得待處理影片清單（從 notify queue 取出未處理的 videoId）
+            pending_videos = get_pending_video_ids(db, force=force, now=now)
+            logging.info(f"📌 待處理影片數量：{len(pending_videos)}")
 
-            # 📥 讀取昨天與今天的通知佇列
-            queue_docs = {
-                date_str: db.collection("live_redirect_notify_queue").document(date_str).get().to_dict() or {}
-                for date_str in [yesterday_str, today_str]
-            }
+            # 🔄 更新快取資料與回寫 processedAt
+            result = process_video_ids(db, pending_videos, now)
+            logging.info(f"✅ 快取重建完成，共 {len(result['channels'])} 筆資料")
 
-            # 合併 videos，後出現者覆蓋
-            all_videos_map = {}
-            for data in queue_docs.values():
-                for v in data.get("videos", []):
-                    video_id = v.get("videoId")
-                    if video_id:
-                        all_videos_map[video_id] = v
-            videos = list(all_videos_map.values())
-
-            # 🔍 第一次處理：build 快取資料（僅處理未處理的影片）
-            new_channels, processed_video_ids = build_live_redirect_cache_entries(
-                videos, db, now,
-                skip_if_processed=True,
-                update_endtime_only=False
-            )
-
-            # 合併舊有快取（同一影片以新資料為準）
-            existing_map = {c["live"]["videoId"]: c for c in today_cache.get("channels", [])}
-            for c in new_channels:
-                existing_map[c["live"]["videoId"]] = c
-            merged_channels = list(existing_map.values())
-
-            # 🔄 寫入今日快取
-            today_cache_ref.set({
-                "updatedAt": now.isoformat(),
-                "channels": merged_channels
-            })
-
-            # 📝 回寫 processedAt 至昨天與今天的 queue
-            for date_str, data in queue_docs.items():
-                new_list = []
-                for v in data.get("videos", []):
-                    if v.get("videoId") in processed_video_ids:
-                        v["processedAt"] = now.isoformat()
-                    new_list.append(v)
-                db.collection("live_redirect_notify_queue").document(date_str).set({
-                    "updatedAt": now.isoformat(),
-                    "videos": new_list
-                })
-
-            # 🔄 合併昨天快取的尚未收播影片
-            yesterday_cache = db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
-            for c in yesterday_cache.get("channels", []):
-                vid = c["live"]["videoId"]
-                if vid not in {v["live"]["videoId"] for v in merged_channels}:
-                    if not c["live"].get("endTime"):
-                        merged_channels.append(c)
-
-            # 🧼 懶更新：處理 endTime 為 null 的快取
-            needs_update = [c for c in merged_channels if not c["live"].get("endTime")]
-            updated_channels, _ = build_live_redirect_cache_entries(
-                needs_update, db, now,
-                skip_if_processed=False,
-                update_endtime_only=True
-            )
-            for c in updated_channels:
-                merged_video_id = c["live"]["videoId"]
-                for i, existing in enumerate(merged_channels):
-                    if existing["live"]["videoId"] == merged_video_id:
-                        merged_channels[i] = c
-                        break
-
-            logging.info(f"✅ 快取重建完成，channels={len(merged_channels)}，更新影片={len(processed_video_ids)}")
-
-            return jsonify({
-                "updatedAt": now.isoformat(),
-                "channels": merged_channels
-            })
+            return jsonify(result)
 
         except Exception:
-            logging.exception("🔥 快取重建流程失敗")
+            logging.exception("🔥 /api/live-redirect/cache 快取流程失敗")
             return jsonify({"error": "Internal Server Error"}), 500
 
     app.register_blueprint(live_redirect_bp)
+
+
+def check_and_return_fresh_cache(db: Client, now: datetime, force: bool) -> dict | None:
+    """
+    檢查今天的快取是否仍在有效時間內（5 分鐘），若是則直接回傳，不執行更新流程。
+
+    Args:
+        db (Client): Firestore 實例
+        now (datetime): 當前 UTC 時間
+        force (bool): 是否強制刷新快取
+
+    Returns:
+        dict | None: 若快取有效則回傳快取內容，否則回傳 None 表示需要重建
+    """
+    today_str = now.date().isoformat()
+    cache_ref = db.collection("live_redirect_cache").document(today_str)
+    today_cache = cache_ref.get().to_dict() or {}
+
+    updated_at_str = today_cache.get("updatedAt")
+    if updated_at_str:
+        try:
+            updated_at = datetime.fromisoformat(updated_at_str)
+            if not force and now - updated_at < timedelta(minutes=5):
+                logging.info("♻️ 快取尚新（5 分鐘內），直接回傳")
+                return today_cache
+        except Exception as e:
+            logging.warning(f"⚠️ 快取時間格式錯誤：{updated_at_str} / error={e}")
+
+    return None
