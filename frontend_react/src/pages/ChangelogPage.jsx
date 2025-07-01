@@ -3,6 +3,13 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-07-01",
+    items: [
+      "將帳號相關功能整合到右上角",
+      "將遊戲清單相關功能整合至遊戲分類總表頁面",
+    ],
+  },
+  {
     date: "2025-06-26",
     items: [
       "降落轉機塔臺現在會正確排除不正常關播的直播：待機室過了預定時間未開、直播途中轉私人/不公開、直播被 ban",

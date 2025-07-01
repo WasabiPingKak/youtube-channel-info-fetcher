@@ -36,7 +36,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       to: "/game-aliases",
     },
     {
-      label: "過濾總表｜分類",
+      label: "過濾總表｜主題",
       icon: <FaClipboardList className="w-5 h-5" />,
       to: "/category-aliases",
     },
@@ -100,16 +100,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
               {!collapsed && <span>連結我的頻道</span>}
             </SmartLink>
           )}
-
-          <a
-            href="https://forms.gle/QU3tMBTu7MgucSgZ7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2 rounded text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-zinc-800"
-          >
-            <span>📝</span>
-            {!collapsed && <span>協助擴增遊戲名單</span>}
-          </a>
 
           <SmartLink
             to="/thanks"
