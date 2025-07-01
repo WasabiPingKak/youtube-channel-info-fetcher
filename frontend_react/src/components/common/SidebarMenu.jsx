@@ -1,19 +1,17 @@
 import { useNavigate } from "react-router-dom";
 import {
   FaYoutube, FaTwitter, FaUser, FaGithub,
-  FaChartLine, FaClipboardList, FaTools, FaUserCog
+  FaChartLine, FaClipboardList, FaTools
 } from "react-icons/fa";
 import { PiAirplaneLandingFill } from "react-icons/pi";
 import { MdPrivacyTip } from "react-icons/md";
-import { IoFileTrayFull } from "react-icons/io5";
 import clsx from "clsx";
-import { useMyChannelId } from "@/hooks/useMyChannelId";
 import SmartLink from "@/components/common/SmartLink";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 
 const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
   const navigate = useNavigate();
   const { data: user } = useMyChannelId();
-
   const isLoggedIn = !!user?.channelId;
 
   const menuItems = [
@@ -91,38 +89,8 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
 
           <hr className="my-3 border-gray-300 dark:border-zinc-700" />
 
-          {isLoggedIn ? (
-            <>
-              <SmartLink
-                to="/my-settings"
-                onClick={onItemClick}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
-              >
-                <FaUserCog className="w-5 h-5" />
-                {!collapsed && <span>我的頻道設定</span>}
-              </SmartLink>
-
-              <SmartLink
-                to={`/quick-category-editor/${user.channelId}`}
-                onClick={onItemClick}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
-              >
-                <IoFileTrayFull className="w-5 h-5" />
-                {!collapsed && <span>自訂影片分類｜快速模式</span>}
-              </SmartLink>
-
-              <SmartLink
-                to="/my-category-editor"
-                onClick={onItemClick}
-                className="flex items-center gap-3 px-3 py-2 rounded hover:bg-gray-100 dark:hover:bg-zinc-800 text-left text-gray-800 dark:text-gray-200"
-              >
-                <IoFileTrayFull className="w-5 h-5" />
-                {!collapsed && <span>自訂影片分類｜進階模式</span>}
-              </SmartLink>
-
-              <hr className="my-3 border-gray-300 dark:border-zinc-700" />
-            </>
-          ) : (
+          {/* ✅ 顯示登入選單（限手機 + 未登入） */}
+          {isMobile && !isLoggedIn && (
             <SmartLink
               to="/authorize-channel"
               onClick={onItemClick}
@@ -162,7 +130,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
           </SmartLink>
 
           <hr className="my-3 border-gray-300 dark:border-zinc-700" />
-
         </nav>
       </div>
 
