@@ -1,10 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { PiCompassRoseBold } from "react-icons/pi";
-import { PiSunBold, PiMoonBold } from "react-icons/pi";
+import { PiCompassRoseBold, PiSunBold, PiMoonBold } from "react-icons/pi";
 import SmartLink from "@/components/common/SmartLink";
+import UserMenu from "@/components/common/UserMenu";
+import { useIsMobile } from "@/hooks/useIsMobile";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 
 const TopNav = ({ collapsed, toggleCollapsed }) => {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useIsMobile();
+  const { data: user } = useMyChannelId();
+  const isLoggedIn = !!user?.channelId;
 
   const handleMenuClick = () => {
     if (isMobile) {
@@ -14,36 +18,21 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
     }
   };
 
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== "undefined") {
-      return document.documentElement.classList.contains("dark");
-    }
-    return false;
-  });
+  const [isDark, setIsDark] = useState(false);
 
-  // 初始化：從 localStorage 載入偏好
   useEffect(() => {
-    const saved = localStorage.getItem("theme");
-    if (saved === "dark") {
+    const theme = localStorage.getItem("theme");
+    if (theme === "dark") {
       document.documentElement.classList.add("dark");
       setIsDark(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setIsDark(false);
     }
   }, []);
 
-  // 切換 dark mode
   const toggleTheme = () => {
-    const newIsDark = !isDark;
-    setIsDark(newIsDark);
-    if (newIsDark) {
-      document.documentElement.classList.add("dark");
-      localStorage.setItem("theme", "dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-      localStorage.setItem("theme", "light");
-    }
+    const newTheme = !isDark;
+    setIsDark(newTheme);
+    document.documentElement.classList.toggle("dark", newTheme);
+    localStorage.setItem("theme", newTheme ? "dark" : "light");
   };
 
   return (
@@ -64,18 +53,17 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
         <span>VTMap 頻道旅圖｜Vtuber TrailMap</span>
       </SmartLink>
 
-      <div className="ml-auto">
-        <button
-          onClick={toggleTheme}
-          className="p-2 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition"
-          aria-label="切換主題"
-        >
-          {isDark ? (
-            <PiSunBold className="w-5 h-5" />
-          ) : (
-            <PiMoonBold className="w-5 h-5" />
-          )}
-        </button>
+      <div className="ml-auto flex items-center gap-2">
+        {!isLoggedIn && (
+          <button
+            onClick={toggleTheme}
+            className="p-2 text-gray-700 dark:text-gray-300 hover:text-black dark:hover:text-white transition"
+            aria-label="切換主題"
+          >
+            {isDark ? <PiSunBold className="w-5 h-5" /> : <PiMoonBold className="w-5 h-5" />}
+          </button>
+        )}
+        <UserMenu />
       </div>
     </header>
   );

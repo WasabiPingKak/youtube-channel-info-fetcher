@@ -36,9 +36,9 @@ function getHeatScore(count: number, max: number): number {
   const ratio = count / max;
   if (ratio === 0) return 0;
   if (ratio <= 0.2) return 1;
-  if (ratio <= 0.4) return 2;
-  if (ratio <= 0.7) return 3;
-  return 4;
+  if (ratio <= 0.4) return 3;
+  if (ratio <= 0.7) return 6;
+  return 10;
 }
 
 export function useFilteredActiveChannels(
