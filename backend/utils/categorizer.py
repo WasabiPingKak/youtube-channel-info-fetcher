@@ -1,7 +1,11 @@
 import logging
+import re
 from typing import List, Dict, Any
 
 def normalize(text: str) -> str:
+    # 移除 @某人ID（如 @wasabi_pingkak）
+    text = re.sub(r"@\w+", "", text)
+    # 轉小寫並去除空白與全形空白
     return text.lower().replace(" ", "").replace("　", "")
 
 TYPE_MAP = {

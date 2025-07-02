@@ -31,12 +31,12 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       to: "/channels",
     },
     {
-      label: "過濾總表｜遊戲",
+      label: "分類總表｜遊戲",
       icon: <FaClipboardList className="w-5 h-5" />,
       to: "/game-aliases",
     },
     {
-      label: "過濾總表｜主題",
+      label: "分類總表｜主題",
       icon: <FaClipboardList className="w-5 h-5" />,
       to: "/category-aliases",
     },
