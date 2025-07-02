@@ -1,5 +1,7 @@
 import React from "react";
 import CountryFlags from "@/components/badges/CountryFlags";
+import VideoBadge from "@/components/common/VideoBadge";
+import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
 
 function formatStartTimeLabel(startTime, endTime) {
   const now = new Date();
@@ -86,6 +88,13 @@ export default function LiveChannelCard({ channel }) {
         </div>
       </div>
 
+      {/* 分類 Badges */}
+      <div className="flex flex-wrap gap-1 mb-1">
+        {getBadgesFromLiveChannel(channel).map((badge, index) => (
+          <VideoBadge key={index} badge={badge} />
+        ))}
+      </div>
+
       {/* 直播縮圖 + 狀態標籤 */}
       <div className="relative mb-2">
         <img
@@ -105,6 +114,7 @@ export default function LiveChannelCard({ channel }) {
         {live.title}
       </div>
       <div className="text-xs text-gray-600 dark:text-gray-400">{startTimeLabel}</div>
+
       {live.viewers > 0 && (
         <div className="text-xs text-gray-600 dark:text-gray-400">
           {live.viewers.toLocaleString()} 人正在觀看
