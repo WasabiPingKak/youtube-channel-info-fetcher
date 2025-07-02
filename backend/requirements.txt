@@ -11,3 +11,4 @@ pytest-cov
 python-dateutil
 python-dotenv
 PyJWT
+pycryptodome>=3.20.0

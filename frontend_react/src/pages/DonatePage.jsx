@@ -8,7 +8,7 @@ export default function DonatePage() {
         <h1 className="text-2xl font-bold mb-4">💝 贊助 VTMap</h1>
 
         <p className="mb-4">
-          我懶得自己整合金流服務，所以我們直接使用
+          做金流太難了，所以我們直接使用
           <strong className="text-green-600 dark:text-green-300">綠界科技（ECPay）</strong> 提供的付款連結。
         </p>
 
@@ -17,7 +17,7 @@ export default function DonatePage() {
         </p>
 
         <p className="mb-6">
-          🔍 <strong>注意：</strong>只要你在贊助時的留言中加入「VTMap」這個關鍵字，
+          💡 <strong>小提醒：</strong>只要你在贊助時的留言中加入「VTMap」這個關鍵字，
           你的<strong>名字、留言與金額</strong>就會顯示在本頁面下方的公開區域中。
         </p>
 
