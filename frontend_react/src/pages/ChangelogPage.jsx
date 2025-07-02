@@ -3,6 +3,13 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-07-02",
+    items: [
+      "降落轉機塔臺現在可以顯示分類徽章，以及使用分類徽章過濾",
+      "在側邊欄新增一個贊助連結，希望大家常常用",
+    ],
+  },
+  {
     date: "2025-07-01",
     items: [
       "將帳號相關功能整合到右上角",

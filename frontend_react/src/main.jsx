@@ -23,6 +23,7 @@ import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
 import LiveRedirectPage from "./pages/LiveRedirectPage";
 import LiveRedirectMaintenancePage from "@/pages/LiveRedirectMaintenancePage";
+import DonatePage from "@/pages/DonatePage";
 
 
 import "flag-icons/css/flag-icons.min.css";
@@ -87,6 +88,7 @@ function AppRoutes() {
         <Route path="/quick-category-editor/:channelId" element={<QuickCategoryEditorPage />} />
         <Route path="/auth-loading" element={<AuthLoadingPage />} />
         <Route path="/live-redirect" element={<LiveRedirectPage />} />
+        <Route path="/donate" element={<DonatePage />} />
 
         {/* 其他路徑 → redirect 提示 */}
         <Route

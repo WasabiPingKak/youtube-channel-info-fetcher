@@ -4,6 +4,7 @@ import {
   FaChartLine, FaClipboardList, FaTools
 } from "react-icons/fa";
 import { PiAirplaneLandingFill } from "react-icons/pi";
+import { BiSolidDonateHeart } from "react-icons/bi";
 import { MdPrivacyTip } from "react-icons/md";
 import clsx from "clsx";
 import SmartLink from "@/components/common/SmartLink";
@@ -48,11 +49,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
   ];
 
   const snsLinks = [
-    {
-      icon: <FaYoutube className="w-5 h-5" />,
-      name: "YouTube",
-      href: "https://www.youtube.com/@wasabi.pingkak",
-    },
     {
       icon: <FaTwitter className="w-5 h-5" />,
       name: "Twitter",
@@ -108,6 +104,15 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
           >
             <span>💖</span>
             {!collapsed && <span>感謝者名單</span>}
+          </SmartLink>
+
+          <SmartLink
+            to="/donate"
+            onClick={onItemClick}
+            className="flex items-center gap-3 px-3 py-2 rounded text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-zinc-800"
+          >
+            <BiSolidDonateHeart className="w-5 h-5" />
+            {!collapsed && <span>贊助這個專案</span>}
           </SmartLink>
 
           <SmartLink
