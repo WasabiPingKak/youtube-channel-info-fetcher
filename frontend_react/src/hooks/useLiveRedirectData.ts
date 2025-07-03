@@ -62,7 +62,8 @@ export function useLiveRedirectData() {
             ended.push(channel);
           }
         } else if (info.isUpcoming) {
-          if (startTimeMs <= upcomingLimitMs) {
+          const delayLimitMs = startTimeMs + 15 * 60 * 1000;
+          if (startTimeMs <= upcomingLimitMs && delayLimitMs >= nowMs) {
             upcoming.push(channel);
           }
         } else {
