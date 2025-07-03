@@ -189,11 +189,11 @@ export default function LiveRedirectPage() {
           />
         )}
 
-        {showEnded && data.ended.length > 0 && (
+        {showEnded && filterByTopic(data.ended).length > 0 && (
           <LiveRedirectSection
             title="📁 已收播"
             type="ended"
-            channels={data.ended}
+            channels={filterByTopic(data.ended)}
             groupByCountry={groupByCountry}
             sortMode={sortMode}
             sortAsc={sortAsc}

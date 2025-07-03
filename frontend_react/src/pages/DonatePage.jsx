@@ -1,19 +1,47 @@
-import React from "react";
+// pages/DonatePage.jsx
+import React, { useEffect, useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
+import DonationList from "@/components/donations/DonationList";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export default function DonatePage() {
+  const [donations, setDonations] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE}/api/donations`)
+      .then((res) => res.json())
+      .then((data) => {
+        const filtered = data.filter((d) =>
+          d.patronNote?.toLowerCase().includes("vtmap")
+        );
+        setDonations(filtered);
+      })
+      .catch((err) => console.error("🚨 Failed to fetch donations:", err));
+  }, []);
+
   return (
     <MainLayout>
       <div className="max-w-3xl mx-auto px-4 py-10 text-gray-800 dark:text-gray-200">
         <h1 className="text-2xl font-bold mb-4">💝 贊助 VTMap</h1>
 
-        <p className="mb-4">
-          做金流太難了，所以我們直接使用
-          <strong className="text-green-600 dark:text-green-300">綠界科技（ECPay）</strong> 提供的付款連結。
+        <p className="mb-6">
+          這是一個功德專案，目前沒有商業化的打算。
+        </p>
+
+        <p className="mb-6">
+          網站的起點是我想試試 Vibe Coding 能耐的一個實驗性專案。一開始做了個工具分析自己頻道的內容分類，後來想想既然自己的頻道都能做，不如就擴充成讓所有 YouTube 頻道都能用的服務吧。<br />
+          接著就加入了頻道綁定、自訂影片分類關鍵字、遊戲趨勢統計、以及「降落轉機塔臺」功能，即時整理目前正在開台的頻道，讓觀眾與主播都能快速掌握誰正在開直播。
         </p>
 
         <p className="mb-4">
-          如果你願意支持這個專案，只要從下方按鈕前往贊助即可！
+          身為一個開發者，很高興自己做的東西有這麼多人願意使用，一開始做的初衷並沒有要以營利為目標。<br />
+          但是如果你願意支持這個專案，只要從下方按鈕前往贊助即可！
+        </p>
+
+        <p className="mb-4">
+          不過還要自己做金流就太難了，所以我們直接使用
+          <strong className="text-green-600 dark:text-green-300">綠界科技（ECPay）</strong> 提供的付款連結。
         </p>
 
         <p className="mb-6">
@@ -35,10 +63,14 @@ export default function DonatePage() {
         <hr className="my-8 border-gray-300 dark:border-zinc-700" />
 
         <h2 className="text-xl font-semibold mb-4">💬 贊助者留言</h2>
-        <div className="space-y-4 text-sm text-gray-600 dark:text-gray-400">
-          {/* TODO: 這裡未來從 Firestore 載入資料 */}
-          <p>（這裡會顯示所有留言中有提到「VTMap」的贊助者，包含名字、金額與留言內容，用括號包起來是因為我還沒做完）</p>
-        </div>
+
+        {donations.length > 0 ? (
+          <DonationList donations={donations} />
+        ) : (
+          <p className="text-sm text-gray-600 dark:text-gray-400">
+            （目前還沒有留言中包含「VTMap」的紀錄）
+          </p>
+        )}
       </div>
     </MainLayout>
   );

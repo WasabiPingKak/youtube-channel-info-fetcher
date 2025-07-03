@@ -83,6 +83,26 @@ def generate_check_mac_value(data: dict) -> str:
     sha256.update(encoded.encode("utf-8"))
     return sha256.hexdigest().upper()
 
+def get_amount_bucket(trade_amt_str: str) -> str:
+    try:
+        amount = int(float(trade_amt_str))  # 支援 "100.0" 也可被分類
+    except Exception as e:
+        logging.warning("[ECPay] ⚠️ TradeAmt 解析失敗，預設使用 30 區間: %s", trade_amt_str)
+        return "30"
+
+    if amount < 75:
+        return "30"
+    elif amount < 150:
+        return "75"
+    elif amount < 300:
+        return "150"
+    elif amount < 750:
+        return "300"
+    elif amount < 1500:
+        return "750"
+    else:
+        return "1500"
+
 
 def handle_ecpay_return(form: dict, db):
     logging.info("[ECPay] 收到付款通知表單：%s", form)
@@ -91,16 +111,16 @@ def handle_ecpay_return(form: dict, db):
     data_encrypted = form.get("Data")
     received_mac = form.get("CheckMacValue")
 
-    logging.info("[ECPay] MerchantID: %s", merchant_id)
-    logging.info("[ECPay] Data (Encrypted): %s", data_encrypted)
-    logging.info("[ECPay] CheckMacValue (Received): %s", received_mac)
+    logging.debug("[ECPay] MerchantID: %s", merchant_id)
+    logging.debug("[ECPay] Data (Encrypted): %s", data_encrypted)
+    logging.debug("[ECPay] CheckMacValue (Received): %s", received_mac)
 
     if merchant_id != MERCHANT_ID:
         raise ValueError("MerchantID 不正確")
 
     # 解密
     decrypted_json_str = aes_decrypt(data_encrypted, HASH_KEY, HASH_IV)
-    logging.info("[ECPay] 解密後 JSON 字串：%s", decrypted_json_str)
+    logging.debug("[ECPay] 解密後 JSON 字串：%s", decrypted_json_str)
 
     # CheckMacValue 驗證
     expected_mac = generate_check_mac_value_for_livestream(
@@ -116,27 +136,22 @@ def handle_ecpay_return(form: dict, db):
 
     try:
         parsed = json.loads(decrypted_json_str)
-        logging.info("[ECPay] 成功解析 JSON: %s", parsed)
+        logging.debug("[ECPay] 成功解析 JSON: %s", parsed)
     except Exception as e:
         logging.exception("[ECPay] JSON 解碼失敗")
         return "FAIL", 400
 
-    # 從 OrderInfo 中取出 TradeNo 與 PaymentDate
+    # 從 OrderInfo 中取出 TradeNo、TradeAmt、PaymentDate
     order_info = parsed.get("OrderInfo", {})
     trade_no = order_info.get("TradeNo")
-    raw_payment_date = order_info.get("PaymentDate", "")  # e.g. "2025/07/03+00:13:28"
+    trade_amt = order_info.get("TradeAmt", "0")
 
-    try:
-        cleaned_date_str = raw_payment_date.replace("+", " ")  # 修正格式
-        dt = datetime.strptime(cleaned_date_str, "%Y/%m/%d %H:%M:%S")
-        date_str = dt.strftime("%Y-%m-%d")
-    except Exception as e:
-        logging.warning("[ECPay] PaymentDate 解析失敗，改用今日日期")
-        dt = datetime.now(timezone.utc)
-        date_str = dt.strftime("%Y-%m-%d")
+    # 分類金額區間
+    bucket_key = get_amount_bucket(trade_amt)
+    logging.info("[ECPay] 分類至金額區間 bucket: %s", bucket_key)
 
-    # 📄 寫入到 `donations_by_date/{yyyy-mm-dd}`
-    doc_ref = db.collection("donations_by_date").document(date_str)
+    # 📄 寫入到 `donations_by_amount/{bucket_key}`
+    doc_ref = db.collection("donations_by_amount").document(bucket_key)
     try:
         doc_snapshot = doc_ref.get()
         existing = doc_snapshot.to_dict() or {}
@@ -150,7 +165,7 @@ def handle_ecpay_return(form: dict, db):
                 "items": new_items,
                 "updatedAt": datetime.now(timezone.utc),
             })
-            logging.info("✅ [ECPay] 寫入 Firestore: donations_by_date/%s", date_str)
+            logging.info("✅ [ECPay] 寫入 Firestore: donations_by_amount/%s", bucket_key)
     except Exception as e:
         logging.exception("[ECPay] Firestore 寫入失敗")
         return "FAIL", 500
