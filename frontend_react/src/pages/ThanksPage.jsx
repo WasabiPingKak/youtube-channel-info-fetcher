@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 import MainLayout from "../components/layout/MainLayout";
 import { useMultipleChannelInfo } from "../hooks/useMultipleChannelInfo";
+import GameAliasContributorsSection from "../components/contributors/GameAliasContributorsSection";
 
 const TEST_CHANNEL_IDS = [
   "UC-efxH6WiBaVxsHq5RGcZkA",
@@ -21,18 +22,6 @@ const TEST_CHANNEL_IDS = [
 
 const ThanksPage = () => {
   const { data, isLoading, error } = useMultipleChannelInfo(TEST_CHANNEL_IDS);
-  const [contributors, setContributors] = useState([]);
-  const [contribError, setContribError] = useState(null);
-
-  useEffect(() => {
-    fetch("https://script.google.com/macros/s/AKfycbwBtrIDR8n1VitpZ00j4Yd5XPLtrSrlfeY2Kc3j5Veoblc71_FefGopJ_zA6kDlZG5bpQ/exec?action=contributors")
-      .then((res) => res.json())
-      .then((data) => setContributors(data))
-      .catch((err) => {
-        console.error("❌ 感謝名單載入失敗:", err);
-        setContribError("感謝名單載入失敗");
-      });
-  }, []);
 
   return (
     <MainLayout>
@@ -51,7 +40,7 @@ const ThanksPage = () => {
               .map(([channelId, info]) => (
                 <div key={channelId} className="flex items-center gap-4 p-4 bg-white dark:bg-zinc-800 rounded shadow">
                   <img src={info.thumbnail} alt={info.name} className="w-12 h-12 rounded-full object-cover" />
-                  <a href={info.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                  <a href={info.url} target="_blank" rel="noopener noreferrer" className="text-blue-600 dark:text-blue-400 hover:underline">
                     {info.name}
                   </a>
                 </div>
@@ -59,37 +48,8 @@ const ThanksPage = () => {
           </div>
         </section>
 
-        {/* 感謝者名單區塊 */}
-        <section>
-          <h2 className="text-xl font-semibold mb-4 text-pink-700">🎮 協助更新遊戲名稱列表</h2>
-          <p className="text-sm text-gray-500 mb-4">依名稱字典順序排列。</p>
-
-          {contribError && (
-            <p className="text-red-600">{contribError}</p>
-          )}
-
-          <ul className="flex flex-wrap gap-3 text-sm">
-            {contributors.map((person, idx) => (
-              <li
-                key={idx}
-                className="bg-pink-50 px-4 py-2 rounded-full shadow-sm"
-              >
-                {person.url ? (
-                  <a
-                    href={person.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {person.name}
-                  </a>
-                ) : (
-                  <span className="text-pink-800">{person.name}</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </section>
+        {/* 協助更新遊戲名稱區塊（使用共用元件，預設展開） */}
+        <GameAliasContributorsSection defaultOpen={true} />
       </div>
     </MainLayout>
   );

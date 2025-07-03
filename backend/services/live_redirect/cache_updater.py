@@ -6,6 +6,9 @@ from google.cloud.firestore import Client
 from services.live_redirect.youtube_api import batch_fetch_video_details
 from services.live_redirect.video_classifier import classify_video
 from services.live_redirect.fallback_builder import build_fallback_entry
+from services.classified_video_fetcher import classify_live_title
+
+logger = logging.getLogger(__name__)
 
 def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> dict:
     today_str = now.date().isoformat()
@@ -41,8 +44,24 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
         if item:
             result = classify_video(db, item, now)
             if result:
+                channel_id = result.get("channelId") or result.get("channel_id")
+                title = result.get("live", {}).get("title", "")
+
+                if not channel_id:
+                    logging.warning(f"⚠️ 無法分類影片 {video_id}：缺少 channelId")
+                elif not title:
+                    logging.warning(f"⚠️ 無法分類影片 {video_id}：缺少標題")
+                else:
+                    category = classify_live_title(db, channel_id, title)
+                    result["live"]["category"] = category
+                    logging.info(
+                        f"🧩 已分類：videoId={video_id}, channelId={channel_id}, title=\"{title}\", "
+                        f"category={category.get('matchedCategories')}, pairs={category.get('matchedPairs')}"
+                    )
+
                 output_channels.append(result)
                 processed_ids.add(video_id)
+
         else:
             logging.warning(f"❌ 查不到影片資料，fallback：{video_id}")
             fallback = build_fallback_entry(video_id, now)
@@ -82,6 +101,21 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
     output_channels = list({
         c["live"]["videoId"]: c for c in (output_channels + lazy_channels)
     }.values())
+
+
+    # 🎯 後補分類：針對尚未分類的影片補上 live.category
+    for channel in output_channels:
+        live = channel.get("live", {})
+        if "category" not in live:
+            channel_id = channel.get("channelId") or channel.get("channel_id")
+            title = live.get("title", "")
+            if channel_id and title:
+                category = classify_live_title(db, channel_id, title)
+                live["category"] = category
+                logging.info(
+                    f"📌 後補分類：videoId={live.get('videoId')}, channelId={channel_id}, "
+                    f"category={category.get('matchedCategories')}, pairs={category.get('matchedPairs')}"
+                )
 
     db.collection("live_redirect_cache").document(today_str).set({
         "updatedAt": now.isoformat(),

@@ -12,12 +12,14 @@ def init_live_redirect_route(app, db: Client):
     def get_live_redirect_cache():
         try:
             force = request.args.get("force", "false").lower() == "true"
+            skip_cache = request.args.get("skipCache", "false").lower() == "true"
             now = datetime.now(timezone.utc)
 
             # 🔍 檢查是否已有新鮮快取
-            cached = check_and_return_fresh_cache(db, now, force)
-            if cached is not None:
-                return jsonify(cached)
+            if not skip_cache:
+                cached = check_and_return_fresh_cache(db, now, force)
+                if cached is not None:
+                    return jsonify(cached)
 
             # 📥 取得待處理影片清單（從 notify queue 取出未處理的 videoId）
             pending_videos = get_pending_video_ids(db, force=force, now=now)

@@ -6,25 +6,26 @@ export default function FilterPanel({
   showEnded,
   setShowEnded,
 }) {
-  return (
-    <div className="flex flex-wrap gap-4 items-center mb-6">
-      <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={showUpcoming}
-          onChange={(e) => setShowUpcoming(e.target.checked)}
-        />
-        顯示即將直播
-      </label>
+  const renderToggleButton = (label, checked, onToggle) => {
+    return (
+      <button
+        type="button"
+        className={`px-3 py-1 rounded border flex items-center gap-1 transition ${checked
+            ? "bg-blue-600 text-white border-blue-600"
+            : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100 border-gray-300"
+          }`}
+        onClick={() => onToggle(!checked)}
+      >
+        <input type="checkbox" readOnly checked={checked} />
+        {label}
+      </button>
+    );
+  };
 
-      <label className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 cursor-pointer">
-        <input
-          type="checkbox"
-          checked={showEnded}
-          onChange={(e) => setShowEnded(e.target.checked)}
-        />
-        顯示已收播
-      </label>
+  return (
+    <div className="flex flex-wrap gap-3 items-center mb-6">
+      {renderToggleButton("顯示即將直播", showUpcoming, setShowUpcoming)}
+      {renderToggleButton("顯示已收播", showEnded, setShowEnded)}
     </div>
   );
 }

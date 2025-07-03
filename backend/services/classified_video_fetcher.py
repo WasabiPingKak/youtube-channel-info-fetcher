@@ -1,4 +1,4 @@
-from typing import List, Dict
+from typing import List, Dict, Optional
 from firebase_admin.firestore import Client
 from utils.categorizer import match_category_and_game
 from utils.youtube_utils import normalize_video_item
@@ -97,3 +97,35 @@ def get_classified_videos(db: Client, channel_id: str) -> List[Dict]:
     except Exception as e:
         logger.error("🔥 get_classified_videos 發生錯誤: %s", e, exc_info=True)
         return []
+
+def classify_live_title(db: Client, channel_id: str, title: str) -> dict:
+    """
+    根據直播標題與頻道設定分類主題，回傳分類結果 dict。
+    僅針對直播類型影片設計。
+
+    回傳格式：
+    {
+        "matchedCategories": [...],
+        "matchedPairs": [...]
+    }
+    """
+    try:
+        settings = get_merged_settings(db, channel_id)
+        if not settings:
+            return {
+                "matchedCategories": [],
+                "matchedPairs": [],
+            }
+
+        result = match_category_and_game(title, "live", settings)
+        return {
+            "matchedCategories": result.get("matchedCategories", []),
+            "matchedPairs": result.get("matchedPairs", []),
+        }
+
+    except Exception as e:
+        logger.warning("⚠️ classify_live_title 失敗：channel_id=%s, title=%s, error=%s", channel_id, title, e)
+        return {
+            "matchedCategories": [],
+            "matchedPairs": [],
+        }

@@ -1,5 +1,7 @@
+// src/components/video/VideoCardMobile.tsx
 import React from "react";
 import VideoBadge from "../common/VideoBadge";
+import { getBadgesFromClassifiedVideo } from "@/utils/badgeUtils";
 
 const VideoCardMobile = ({ video, durationUnit }) => {
   const {
@@ -7,9 +9,6 @@ const VideoCardMobile = ({ video, durationUnit }) => {
     title,
     publishDate,
     duration,
-    game,
-    matchedKeywords = [],
-    matchedPairs = [],
   } = video;
 
   const formattedDuration =
@@ -19,14 +18,7 @@ const VideoCardMobile = ({ video, durationUnit }) => {
 
   const formattedDate = publishDate?.slice(0, 10) || "-";
 
-  const badges =
-    matchedPairs.length > 0
-      ? matchedPairs.map((pair) => ({
-        main: pair.main,
-        keyword: pair.keyword,
-        tooltip: pair.main === "遊戲" ? matchedKeywords.join(", ") : undefined,
-      }))
-      : [{ main: "未分類" }];
+  const badges = getBadgesFromClassifiedVideo(video);
 
   return (
     <div className="px-4 py-3 border-b dark:border-zinc-700 text-sm space-y-1">

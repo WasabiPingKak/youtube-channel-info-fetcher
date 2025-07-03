@@ -4,6 +4,7 @@ import {
   FaChartLine, FaClipboardList, FaTools
 } from "react-icons/fa";
 import { PiAirplaneLandingFill } from "react-icons/pi";
+import { BiSolidDonateHeart } from "react-icons/bi";
 import { MdPrivacyTip } from "react-icons/md";
 import clsx from "clsx";
 import SmartLink from "@/components/common/SmartLink";
@@ -31,12 +32,12 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       to: "/channels",
     },
     {
-      label: "過濾總表｜遊戲",
+      label: "分類總表｜遊戲",
       icon: <FaClipboardList className="w-5 h-5" />,
       to: "/game-aliases",
     },
     {
-      label: "過濾總表｜分類",
+      label: "分類總表｜主題",
       icon: <FaClipboardList className="w-5 h-5" />,
       to: "/category-aliases",
     },
@@ -48,11 +49,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
   ];
 
   const snsLinks = [
-    {
-      icon: <FaYoutube className="w-5 h-5" />,
-      name: "YouTube",
-      href: "https://www.youtube.com/@wasabi.pingkak",
-    },
     {
       icon: <FaTwitter className="w-5 h-5" />,
       name: "Twitter",
@@ -101,16 +97,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
             </SmartLink>
           )}
 
-          <a
-            href="https://forms.gle/QU3tMBTu7MgucSgZ7"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-3 px-3 py-2 rounded text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-zinc-800"
-          >
-            <span>📝</span>
-            {!collapsed && <span>協助擴增遊戲名單</span>}
-          </a>
-
           <SmartLink
             to="/thanks"
             onClick={onItemClick}
@@ -118,6 +104,15 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
           >
             <span>💖</span>
             {!collapsed && <span>感謝者名單</span>}
+          </SmartLink>
+
+          <SmartLink
+            to="/donate"
+            onClick={onItemClick}
+            className="flex items-center gap-3 px-3 py-2 rounded text-rose-700 dark:text-rose-300 hover:bg-rose-50 dark:hover:bg-zinc-800"
+          >
+            <BiSolidDonateHeart className="w-5 h-5" />
+            {!collapsed && <span>贊助這個專案</span>}
           </SmartLink>
 
           <SmartLink
