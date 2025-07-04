@@ -12,7 +12,7 @@ export default function TopicHelpModal({ open, onClose }) {
       ></div>
 
       {/* Modal 內容本體 */}
-      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6 max-w-md w-full z-10">
+      <div className="bg-white dark:bg-zinc-800 rounded-lg shadow-lg p-6 max-w-md w-full z-10 max-h-screen overflow-y-auto">
         <h2 className="text-lg font-bold mb-3 text-gray-900 dark:text-white">
           🔍 分類徽章是怎麼產生的？
         </h2>
@@ -42,8 +42,8 @@ export default function TopicHelpModal({ open, onClose }) {
             <li>在右上角「頻道自訂影片分類」中新增分類關鍵字</li>
           </ul>
           <p>
-            自訂的關鍵字只會套用在你自己頻道的直播標題，不會影響其他人，可以大膽使用。
-            如果你有屬於自己頻道的專用標題，就可以使用自訂分類功能讓系統抓到專屬你頻道的分類設定並顯示。
+            自訂關鍵字產生的分類徽章跟規則只會套用在你自己頻道的直播標題，不會影響其他人，可以大膽使用。<br />
+            如果你有屬於自己頻道的專用標題，就可以使用自訂分類功能讓系統抓到專屬你頻道的分類設定並顯示。<br />
             不過這些分類的結果會被系統記錄，並同時應用在以下幾個地方：
           </p>
           <ul className="list-disc list-inside pl-2 space-y-1">
