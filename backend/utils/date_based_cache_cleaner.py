@@ -1,22 +1,40 @@
-# utils/live_cache_cleaner.py
+# utils/date_based_cache_cleaner.py
 from google.cloud.firestore import Client
 from datetime import datetime, timedelta, timezone
 import logging
 
-def run_live_cache_cleaner(mode: str) -> dict:
-    db = Client()
-
-    now = datetime.now(timezone.utc)
-    cutoff_date = (now - timedelta(days=7)).date().isoformat()  # YYYY-MM-DD
-
-    collections = {
-        "live_redirect_notify_queue": [],
-        "live_redirect_cache": []
+# 📋 全部清除規則表
+CLEANUP_RULES = {
+    "live": {
+        "live_redirect_notify_queue": 7,
+        "live_redirect_cache": 7,
+    },
+    "trending_games": {
+        "trending_games_daily": 60,
     }
+}
 
+def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
+    """
+    清除指定類型的快取資料。
+
+    Args:
+        mode: 'dry-run' 或 'execute'
+        cache_type: 'live' 或 'trending_games'
+    Returns:
+        dict: { collection_name: { toDelete, toKeep, error? }, ... }
+    """
+    db = Client()
+    now = datetime.now(timezone.utc)
+
+    if cache_type not in CLEANUP_RULES:
+        raise ValueError(f"不支援的快取類型: {cache_type}")
+
+    type_rules = CLEANUP_RULES[cache_type]
     results = {}
 
-    for collection_name in collections.keys():
+    for collection_name, days_to_keep in type_rules.items():
+        cutoff_date = (now - timedelta(days=days_to_keep)).date()
         docs_to_delete = []
         docs_to_keep = []
 
@@ -30,14 +48,13 @@ def run_live_cache_cleaner(mode: str) -> dict:
                 "toDelete": [],
                 "toKeep": []
             }
-            continue  # 跳過這個集合
+            continue
 
         for doc_ref in all_docs:
             doc_id = doc_ref.id
             try:
-                # 檢查是否為合法日期格式
                 doc_date = datetime.strptime(doc_id, "%Y-%m-%d").date()
-                if doc_date < datetime.strptime(cutoff_date, "%Y-%m-%d").date():
+                if doc_date < cutoff_date:
                     docs_to_delete.append(doc_id)
                 else:
                     docs_to_keep.append(doc_id)
@@ -49,7 +66,8 @@ def run_live_cache_cleaner(mode: str) -> dict:
                 docs_to_keep.append(doc_id)
 
         if mode == "execute":
-            logging.info(f"🗑️ 將從 {collection_name} 刪除 {len(docs_to_delete)} 筆文件...")
+            logging.info(f"🗑️ 準備刪除 {collection_name} 中 {len(docs_to_delete)} 筆過期文件...")
+            logging.info(f"📋 {collection_name} 將刪除文件 ID：{docs_to_delete}")
             try:
                 for i in range(0, len(docs_to_delete), 500):
                     batch = db.batch()
@@ -60,7 +78,7 @@ def run_live_cache_cleaner(mode: str) -> dict:
                         except Exception as e:
                             logging.error(f"❌ 加入刪除文件 {doc_id} 失敗：{e}")
                     batch.commit()
-                logging.info(f"✅ 已成功從 {collection_name} 刪除 {len(docs_to_delete)} 筆文件")
+                logging.info(f"✅ 已從 {collection_name} 成功刪除 {len(docs_to_delete)} 筆文件")
             except Exception as e:
                 logging.error(f"❌ 刪除 {collection_name} 文件時發生錯誤：{e}")
 
