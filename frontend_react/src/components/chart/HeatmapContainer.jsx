@@ -42,7 +42,7 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }) =
           <div className="w-24" />
           <div className="flex-1 grid grid-cols-7 gap-x-2">
             {WEEKDAYS.map((label) => (
-              <div key={label} className="text-center text-sm font-medium">
+              <div key={label} className="text-center text-sm font-medium text-gray-600">
                 {label}
               </div>
             ))}

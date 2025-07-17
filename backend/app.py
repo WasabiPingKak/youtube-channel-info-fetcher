@@ -33,6 +33,7 @@ from routes.websub_subscribe_route import init_websub_subscribe_route
 from routes.live_redirect_route import init_live_redirect_route
 from routes.ecpay_return_route import init_ecpay_return_route
 from routes.donation_route import init_donation_route
+from routes.maintenance_route import init_maintenance_route
 
 logging.basicConfig(level=logging.INFO)
 
@@ -81,6 +82,7 @@ init_websub_subscribe_route(app, db)
 init_live_redirect_route(app, db)
 init_ecpay_return_route(app, db)
 init_donation_route(app, db)
+init_maintenance_route(app, db)
 
 @app.route("/test-firestore")
 def test_firestore():

@@ -97,7 +97,7 @@ def get_donations():
                     "orderInfo_keys": list(order_info.keys()) if order_info else [],
                 })
 
-                if "vtmap" in patron_note.lower():
+                if isinstance(patron_note, str) and "vtmap" in patron_note.lower():
                     logging.info(f"✅ 找到包含 vtmap 的捐款: item[{index}]")
                     try:
                         # Example: "2025/07/03+02:03:58"

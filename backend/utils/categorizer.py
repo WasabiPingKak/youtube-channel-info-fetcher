@@ -8,6 +8,44 @@ def normalize(text: str) -> str:
     # 轉小寫並去除空白與全形空白
     return text.lower().replace(" ", "").replace("　", "")
 
+def tokenize_title(title: str) -> set[str]:
+    """
+    拆分英文、數字詞彙為 token set（保留底線、句號、冒號、減號、破折號）。
+    中文不處理，僅回傳英文/數字 token。
+    """
+    clean_title = re.sub(r"@\w+", "", title).lower()
+
+    # 改用 regex 將符合條件的詞彙擷取出來，允許中間包含 _ . : - —
+    # \w 包含 a-zA-Z0-9_，我們手動補上 . : -
+    tokens = re.findall(r"[a-z0-9_.:\-–—]{2,}", clean_title)
+
+    english_tokens = set(tokens)
+
+    logging.debug("🧱 tokenize_title | raw_title=%s", title)
+    logging.debug("🧱 tokenize_title | clean_title=%s", clean_title)
+    logging.debug("🧱 tokenize_title | tokens=%s", english_tokens)
+
+    return english_tokens
+
+def keyword_in_title(keyword: str, tokens: set[str], raw_title: str) -> bool:
+    """
+    根據關鍵字類型使用不同策略：
+    - 英文/數字（含混合）：比對 tokens（字詞集合）
+    - 其他語言（例如中文）：使用 in 直接檢查原始標題（未 normalize）
+    並印出詳細 log
+    """
+    kw_lower = keyword.lower()
+
+    if re.fullmatch(r"[a-z0-9]{2,}", kw_lower):
+        result = kw_lower in tokens
+        logging.debug("🔎 keyword_in_title | keyword=%s | type=EN | tokens=%s | result=%s", keyword, tokens, result)
+    else:
+        result = keyword.lower() in raw_title.lower()
+        logging.debug("🔎 keyword_in_title | keyword=%r | raw_title=%r | result=%s", keyword, raw_title, result)
+
+    return result
+
+
 TYPE_MAP = {
     "直播檔": "live",
     "直播": "live",
@@ -39,20 +77,17 @@ def match_category_and_game(
         logging.debug("🧪 settings 結構：%s", settings.keys())
         logging.debug("🧪 settings['live'] = %s", settings.get("live", "❌ 無資料"))
 
-        normalized_title = normalize(title)
+        title_tokens = tokenize_title(title)
         logging.debug("🔍 [match] 處理影片標題: %s", title)
-        logging.debug("🔍 [match] normalized: %s", normalized_title)
+        logging.debug("🔍 [match] tokens: %s", title_tokens)
 
-        logging.debug("🔍 [match] 傳入的 video_type: %s", video_type)
-        logging.debug("🧩 [match] settings 結構: %s", list(settings.keys()))
         type_key = TYPE_MAP.get(video_type, video_type)
         category_settings = settings.get(type_key, {})
         logging.debug("📁 [match] 類型分類設定: %s", list(category_settings.keys()))
 
         # ────────────────────────────────────────────────
-        # 1️⃣ 先處理「非遊戲」主分類
+        # 1️⃣ 非遊戲分類比對
         # ────────────────────────────────────────────────
-        # 1️⃣ 處理「非遊戲」主分類（支援主分類 ➝ 子分類 ➝ 關鍵字）
         for main_category, subcategories in category_settings.items():
             if main_category == "遊戲":
                 continue
@@ -64,12 +99,11 @@ def match_category_and_game(
             for sub_name, keywords in subcategories.items():
                 hit_keywords = []
 
-                # 子分類名稱本身也納入比對
-                if normalize(sub_name) in normalized_title:
+                if keyword_in_title(sub_name, title_tokens, title):
                     hit_keywords.append(sub_name)
 
                 for kw in keywords:
-                    if normalize(kw) in normalized_title:
+                    if keyword_in_title(kw, title_tokens, title):
                         hit_keywords.append(kw)
 
                 if hit_keywords:
@@ -84,7 +118,7 @@ def match_category_and_game(
                     logging.debug("🏷️ 命中分類 [%s > %s] via %s", main_category, sub_name, hit_keywords)
 
         # ────────────────────────────────────────────────
-        # 2️⃣ 處理「遊戲」主分類（新格式：Dict[str, List[str]]）
+        # 2️⃣ 遊戲分類比對
         # ────────────────────────────────────────────────
         game_entries = category_settings.get("遊戲", {})
         matched_game_name: str | None = None
@@ -96,7 +130,7 @@ def match_category_and_game(
                 local_hits = []
 
                 for kw in all_keywords:
-                    if normalize(kw) in normalized_title:
+                    if keyword_in_title(kw, title_tokens, title):
                         local_hits.append(kw)
 
                 if local_hits:
