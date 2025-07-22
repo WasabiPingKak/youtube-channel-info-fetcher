@@ -14,7 +14,6 @@ import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
 export default function LiveRedirectPage() {
   const { data, isLoading, isError } = useLiveRedirectData();
 
-  const [showUpcoming, setShowUpcoming] = useState(true);
   const [groupByCountry, setGroupByCountry] = useState(false);
   const [showEnded, setShowEnded] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
@@ -23,6 +22,7 @@ export default function LiveRedirectPage() {
   const [sortAsc, setSortAsc] = useState(true); // true = 遞增
 
   const [selectedTopics, setSelectedTopics] = useState([]); // 主題過濾選項
+  const [collapseUpcoming, setCollapseUpcoming] = useState(false);
 
   React.useEffect(() => {
     if (data) {
@@ -34,18 +34,14 @@ export default function LiveRedirectPage() {
     }
   }, [data]);
 
-  // 合併 live + upcoming 資料供主題統計使用
   const topicStats = data ? getLiveTopicStats([...data.live, ...data.upcoming]) : {};
 
-  // ✅ 過濾符合勾選主題的頻道
   const filterByTopic = (channels) => {
     if (selectedTopics.length === 0) return channels;
 
     return channels.filter((ch) => {
       try {
         const channelId = ch.channelId || ch.channel_id;
-        const title = ch.live?.title;
-
         if (!ch?.live || !channelId) {
           console.warn("[filterByTopic] ⛔ 缺少 live 或 channelId", ch);
           return false;
@@ -53,9 +49,7 @@ export default function LiveRedirectPage() {
 
         const badges = getBadgesFromLiveChannel(ch);
         const topics = new Set(badges.map((b) => b.main));
-        const result = selectedTopics.some((topic) => topics.has(topic));
-
-        return result;
+        return selectedTopics.some((topic) => topics.has(topic));
       } catch (error) {
         console.error("[filterByTopic] ❌ 錯誤:", error, ch);
         return false;
@@ -101,10 +95,10 @@ export default function LiveRedirectPage() {
           onToggle={setGroupByCountry}
         />
 
-        {/* 篩選條件控制面板（如是否顯示即將開播/已收播） */}
+        {/* 篩選條件控制面板（保留 showEnded，但已移除 showUpcoming） */}
         <FilterPanel
-          showUpcoming={showUpcoming}
-          setShowUpcoming={setShowUpcoming}
+          showUpcoming={true}
+          setShowUpcoming={() => { }} // 無作用
           groupByCountry={groupByCountry}
           setGroupByCountry={setGroupByCountry}
           showEnded={showEnded}
@@ -120,7 +114,6 @@ export default function LiveRedirectPage() {
 
         {/* 排序控制區塊 */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:gap-6 mb-6 text-sm font-medium">
-          {/* 排序依據 */}
           <div className="flex gap-2 items-center mb-2 sm:mb-0">
             <span className="text-gray-700 dark:text-gray-300">排序依據：</span>
             <button
@@ -141,10 +134,9 @@ export default function LiveRedirectPage() {
             >
               觀看人數
             </button>
-          </div >
+          </div>
 
-          {/* 排序方向 */}
-          <div className="flex gap-2 items-center" >
+          <div className="flex gap-2 items-center">
             <span className="text-gray-700 dark:text-gray-300">排序方向：</span>
             <button
               onClick={() => setSortAsc(true)}
@@ -164,20 +156,27 @@ export default function LiveRedirectPage() {
             >
               ⬇️ 遞減
             </button>
-          </div >
-        </div >
+          </div>
+        </div>
 
-        {showUpcoming && filterByTopic(data.upcoming).length > 0 && (
-          <LiveRedirectSection
-            title="⏰ 即將直播"
-            type="upcoming"
-            channels={filterByTopic(data.upcoming)}
-            groupByCountry={groupByCountry}
-            sortMode={sortMode}
-            sortAsc={sortAsc}
-          />
+        {/* 即將直播（改為可收合灰色背景區塊） */}
+        {filterByTopic(data.upcoming).length > 0 && (
+          <div className="bg-gray-50 dark:bg-zinc-900 border border-gray-200 dark:border-zinc-700 rounded-xl p-4 mb-8 shadow-sm">
+            <LiveRedirectSection
+              title="⏰ 即將直播"
+              type="upcoming"
+              channels={filterByTopic(data.upcoming)}
+              groupByCountry={groupByCountry}
+              sortMode={sortMode}
+              sortAsc={sortAsc}
+              collapsible
+              collapsed={collapseUpcoming}
+              onToggleCollapse={() => setCollapseUpcoming(prev => !prev)}
+            />
+          </div>
         )}
 
+        {/* 降落目標 */}
         {filterByTopic(data.live).length > 0 && (
           <LiveRedirectSection
             title="🪂 降落目標"
@@ -189,6 +188,7 @@ export default function LiveRedirectPage() {
           />
         )}
 
+        {/* 已收播 */}
         {showEnded && filterByTopic(data.ended).length > 0 && (
           <LiveRedirectSection
             title="📁 已收播"

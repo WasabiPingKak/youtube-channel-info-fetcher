@@ -10,6 +10,9 @@ export default function LiveRedirectSection({
   groupByCountry = false,
   sortMode,            // "time" | "viewers"
   sortAsc,             // boolean
+  collapsible = false,
+  collapsed = false,
+  onToggleCollapse,
 }) {
   const now = Date.now();
 
@@ -41,17 +44,33 @@ export default function LiveRedirectSection({
 
   return (
     <div className="mb-8">
-      <h2 className="text-lg font-semibold mb-3 text-gray-800 dark:text-white">{title}</h2>
+      {/* 標題 + 可選擇的折疊控制 */}
+      <div className="flex items-center gap-4 mb-3">
+        <h2 className="text-lg font-semibold text-gray-800 dark:text-white">
+          {title}
+        </h2>
+        {collapsible && (
+          <button
+            onClick={onToggleCollapse}
+            className="text-sm text-blue-600 dark:text-blue-400 hover:underline"
+          >
+            {collapsed ? "顯示" : "隱藏"}
+          </button>
+        )}
+      </div>
 
-      {groupByCountry ? (
-        <GroupedChannelList
-          groupedChannels={groupChannelsByCountry(sortedChannels, sortFn)}
-          renderCard={(channel) => (
-            <LiveChannelCard key={channel.live.videoId} channel={channel} />
-          )}
-        />
-      ) : (
-        renderCards(sortedChannels)
+      {/* 卡片列表 */}
+      {!collapsed && (
+        groupByCountry ? (
+          <GroupedChannelList
+            groupedChannels={groupChannelsByCountry(sortedChannels, sortFn)}
+            renderCard={(channel) => (
+              <LiveChannelCard key={channel.live.videoId} channel={channel} />
+            )}
+          />
+        ) : (
+          renderCards(sortedChannels)
+        )
       )}
     </div>
   );
