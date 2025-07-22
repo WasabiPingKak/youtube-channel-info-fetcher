@@ -88,6 +88,14 @@ export default function LiveChannelCard({ channel }) {
         </div>
       </div>
 
+      {/* 直播狀態 */}
+      <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+        {startTimeLabel}
+        {live.viewers > 0 && (
+          <>。{live.viewers.toLocaleString()} 人正在觀看</>
+        )}
+      </div>
+
       {/* 分類 Badges */}
       <div className="flex flex-wrap gap-1 mb-1">
         {getBadgesFromLiveChannel(channel).map((badge, index) => (
@@ -113,13 +121,6 @@ export default function LiveChannelCard({ channel }) {
       <div className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900 dark:text-white">
         {live.title}
       </div>
-      <div className="text-xs text-gray-600 dark:text-gray-400">{startTimeLabel}</div>
-
-      {live.viewers > 0 && (
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          {live.viewers.toLocaleString()} 人正在觀看
-        </div>
-      )}
     </a>
   );
 }

@@ -9,7 +9,7 @@ import { PiAirplaneLandingFill } from "react-icons/pi";
 import { FaInfoCircle } from "react-icons/fa";
 import LiveTopicFilterPanel from "@/components/live_redirect/LiveTopicFilterPanel";
 import { getLiveTopicStats } from "@/utils/topicStats";
-import { getBadgesFromLiveChannel } from "@/utils/badgeUtils"; // ✅ 修復：移到頂部 import
+import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
 
 export default function LiveRedirectPage() {
   const { data, isLoading, isError } = useLiveRedirectData();
