@@ -144,8 +144,17 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
       </div>
 
       <div className="text-center text-xs text-gray-400 dark:text-zinc-500 py-3">
-        © Wasabi PingKak
+        ©{" "}
+        <a
+          href="https://wasabipingkak.github.io/Pingkak-Site/"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline hover:text-gray-500 dark:hover:text-zinc-400 transition"
+        >
+          Wasabi PingKak
+        </a>
       </div>
+
     </aside>
   );
 };
