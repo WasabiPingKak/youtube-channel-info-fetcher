@@ -15,7 +15,7 @@ const ChannelSelectorCard = ({ channel }) => {
   return (
     <SmartLink
       to={`/videos?channel=${channel.channel_id}`}
-      className="bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-md p-4 transition-all h-full flex flex-col justify-between"
+      className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm hover:shadow-md p-4 transition-all h-full flex flex-col justify-between"
     >
       {/* 上半部資訊內容（固定高度區） */}
       <div className="flex items-center gap-4 flex-1">
