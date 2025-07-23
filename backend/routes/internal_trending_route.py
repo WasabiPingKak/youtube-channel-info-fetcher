@@ -7,10 +7,11 @@ from pytz import timezone
 from services.trending.daily_builder import build_trending_for_date_range
 from services.channel_updater.daily_refresh_service import (
     run_daily_channel_refresh,
-    DEFAULT_REFRESH_LIMIT
+    DEFAULT_REFRESH_LIMIT,
 )
 
 logger = logging.getLogger(__name__)
+
 
 def init_internal_trending_route(app, db: Client):
     bp = Blueprint("internal_trending", __name__, url_prefix="/api/internal")
@@ -35,7 +36,9 @@ def init_internal_trending_route(app, db: Client):
             if days <= 0:
                 raise ValueError("days 參數必須為正整數")
 
-            logger.info(f"🚀 開始處理 build_daily_trending | start={start_date} | days={days} | force={force}")
+            logger.info(
+                f"🚀 開始處理 build_daily_trending | start={start_date} | days={days} | force={force}"
+            )
             result = build_trending_for_date_range(start_date, days, db, force=force)
             return jsonify(result)
 
@@ -82,7 +85,7 @@ def init_internal_trending_route(app, db: Client):
                 include_recent=include_recent,
                 dry_run=dry_run,
                 full_scan=full_scan,
-                force_category_counts=force_category_counts
+                force_category_counts=force_category_counts,
             )
             return jsonify(result)
 

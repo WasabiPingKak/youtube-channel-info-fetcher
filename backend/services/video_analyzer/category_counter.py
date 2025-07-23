@@ -8,6 +8,7 @@ CATEGORY_MAPPING = {
     "節目": "show",
 }
 
+
 def count_category_counts(videos: List[Dict]) -> Dict[str, int]:
     """
     接收經 get_classified_videos() 處理過的影片清單，
@@ -26,8 +27,9 @@ def count_category_counts(videos: List[Dict]) -> Dict[str, int]:
         if not isinstance(matched, list):
             continue
 
-        # 只算一次 all（無論有無分類）
-        counts["all"] += 1
+        # 只在有命中主分類時才算入 all
+        if any(CATEGORY_MAPPING.get(cat) for cat in matched):
+            counts["all"] += 1
 
         # 紀錄本影片已算過的分類，避免重複加總
         already_counted = set()
