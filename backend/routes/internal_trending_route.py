@@ -66,13 +66,23 @@ def init_internal_trending_route(app, db: Client):
             # 🔹 full_scan：是否完整抓取整份播放清單（否則只抓最近兩頁）
             full_scan = bool(data.get("full_scan", False))
 
-            logger.info(f"🌀 啟動每日快取刷新任務 | limit={limit} | include_recent={include_recent} | dry_run={dry_run} | full_scan={full_scan}")
+            # 🔹 force_category_counts：是否強制建立分類快取（預設 False）
+            force_category_counts = bool(data.get("force_category_counts", False))
+
+            logger.info(
+                f"🌀 啟動每日快取刷新任務 | "
+                f"limit={limit} | include_recent={include_recent} | "
+                f"dry_run={dry_run} | full_scan={full_scan} | "
+                f"force_category_counts={force_category_counts}"
+            )
+
             result = run_daily_channel_refresh(
                 db,
                 limit=limit,
                 include_recent=include_recent,
                 dry_run=dry_run,
-                full_scan=full_scan
+                full_scan=full_scan,
+                force_category_counts=force_category_counts
             )
             return jsonify(result)
 

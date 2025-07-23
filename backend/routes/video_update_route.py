@@ -5,6 +5,9 @@ from services.youtube.fetcher import get_video_data
 from services.heatmap_analyzer import update_single_channel_heatmap
 from services.firestore.heatmap_writer import is_channel_heatmap_initialized
 from services.heatmap_cache_writer import append_to_pending_cache
+from services.classified_video_fetcher import get_classified_videos
+from services.video_analyzer.category_counter import count_category_counts
+from services.firestore.category_writer import write_category_counts_to_channel_index_batch
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -52,6 +55,12 @@ def init_video_update_route(app, db):
             else:
                 write_result = write_batches_to_firestore(db, channel_id, videos)
                 update_last_sync_time(db, channel_id, videos)
+
+                # Update category_counts（分類快取統計）
+                classified = get_classified_videos(db, channel_id)
+                counts = count_category_counts(classified)
+                if counts.get("all", 0) > 0:
+                    write_category_counts_to_channel_index_batch(db, channel_id, counts)
 
                 # ✅ 在更新 heatmap 前檢查是否已初始化
                 was_initialized = is_channel_heatmap_initialized(db, channel_id)

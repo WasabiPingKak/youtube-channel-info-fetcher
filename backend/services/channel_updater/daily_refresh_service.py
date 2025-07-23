@@ -6,6 +6,9 @@ from google.cloud.firestore import Client
 from services.youtube.fetcher import get_video_data
 from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
+from services.classified_video_fetcher import get_classified_videos
+from services.video_analyzer.category_counter import count_category_counts
+from services.firestore.category_writer import write_category_counts_to_channel_index_batch
 
 DEFAULT_REFRESH_LIMIT = 50
 RECENT_CHECK_INTERVAL_SECONDS = 2 * 86400  # 2 天
@@ -78,7 +81,8 @@ def run_daily_channel_refresh(
     limit: int = DEFAULT_REFRESH_LIMIT,
     include_recent: bool = False,
     dry_run: bool = False,
-    full_scan: bool = False
+    full_scan: bool = False,
+    force_category_counts: bool = False
 ) -> Dict:
     index_ref = db.collection("channel_sync_index").document("index_list")
     index_doc = index_ref.get()
@@ -133,6 +137,16 @@ def run_daily_channel_refresh(
                 videos_written = result.get("videos_written", 0)
                 latest_sync = update_last_sync_time(db, channel_id, new_videos)
                 logger.info(f"✅ 寫入頻道 {channel_id} 的影片數量：{videos_written}")
+
+            # 🟡 無論是否有新影片，都可強制寫入 category_counts
+            if force_category_counts:
+                classified = get_classified_videos(db, channel_id)
+                counts = count_category_counts(classified)
+                if counts.get("all", 0) > 0:
+                    write_category_counts_to_channel_index_batch(db, channel_id, counts)
+                    logger.info(f"📊 強制更新 category_counts → {channel_id}")
+                else:
+                    logger.info(f"⚪ category_counts 空值，略過寫入 → {channel_id}")
 
             update_index_entry(index_data, channel_id, checked_at=now, sync_at=latest_sync if new_videos else None)
             processed.append({

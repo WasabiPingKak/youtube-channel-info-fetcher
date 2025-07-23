@@ -77,7 +77,6 @@ def update_single_channel_heatmap(db, channel_id: str) -> bool:
     """
     from services.firestore.channel_loader import load_videos_for_channel
     from services.firestore.heatmap_writer import write_channel_heatmap_result
-    from services.firestore.active_time_writer import write_active_time_all_to_channel_index_batch
     from utils.datetime_utils import get_taiwan_datetime_from_publish
 
     if not channel_id:

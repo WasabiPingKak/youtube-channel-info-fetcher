@@ -7,7 +7,6 @@ from google.api_core.exceptions import GoogleAPIError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime, timezone
-from services.heatmap_analyzer import update_single_channel_heatmap
 
 db = firestore.Client()
 
