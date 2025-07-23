@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-07-24",
+    items: [
+      "在檢視所有頻道頁面中，頻道卡片新增各類主題的長條圖，並可以按照主題的佔比排序",
+    ],
+  },
+  {
     date: "2025-07-03",
     items: [
       "降落轉機塔臺現在可以顯示分類徽章，以及使用分類徽章過濾",
