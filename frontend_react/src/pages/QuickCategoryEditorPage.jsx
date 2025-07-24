@@ -174,8 +174,17 @@ const QuickCategoryEditorPage = () => {
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
               這裡是系統判斷不出來的影片清單，我們幫你挑出了在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片。<br />
               <span className="ml-4 block">• 關鍵字可屬於多個主題，例如「歌雜」可同時是雜談與音樂</span>
-              <span className="ml-4 block">• 可編輯名稱作為圖表顯示用的標籤，例如「ft」改成「連動」</span>
-              <span className="ml-4 block">• 若是遊戲名稱，建議透過左側填表加入系統分類，方便全站共用</span>
+              <span className="ml-4 block">
+                •「✏️ 編輯顯示名稱」可以把你的標題關鍵字轉換成你想顯示的徽章標題
+                <span className="block ml-8">
+                  - 例如你的標題是「鼠繪台」，可以透過編輯將徽章的文字顯示成「繪圖台」，但依然是用「鼠繪台」做標題過濾。
+                </span>
+                <span className="block ml-8">
+                  - 又例如你的遊戲標題是故意諧音的「星窮鐵道」，可以透過編輯將徽章的文字顯示成「星穹鐵道」。
+                </span>
+              </span>
+              <span className="ml-4 block mb-4">• 若是正式的遊戲名稱，建議透過左側填表加入系統分類，方便全站共用</span>
+
               若需手動微調分類結果，請改用
               <a
                 href="/my-category-editor"
