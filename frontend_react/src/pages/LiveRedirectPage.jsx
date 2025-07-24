@@ -187,6 +187,11 @@ export default function LiveRedirectPage() {
             sortAsc={sortAsc}
           />
         )}
+        {filterByTopic(data.live).length === 0 && (
+          <div className="mt-2 mb-6 text-gray-500 dark:text-gray-400 text-sm">
+            目前沒有正在直播中的頻道。
+          </div>
+        )}
 
         {/* 已收播 */}
         {showEnded && filterByTopic(data.ended).length > 0 && (
