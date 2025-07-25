@@ -1,7 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import {
   FaYoutube, FaTwitter, FaUser, FaGithub,
-  FaChartLine, FaClipboardList, FaTools
+  FaChartLine, FaClipboardList, FaTools, FaBug
 } from "react-icons/fa";
 import { PiAirplaneLandingFill } from "react-icons/pi";
 import { BiSolidDonateHeart } from "react-icons/bi";
@@ -65,7 +65,7 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
     <aside
       className={clsx(
         isMobile ? "w-full max-w-[240px]" : "hidden md:block",
-        "fixed top-14 left-0 h-[calc(100%-56px)] bg-white dark:bg-zinc-900 shadow-lg z-40 border-r border-gray-200 dark:border-zinc-800 transition-all duration-300 flex flex-col justify-between",
+        "fixed top-14 left-0 h-[calc(100%-56px)] overflow-y-auto scrollbar-custom bg-white dark:bg-zinc-900 shadow-lg z-40 border-r border-gray-200 dark:border-zinc-800 transition-all duration-300 flex flex-col justify-between",
         !isMobile && (collapsed ? "w-16" : "w-60")
       )}
     >
@@ -124,6 +124,17 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
             {!collapsed && <span>隱私權政策</span>}
           </SmartLink>
 
+          <a
+            href="https://docs.google.com/forms/d/e/1FAIpQLSczGBQJ27Q5rMEqqao3Yz6u8tY_5tV0diULFWCzOLGahw9K3Q/viewform"
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={onItemClick}
+            className="flex items-center gap-3 px-3 py-2 rounded text-blue-700 dark:text-blue-300 hover:bg-blue-50 dark:hover:bg-zinc-800"
+          >
+            <FaBug className="w-5 h-5" />
+            {!collapsed && <span>錯誤回報</span>}
+          </a>
+
           <hr className="my-3 border-gray-300 dark:border-zinc-700" />
         </nav>
       </div>
@@ -154,7 +165,6 @@ const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick })
           Wasabi PingKak
         </a>
       </div>
-
     </aside>
   );
 };

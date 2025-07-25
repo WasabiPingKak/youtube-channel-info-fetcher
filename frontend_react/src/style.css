@@ -66,3 +66,33 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* === 自訂捲軸樣式（亮色＋暗色模式）=== */
+.scrollbar-custom::-webkit-scrollbar {
+  width: 6px;
+  height: 0px; /* 隱藏橫向捲軸 */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: rgba(120, 120, 120, 0.3); /* 淡灰色 thumb */
+  border-radius: 4px;
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+/* 深色模式下的 thumb 色調更亮一點 */
+.dark .scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: rgba(180, 180, 180, 0.3);
+}
+
+/* Firefox 捲軸樣式 */
+.scrollbar-custom {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 120, 120, 0.3) transparent;
+}
+
+.dark .scrollbar-custom {
+  scrollbar-color: rgba(180, 180, 180, 0.3) transparent;
+}
