@@ -23,7 +23,30 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
         db.collection("live_redirect_cache").document(yesterday_str).get().to_dict()
         or {}
     )
-    old_channels = today_cache.get("channels", []) + yesterday_cache.get("channels", [])
+    raw_old_channels = today_cache.get("channels", []) + yesterday_cache.get(
+        "channels", []
+    )
+
+    # 🧹 過濾已收播超過 retention_days 的舊資料
+    retention_days = 3
+    old_channels = []
+    for c in raw_old_channels:
+        end_time = c.get("live", {}).get("endTime")
+        if not end_time:
+            old_channels.append(c)
+        else:
+            try:
+                end_dt = datetime.fromisoformat(end_time)
+                if end_dt >= now - timedelta(days=retention_days):
+                    old_channels.append(c)
+                else:
+                    logging.info(
+                        f"🧹 清除過期直播：{c['live'].get('videoId')}（endTime={end_time}）"
+                    )
+            except Exception as e:
+                logging.warning(
+                    f"⚠️ 解析 endTime 失敗：{c['live'].get('videoId')} / {end_time} / error={e}"
+                )
 
     cached_map = {c["live"]["videoId"]: c for c in old_channels}
     end_recorded = {vid for vid, c in cached_map.items() if c["live"].get("endTime")}
@@ -76,12 +99,10 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
 
     # 📦 Step 5：合併快取，已處理者優先，避免重複
     merged_map = {c["live"]["videoId"]: c for c in output_channels}
-
     for c in old_channels:
         vid = c["live"]["videoId"]
         if vid not in merged_map:
             merged_map[vid] = c
-
     output_channels = list(merged_map.values())
 
     # 📝 回寫 notify queue 的 processedAt
