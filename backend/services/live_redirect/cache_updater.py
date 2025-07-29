@@ -10,14 +10,20 @@ from services.classified_video_fetcher import classify_live_title
 
 logger = logging.getLogger(__name__)
 
+
 def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> dict:
     today_str = now.date().isoformat()
     yesterday_str = (now - timedelta(days=1)).date().isoformat()
 
     # 🔹 Step 1：載入昨天與今天的快取
-    today_cache = db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}
-    yesterday_cache = db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
-    old_channels = (today_cache.get("channels", []) + yesterday_cache.get("channels", []))
+    today_cache = (
+        db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}
+    )
+    yesterday_cache = (
+        db.collection("live_redirect_cache").document(yesterday_str).get().to_dict()
+        or {}
+    )
+    old_channels = today_cache.get("channels", []) + yesterday_cache.get("channels", [])
 
     cached_map = {c["live"]["videoId"]: c for c in old_channels}
     end_recorded = {vid for vid, c in cached_map.items() if c["live"].get("endTime")}
@@ -55,7 +61,7 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
                     category = classify_live_title(db, channel_id, title)
                     result["live"]["category"] = category
                     logging.info(
-                        f"🧩 已分類：videoId={video_id}, channelId={channel_id}, title=\"{title}\", "
+                        f'🧩 已分類：videoId={video_id}, channelId={channel_id}, title="{title}", '
                         f"category={category.get('matchedCategories')}, pairs={category.get('matchedPairs')}"
                     )
 
@@ -87,10 +93,7 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
             if v.get("videoId") in processed_ids:
                 v["processedAt"] = now.isoformat()
             new_list.append(v)
-        ref.set({
-            "updatedAt": now.isoformat(),
-            "videos": new_list
-        })
+        ref.set({"updatedAt": now.isoformat(), "videos": new_list})
 
     # 🕒 懶更新機制：補查快取中未收播的影片
     lazy_result = _lazy_refresh_endtime(db, old_channels, cached_map, end_recorded, now)
@@ -98,10 +101,9 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
     processed_ids.update([c["live"]["videoId"] for c in lazy_channels])
 
     # 合併原本與懶更新的快取結果（以懶更新為主）
-    output_channels = list({
-        c["live"]["videoId"]: c for c in (output_channels + lazy_channels)
-    }.values())
-
+    output_channels = list(
+        {c["live"]["videoId"]: c for c in (output_channels + lazy_channels)}.values()
+    )
 
     # 🎯 後補分類：針對尚未分類的影片補上 live.category
     for channel in output_channels:
@@ -117,22 +119,18 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
                     f"category={category.get('matchedCategories')}, pairs={category.get('matchedPairs')}"
                 )
 
-    db.collection("live_redirect_cache").document(today_str).set({
-        "updatedAt": now.isoformat(),
-        "channels": output_channels
-    })
+    db.collection("live_redirect_cache").document(today_str).set(
+        {"updatedAt": now.isoformat(), "channels": output_channels}
+    )
 
-    return {
-        "updatedAt": now.isoformat(),
-        "channels": output_channels
-    }
+    return {"updatedAt": now.isoformat(), "channels": output_channels}
 
 
 def _filter_video_ids_to_query(
     notify_ids: dict[str, dict],
     cached_map: dict[str, dict],
     end_recorded: set[str],
-    now: datetime
+    now: datetime,
 ) -> list[str]:
     """
     決定需要送到 YouTube API 查詢的 videoId 清單。
@@ -152,8 +150,7 @@ def _filter_video_ids_to_query(
     """
     # 🔍 額外列出 cached_map 中 endTime 為 null 的影片
     no_endtime_ids = [
-        vid for vid, c in cached_map.items()
-        if not c.get("live", {}).get("endTime")
+        vid for vid, c in cached_map.items() if not c.get("live", {}).get("endTime")
     ]
     logging.info(f"🔄 快取中尚未收播的影片 ID：{no_endtime_ids}")
 
@@ -177,7 +174,9 @@ def _filter_video_ids_to_query(
                         # 預約影片時間超過 15 分鐘
                         continue
                 except Exception as e:
-                    logging.warning(f"⚠️ 解析 startTime 失敗：{vid} / {scheduled} / error={e}")
+                    logging.warning(
+                        f"⚠️ 解析 startTime 失敗：{vid} / {scheduled} / error={e}"
+                    )
         else:
             logging.info(f"🆕 全新影片，無快取紀錄：{vid}")
 
@@ -192,7 +191,7 @@ def _lazy_refresh_endtime(
     old_channels: list[dict],
     cached_map: dict[str, dict],
     end_recorded: set[str],
-    now: datetime
+    now: datetime,
 ) -> dict:
     """
     嘗試補查快取中尚未收播的影片，補上 endTime。
@@ -209,8 +208,7 @@ def _lazy_refresh_endtime(
     """
     # 找出快取中 endTime 為 null 的影片
     pending_ids = [
-        c["live"]["videoId"] for c in old_channels
-        if not c["live"].get("endTime")
+        c["live"]["videoId"] for c in old_channels if not c["live"].get("endTime")
     ]
 
     logging.info(f"🕒 懶更新：發現快取中尚未收播影片 {len(pending_ids)} 支，準備查詢")
@@ -236,6 +234,8 @@ def _lazy_refresh_endtime(
             refreshed_channels.append(fallback)
 
     video_ids = [c["live"]["videoId"] for c in refreshed_channels]
-    logging.info(f"✅ 懶更新完成，共寫入 {len(refreshed_channels)} 筆，videoIds={video_ids}")
+    logging.info(
+        f"✅ 懶更新完成，共寫入 {len(refreshed_channels)} 筆，videoIds={video_ids}"
+    )
 
     return {"channels": refreshed_channels}
