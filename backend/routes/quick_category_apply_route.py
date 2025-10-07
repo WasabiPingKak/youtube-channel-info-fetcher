@@ -3,6 +3,7 @@ import logging
 from firebase_admin import firestore
 from utils.jwt_util import verify_jwt
 
+
 def init_quick_category_apply_route(app, db):
     @app.route("/api/quick-editor/channel-config-apply", methods=["POST"])
     def apply_quick_category():
@@ -30,15 +31,26 @@ def init_quick_category_apply_route(app, db):
             targets = data.get("targets")
 
             if not channel_id:
-                return jsonify({"status": "error", "message": "缺少必要欄位 channelId"}), 400
+                return (
+                    jsonify({"status": "error", "message": "缺少必要欄位 channelId"}),
+                    400,
+                )
             if not keyword:
-                return jsonify({"status": "error", "message": "缺少必要欄位 keyword"}), 400
+                return (
+                    jsonify({"status": "error", "message": "缺少必要欄位 keyword"}),
+                    400,
+                )
             if not isinstance(targets, list) or not targets:
-                return jsonify({"status": "error", "message": "缺少必要欄位 targets"}), 400
+                return (
+                    jsonify({"status": "error", "message": "缺少必要欄位 targets"}),
+                    400,
+                )
 
             # 🔐 channelId 與使用者 JWT 是否一致
             if channel_id != user_channel_id:
-                logging.warning(f"⛔ 嘗試寫入他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+                logging.warning(
+                    f"⛔ 嘗試寫入他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}"
+                )
                 return jsonify({"error": "無權限操作此頻道資料"}), 403
 
             # 🔧 Firestore 操作
@@ -53,10 +65,11 @@ def init_quick_category_apply_route(app, db):
             config_data = doc.to_dict() or {}
             updated_config = config_data.copy()
 
-            # ✅ 確保四大主分類永遠存在
+            # ✅ 確保四大主分類永遠存在，且型別為 dict（防止過去為 list）
             REQUIRED_MAIN_CATEGORIES = ["雜談", "遊戲", "音樂", "節目"]
             for cat in REQUIRED_MAIN_CATEGORIES:
-                updated_config.setdefault(cat, {})
+                if not isinstance(updated_config.get(cat), dict):
+                    updated_config[cat] = {}
 
             # ➤ 寫入分類設定
             for target in targets:
@@ -66,7 +79,8 @@ def init_quick_category_apply_route(app, db):
                 if not main_category or not subcategory_name:
                     continue  # 跳過無效項目
 
-                updated_config.setdefault(main_category, {})
+                if not isinstance(updated_config.get(main_category), dict):
+                    updated_config[main_category] = {}
 
                 if subcategory_name == keyword:
                     updated_config[main_category].setdefault(subcategory_name, [])

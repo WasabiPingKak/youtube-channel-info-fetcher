@@ -11,8 +11,8 @@ export default function FilterPanel({
       <button
         type="button"
         className={`px-3 py-1 rounded border flex items-center gap-1 transition ${checked
-            ? "bg-blue-600 text-white border-blue-600"
-            : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100 border-gray-300"
+          ? "bg-blue-600 text-white border-blue-600"
+          : "bg-white dark:bg-zinc-700 text-gray-700 dark:text-gray-100 border-gray-300"
           }`}
         onClick={() => onToggle(!checked)}
       >
@@ -24,7 +24,6 @@ export default function FilterPanel({
 
   return (
     <div className="flex flex-wrap gap-3 items-center mb-6">
-      {renderToggleButton("顯示即將直播", showUpcoming, setShowUpcoming)}
       {renderToggleButton("顯示已收播", showEnded, setShowEnded)}
     </div>
   );

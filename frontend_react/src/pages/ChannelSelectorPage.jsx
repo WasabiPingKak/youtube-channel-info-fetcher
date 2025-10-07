@@ -12,6 +12,20 @@ import FlagGroupingToggle from "../components/channels/FlagGroupingToggle";
 import GroupedChannelList from "../components/channels/GroupedChannelList";
 import { groupChannelsByCountry } from "../utils/groupChannelsByCountry";
 
+const MAIN_COLOR_CLASS = {
+  talkRatio: "bg-emerald-500 text-white",
+  gameRatio: "bg-indigo-500 text-white",
+  musicRatio: "bg-orange-400 text-white",
+  showRatio: "bg-yellow-400 text-yellow-900",
+};
+
+const MAIN_PALE_CLASS = {
+  talkRatio: "bg-emerald-100 text-emerald-800",
+  gameRatio: "bg-indigo-100 text-indigo-800",
+  musicRatio: "bg-orange-100 text-orange-800",
+  showRatio: "bg-yellow-100 text-yellow-800",
+};
+
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
   const [sortMode, setSortMode] = useState("latest");
@@ -44,7 +58,40 @@ const ChannelSelectorPage = () => {
       new Date(b.lastUploadAt).getTime() - new Date(a.lastUploadAt).getTime();
   } else if (sortMode === "alphabetical") {
     sortFn = (a, b) => a.name.localeCompare(b.name);
+  } else if (sortMode === "talkRatio") {
+    sortFn = (a, b) => {
+      const getRatio = (c) =>
+        c.category_counts?.all
+          ? (c.category_counts.talk || 0) / c.category_counts.all
+          : 0;
+      return getRatio(b) - getRatio(a);
+    };
+  } else if (sortMode === "gameRatio") {
+    sortFn = (a, b) => {
+      const getRatio = (c) =>
+        c.category_counts?.all
+          ? (c.category_counts.game || 0) / c.category_counts.all
+          : 0;
+      return getRatio(b) - getRatio(a);
+    };
+  } else if (sortMode === "musicRatio") {
+    sortFn = (a, b) => {
+      const getRatio = (c) =>
+        c.category_counts?.all
+          ? (c.category_counts.music || 0) / c.category_counts.all
+          : 0;
+      return getRatio(b) - getRatio(a);
+    };
+  } else if (sortMode === "showRatio") {
+    sortFn = (a, b) => {
+      const getRatio = (c) =>
+        c.category_counts?.all
+          ? (c.category_counts.show || 0) / c.category_counts.all
+          : 0;
+      return getRatio(b) - getRatio(a);
+    };
   }
+  sortedChannels.sort(sortFn);
 
   const groupedChannels = isFlagGrouping
     ? groupChannelsByCountry(sortedChannels, sortFn)
@@ -114,6 +161,42 @@ const ChannelSelectorPage = () => {
           >
             字典排序
           </button>
+          <button
+            className={`px-3 py-1 rounded-lg border font-medium ${sortMode === "talkRatio"
+              ? MAIN_COLOR_CLASS.talkRatio
+              : MAIN_PALE_CLASS.talkRatio
+              }`}
+            onClick={() => setSortMode("talkRatio")}
+          >
+            雜談比例
+          </button>
+          <button
+            className={`px-3 py-1 rounded-lg border font-medium ${sortMode === "gameRatio"
+              ? MAIN_COLOR_CLASS.gameRatio
+              : MAIN_PALE_CLASS.gameRatio
+              }`}
+            onClick={() => setSortMode("gameRatio")}
+          >
+            遊戲比例
+          </button>
+          <button
+            className={`px-3 py-1 rounded-lg border font-medium ${sortMode === "musicRatio"
+              ? MAIN_COLOR_CLASS.musicRatio
+              : MAIN_PALE_CLASS.musicRatio
+              }`}
+            onClick={() => setSortMode("musicRatio")}
+          >
+            音樂比例
+          </button>
+          <button
+            className={`px-3 py-1 rounded-lg border font-medium ${sortMode === "showRatio"
+              ? MAIN_COLOR_CLASS.showRatio
+              : MAIN_PALE_CLASS.showRatio
+              }`}
+            onClick={() => setSortMode("showRatio")}
+          >
+            節目比例
+          </button>
         </div>
 
         {/* ❌ 錯誤狀態 */}
@@ -138,6 +221,9 @@ const ChannelSelectorPage = () => {
             <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
               全部頻道（{channels.length}）
             </h2>
+            <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
+              分類比例總和可能超過 100%，因為同一部影片可能同時屬於多個分類。且未分類的影片會在計數中被排除。
+            </p>
             <p className="text-xs text-gray-400 dark:text-gray-500 mb-3">
               {sortMode === "alphabetical"
                 ? "按照頻道名稱字典順序排列"
@@ -151,7 +237,7 @@ const ChannelSelectorPage = () => {
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-                {channels.map((channel) => (
+                {sortedChannels.map((channel) => (
                   <ChannelSelectorCard
                     key={channel.channel_id}
                     channel={channel}

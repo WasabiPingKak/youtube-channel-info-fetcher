@@ -71,6 +71,7 @@ def init_channel_index_route(app, db):
                         "enabled": entry.get("enabled", True),
                         "lastVideoUploadedAt": sync_map.get(channel_id),
                         "active_time_all": entry.get("active_time_all"),
+                        "category_counts": entry.get("category_counts"),
                     })
 
             # 排序所有資料

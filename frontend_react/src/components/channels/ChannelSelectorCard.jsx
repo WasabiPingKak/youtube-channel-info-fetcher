@@ -5,6 +5,7 @@ import DeveloperBadge from "@/components/badges/DeveloperBadge";
 import CountryFlags from "@/components/badges/CountryFlags";
 import ActiveTimeBar from "./ActiveTimeBar";
 import SmartLink from "@/components/common/SmartLink";
+import CategoryStatsBar from "@/components/channels/CategoryStatsBar"; // ✅ 新元件
 
 const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
@@ -14,9 +15,10 @@ const ChannelSelectorCard = ({ channel }) => {
   return (
     <SmartLink
       to={`/videos?channel=${channel.channel_id}`}
-      className="block bg-white dark:bg-zinc-800 rounded-xl shadow hover:shadow-md p-4 transition-all"
+      className="bg-white dark:bg-zinc-800 border border-gray-200 dark:border-zinc-700 rounded-xl shadow-sm hover:shadow-md p-4 transition-all h-full flex flex-col justify-between"
     >
-      <div className="flex items-center gap-4">
+      {/* 上半部資訊內容（固定高度區） */}
+      <div className="flex items-center gap-4 flex-1">
         <img
           src={channel.thumbnail}
           alt={channel.name}
@@ -48,9 +50,14 @@ const ChannelSelectorCard = ({ channel }) => {
           )}
 
           {/* 活躍時段 */}
-          <ActiveTimeBar activeTimeAll={channel.active_time_all} />
+          {/* <ActiveTimeBar activeTimeAll={channel.active_time_all} /> */}
         </div>
       </div>
+
+      {/* ✅ 貼齊底部：分類統計長條圖 */}
+      {channel.category_counts && (
+        <CategoryStatsBar counts={channel.category_counts} />
+      )}
     </SmartLink>
   );
 };

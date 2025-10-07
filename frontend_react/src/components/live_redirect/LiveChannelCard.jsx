@@ -62,7 +62,7 @@ export default function LiveChannelCard({ channel }) {
       href={videoUrl}
       target="_blank"
       rel="noopener noreferrer"
-      className="block border rounded-xl p-4 hover:shadow transition bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700"
+      className="flex flex-col border rounded-xl p-4 hover:shadow transition bg-white dark:bg-zinc-800 border-gray-200 dark:border-zinc-700 h-full"
     >
       {/* 頻道資訊 */}
       <div className="flex items-start gap-3 mb-3">
@@ -88,38 +88,42 @@ export default function LiveChannelCard({ channel }) {
         </div>
       </div>
 
-      {/* 分類 Badges */}
-      <div className="flex flex-wrap gap-1 mb-1">
-        {getBadgesFromLiveChannel(channel).map((badge, index) => (
-          <VideoBadge key={index} badge={badge} />
-        ))}
-      </div>
+      {/* 底部區塊 */}
+      <div className="mt-auto">
+        {/* 直播狀態 */}
+        <div className="text-xs text-gray-600 dark:text-gray-400 mb-2">
+          {startTimeLabel}
+          {live.viewers > 0 && (
+            <>。{live.viewers.toLocaleString()} 人正在觀看</>
+          )}
+        </div>
 
-      {/* 直播縮圖 + 狀態標籤 */}
-      <div className="relative mb-2">
-        <img
-          src={thumbnailUrl}
-          alt={live.title}
-          className="w-full rounded-lg object-cover aspect-video"
-        />
-        <div
-          className={`absolute bottom-1 right-2 text-white text-xs px-2 py-0.5 rounded ${labelClass}`}
-        >
-          {label}
+        {/* 分類 Badges */}
+        <div className="flex flex-wrap gap-1 mb-1">
+          {getBadgesFromLiveChannel(channel).map((badge, index) => (
+            <VideoBadge key={index} badge={badge} />
+          ))}
+        </div>
+
+        {/* 直播縮圖 + 狀態標籤 */}
+        <div className="relative mb-2">
+          <img
+            src={thumbnailUrl}
+            alt={live.title}
+            className="w-full rounded-lg object-cover aspect-video"
+          />
+          <div
+            className={`absolute bottom-1 right-2 text-white text-xs px-2 py-0.5 rounded ${labelClass}`}
+          >
+            {label}
+          </div>
+        </div>
+
+        {/* 標題與開播資訊 */}
+        <div className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900 dark:text-white">
+          {live.title}
         </div>
       </div>
-
-      {/* 標題與開播資訊 */}
-      <div className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900 dark:text-white">
-        {live.title}
-      </div>
-      <div className="text-xs text-gray-600 dark:text-gray-400">{startTimeLabel}</div>
-
-      {live.viewers > 0 && (
-        <div className="text-xs text-gray-600 dark:text-gray-400">
-          {live.viewers.toLocaleString()} 人正在觀看
-        </div>
-      )}
     </a>
   );
 }
