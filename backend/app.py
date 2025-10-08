@@ -1,4 +1,5 @@
 from flask import Flask
+
 print("✅ [app.py] Flask app module loaded")
 from flask_cors import CORS
 import logging
@@ -34,6 +35,7 @@ from routes.live_redirect_route import init_live_redirect_route
 from routes.ecpay_return_route import init_ecpay_return_route
 from routes.donation_route import init_donation_route
 from routes.maintenance_route import init_maintenance_route
+from routes.annual_review_route import init_annual_review_routes
 
 logging.basicConfig(level=logging.INFO)
 
@@ -45,8 +47,12 @@ allowed_origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip(
 print(f"🔓 CORS 允許來源：{allowed_origins}")
 CORS(app, origins=allowed_origins, supports_credentials=True)
 
-app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
-app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "https://your-frontend.com")
+app.config["OAUTH_DEBUG_MODE"] = (
+    os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
+)
+app.config["FRONTEND_BASE_URL"] = os.getenv(
+    "FRONTEND_BASE_URL", "https://your-frontend.com"
+)
 
 # 初始化 Firebase，加入錯誤處理
 try:
@@ -83,6 +89,8 @@ init_live_redirect_route(app, db)
 init_ecpay_return_route(app, db)
 init_donation_route(app, db)
 init_maintenance_route(app, db)
+init_annual_review_routes(app, db)
+
 
 @app.route("/test-firestore")
 def test_firestore():
@@ -104,6 +112,7 @@ def test_firestore():
 
     except Exception as e:
         import traceback
+
         logging.error("🔥 Firestore 測試失敗：%s", traceback.format_exc())
         logging.error("❗錯誤類型：%s", type(e).__name__)
         logging.error("❗錯誤訊息：%s", str(e))
@@ -111,6 +120,7 @@ def test_firestore():
             f"<h1>❌ Firestore 測試失敗</h1><pre>{traceback.format_exc()}</pre>",
             500,
         )
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8080))
