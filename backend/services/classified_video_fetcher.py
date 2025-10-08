@@ -4,8 +4,10 @@ from utils.categorizer import match_category_and_game
 from utils.youtube_utils import normalize_video_item
 from utils.settings_main_merger import merge_main_categories_with_user_config
 from utils.settings_game_merger import merge_game_categories_with_aliases
+from datetime import datetime
 
 import logging
+
 logger = logging.getLogger(__name__)
 
 # 類型映射：轉為統一比對格式
@@ -14,7 +16,7 @@ type_map = {
     "直播": "live",
     "影片": "videos",
     "Shorts": "shorts",
-    "shorts": "shorts"
+    "shorts": "shorts",
 }
 
 
@@ -45,20 +47,28 @@ def get_merged_settings(db: Client, channel_id: str) -> Dict:
     return settings
 
 
-def get_classified_videos(db: Client, channel_id: str) -> List[Dict]:
+def get_classified_videos(
+    db: Client,
+    channel_id: str,
+    start: Optional[datetime] = None,
+    end: Optional[datetime] = None,
+) -> List[Dict]:
     """
     從 videos_batch 撈出影片，套用分類設定後回傳，格式與舊 API 一致。
+    - 支援傳入 start / end 為 UTC+0 時間範圍（datetime，含時區）
     - 不寫入 Firestore
     - 僅回傳符合 video_type 的影片
     """
     try:
-        # 1️⃣ 取得合併後的設定
         settings = get_merged_settings(db, channel_id)
         if not settings:
             return []
 
-        # 2️⃣ 讀取所有 batch 文件
-        batch_ref = db.collection("channel_data").document(channel_id).collection("videos_batch")
+        batch_ref = (
+            db.collection("channel_data")
+            .document(channel_id)
+            .collection("videos_batch")
+        )
         docs = list(batch_ref.stream())
         raw_items = []
         for doc in docs:
@@ -68,10 +78,26 @@ def get_classified_videos(db: Client, channel_id: str) -> List[Dict]:
         logger.info(f"📦 讀取 {len(docs)} 筆 batch，共 {len(raw_items)} 部影片")
 
         results = []
+        skipped = 0  # 紀錄被時間過濾掉的數量
         for raw_item in raw_items:
             item = normalize_video_item(raw_item)
             if not item:
                 logger.warning("⚠️ normalize_video_item 失敗: %s", raw_item)
+                continue
+
+            # 🕓 時間過濾處理
+            try:
+                publish_dt = datetime.fromisoformat(
+                    item["publishDate"]
+                )  # aware UTC+0 datetime
+                if start and publish_dt < start:
+                    skipped += 1
+                    continue
+                if end and publish_dt > end:
+                    skipped += 1
+                    continue
+            except Exception as e:
+                logger.warning("⚠️ 解析 publishDate 失敗：%s", item["publishDate"])
                 continue
 
             result = match_category_and_game(item["title"], item["type"], settings)
@@ -85,18 +111,23 @@ def get_classified_videos(db: Client, channel_id: str) -> List[Dict]:
                 "matchedCategories": result["matchedCategories"],
                 "game": result["game"],
                 "matchedKeywords": result["matchedKeywords"],
-                "matchedPairs": result.get("matchedPairs", [])
+                "matchedPairs": result.get("matchedPairs", []),
             }
 
-            logger.debug("🎯 命中分類: %s", video_data)
             results.append(video_data)
 
-        logger.info(f"✅ 成功分類 {len(results)} 部影片")
+        logger.info(
+            f"✅ 成功分類 {len(results)} 部影片"
+            f"（已篩掉 {skipped} 部不在時間範圍內）"
+            f"｜時間區間：start={start.isoformat() if start else '未指定'}，"
+            f"end={end.isoformat() if end else '未指定'}"
+        )
         return results
 
     except Exception as e:
         logger.error("🔥 get_classified_videos 發生錯誤: %s", e, exc_info=True)
         return []
+
 
 def classify_live_title(db: Client, channel_id: str, title: str) -> dict:
     """
@@ -124,7 +155,12 @@ def classify_live_title(db: Client, channel_id: str, title: str) -> dict:
         }
 
     except Exception as e:
-        logger.warning("⚠️ classify_live_title 失敗：channel_id=%s, title=%s, error=%s", channel_id, title, e)
+        logger.warning(
+            "⚠️ classify_live_title 失敗：channel_id=%s, title=%s, error=%s",
+            channel_id,
+            title,
+            e,
+        )
         return {
             "matchedCategories": [],
             "matchedPairs": [],
