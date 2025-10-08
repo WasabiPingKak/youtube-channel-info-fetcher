@@ -5,6 +5,7 @@ from typing import Optional
 import logging
 
 from google.cloud.firestore import Client
+from services.annual_review.fetch_videos import fetch_videos
 
 
 def generate_annual_review_data(
@@ -44,7 +45,7 @@ def generate_annual_review_data(
         )
 
         # ✅ 2. 載入影片資料（之後改由資料來源服務提供）
-        videos = _mock_fetch_videos(channel_id, period_start, period_end)
+        videos = fetch_videos(db, channel_id, period_start, period_end)
 
         # ✅ 3. 統計資料（暫時使用 placeholder，之後會用 calc 模組取代）
         stats_data = {
@@ -114,8 +115,3 @@ def generate_annual_review_data(
             "updated": False,
             "error": str(e),
         }
-
-
-# 📌 模擬資料來源（之後抽換成真正影片查詢）
-def _mock_fetch_videos(channel_id: str, start: datetime, end: datetime):
-    return []
