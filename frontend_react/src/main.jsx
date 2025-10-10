@@ -24,7 +24,7 @@ import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
 import LiveRedirectPage from "./pages/LiveRedirectPage";
 import LiveRedirectMaintenancePage from "@/pages/LiveRedirectMaintenancePage";
 import DonatePage from "@/pages/DonatePage";
-
+import ReviewPage from "./pages/ReviewPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
@@ -89,6 +89,7 @@ function AppRoutes() {
         <Route path="/auth-loading" element={<AuthLoadingPage />} />
         <Route path="/live-redirect" element={<LiveRedirectPage />} />
         <Route path="/donate" element={<DonatePage />} />
+        <Route path="/review/:channelId/:year" element={<ReviewPage />} />
 
         {/* 其他路徑 → redirect 提示 */}
         <Route
