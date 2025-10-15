@@ -24,6 +24,7 @@
     "echarts-for-react": "^3.0.2",
     "firebase": "^11.6.0",
     "flag-icons": "^7.3.2",
+    "framer-motion": "^12.23.24",
     "html-to-image": "^1.11.13",
     "i18n-iso-countries": "^7.14.0",
     "lodash.isequal": "^4.5.0",

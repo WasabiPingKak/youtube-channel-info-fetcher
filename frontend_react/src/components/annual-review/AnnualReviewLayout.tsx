@@ -2,6 +2,8 @@
 
 import React from "react";
 import { useAnnualReviewData } from "@/hooks/useAnnualReviewData";
+import AnnualStatsSection from "@/components/annual-review/AnnualStatsSection";
+import SpecialHighlightsSection from "@/components/annual-review/SpecialHighlightsSection";
 
 interface AnnualReviewLayoutProps {
   channelId: string;
@@ -12,7 +14,7 @@ export default function AnnualReviewLayout({
   channelId,
   year,
 }: AnnualReviewLayoutProps) {
-  const { videos, loading, error } = useAnnualReviewData(channelId, year);
+  const { stats, special, loading, error } = useAnnualReviewData(channelId, year);
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
@@ -27,31 +29,23 @@ export default function AnnualReviewLayout({
       </div>
 
       {/* 載入狀態 */}
-      {loading && <p className="text-sm text-muted-foreground">載入中...</p>}
+      {loading && (
+        <p className="text-sm text-muted-foreground">載入中...</p>
+      )}
       {error && (
         <p className="text-sm text-red-500">
           無法載入影片資料：{error.message}
         </p>
       )}
 
-      {/* 畫面主體（尚未實作區塊） */}
+      {/* 成功載入時呈現統計元件 */}
       {!loading && !error && (
         <>
-          <section>
-            <h2 className="text-xl font-semibold mb-4">📊 一般統計</h2>
-            <div className="text-muted-foreground text-sm">
-              （待整合 AnnualStatsSection 元件）
-              <br />
-              當前影片總數：{videos.length}
-            </div>
-          </section>
+          {/* 📊 一般統計區塊 */}
+          <AnnualStatsSection stats={stats} />
 
-          <section>
-            <h2 className="text-xl font-semibold mb-4">🌟 特殊項目</h2>
-            <div className="text-muted-foreground text-sm">
-              （待整合 SpecialHighlightsSection 元件）
-            </div>
-          </section>
+          {/* 🌟 特殊項目區塊 */}
+          <SpecialHighlightsSection special={special} />
         </>
       )}
     </div>

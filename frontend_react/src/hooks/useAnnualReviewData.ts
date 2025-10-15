@@ -1,4 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
+import { computeAnnualReviewStats } from "@/utils/statistics/computeAnnualReviewStats";
+import type { AnnualStatsData, SpecialStatsData } from "@/utils/statistics/types";
 
 export interface ClassifiedVideoItem {
   videoId: string;
@@ -70,16 +72,40 @@ export function useAnnualReviewData(channelId: string, year: number) {
       });
 
       console.log(`📦 取得 ${videos.length} 部影片（年=${year}）`);
-      return videos;
+
+      const { stats, special } = computeAnnualReviewStats(videos);
+      return { stats, special };
     },
     refetchOnWindowFocus: false,
     refetchOnMount: false,
   });
 
+  // 🧯 預設空統計
+  const fallbackStats: AnnualStatsData = {
+    videoCounts: { shorts: 0, videos: 0, live: 0 },
+    totalLiveHours: 0,
+    monthlyVideoCounts: [],
+    categoryTime: [],
+    monthlyCategoryTime: [],
+  };
+
+  // 🧯 預設特殊統計（補全所有欄位）
+  const fallbackSpecial: SpecialStatsData = {
+    longestLive: null,
+    shortestLive: null,
+    longestStreakDays: 0,
+    mostActiveMonth: null,
+    topGame: null,
+    secondTopGame: null,
+    distinctGameCount: 0,
+    distinctGameList: [],
+  };
+
   return {
+    stats: data?.stats ?? fallbackStats,
+    special: data?.special ?? fallbackSpecial,
     loading: isLoading,
     error: error as Error | null,
-    videos: data ?? [],
     refetch,
   };
 }
