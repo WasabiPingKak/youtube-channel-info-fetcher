@@ -1,5 +1,8 @@
 import React from "react";
 import { motion } from "framer-motion";
+import TotalLiveHoursCard from "./stat-cards/TotalLiveHoursCard";
+import VideoCountCard from "./stat-cards/VideoCountCard";
+import CategoryRatioCard from "./stat-cards/CategoryRatioCard";
 
 export interface AnnualStatsSectionProps {
   stats: {
@@ -34,26 +37,26 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
     <section className="space-y-8">
       <h2 className="text-2xl font-bold tracking-tight">📊 一般統計</h2>
 
-      {/* 1️⃣ 數字卡片：影片數量 + 總直播時數 */}
+      {/* 1️⃣ 統計摘要卡片區：左右分欄排版 */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="space-y-4"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4"
       >
-        <div className="text-muted-foreground text-sm">
-          ✅ 總直播時數：{stats.totalLiveHours} 小時
-          <br />
-          ✅ 影片數量：
-          <ul className="list-disc list-inside ml-4">
-            <li>直播（live）：{stats.videoCounts.live}</li>
-            <li>影片（videos）：{stats.videoCounts.videos}</li>
-            <li>Shorts：{stats.videoCounts.shorts}</li>
-          </ul>
+        {/* 左側：上下兩張卡片（1 單位寬） */}
+        <div className="flex flex-col gap-4 md:col-span-1">
+          <TotalLiveHoursCard hours={stats.totalLiveHours} />
+          <VideoCountCard counts={stats.videoCounts} />
+        </div>
+
+        {/* 右側：甜甜圈圖（2 單位寬） */}
+        <div className="md:col-span-2">
+          <CategoryRatioCard categoryTime={stats.categoryTime} />
         </div>
       </motion.div>
 
-      {/* 2️⃣ 每月影片種類堆疊圖 */}
+      {/* 2️⃣ 每月影片種類堆疊圖（之後會改為圖表元件） */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -71,7 +74,7 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
         </div>
       </motion.div>
 
-      {/* 3️⃣ 直播分類時長甜甜圈圖 */}
+      {/* 3️⃣ 直播分類總時長（之後會被 donut 圖取代） */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -82,14 +85,14 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
           <ul className="list-disc list-inside ml-4">
             {stats.categoryTime.map((c) => (
               <li key={c.category}>
-                {c.category}：{c.seconds} 秒（約 {Math.round(c.seconds / 3600)} 小時）
+                {c.category}：{c.seconds} 秒（約 {(c.seconds / 3600).toFixed(1)} 小時）
               </li>
             ))}
           </ul>
         </div>
       </motion.div>
 
-      {/* 4️⃣ 每月分類直播時長堆疊圖 */}
+      {/* 4️⃣ 每月分類直播時長（之後會被堆疊圖取代） */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -104,7 +107,7 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
                 <ul className="ml-4 list-disc list-inside">
                   {m.categoryTimes.map((ct) => (
                     <li key={ct.category}>
-                      {ct.category}：{ct.seconds} 秒（約 {Math.round(ct.seconds / 3600)} 小時）
+                      {ct.category}：{ct.seconds} 秒（約 {(ct.seconds / 3600).toFixed(1)} 小時）
                     </li>
                   ))}
                 </ul>
