@@ -7,6 +7,8 @@ interface TotalLiveHoursCardProps {
 }
 
 export default function TotalLiveHoursCard({ hours }: TotalLiveHoursCardProps) {
+  const averagePerWeek = hours / 52;
+
   return (
     <StatCardWrapper delay={0}>
       <div className="flex items-center gap-4">
@@ -18,8 +20,12 @@ export default function TotalLiveHoursCard({ hours }: TotalLiveHoursCardProps) {
           <div className="text-3xl font-bold tracking-tight">
             {hours.toFixed(1)} 小時
           </div>
+          <div className="text-xs text-muted-foreground">
+            平均每週 {averagePerWeek.toFixed(1)} 小時
+          </div>
         </div>
       </div>
     </StatCardWrapper>
   );
 }
+

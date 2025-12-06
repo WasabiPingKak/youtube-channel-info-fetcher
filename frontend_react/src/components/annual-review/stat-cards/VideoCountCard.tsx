@@ -11,7 +11,7 @@ interface VideoCountCardProps {
 }
 
 const LABELS = [
-  { key: "live", label: "直播", color: "#c084fc" },   // 淺紫
+  { key: "live", label: "直播", color: "#ef4444" },   // 紅色
   { key: "videos", label: "影片", color: "#60a5fa" }, // 藍色
   { key: "shorts", label: "Shorts", color: "#f472b6" } // 粉紅
 ];
