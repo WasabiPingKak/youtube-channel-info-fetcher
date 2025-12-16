@@ -25,7 +25,6 @@ export function computeSpecialStats(
     return {
       longestLive: null,
       longestLiveStreak: null,
-      mostActiveMonth: null,
       topGame: null,
       secondTopGame: null,
       distinctGameCount: 0,
@@ -167,17 +166,6 @@ export function computeSpecialStats(
       }
       : null;
 
-  // 3️⃣ 直播最多的月份（以直播總秒數）
-  const monthDurations = new Map<number, number>();
-  for (const v of liveVideos) {
-    const month = new Date(v.publishDate).getMonth() + 1;
-    monthDurations.set(month, (monthDurations.get(month) ?? 0) + (v.duration ?? 0));
-  }
-  const mostActiveMonthEntry = Array.from(monthDurations.entries()).sort((a, b) => b[1] - a[1])[0];
-  const mostActiveMonth = mostActiveMonthEntry
-    ? { month: mostActiveMonthEntry[0], totalDuration: mostActiveMonthEntry[1] }
-    : null;
-
   // 4️⃣ 時數最長的單一遊戲 + 第二長（沿用你原本的累加方式）
   const gameDurationMap = new Map<string, number>();
   for (const v of liveVideos) {
@@ -218,7 +206,6 @@ export function computeSpecialStats(
       }
       : null,
     longestLiveStreak,
-    mostActiveMonth,
     topGame,
     secondTopGame,
     distinctGameCount,

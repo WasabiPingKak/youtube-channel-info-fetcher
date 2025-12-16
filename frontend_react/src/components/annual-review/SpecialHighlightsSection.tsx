@@ -170,21 +170,6 @@ export default function SpecialHighlightsSection({
         </StatCardWrapper>
       )}
 
-      {/* 直播最活躍月份 */}
-      {special.mostActiveMonth && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.3 }}
-        >
-          <div className="text-muted-foreground text-sm">
-            <strong>📆 直播最活躍月份：</strong> {special.mostActiveMonth.month} 月
-            <br />
-            總時數：{Math.round(special.mostActiveMonth.totalDuration / 3600)} 小時
-          </div>
-        </motion.div>
-      )}
-
       {/* 單一遊戲最長時數 */}
       {special.topGame && (
         <motion.div

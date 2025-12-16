@@ -50,11 +50,6 @@ export interface SpecialStatsData {
     }[];
   } | null;
 
-  mostActiveMonth: {
-    month: number;
-    totalDuration: number;
-  } | null;
-
   topGame: {
     category: string;
     totalDuration: number;

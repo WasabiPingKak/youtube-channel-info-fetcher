@@ -93,7 +93,6 @@ export function useAnnualReviewData(channelId: string, year: number) {
   const fallbackSpecial: SpecialStatsData = {
     longestLive: null,
     longestLiveStreak: null,
-    mostActiveMonth: null,
     topGame: null,
     secondTopGame: null,
     distinctGameCount: 0,
