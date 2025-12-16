@@ -35,12 +35,6 @@ export interface SpecialStatsData {
     publishDate: string;
     videoId: string;
   } | null;
-  shortestLive: {
-    title: string;
-    duration: number;
-    publishDate: string;
-    videoId: string;
-  } | null;
   longestStreakDays: number;
   mostActiveMonth: {
     month: number;

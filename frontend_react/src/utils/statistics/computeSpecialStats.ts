@@ -9,7 +9,6 @@ export function computeSpecialStats(allVideos: ClassifiedVideoItem[]): SpecialSt
   if (liveVideos.length === 0) {
     return {
       longestLive: null,
-      shortestLive: null,
       longestStreakDays: 0,
       mostActiveMonth: null,
       topGame: null,
@@ -23,15 +22,6 @@ export function computeSpecialStats(allVideos: ClassifiedVideoItem[]): SpecialSt
   const longestLive = liveVideos.reduce((prev, curr) =>
     (curr.duration ?? 0) > (prev.duration ?? 0) ? curr : prev
   );
-
-  // 2️⃣ 最短直播（排除 <5 分鐘）
-  const validShortLives = liveVideos.filter((v) => (v.duration ?? 0) >= 300);
-  const shortestLive =
-    validShortLives.length > 0
-      ? validShortLives.reduce((prev, curr) =>
-        (curr.duration ?? 0) < (prev.duration ?? 0) ? curr : prev
-      )
-      : null;
 
   // 3️⃣ 最長連續直播天數
   const dateStrings = Array.from(
@@ -111,14 +101,6 @@ export function computeSpecialStats(allVideos: ClassifiedVideoItem[]): SpecialSt
         duration: longestLive.duration,
         publishDate: longestLive.publishDate,
         videoId: longestLive.videoId,
-      }
-      : null,
-    shortestLive: shortestLive
-      ? {
-        title: shortestLive.title,
-        duration: shortestLive.duration,
-        publishDate: shortestLive.publishDate,
-        videoId: shortestLive.videoId,
       }
       : null,
     longestStreakDays: maxStreak,
