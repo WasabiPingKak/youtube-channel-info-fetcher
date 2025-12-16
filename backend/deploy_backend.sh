@@ -1,4 +1,5 @@
 #!/bin/bash
+set -euo pipefail
 
 # ✅ 檢查參數
 if [ $# -eq 0 ]; then
@@ -22,7 +23,7 @@ else
   exit 1
 fi
 
-# ✅ 先載入 .env.staging 作為預設值
+# ✅ 仍載入 .env.local（因為 staging 的非敏感值也在這裡）
 if [ ! -f ".env.local" ]; then
   echo "❌ 找不到 .env.local"
   exit 1
@@ -32,13 +33,13 @@ set -o allexport
 source .env.local
 set +o allexport
 
-# ✅ 若為 production，進一步覆蓋正式參數
+# ✅ 若為 production，進一步載入 .env.production（你說兩者無交集）
 if [ "$ENV_MODE" == "production" ]; then
   if [ ! -f ".env.production" ]; then
     echo "❌ 找不到 .env.production"
     exit 1
   fi
-  echo "📂 覆蓋 production 參數：.env.production"
+  echo "📂 載入 production 參數：.env.production"
   set -o allexport
   source .env.production
   set +o allexport
@@ -48,6 +49,17 @@ fi
 PROJECT_ID="vtuber-channel-analyzer-v3"
 REGION="asia-east1"
 IMAGE_URI="gcr.io/$PROJECT_ID/$SERVICE_NAME:latest"
+
+# ✅ Secret Manager（不分環境）
+JWT_SECRET_NAME="youtube-api-jwt-secret"
+API_KEY_SECRET_NAME="youtube-api-api-key"
+GOOGLE_CLIENT_SECRET_NAME="youtube-api-google-client-secret"
+ADMIN_API_KEY_SECRET_NAME="youtube-api-admin-api-key"
+
+# ✅ Secret Manager（ECPay，不用 youtube 前綴）
+ECPAY_MERCHANT_ID_SECRET_NAME="ecpay-merchant-id"
+ECPAY_HASH_KEY_SECRET_NAME="ecpay-hash-key"
+ECPAY_HASH_IV_SECRET_NAME="ecpay-hash-iv"
 
 # ✅ 設定 GCP 專案與啟用服務
 gcloud config set project "$PROJECT_ID"
@@ -61,13 +73,10 @@ echo "$commit_hash" > version.txt
 echo ""
 echo "📦 建立 Container 映像..."
 gcloud builds submit --tag "$IMAGE_URI"
-if [ $? -ne 0 ]; then
-  echo "❌ 建立映像失敗"
-  exit 1
-fi
+echo "✅ 建立映像成功：$IMAGE_URI"
 
 # ✅ 檢查服務是否已存在
-SERVICE_EXISTS=$(gcloud run services describe "$SERVICE_NAME" --region="$REGION" --format="value(metadata.name)" 2>/dev/null)
+SERVICE_EXISTS=$(gcloud run services describe "$SERVICE_NAME" --region="$REGION" --format="value(metadata.name)" 2>/dev/null || true)
 if [ -z "$SERVICE_EXISTS" ]; then
   echo ""
   echo "🆕 第一次建立 Cloud Run 服務（不使用 --no-traffic）"
@@ -80,31 +89,26 @@ fi
 
 # ✅ 部署到 Cloud Run
 echo "🚀 部署映像至 Cloud Run：$SERVICE_NAME"
+
+# ✅ 重要：敏感值全部改走 Secret Manager（不再用 --set-env-vars 注入）
+# - JWT_SECRET / API_KEY / GOOGLE_CLIENT_SECRET / ADMIN_API_KEY / ECPAY_* 皆由 Secret 注入
+# - 只保留「非敏感」與「環境差異」參數在 --set-env-vars
 gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE_URI" \
   --region="$REGION" \
   --allow-unauthenticated \
   $NO_TRAFFIC_FLAG \
+  --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
   --set-env-vars \
-    "API_KEY=$API_KEY,\
-    INPUT_CHANNEL=$INPUT_CHANNEL,\
+    "INPUT_CHANNEL=$INPUT_CHANNEL,\
     GOOGLE_CLOUD_PROJECT=$PROJECT_ID,\
     GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,\
-    GOOGLE_CLIENT_SECRET=$GOOGLE_CLIENT_SECRET,\
     GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI,\
     FRONTEND_BASE_URL=$FRONTEND_BASE_URL,\
-    JWT_SECRET=$JWT_SECRET,\
-    ADMIN_API_KEY=$ADMIN_API_KEY,\
     ALLOWED_ORIGINS=$ALLOWED_ORIGINS,\
-    WEBSUB_CALLBACK_URL=$WEBSUB_CALLBACK_URL,\
-    ECPAY_MERCHANT_ID=$ECPAY_MERCHANT_ID,\
-    ECPAY_HASH_KEY=$ECPAY_HASH_KEY,\
-    ECPAY_HASH_IV=$ECPAY_HASH_IV"
+    WEBSUB_CALLBACK_URL=$WEBSUB_CALLBACK_URL"
 
-if [ $? -ne 0 ]; then
-  echo "❌ 後端部署失敗"
-  exit 1
-fi
+echo "✅ 部署指令完成"
 
 # ✅ 切換流量（僅限非首次部署時執行）
 if [ -n "$NO_TRAFFIC_FLAG" ]; then
