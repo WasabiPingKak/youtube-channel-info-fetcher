@@ -92,7 +92,7 @@ export function useAnnualReviewData(channelId: string, year: number) {
   // 🧯 預設特殊統計（補全所有欄位）
   const fallbackSpecial: SpecialStatsData = {
     longestLive: null,
-    longestStreakDays: 0,
+    longestLiveStreak: null,
     mostActiveMonth: null,
     topGame: null,
     secondTopGame: null,

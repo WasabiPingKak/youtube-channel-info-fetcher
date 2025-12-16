@@ -35,21 +35,38 @@ export interface SpecialStatsData {
     publishDate: string;
     videoId: string;
   } | null;
-  longestStreakDays: number;
+
+  /** 最長連續直播資訊（以 GMT+8 切日） */
+  longestLiveStreak: {
+    days: number;
+    startDate: string; // "YYYY-MM-DD" (GMT+8)
+    endDate: string;   // "YYYY-MM-DD" (GMT+8)
+    totalDuration: number; // seconds
+    items: {
+      videoId: string;
+      title: string;
+      duration: number; // seconds
+      publishDate: string; // 原始 publishDate（顯示時再轉 GMT+8）
+    }[];
+  } | null;
+
   mostActiveMonth: {
     month: number;
     totalDuration: number;
   } | null;
+
   topGame: {
     category: string;
     totalDuration: number;
     percentage: number;
   } | null;
+
   secondTopGame: {
     category: string;
     totalDuration: number;
     percentage: number;
   } | null;
+
   distinctGameCount: number;
   distinctGameList: string[];
 }

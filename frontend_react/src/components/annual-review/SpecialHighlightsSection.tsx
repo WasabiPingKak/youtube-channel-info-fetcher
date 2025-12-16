@@ -1,39 +1,9 @@
 import React from "react";
+import type { SpecialStatsData } from "@/utils/statistics/types";
 import { motion } from "framer-motion";
 import { Video } from "lucide-react";
+import { CalendarDays } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
-
-export interface SpecialStatsData {
-  longestLive: {
-    title: string;
-    duration: number;
-    publishDate: string;
-    videoId: string;
-  } | null;
-  shortestLive: {
-    title: string;
-    duration: number;
-    publishDate: string;
-    videoId: string;
-  } | null;
-  longestStreakDays: number;
-  mostActiveMonth: {
-    month: number;
-    totalDuration: number;
-  } | null;
-  topGame: {
-    category: string;
-    totalDuration: number;
-    percentage: number;
-  } | null;
-  secondTopGame: {
-    category: string;
-    totalDuration: number;
-    percentage: number;
-  } | null;
-  distinctGameCount: number;
-  distinctGameList: string[];
-}
 
 interface SpecialHighlightsSectionProps {
   special: SpecialStatsData;
@@ -91,7 +61,7 @@ export default function SpecialHighlightsSection({
               <div>
                 {/* 小標題 */}
                 <div className="text-sm text-muted-foreground mb-1">
-                  最長直播
+                  最長單一直播
                 </div>
 
                 {/* 主數字 */}
@@ -132,15 +102,73 @@ export default function SpecialHighlightsSection({
       )}
 
       {/* 連續直播天數 */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
-        <div className="text-muted-foreground text-sm">
-          <strong>📅 最長連續直播天數：</strong> {special.longestStreakDays} 天
-        </div>
-      </motion.div>
+      {special.longestLiveStreak && (
+        <StatCardWrapper delay={0.1}>
+          <div className="space-y-6">
+            {/* Header + 主數字（對齊總直播時數風格） */}
+            <div className="flex items-center gap-4">
+              <div className="rounded-full bg-muted p-3">
+                <CalendarDays className="w-6 h-6 text-primary" />
+              </div>
+
+              <div>
+                <div className="text-sm text-muted-foreground mb-1">
+                  最長連續直播天數
+                </div>
+
+                <div className="text-3xl font-bold tracking-tight">
+                  {special.longestLiveStreak.days} 天
+                </div>
+
+                <div className="mt-1 text-xl font-semibold tracking-tight text-foreground">
+                  {special.longestLiveStreak.startDate} ～ {special.longestLiveStreak.endDate}
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">
+                    （GMT+8）
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            {/* 期間 + 總時數 */}
+            <div className="space-y-1">
+              <div className="text-xs text-muted-foreground">
+                總時數：{formatDurationHM(special.longestLiveStreak.totalDuration)}
+              </div>
+            </div>
+
+            {/* 清單（連結即可，不 embed） */}
+            <details className="rounded-xl border border-border bg-background/40">
+              <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 rounded-xl">
+                這段期間的直播清單（共 {special.longestLiveStreak.items.length} 場）
+              </summary>
+
+              <div className="px-4 pb-4 pt-2">
+                <ul className="space-y-2 text-sm">
+                  {special.longestLiveStreak.items.map((it) => (
+                    <li
+                      key={it.videoId}
+                      className="flex flex-col gap-1 border-b border-border pb-2 last:border-b-0"
+                    >
+                      <a
+                        className="text-foreground hover:underline leading-relaxed"
+                        href={`https://www.youtube.com/watch?v=${it.videoId}`}
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {it.title}
+                      </a>
+                      <div className="text-xs text-muted-foreground">
+                        時長：{formatDurationHM(it.duration)}　｜　發布時間：
+                        {formatDateTimeGMT8(it.publishDate)}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </details>
+          </div>
+        </StatCardWrapper>
+      )}
 
       {/* 直播最活躍月份 */}
       {special.mostActiveMonth && (
