@@ -7,7 +7,6 @@ function toGmt8DateKey(publishDate: string): string {
   const d = new Date(publishDate);
   if (Number.isNaN(d.getTime())) return "Invalid-Date";
 
-  // UTC ms + 8 hours, then use UTC getters to avoid local timezone interference
   const gmt8 = new Date(d.getTime() + 8 * 60 * 60 * 1000);
 
   const yyyy = gmt8.getUTCFullYear();
@@ -25,8 +24,7 @@ export function computeSpecialStats(
     return {
       longestLive: null,
       longestLiveStreak: null,
-      topGame: null,
-      secondTopGame: null,
+      topLiveGames: [],
       distinctGameCount: 0,
       distinctGameList: [],
     };
@@ -78,21 +76,18 @@ export function computeSpecialStats(
       return;
     }
 
-    // ① 天數多者勝
     if (candidate.days > best.days) {
       best = candidate;
       return;
     }
     if (candidate.days < best.days) return;
 
-    // ② 天數相同：總時數多者勝
     if (candidate.totalDuration > best.totalDuration) {
       best = candidate;
       return;
     }
     if (candidate.totalDuration < best.totalDuration) return;
 
-    // ③ 再相同：endDate 較晚者勝（YYYY-MM-DD 可直接比字串）
     if (candidate.endDate > best.endDate) {
       best = candidate;
     }
@@ -104,7 +99,6 @@ export function computeSpecialStats(
     const durationToday = itemsToday.reduce((sum, v) => sum + (v.duration ?? 0), 0);
 
     if (curDays === 0) {
-      // start new streak
       curDays = 1;
       curStart = key;
       curEnd = key;
@@ -116,19 +110,16 @@ export function computeSpecialStats(
     const prevKey = dayKeys[i - 1];
     const prevDate = new Date(`${prevKey}T00:00:00Z`);
     const currDate = new Date(`${key}T00:00:00Z`);
-    const diffDays = (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
+    const diffDays =
+      (currDate.getTime() - prevDate.getTime()) / (1000 * 60 * 60 * 24);
 
     if (diffDays === 1) {
-      // extend streak
       curDays += 1;
       curEnd = key;
       curTotal += durationToday;
       curItems.push(...itemsToday);
     } else {
-      // end current streak, commit
       commitIfBetter();
-
-      // start new streak
       curDays = 1;
       curStart = key;
       curEnd = key;
@@ -136,10 +127,8 @@ export function computeSpecialStats(
       curItems = [...itemsToday];
     }
   }
-  // commit last streak
   commitIfBetter();
 
-  // 排序 items：先依 GMT+8 日，再依 publishDate（時間）早到晚
   const longestLiveStreak =
     best && best.days > 0
       ? {
@@ -166,34 +155,26 @@ export function computeSpecialStats(
       }
       : null;
 
-  // 4️⃣ 時數最長的單一遊戲 + 第二長（沿用你原本的累加方式）
+  // 3️⃣ 直播(live)累計時數前三名的「遊戲」：以 game 欄位為準；沒 game(空/null/缺) 就排除
   const gameDurationMap = new Map<string, number>();
   for (const v of liveVideos) {
-    for (const cat of v.matchedCategories ?? []) {
-      gameDurationMap.set(cat, (gameDurationMap.get(cat) ?? 0) + (v.duration ?? 0));
-    }
+    const rawGame = v.game;
+    const game = typeof rawGame === "string" ? rawGame.trim() : "";
+    if (!game) continue; // 沒 game -> 視為不是遊戲，排除
+
+    const duration = v.duration ?? 0;
+    gameDurationMap.set(game, (gameDurationMap.get(game) ?? 0) + duration);
   }
-  const sortedGameDurations = Array.from(gameDurationMap.entries()).sort((a, b) => b[1] - a[1]);
-  const totalGameDuration = sortedGameDurations.reduce((sum, [, val]) => sum + val, 0);
 
-  const topGame = sortedGameDurations[0]
-    ? {
-      category: sortedGameDurations[0][0],
-      totalDuration: sortedGameDurations[0][1],
-      percentage: totalGameDuration > 0 ? Math.round((sortedGameDurations[0][1] / totalGameDuration) * 100) : 0,
-    }
-    : null;
+  const topLiveGames = Array.from(gameDurationMap.entries())
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 5)
+    .map(([game, totalDuration]) => ({ game, totalDuration }));
 
-  const secondTopGame = sortedGameDurations[1]
-    ? {
-      category: sortedGameDurations[1][0],
-      totalDuration: sortedGameDurations[1][1],
-      percentage: totalGameDuration > 0 ? Math.round((sortedGameDurations[1][1] / totalGameDuration) * 100) : 0,
-    }
-    : null;
-
-  // 5️⃣ 玩過的遊戲列表
-  const distinctGameList = sortedGameDurations.map(([cat]) => cat);
+  // 4️⃣ 玩過的遊戲列表（同樣以 game 欄位為準；沒 game 排除）
+  const distinctGameList = Array.from(gameDurationMap.keys()).sort((a, b) =>
+    a.localeCompare(b, "en")
+  );
   const distinctGameCount = distinctGameList.length;
 
   return {
@@ -206,8 +187,7 @@ export function computeSpecialStats(
       }
       : null,
     longestLiveStreak,
-    topGame,
-    secondTopGame,
+    topLiveGames,
     distinctGameCount,
     distinctGameList,
   };

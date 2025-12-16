@@ -36,7 +36,6 @@ export interface SpecialStatsData {
     videoId: string;
   } | null;
 
-  /** 最長連續直播資訊（以 GMT+8 切日） */
   longestLiveStreak: {
     days: number;
     startDate: string; // "YYYY-MM-DD" (GMT+8)
@@ -46,22 +45,17 @@ export interface SpecialStatsData {
       videoId: string;
       title: string;
       duration: number; // seconds
-      publishDate: string; // 原始 publishDate（顯示時再轉 GMT+8）
+      publishDate: string; // 原始 publishDate
     }[];
   } | null;
 
-  topGame: {
-    category: string;
-    totalDuration: number;
-    percentage: number;
-  } | null;
-
-  secondTopGame: {
-    category: string;
-    totalDuration: number;
-    percentage: number;
-  } | null;
+  /** 直播(live)累計時數前三名的「遊戲」(以 game 欄位為準；沒 game 則排除) */
+  topLiveGames: {
+    game: string;
+    totalDuration: number; // seconds
+  }[];
 
   distinctGameCount: number;
   distinctGameList: string[];
 }
+

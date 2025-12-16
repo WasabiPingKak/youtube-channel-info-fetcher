@@ -1,15 +1,14 @@
 import React from "react";
 import type { SpecialStatsData } from "@/utils/statistics/types";
 import { motion } from "framer-motion";
-import { Video } from "lucide-react";
-import { CalendarDays } from "lucide-react";
+import { Video, CalendarDays, Gamepad2 } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
 
 interface SpecialHighlightsSectionProps {
   special: SpecialStatsData;
 }
 
-/** 秒 -> X小時Y分鐘（<1小時不顯示小時；分鐘向下取整） */
+/** 秒 -> X小時MM分鐘（<1小時不顯示小時；有小時時分鐘補零） */
 function formatDurationHM(totalSeconds?: number | null): string {
   const s = typeof totalSeconds === "number" ? totalSeconds : 0;
   if (s <= 0) return "未知";
@@ -18,9 +17,16 @@ function formatDurationHM(totalSeconds?: number | null): string {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  if (hours <= 0) return `${minutes}分鐘`;
-  return `${hours}小時${minutes}分鐘`;
+  if (hours <= 0) {
+    // 沒有小時，不補零
+    return `${minutes}分鐘`;
+  }
+
+  // 有小時，分鐘補兩位數
+  const mm = String(minutes).padStart(2, "0");
+  return `${hours}小時${mm}分鐘`;
 }
+
 
 /** ISO(UTC) -> YYYY-MM-DD HH:MM (GMT+8) */
 function formatDateTimeGMT8(isoString?: string | null): string {
@@ -170,36 +176,40 @@ export default function SpecialHighlightsSection({
         </StatCardWrapper>
       )}
 
-      {/* 單一遊戲最長時數 */}
-      {special.topGame && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.4 }}
-        >
-          <div className="text-muted-foreground text-sm">
-            <strong>🎮 時數最長的遊戲：</strong> {special.topGame.category}
-            <br />
-            總時數：{Math.round(special.topGame.totalDuration / 3600)} 小時（約占{" "}
-            {special.topGame.percentage}%）
-          </div>
-        </motion.div>
-      )}
+      {/* 遊戲直播時數排行 */}
+      {(special.topLiveGames?.length ?? 0) > 0 && (
+        <div className="w-full md:w-1/2">
+          <StatCardWrapper delay={0.2}>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <div className="rounded-full bg-muted p-3">
+                  <Gamepad2 className="w-6 h-6 text-primary" />
+                </div>
+                <div>
+                  <div className="text-sm text-muted-foreground mb-1">
+                    遊戲直播時數排行（最多五筆）
+                  </div>
+                </div>
+              </div>
 
-      {/* 第二長時數遊戲 */}
-      {special.secondTopGame && (
-        <motion.div
-          initial={{ opacity: 0, y: 12 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.4, delay: 0.45 }}
-        >
-          <div className="text-muted-foreground text-sm">
-            <strong>🥈 時數第二長的遊戲：</strong> {special.secondTopGame.category}
-            <br />
-            總時數：{Math.round(special.secondTopGame.totalDuration / 3600)} 小時（約占{" "}
-            {special.secondTopGame.percentage}%）
-          </div>
-        </motion.div>
+              <ol className="space-y-2 text-sm">
+                {special.topLiveGames.map((g, idx) => (
+                  <li
+                    key={g.game}
+                    className="flex items-baseline justify-between gap-4 border-b border-border pb-2 last:border-b-0"
+                  >
+                    <div className="font-medium text-foreground">
+                      {idx + 1}. {g.game}
+                    </div>
+                    <div className="text-muted-foreground">
+                      {formatDurationHM(g.totalDuration)}
+                    </div>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </StatCardWrapper>
+        </div>
       )}
 
       {/* 總遊戲數 */}
