@@ -1,6 +1,7 @@
 // src/components/annual-review/AnnualReviewLayout.tsx
 
 import React from "react";
+import { useNavigate } from "react-router-dom";
 import { useAnnualReviewData } from "@/hooks/useAnnualReviewData";
 import AnnualStatsSection from "@/components/annual-review/AnnualStatsSection";
 import SpecialHighlightsSection from "@/components/annual-review/SpecialHighlightsSection";
@@ -15,6 +16,7 @@ export default function AnnualReviewLayout({
   channelId,
   year,
 }: AnnualReviewLayoutProps) {
+  const navigate = useNavigate();
   const { stats, special, loading, error } = useAnnualReviewData(channelId, year);
 
   return (
@@ -32,9 +34,7 @@ export default function AnnualReviewLayout({
       </div>
 
       {/* 載入狀態 */}
-      {loading && (
-        <p className="text-sm text-muted-foreground">載入中...</p>
-      )}
+      {loading && <p className="text-sm text-muted-foreground">載入中...</p>}
       {error && (
         <p className="text-sm text-red-500">
           無法載入影片資料：{error.message}
@@ -51,6 +51,29 @@ export default function AnnualReviewLayout({
           <SpecialHighlightsSection special={special} />
         </>
       )}
+
+      {/* ✅ 最下方：未知類別引導到快速分類器 */}
+      <div className="pt-2">
+        <div className="rounded-xl border border-border bg-card p-5">
+          <div className="space-y-2">
+            <div className="text-sm font-medium">很多「未知類別」怎麼辦？</div>
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              如果有系統分辨不出來的未知類別（例如顯示為「未分類」或類別不明），
+              你可以到「快速分類器」先把影片快速分到正確分類，年度回顧的統計也會更準。
+            </p>
+          </div>
+
+          <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-between">
+            <button
+              type="button"
+              onClick={() => navigate(`/quick-category-editor/${channelId}`)}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+            >
+              前往快速分類器
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
