@@ -4,6 +4,7 @@ import React from "react";
 import { useAnnualReviewData } from "@/hooks/useAnnualReviewData";
 import AnnualStatsSection from "@/components/annual-review/AnnualStatsSection";
 import SpecialHighlightsSection from "@/components/annual-review/SpecialHighlightsSection";
+import ChannelInfoCard from "@/components/common/ChannelInfoCard";
 
 interface AnnualReviewLayoutProps {
   channelId: string;
@@ -18,6 +19,8 @@ export default function AnnualReviewLayout({
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-8 space-y-8">
+      <ChannelInfoCard />
+
       {/* 頁面標題 */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight mb-2">

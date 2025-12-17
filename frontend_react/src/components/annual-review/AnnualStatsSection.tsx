@@ -66,8 +66,6 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
 
   return (
     <section className="space-y-8">
-      <h2 className="text-2xl font-bold tracking-tight">📊 一般統計</h2>
-
       {/* 1️⃣ 統計摘要卡片區 */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}

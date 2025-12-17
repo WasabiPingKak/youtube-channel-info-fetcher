@@ -14,8 +14,6 @@ export default function SpecialHighlightsSection({
 }: SpecialHighlightsSectionProps) {
   return (
     <section className="space-y-8">
-      <h2 className="text-2xl font-bold tracking-tight">🌟 特殊項目統計</h2>
-
       {/* 最長直播 */}
       {special.longestLive && (
         <StatCardWrapper delay={0}>

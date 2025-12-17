@@ -97,14 +97,14 @@ export default function CategoryRatioCard({
     <StatCardWrapper delay={0.1} className="md:h-full">
       <div className="flex flex-col h-full">
         {/* ---------------------- */}
-        {/* [分類直播時長佔比] */}
+        {/* [直播分類時長佔比] */}
         {/* ---------------------- */}
         <div className="flex items-center gap-2">
           <div className="rounded-full bg-muted p-2">
             <PieIcon className="w-5 h-5 text-primary" />
           </div>
           <div className="text-sm text-muted-foreground font-medium">
-            分類直播時長佔比
+            直播分類時長佔比
           </div>
         </div>
 
@@ -162,7 +162,15 @@ export default function CategoryRatioCard({
             </div>
           )}
         </div>
+
+        {/* ---------------------- */}
+        {/* [備註]：整張卡片最下方 */}
+        {/* ---------------------- */}
+        <div className="mt-auto pt-3 text-[11px] leading-relaxed text-muted-foreground">
+          分類時數總和可能會超過 100%，因為同一部影片可能同時屬於多個分類。
+        </div>
       </div>
     </StatCardWrapper>
   );
+
 }
