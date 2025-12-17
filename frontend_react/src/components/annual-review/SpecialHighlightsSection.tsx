@@ -1,6 +1,5 @@
 import React from "react";
 import type { SpecialStatsData } from "@/utils/statistics/types";
-import { motion } from "framer-motion";
 import { Video, CalendarDays, Gamepad2, Layers } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
 
@@ -8,7 +7,8 @@ interface SpecialHighlightsSectionProps {
   special: SpecialStatsData;
 }
 
-/** 秒 -> X小時MM分鐘（<1小時不顯示小時；有小時時分鐘補零） */
+// --- Helper Functions ---
+
 function formatDurationHM(totalSeconds?: number | null): string {
   const s = typeof totalSeconds === "number" ? totalSeconds : 0;
   if (s <= 0) return "未知";
@@ -17,27 +17,17 @@ function formatDurationHM(totalSeconds?: number | null): string {
   const hours = Math.floor(totalMinutes / 60);
   const minutes = totalMinutes % 60;
 
-  if (hours <= 0) {
-    // 沒有小時，不補零
-    return `${minutes}分鐘`;
-  }
-
-  // 有小時，分鐘補兩位數
+  if (hours <= 0) return `${minutes}分鐘`;
   const mm = String(minutes).padStart(2, "0");
   return `${hours}小時${mm}分鐘`;
 }
 
-
-/** ISO(UTC) -> YYYY-MM-DD HH:MM (GMT+8) */
 function formatDateTimeGMT8(isoString?: string | null): string {
   if (!isoString) return "未知";
-
   const date = new Date(isoString);
   if (Number.isNaN(date.getTime())) return "未知";
 
-  // UTC ms + 8 hours
   const gmt8 = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-
   const yyyy = gmt8.getUTCFullYear();
   const mm = String(gmt8.getUTCMonth() + 1).padStart(2, "0");
   const dd = String(gmt8.getUTCDate()).padStart(2, "0");
@@ -45,6 +35,108 @@ function formatDateTimeGMT8(isoString?: string | null): string {
   const min = String(gmt8.getUTCMinutes()).padStart(2, "0");
 
   return `${yyyy}-${mm}-${dd} ${hh}:${min} (GMT+8)`;
+}
+
+function parseYMDToUtc(ymd?: string | null): Date | null {
+  if (!ymd) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
+  if (!m) return null;
+  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
+}
+
+function calcInclusiveDays(startYmd?: string | null, endYmd?: string | null): number | null {
+  const s = parseYMDToUtc(startYmd);
+  const e = parseYMDToUtc(endYmd);
+  if (!s || !e) return null;
+  const diff = e.getTime() - s.getTime();
+  if (diff < 0) return null;
+  return Math.floor(diff / (24 * 60 * 60 * 1000)) + 1;
+}
+
+function clampInt(n: unknown, min: number, max: number): number {
+  const x = typeof n === "number" ? Math.floor(n) : NaN;
+  if (!Number.isFinite(x)) return min;
+  return Math.max(min, Math.min(max, x));
+}
+
+function formatDateWithWeekday(dateStr?: string | null): string {
+  if (!dateStr) return "未知日期";
+  const date = parseYMDToUtc(dateStr);
+  if (!date) return dateStr;
+
+  const month = date.getUTCMonth() + 1;
+  const day = date.getUTCDate();
+
+  const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
+  const w = weekdays[date.getUTCDay()];
+
+  return `${month}月${day}日 ${w}`;
+}
+
+// --- Components ---
+
+/**
+ * 簡約版連續天數數軸
+ * 風格：無背景，主色調線條
+ */
+function StreakAxis({
+  startDate,
+  endDate,
+  days,
+}: {
+  startDate?: string | null;
+  endDate?: string | null;
+  days?: number | null;
+}) {
+  const derived = calcInclusiveDays(startDate, endDate);
+  const n = derived ?? (typeof days === "number" ? Math.floor(days) : 0);
+  const safeN = clampInt(n, 1, 3650);
+
+  // 天數 > 60 時隱藏中間刻度，避免擁擠
+  const showIntermediateTicks = safeN <= 60;
+
+  const startText = formatDateWithWeekday(startDate);
+  const endText = formatDateWithWeekday(endDate);
+
+  if (safeN <= 0) return null;
+
+  return (
+    <div className="mt-2 w-full px-2 py-4">
+      {/* 數軸主體區域 */}
+      <div className="relative h-10 w-full">
+        {/* 1. 主橫線 (基底，淡色) */}
+        <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-border rounded-full" />
+
+        {/* 2. 左端點刻度 (主色，強調) */}
+        <div className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-primary rounded-full" />
+
+        {/* 3. 右端點刻度 (主色，強調) */}
+        <div className="absolute right-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-primary rounded-full" />
+
+        {/* 4. 中間刻度 (半透明主色) */}
+        {showIntermediateTicks && safeN > 1 && (
+          <div className="absolute inset-0 mx-[1px]">
+            {Array.from({ length: safeN - 2 }).map((_, i) => {
+              const pct = ((i + 1) / (safeN - 1)) * 100;
+              return (
+                <div
+                  key={i}
+                  className="absolute top-1/2 h-2 w-[1px] -translate-y-1/2 bg-primary/40"
+                  style={{ left: `${pct}%` }}
+                />
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* 底部日期文字：左右對齊 */}
+      <div className="flex justify-between text-xs font-medium text-muted-foreground">
+        <span className="-translate-x-1">{startText}</span>
+        <span className="translate-x-1">{endText}</span>
+      </div>
+    </div>
+  );
 }
 
 export default function SpecialHighlightsSection({
@@ -58,37 +150,30 @@ export default function SpecialHighlightsSection({
       {special.longestLive && (
         <StatCardWrapper delay={0}>
           <div className="space-y-6">
-            {/* Header + 主數字 */}
             <div className="flex items-center gap-4">
               <div className="rounded-full bg-muted p-3">
                 <Video className="w-6 h-6 text-primary" />
               </div>
 
               <div>
-                {/* 小標題 */}
                 <div className="text-sm text-muted-foreground mb-1">
                   最長單一直播
                 </div>
-
-                {/* 主數字 */}
                 <div className="text-3xl font-bold tracking-tight">
                   {formatDurationHM(special.longestLive.duration)}
                 </div>
               </div>
             </div>
 
-            {/* 輔助資訊 */}
             <div className="space-y-1">
               <div className="text-sm font-medium text-foreground leading-relaxed">
                 {special.longestLive.title}
               </div>
-
               <div className="text-xs text-muted-foreground">
                 發布時間：{formatDateTimeGMT8(special.longestLive.publishDate)}
               </div>
             </div>
 
-            {/* YouTube Embed */}
             <div className="w-full md:w-1/2 overflow-hidden rounded-xl border bg-background">
               <div className="relative aspect-video w-full">
                 <iframe
@@ -111,7 +196,6 @@ export default function SpecialHighlightsSection({
       {special.longestLiveStreak && (
         <StatCardWrapper delay={0.1}>
           <div className="space-y-6">
-            {/* Header + 主數字 */}
             <div className="flex items-center gap-4">
               <div className="rounded-full bg-muted p-3">
                 <CalendarDays className="w-6 h-6 text-primary" />
@@ -121,31 +205,29 @@ export default function SpecialHighlightsSection({
                 <div className="text-sm text-muted-foreground mb-1">
                   最長連續直播天數
                 </div>
-
                 <div className="text-3xl font-bold tracking-tight">
                   {special.longestLiveStreak.days} 天
                 </div>
-
-                <div className="mt-1 text-xl font-semibold tracking-tight text-foreground">
-                  {special.longestLiveStreak.startDate} ～ {special.longestLiveStreak.endDate}
-                  <span className="ml-1 text-sm font-normal text-muted-foreground">
-                    （GMT+8）
-                  </span>
-                </div>
               </div>
             </div>
 
-            {/* 期間 + 總時數 */}
+            <div className="rounded-xl px-4 pb-2 pt-0">
+              <StreakAxis
+                startDate={special.longestLiveStreak.startDate}
+                endDate={special.longestLiveStreak.endDate}
+                days={special.longestLiveStreak.days}
+              />
+            </div>
+
             <div className="space-y-1">
               <div className="text-xs text-muted-foreground">
-                總時數：{formatDurationHM(special.longestLiveStreak.totalDuration)}
+                期間總直播時數：{formatDurationHM(special.longestLiveStreak.totalDuration)}
               </div>
             </div>
 
-            {/* 清單（連結即可，不 embed） */}
             <details className="rounded-xl border border-border bg-background/40">
               <summary className="cursor-pointer select-none px-4 py-3 text-sm font-medium text-foreground hover:bg-muted/50 rounded-xl">
-                這段期間的直播清單（共 {special.longestLiveStreak.items.length} 場）
+                查看詳細清單（共 {special.longestLiveStreak.items.length} 場）
               </summary>
 
               <div className="px-4 pb-4 pt-2">
@@ -214,12 +296,11 @@ export default function SpecialHighlightsSection({
           </div>
         )}
 
-        {/* 玩過的不同遊戲數（Badges） */}
+        {/* 玩過的不同遊戲數 */}
         {special.distinctGameCount > 0 && (
           <div className="w-full">
             <StatCardWrapper delay={0.25}>
               <div className="space-y-4">
-                {/* Header + 主數字 */}
                 <div className="flex items-center gap-4">
                   <div className="rounded-full bg-muted p-3">
                     <Layers className="w-6 h-6 text-primary" />
@@ -234,7 +315,6 @@ export default function SpecialHighlightsSection({
                   </div>
                 </div>
 
-                {/* Badges */}
                 <div className="flex flex-wrap gap-2">
                   {special.distinctGameList.map((game) => (
                     <span
@@ -250,7 +330,6 @@ export default function SpecialHighlightsSection({
           </div>
         )}
       </div>
-
     </section>
   );
 }
