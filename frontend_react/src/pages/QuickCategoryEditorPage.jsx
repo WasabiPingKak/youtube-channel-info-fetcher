@@ -31,15 +31,34 @@ const QuickCategoryEditorPage = () => {
 
   // 權限檢查 (未登入/非本人一律導回首頁)
   useEffect(() => {
-    if (!meLoading && me?.channelId === null) {
-      showLoginRequiredToast("請先登入以使用快速分類功能");
+    const myId = me?.channelId;
+    const isAdmin = Boolean(me?.isAdmin);
+
+    if (!meLoading && myId && channelId && !isAdmin && myId !== channelId) {
+      showPermissionDeniedToast("您沒有權限查看此頻道的分類資料");
       navigate("/");
     }
-  }, [meLoading, me, navigate]);
+  }, [meLoading, me, channelId, navigate]);
 
   useEffect(() => {
     const myId = me?.channelId;
-    if (!meLoading && myId && channelId && myId !== channelId) {
+    const isAdmin = Boolean(me?.isAdmin);
+
+    // 尚在載入中，不做任何判斷
+    if (meLoading) return;
+
+    // 未登入
+    if (!myId) {
+      showLoginRequiredToast("請先登入以使用快速分類功能");
+      navigate("/");
+      return;
+    }
+
+    // admin 無條件放行
+    if (isAdmin) return;
+
+    // 非 admin，且不是本人頻道 → 擋
+    if (channelId && myId !== channelId) {
       showPermissionDeniedToast("您沒有權限查看此頻道的分類資料");
       navigate("/");
     }

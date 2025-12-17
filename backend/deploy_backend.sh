@@ -50,11 +50,14 @@ PROJECT_ID="vtuber-channel-analyzer-v3"
 REGION="asia-east1"
 IMAGE_URI="gcr.io/$PROJECT_ID/$SERVICE_NAME:latest"
 
-# ✅ Secret Manager（不分環境）
+# ✅ Secret Manager
 JWT_SECRET_NAME="youtube-api-jwt-secret"
 API_KEY_SECRET_NAME="youtube-api-api-key"
 GOOGLE_CLIENT_SECRET_NAME="youtube-api-google-client-secret"
 ADMIN_API_KEY_SECRET_NAME="youtube-api-admin-api-key"
+
+# ✅ Admin allowlist
+ADMIN_CHANNEL_IDS_SECRET_NAME="ADMIN_CHANNEL_IDS"
 
 # ✅ Secret Manager（ECPay，不用 youtube 前綴）
 ECPAY_MERCHANT_ID_SECRET_NAME="ecpay-merchant-id"
@@ -91,14 +94,14 @@ fi
 echo "🚀 部署映像至 Cloud Run：$SERVICE_NAME"
 
 # ✅ 重要：敏感值全部改走 Secret Manager（不再用 --set-env-vars 注入）
-# - JWT_SECRET / API_KEY / GOOGLE_CLIENT_SECRET / ADMIN_API_KEY / ECPAY_* 皆由 Secret 注入
+# - JWT_SECRET / API_KEY / GOOGLE_CLIENT_SECRET / ADMIN_API_KEY / ADMIN_CHANNEL_IDS / ECPAY_* 皆由 Secret 注入
 # - 只保留「非敏感」與「環境差異」參數在 --set-env-vars
 gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE_URI" \
   --region="$REGION" \
   --allow-unauthenticated \
   $NO_TRAFFIC_FLAG \
-  --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
+  --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ADMIN_CHANNEL_IDS=${ADMIN_CHANNEL_IDS_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
   --set-env-vars \
     "INPUT_CHANNEL=$INPUT_CHANNEL,\
     GOOGLE_CLOUD_PROJECT=$PROJECT_ID,\

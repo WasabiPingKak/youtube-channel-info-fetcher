@@ -16,8 +16,26 @@ JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = "HS256"
 JWT_EXP_DAYS = 30
 
+# ✅ Admin allowlist（逗號分隔 channelId）
+_ADMIN_CHANNEL_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
+ADMIN_CHANNEL_IDS = {
+    cid.strip() for cid in _ADMIN_CHANNEL_IDS_RAW.split(",") if cid.strip()
+}
+
 if not JWT_SECRET:
-    raise ValueError("❌ JWT_SECRET 未正確載入，請確認 `.env.local` 存在或已設定 Cloud Run 環境變數")
+    raise ValueError(
+        "❌ JWT_SECRET 未正確載入，請確認 `.env.local` 存在或已設定 Cloud Run 環境變數"
+    )
+
+
+def is_admin_channel_id(channel_id: str) -> bool:
+    """
+    判斷此 channelId 是否為 admin（Route A：allowlist）
+    """
+    if not channel_id:
+        return False
+    return channel_id in ADMIN_CHANNEL_IDS
+
 
 def generate_jwt(channel_id: str) -> str:
     payload = {
@@ -28,10 +46,11 @@ def generate_jwt(channel_id: str) -> str:
     if isinstance(token, bytes):
         token = token.decode("utf-8")
 
-    logging.info(f"[JWT] 登入 token for channel {channel_id}: {token}")
+    logging.info(f"[JWT] 登入成功，channel_id = {channel_id}")
     return token
 
-def verify_jwt(token: str) -> dict:
+
+def verify_jwt(token: str) -> dict | None:
     try:
         return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:

@@ -3,6 +3,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useAnnualReviewData } from "@/hooks/useAnnualReviewData";
+import { useMyChannelId } from "@/hooks/useMyChannelId";
 import AnnualStatsSection from "@/components/annual-review/AnnualStatsSection";
 import SpecialHighlightsSection from "@/components/annual-review/SpecialHighlightsSection";
 import ChannelInfoCard from "@/components/common/ChannelInfoCard";
@@ -12,10 +13,13 @@ interface AnnualReviewLayoutProps {
   year: number;
 }
 
-export default function AnnualReviewLayout({
+function AnnualReviewContent({
   channelId,
   year,
-}: AnnualReviewLayoutProps) {
+}: {
+  channelId: string;
+  year: number;
+}) {
   const navigate = useNavigate();
   const { stats, special, loading, error } = useAnnualReviewData(channelId, year);
 
@@ -76,4 +80,72 @@ export default function AnnualReviewLayout({
       </div>
     </div>
   );
+}
+
+export default function AnnualReviewLayout({
+  channelId,
+  year,
+}: AnnualReviewLayoutProps) {
+  const navigate = useNavigate();
+  const { data: me, isLoading: meLoading } = useMyChannelId();
+
+  // 1) 還在確認登入 / 權限中：不要 render 內容（避免閃一下）
+  if (meLoading) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <p className="text-sm text-muted-foreground">載入中...</p>
+      </div>
+    );
+  }
+
+  // 2) 未登入：擋 UX（你也可以改成導回首頁）
+  if (!me || me.channelId === null) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-3">
+          <div className="text-base font-semibold">需要登入</div>
+          <p className="text-sm text-muted-foreground">
+            此頁為私人年度回顧，請先登入後再查看。
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+            >
+              返回首頁
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // 3) admin 無條件放行；非 admin 則必須是本人頻道
+  const isAllowed = me.isAdmin || me.channelId === channelId;
+
+  if (!isAllowed) {
+    return (
+      <div className="max-w-5xl mx-auto px-4 py-8">
+        <div className="rounded-xl border border-border bg-card p-6 space-y-3">
+          <div className="text-base font-semibold">沒有權限瀏覽</div>
+          <p className="text-sm text-muted-foreground">
+            此頁為私人年度回顧，僅限頻道持有者瀏覽。
+          </p>
+          <div className="pt-2">
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow hover:opacity-90 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 focus:ring-offset-background"
+            >
+              返回首頁
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // ✅ 通過權限才 mount 真正內容（才會去跑 useAnnualReviewData）
+  return <AnnualReviewContent channelId={channelId} year={year} />;
 }
