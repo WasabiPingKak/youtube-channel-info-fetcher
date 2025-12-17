@@ -58,7 +58,7 @@ export default function SpecialHighlightsSection({
       {special.longestLive && (
         <StatCardWrapper delay={0}>
           <div className="space-y-6">
-            {/* Header + 主數字（對齊總直播時數風格） */}
+            {/* Header + 主數字 */}
             <div className="flex items-center gap-4">
               <div className="rounded-full bg-muted p-3">
                 <Video className="w-6 h-6 text-primary" />
@@ -111,7 +111,7 @@ export default function SpecialHighlightsSection({
       {special.longestLiveStreak && (
         <StatCardWrapper delay={0.1}>
           <div className="space-y-6">
-            {/* Header + 主數字（對齊總直播時數風格） */}
+            {/* Header + 主數字 */}
             <div className="flex items-center gap-4">
               <div className="rounded-full bg-muted p-3">
                 <CalendarDays className="w-6 h-6 text-primary" />

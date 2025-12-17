@@ -13,6 +13,27 @@ export function normalizeType(type: string): "live" | "videos" | "shorts" | null
   return null;
 }
 
+/**
+ * ✅ 取得台灣時區(Asia/Taipei)的日期字串 "YYYY-MM-DD"
+ * 用於「總直播天數」這類按日去重的統計，避免 UTC 跨日造成誤差。
+ */
+function getTaipeiDateKey(dateInput: string | number | Date): string {
+  const dt = dateInput instanceof Date ? dateInput : new Date(dateInput);
+
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Asia/Taipei",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(dt);
+
+  const year = parts.find((p) => p.type === "year")?.value ?? "0000";
+  const month = parts.find((p) => p.type === "month")?.value ?? "01";
+  const day = parts.find((p) => p.type === "day")?.value ?? "01";
+
+  return `${year}-${month}-${day}`;
+}
+
 export function computeAnnualReviewStats(allVideos: ClassifiedVideoItem[]): {
   stats: AnnualStatsData;
   special: SpecialStatsData;
@@ -24,6 +45,9 @@ export function computeAnnualReviewStats(allVideos: ClassifiedVideoItem[]): {
     (sum, v) => sum + (v.duration ?? 0),
     0
   );
+
+  // ✅ 統計「有發生直播的日期數」（同一天多場直播算 1 天）
+  const liveDaySet = new Set<string>();
 
   const monthlyVideoMap = new Map<
     number,
@@ -47,6 +71,9 @@ export function computeAnnualReviewStats(allVideos: ClassifiedVideoItem[]): {
     monthlyVideoMap.get(month)![normalizedType]++;
 
     if (normalizedType === "live") {
+      // ✅ live day dedupe (Taipei timezone)
+      liveDaySet.add(getTaipeiDateKey(video.publishDate));
+
       const duration = video.duration ?? 0;
       for (const category of video.matchedCategories ?? []) {
         categorySecondsMap.set(
@@ -92,6 +119,7 @@ export function computeAnnualReviewStats(allVideos: ClassifiedVideoItem[]): {
     stats: {
       videoCounts,
       totalLiveHours: Math.round(totalLiveSeconds / 3600),
+      totalLiveDays: liveDaySet.size,
       monthlyVideoCounts,
       categoryTime,
       monthlyCategoryTime,

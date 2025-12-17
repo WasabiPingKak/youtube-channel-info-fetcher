@@ -8,6 +8,7 @@ export interface AnnualStatsData {
     live: number;
   };
   totalLiveHours: number;
+  totalLiveDays: number;
   monthlyVideoCounts: {
     month: number;
     shorts: number;
@@ -39,7 +40,7 @@ export interface SpecialStatsData {
   longestLiveStreak: {
     days: number;
     startDate: string; // "YYYY-MM-DD" (GMT+8)
-    endDate: string;   // "YYYY-MM-DD" (GMT+8)
+    endDate: string; // "YYYY-MM-DD" (GMT+8)
     totalDuration: number; // seconds
     items: {
       videoId: string;
@@ -58,4 +59,3 @@ export interface SpecialStatsData {
   distinctGameCount: number;
   distinctGameList: string[];
 }
-

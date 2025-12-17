@@ -83,6 +83,7 @@ export function useAnnualReviewData(channelId: string, year: number) {
   // 🧯 預設空統計
   const fallbackStats: AnnualStatsData = {
     videoCounts: { shorts: 0, videos: 0, live: 0 },
+    totalLiveDays: 0,
     totalLiveHours: 0,
     monthlyVideoCounts: [],
     categoryTime: [],

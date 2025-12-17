@@ -19,7 +19,7 @@ const LABELS = [
 export default function VideoCountCard({ counts }: VideoCountCardProps) {
   return (
     <StatCardWrapper delay={0.05}>
-      <div className="flex items-start gap-4">
+      <div className="flex items-center gap-4">
         <div className="rounded-full bg-muted p-3">
           <Film className="w-6 h-6 text-primary" />
         </div>

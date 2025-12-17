@@ -1,10 +1,14 @@
 import React from "react";
 import { motion } from "framer-motion";
 import TotalLiveHoursCard from "./stat-cards/TotalLiveHoursCard";
+import TotalLiveDaysCard from "./stat-cards/TotalLiveDaysCard";
 import VideoCountCard from "./stat-cards/VideoCountCard";
 import CategoryRatioCard from "./stat-cards/CategoryRatioCard";
 import MonthlyBarChart from "./MonthlyBarChart";
-import { parseVideoTypeMonthlyCounts, parseCategoryMonthlyHours } from "@/utils/parseMonthlyStats";
+import {
+  parseVideoTypeMonthlyCounts,
+  parseCategoryMonthlyHours,
+} from "@/utils/parseMonthlyStats";
 
 const VIDEO_TYPE_COLORS = {
   shorts: "#f472b6",
@@ -28,6 +32,7 @@ export interface AnnualStatsSectionProps {
       live: number;
     };
     totalLiveHours: number;
+    totalLiveDays: number;
     monthlyVideoCounts: {
       month: number;
       shorts: number;
@@ -61,14 +66,15 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4"
+        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-stretch"
       >
-        <div className="flex flex-col gap-4 md:col-span-1">
+        <div className="flex flex-col gap-4 md:col-span-1 md:h-full">
           <TotalLiveHoursCard hours={stats.totalLiveHours} />
+          <TotalLiveDaysCard days={stats.totalLiveDays} />
           <VideoCountCard counts={stats.videoCounts} />
         </div>
 
-        <div className="md:col-span-2">
+        <div className="md:col-span-2 md:h-full">
           <CategoryRatioCard categoryTime={stats.categoryTime} />
         </div>
       </motion.div>
