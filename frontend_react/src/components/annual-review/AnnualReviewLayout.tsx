@@ -28,7 +28,7 @@ function AnnualReviewContent({
       <div className="mb-4">
         <div className="rounded-md border border-border bg-muted/40 px-3 py-2">
           <p className="text-xs text-muted-foreground">
-            🔒 此為私人年度回顧頁面，僅限你本人瀏覽，其他人無法查看
+            🔒 此為私人年度回顧頁面，僅限你本人瀏覽，其他人無法直接透過網址查看
           </p>
         </div>
       </div>

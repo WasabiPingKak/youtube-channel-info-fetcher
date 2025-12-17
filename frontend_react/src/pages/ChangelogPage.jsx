@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2025-12-18",
+    items: [
+      "於個人頭像頁面，新增年度回顧功能",
+    ],
+  },
+  {
     date: "2025-10-07",
     items: [
       "現在服務會自動抓取更新後的頻道名稱及頭像",
