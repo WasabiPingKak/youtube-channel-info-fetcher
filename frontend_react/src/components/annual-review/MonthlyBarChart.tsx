@@ -14,6 +14,7 @@ interface MonthlyBarChartProps {
   chartData: any[];
   dataKeys: string[];
   colorMap: Record<string, string>;
+  nameMap?: Record<string, string>;
   xKey: string;
   yUnit?: string;
   stacked?: boolean;
@@ -25,6 +26,7 @@ const MonthlyBarChart = ({
   chartData,
   dataKeys,
   colorMap,
+  nameMap,
   xKey,
   yUnit = "",
   stacked = false,
@@ -60,12 +62,16 @@ const MonthlyBarChart = ({
               allowDecimals={false}
               tick={{ fill: tickColor }}
             />
-            <Tooltip content={<SimpleTooltipWithColor yUnit={yUnit} />} wrapperStyle={{ backgroundColor: tooltipBg }} />
+            <Tooltip
+              content={<SimpleTooltipWithColor yUnit={yUnit} />}
+              wrapperStyle={{ backgroundColor: tooltipBg }}
+            />
             <Legend />
             {dataKeys.map((key) => (
               <Bar
                 key={key}
                 dataKey={key}
+                name={nameMap?.[key] || key}
                 stackId={stacked ? "stack" : undefined}
                 fill={colorMap[key]}
               />

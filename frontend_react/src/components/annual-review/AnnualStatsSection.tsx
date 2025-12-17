@@ -16,6 +16,12 @@ const VIDEO_TYPE_COLORS = {
   live: "#ef4444",
 };
 
+const VIDEO_TYPE_NAMES = {
+  live: "直播",
+  videos: "影片",
+  shorts: "Shorts",
+};
+
 const BASE_COLORS = {
   遊戲: "#504ac6",
   雜談: "#4cb373",
@@ -25,6 +31,7 @@ const BASE_COLORS = {
 };
 
 export interface AnnualStatsSectionProps {
+  // ... (Props 定義不變)
   stats: {
     videoCounts: {
       shorts: number;
@@ -61,7 +68,7 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
     <section className="space-y-8">
       <h2 className="text-2xl font-bold tracking-tight">📊 一般統計</h2>
 
-      {/* 1️⃣ 統計摘要卡片區：左右分欄排版 */}
+      {/* 1️⃣ 統計摘要卡片區 */}
       <motion.div
         initial={{ opacity: 0, y: 12 }}
         animate={{ opacity: 1, y: 0 }}
@@ -88,10 +95,11 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
         <MonthlyBarChart
           chartTitle="每月影片數"
           chartData={videoTypeData}
-          dataKeys={["shorts", "videos", "live"]}
+          dataKeys={["live", "videos", "shorts"]}
           colorMap={VIDEO_TYPE_COLORS}
+          nameMap={VIDEO_TYPE_NAMES}
           xKey="month"
-          stacked={false}
+          stacked={true}
           yUnit="部"
         />
       </motion.div>
