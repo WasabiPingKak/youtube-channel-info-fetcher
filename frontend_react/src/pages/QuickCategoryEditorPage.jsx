@@ -9,7 +9,12 @@ import MainLayout from '../components/layout/MainLayout';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useMyChannelId } from '@/hooks/useMyChannelId';
 import { toast } from 'react-hot-toast';
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import {
+  showSuccessToast,
+  showFailureToast,
+  showLoginRequiredToast,
+  showPermissionDeniedToast,
+} from "@/components/common/ToastManager";
 
 const QuickCategoryEditorPage = () => {
   const { channelId } = useParams();
@@ -190,29 +195,46 @@ const QuickCategoryEditorPage = () => {
             <h1 className="text-2xl font-bold mb-4 text-gray-900 dark:text-gray-100">
               快速分類
             </h1>
+
             <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed mb-6">
-              這裡是系統判斷不出來的影片清單，我們幫你挑出了在影片標題中重複出現的關鍵字（至少出現兩次），並列出命中的影片。<br />
-              <span className="ml-4 block">• 關鍵字可屬於多個主題，例如「歌雜」可同時是雜談與音樂</span>
+              這一頁整理的是系統目前無法自動分類的影片，
+              我們從你的影片標題中找出「反覆出現的用語」，並整理成卡片，協助你快速補齊屬於自己頻道的分類。<br />
+              <br />
+
+              你可以在這裡決定：<br />
+              哪些用語值得成為一個分類、要歸到哪個主題，<br />
+              或是略過不需要處理的項目。<br />
+              <br />
+
+              💡 小提醒：<br />
               <span className="ml-4 block">
-                •「✏️ 編輯顯示名稱」可以把你的標題關鍵字轉換成你想顯示的徽章標題
+                • 同一個用語可以同時屬於多個主題（例如「歌雜」可以多選「雜談」+「音樂」）
+              </span>
+              <span className="ml-4 block">
+                • 分類顯示的名稱可以自行調整，不一定要和標題裡的用語完全相同
                 <span className="block ml-8">
-                  - 例如你的標題是「鼠繪台」，可以透過編輯將徽章的文字顯示成「繪圖台」，但依然是用「鼠繪台」做標題過濾。
+                  - 例如標題常用「星窮鐵道」，你可以把分類顯示成「星穹鐵道」
                 </span>
                 <span className="block ml-8">
-                  - 又例如你的遊戲標題是故意諧音的「星窮鐵道」，可以透過編輯將徽章的文字顯示成「星穹鐵道」。
+                  - 這只會影響你這個頻道的顯示，不會影響全站或其他人的分類
+                </span>
+                <span className="block ml-8">
+                  - 如果你希望保留原本的用法，也可以什麼都不改直接儲存
                 </span>
               </span>
-              <span className="ml-4 block mb-4">• 若是正式的遊戲名稱，建議透過左側填表加入系統分類，方便全站共用</span>
+              <br />
 
-              若需手動微調分類結果，請改用
+              如果你有特殊需求要逐字微調分類結構，<br />
+              建議使用
               <a
                 href="/my-category-editor"
                 className="text-blue-600 dark:text-blue-400 hover:underline ml-1"
               >
-                進階版編輯器
+                進階版分類編輯器
               </a>
               。
             </p>
+
             <KeywordCardList cards={cards} />
           </>
         )}
