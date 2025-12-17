@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { useNavigate } from "react-router-dom";
 import { PiSunBold, PiMoonBold } from "react-icons/pi";
-import { FaUserCog, FaAddressCard } from "react-icons/fa";
+import { FaUserCog, FaAddressCard, FaRegCalendarAlt } from "react-icons/fa";
 import { IoFileTrayFull } from "react-icons/io5";
 import { useUnlockScroll } from "@/hooks/useUnlockScroll";
 
@@ -42,6 +42,8 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
     }
   };
 
+  const currentYear = new Date().getFullYear();
+
   return (
     <DropdownMenu.Root>
       <DropdownMenu.Trigger asChild>
@@ -50,7 +52,11 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
           aria-label="使用者選單"
         >
           {avatarUrl ? (
-            <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt="Avatar"
+              className="w-full h-full object-cover"
+            />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-gray-200 dark:bg-zinc-700 text-sm text-gray-600 dark:text-gray-300">
               {channelName?.charAt(0) || "?"}
@@ -74,7 +80,7 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
             onSelect={() => navigate(`/videos?channel=${channelId}`)}
           >
             <FaAddressCard className="w-4 h-4" />
-            <span>頻道分析頁</span>
+            <span>我的頻道分析</span>
           </DropdownMenu.Item>
 
           <DropdownMenu.Item
@@ -103,11 +109,28 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
 
           <DropdownMenu.Separator className="my-1 border-t border-gray-200 dark:border-zinc-700" />
 
+          {/* ✅ 2025年度回顧 */}
+          {channelId && (
+            <DropdownMenu.Item
+              className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 cursor-pointer rounded"
+              onSelect={() => navigate(`/review/${channelId}/2025`)}
+            >
+              <FaRegCalendarAlt className="w-4 h-4" />
+              <span>2025 年度回顧</span>
+            </DropdownMenu.Item>
+          )}
+
+          <DropdownMenu.Separator className="my-1 border-t border-gray-200 dark:border-zinc-700" />
+
           <DropdownMenu.Item
             className="flex items-center gap-2 px-3 py-2 text-sm text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-zinc-800 rounded cursor-pointer"
             onSelect={toggleTheme}
           >
-            {isDark ? <PiSunBold className="w-4 h-4" /> : <PiMoonBold className="w-4 h-4" />}
+            {isDark ? (
+              <PiSunBold className="w-4 h-4" />
+            ) : (
+              <PiMoonBold className="w-4 h-4" />
+            )}
             切換深色模式
           </DropdownMenu.Item>
         </DropdownMenu.Content>
