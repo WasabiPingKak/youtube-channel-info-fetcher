@@ -1,7 +1,7 @@
 import React from "react";
 import type { SpecialStatsData } from "@/utils/statistics/types";
 import { motion } from "framer-motion";
-import { Video, CalendarDays, Gamepad2 } from "lucide-react";
+import { Video, CalendarDays, Gamepad2, Layers } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
 
 interface SpecialHighlightsSectionProps {
@@ -176,54 +176,81 @@ export default function SpecialHighlightsSection({
         </StatCardWrapper>
       )}
 
-      {/* 遊戲直播時數排行 */}
-      {(special.topLiveGames?.length ?? 0) > 0 && (
-        <div className="w-full md:w-1/2">
-          <StatCardWrapper delay={0.2}>
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <div className="rounded-full bg-muted p-3">
-                  <Gamepad2 className="w-6 h-6 text-primary" />
-                </div>
-                <div>
-                  <div className="text-sm text-muted-foreground mb-1">
-                    遊戲直播時數排行（最多五筆）
+      {/* 遊戲直播時數排行 + 玩過的不同遊戲數 */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+        {/* 遊戲直播時數排行 */}
+        {(special.topLiveGames?.length ?? 0) > 0 && (
+          <div className="w-full">
+            <StatCardWrapper delay={0.2}>
+              <div className="space-y-4">
+                <div className="flex items-center gap-4">
+                  <div className="rounded-full bg-muted p-3">
+                    <Gamepad2 className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">
+                      遊戲直播時數排行（最多五筆）
+                    </div>
                   </div>
                 </div>
+
+                <ol className="space-y-2 text-sm">
+                  {special.topLiveGames.map((g, idx) => (
+                    <li
+                      key={g.game}
+                      className="flex items-baseline justify-between gap-4 border-b border-border pb-2 last:border-b-0"
+                    >
+                      <div className="font-medium text-foreground">
+                        {idx + 1}. {g.game}
+                      </div>
+                      <div className="text-muted-foreground">
+                        {formatDurationHM(g.totalDuration)}
+                      </div>
+                    </li>
+                  ))}
+                </ol>
               </div>
+            </StatCardWrapper>
+          </div>
+        )}
 
-              <ol className="space-y-2 text-sm">
-                {special.topLiveGames.map((g, idx) => (
-                  <li
-                    key={g.game}
-                    className="flex items-baseline justify-between gap-4 border-b border-border pb-2 last:border-b-0"
-                  >
-                    <div className="font-medium text-foreground">
-                      {idx + 1}. {g.game}
+        {/* 玩過的不同遊戲數（Badges） */}
+        {special.distinctGameCount > 0 && (
+          <div className="w-full">
+            <StatCardWrapper delay={0.25}>
+              <div className="space-y-4">
+                {/* Header + 主數字 */}
+                <div className="flex items-center gap-4">
+                  <div className="rounded-full bg-muted p-3">
+                    <Layers className="w-6 h-6 text-primary" />
+                  </div>
+                  <div>
+                    <div className="text-sm text-muted-foreground mb-1">
+                      玩過的不同遊戲數
                     </div>
-                    <div className="text-muted-foreground">
-                      {formatDurationHM(g.totalDuration)}
+                    <div className="text-3xl font-bold tracking-tight">
+                      {special.distinctGameCount} 種
                     </div>
-                  </li>
-                ))}
-              </ol>
-            </div>
-          </StatCardWrapper>
-        </div>
-      )}
+                  </div>
+                </div>
 
-      {/* 總遊戲數 */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.5 }}
-      >
-        <div className="text-muted-foreground text-sm">
-          <strong>🗂️ 玩過的不同遊戲數：</strong> {special.distinctGameCount} 種
-          <br />
-          <span className="text-xs">({special.distinctGameList.join(", ")})</span>
-        </div>
-      </motion.div>
+                {/* Badges */}
+                <div className="flex flex-wrap gap-2">
+                  {special.distinctGameList.map((game) => (
+                    <span
+                      key={game}
+                      className="px-3 py-1 rounded-full bg-muted text-sm text-foreground"
+                    >
+                      {game}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </StatCardWrapper>
+          </div>
+        )}
+      </div>
+
     </section>
   );
 }
