@@ -2,141 +2,11 @@ import React from "react";
 import type { SpecialStatsData } from "@/utils/statistics/types";
 import { Video, CalendarDays, Gamepad2, Layers } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
+import StreakAxis from "./StreakAxis";
+import { formatDurationHM, formatDateTimeGMT8 } from "./utils";
 
 interface SpecialHighlightsSectionProps {
   special: SpecialStatsData;
-}
-
-// --- Helper Functions ---
-
-function formatDurationHM(totalSeconds?: number | null): string {
-  const s = typeof totalSeconds === "number" ? totalSeconds : 0;
-  if (s <= 0) return "未知";
-
-  const totalMinutes = Math.floor(s / 60);
-  const hours = Math.floor(totalMinutes / 60);
-  const minutes = totalMinutes % 60;
-
-  if (hours <= 0) return `${minutes}分鐘`;
-  const mm = String(minutes).padStart(2, "0");
-  return `${hours}小時${mm}分鐘`;
-}
-
-function formatDateTimeGMT8(isoString?: string | null): string {
-  if (!isoString) return "未知";
-  const date = new Date(isoString);
-  if (Number.isNaN(date.getTime())) return "未知";
-
-  const gmt8 = new Date(date.getTime() + 8 * 60 * 60 * 1000);
-  const yyyy = gmt8.getUTCFullYear();
-  const mm = String(gmt8.getUTCMonth() + 1).padStart(2, "0");
-  const dd = String(gmt8.getUTCDate()).padStart(2, "0");
-  const hh = String(gmt8.getUTCHours()).padStart(2, "0");
-  const min = String(gmt8.getUTCMinutes()).padStart(2, "0");
-
-  return `${yyyy}-${mm}-${dd} ${hh}:${min} (GMT+8)`;
-}
-
-function parseYMDToUtc(ymd?: string | null): Date | null {
-  if (!ymd) return null;
-  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(ymd.trim());
-  if (!m) return null;
-  return new Date(Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])));
-}
-
-function calcInclusiveDays(startYmd?: string | null, endYmd?: string | null): number | null {
-  const s = parseYMDToUtc(startYmd);
-  const e = parseYMDToUtc(endYmd);
-  if (!s || !e) return null;
-  const diff = e.getTime() - s.getTime();
-  if (diff < 0) return null;
-  return Math.floor(diff / (24 * 60 * 60 * 1000)) + 1;
-}
-
-function clampInt(n: unknown, min: number, max: number): number {
-  const x = typeof n === "number" ? Math.floor(n) : NaN;
-  if (!Number.isFinite(x)) return min;
-  return Math.max(min, Math.min(max, x));
-}
-
-function formatDateWithWeekday(dateStr?: string | null): string {
-  if (!dateStr) return "未知日期";
-  const date = parseYMDToUtc(dateStr);
-  if (!date) return dateStr;
-
-  const month = date.getUTCMonth() + 1;
-  const day = date.getUTCDate();
-
-  const weekdays = ["週日", "週一", "週二", "週三", "週四", "週五", "週六"];
-  const w = weekdays[date.getUTCDay()];
-
-  return `${month}月${day}日 ${w}`;
-}
-
-// --- Components ---
-
-/**
- * 簡約版連續天數數軸
- * 風格：無背景，主色調線條
- */
-function StreakAxis({
-  startDate,
-  endDate,
-  days,
-}: {
-  startDate?: string | null;
-  endDate?: string | null;
-  days?: number | null;
-}) {
-  const derived = calcInclusiveDays(startDate, endDate);
-  const n = derived ?? (typeof days === "number" ? Math.floor(days) : 0);
-  const safeN = clampInt(n, 1, 3650);
-
-  // 天數 > 60 時隱藏中間刻度，避免擁擠
-  const showIntermediateTicks = safeN <= 60;
-
-  const startText = formatDateWithWeekday(startDate);
-  const endText = formatDateWithWeekday(endDate);
-
-  if (safeN <= 0) return null;
-
-  return (
-    <div className="mt-2 w-full px-2 py-4">
-      {/* 數軸主體區域 */}
-      <div className="relative h-10 w-full">
-        {/* 1. 主橫線 (基底，淡色) */}
-        <div className="absolute top-1/2 left-0 right-0 h-[2px] -translate-y-1/2 bg-border rounded-full" />
-
-        {/* 2. 左端點刻度 (主色，強調) */}
-        <div className="absolute left-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-primary rounded-full" />
-
-        {/* 3. 右端點刻度 (主色，強調) */}
-        <div className="absolute right-0 top-1/2 h-5 w-[2px] -translate-y-1/2 bg-primary rounded-full" />
-
-        {/* 4. 中間刻度 (半透明主色) */}
-        {showIntermediateTicks && safeN > 1 && (
-          <div className="absolute inset-0 mx-[1px]">
-            {Array.from({ length: safeN - 2 }).map((_, i) => {
-              const pct = ((i + 1) / (safeN - 1)) * 100;
-              return (
-                <div
-                  key={i}
-                  className="absolute top-1/2 h-2 w-[1px] -translate-y-1/2 bg-primary/40"
-                  style={{ left: `${pct}%` }}
-                />
-              );
-            })}
-          </div>
-        )}
-      </div>
-
-      {/* 底部日期文字：左右對齊 */}
-      <div className="flex justify-between text-xs font-medium text-muted-foreground">
-        <span className="-translate-x-1">{startText}</span>
-        <span className="translate-x-1">{endText}</span>
-      </div>
-    </div>
-  );
 }
 
 export default function SpecialHighlightsSection({
@@ -211,7 +81,7 @@ export default function SpecialHighlightsSection({
               </div>
             </div>
 
-            <div className="rounded-xl px-4 pb-2 pt-0">
+            <div className="px-2">
               <StreakAxis
                 startDate={special.longestLiveStreak.startDate}
                 endDate={special.longestLiveStreak.endDate}
