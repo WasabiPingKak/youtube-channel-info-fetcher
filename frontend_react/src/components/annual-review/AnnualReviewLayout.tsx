@@ -192,19 +192,26 @@ function AnnualReviewContent({
 
               {/* 快速分類器引導 */}
               <div className="pt-4">
-                <div className="rounded-2xl border border-slate-800 bg-slate-900/50 p-6 backdrop-blur-sm">
-                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                    <div className="space-y-2">
-                      <div className="text-lg font-bold text-emerald-500">數據不夠準確？</div>
-                      <p className="text-sm text-slate-400 leading-relaxed max-w-xl">
-                        如果你的年度回顧中出現較多「未分類」項目，這會影響統計結果。
-                        建議前往快速分類器標註影片分類，完成後重新載入此頁面。
+                <div className="rounded-[2rem] border border-emerald-100 dark:border-slate-800 bg-emerald-50/50 dark:bg-slate-900/50 p-8 backdrop-blur-sm shadow-sm dark:shadow-none">
+                  <div className="flex flex-col md:flex-row md:items-center justify-between gap-8">
+                    <div className="space-y-3">
+                      <div className="text-xl font-black text-emerald-600 dark:text-emerald-400 flex items-center gap-2">
+                        <span className="relative flex h-3 w-3">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+                        </span>
+                        數據不夠準確？
+                      </div>
+                      <p className="text-sm md:text-base text-slate-600 dark:text-slate-400 leading-relaxed max-w-2xl font-medium">
+                        如果你的年度回顧中出現較多「未分類」項目，這會直接影響統計結果的精準度。
+                        建議前往「快速分類器」標註影片分類，完成後重新整理此頁面即可更新數據。
                       </p>
                     </div>
+
                     <button
                       type="button"
                       onClick={() => navigate(`/quick-category-editor/${channelId}`)}
-                      className="whitespace-nowrap rounded-xl bg-slate-800 border border-slate-700 px-6 py-3 text-sm font-bold text-white hover:bg-slate-700 transition-all"
+                      className="whitespace-nowrap rounded-2xl bg-slate-900 dark:bg-white px-8 py-4 text-sm md:text-base font-black text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-emerald-400 transition-all active:scale-95 shadow-xl shadow-slate-200 dark:shadow-none"
                     >
                       前往快速分類器
                     </button>

@@ -143,7 +143,7 @@ export default function AnnualReviewShareCard({
         <div className={`col-span-2 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col group hover:bg-white/10 transition-colors`}>
           <div className="flex items-center gap-2 text-blue-400 mb-2">
             <Video size={18} />
-            <span className="text-sm font-bold tracking-wide">影片數量</span>
+            <span className="text-sm font-bold tracking-wide">年度創作產出</span>
           </div>
           <div className="flex flex-col gap-1 justify-center flex-1">
             <div className="flex items-center gap-2 text-sm text-slate-300">
