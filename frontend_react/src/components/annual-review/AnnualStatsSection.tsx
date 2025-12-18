@@ -31,7 +31,6 @@ const BASE_COLORS = {
 };
 
 export interface AnnualStatsSectionProps {
-  // ... (Props 定義不變)
   stats: {
     videoCounts: {
       shorts: number;
@@ -65,59 +64,61 @@ export default function AnnualStatsSection({ stats }: AnnualStatsSectionProps) {
   const categoryHourData = parseCategoryMonthlyHours(stats.monthlyCategoryTime);
 
   return (
-    <section className="space-y-8">
-      {/* 1️⃣ 統計摘要卡片區 */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-4 md:items-stretch"
-      >
-        <div className="flex flex-col gap-4 md:col-span-1 md:h-full">
+    <section className="space-y-10">
+      {/* 1️⃣ 統計摘要卡片區 (保持 1:2 結構) */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 左側：三張小卡堆疊 */}
+        <div className="flex flex-col gap-4 lg:col-span-1">
           <TotalLiveHoursCard hours={stats.totalLiveHours} />
           <TotalLiveDaysCard days={stats.totalLiveDays} />
           <VideoCountCard counts={stats.videoCounts} />
         </div>
 
-        <div className="md:col-span-2 md:h-full">
+        {/* 右側：分類佔比大卡 */}
+        <div className="lg:col-span-2 min-h-[400px]">
           <CategoryRatioCard categoryTime={stats.categoryTime} />
         </div>
-      </motion.div>
+      </div>
 
-      {/* 2️⃣ 每月影片種類圖表 */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-        <MonthlyBarChart
-          chartTitle="每月影片數"
-          chartData={videoTypeData}
-          dataKeys={["live", "videos", "shorts"]}
-          colorMap={VIDEO_TYPE_COLORS}
-          nameMap={VIDEO_TYPE_NAMES}
-          xKey="month"
-          stacked={true}
-          yUnit="部"
-        />
-      </motion.div>
+      {/* 2️⃣ 圖表區塊 - 增加間距與標題質感 */}
+      <div className="grid grid-cols-1 gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5 }}
+          className="rounded-3xl border border-slate-800 bg-slate-900/30 p-1"
+        >
+          <MonthlyBarChart
+            chartTitle="每月創作活動趨勢"
+            chartData={videoTypeData}
+            dataKeys={["live", "videos", "shorts"]}
+            colorMap={VIDEO_TYPE_COLORS}
+            nameMap={VIDEO_TYPE_NAMES}
+            xKey="month"
+            stacked={true}
+            yUnit="部"
+          />
+        </motion.div>
 
-      {/* 3️⃣ 每月分類直播時長圖表 */}
-      <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.2 }}
-      >
-        <MonthlyBarChart
-          chartTitle="每月分類直播時長"
-          chartData={categoryHourData}
-          dataKeys={["遊戲", "雜談", "節目", "音樂", "未分類"]}
-          colorMap={BASE_COLORS}
-          xKey="month"
-          stacked={true}
-          yUnit="小時"
-        />
-      </motion.div>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+          className="rounded-3xl border border-slate-800 bg-slate-900/30 p-1"
+        >
+          <MonthlyBarChart
+            chartTitle="每月直播內容分佈"
+            chartData={categoryHourData}
+            dataKeys={["遊戲", "雜談", "節目", "音樂", "未分類"]}
+            colorMap={BASE_COLORS}
+            xKey="month"
+            stacked={true}
+            yUnit="小時"
+          />
+        </motion.div>
+      </div>
     </section>
   );
 }
