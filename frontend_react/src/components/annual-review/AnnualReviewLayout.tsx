@@ -167,7 +167,7 @@ function AnnualReviewContent({
             /* 📸 分享模式 */
             <div className="flex flex-col rounded-3xl border-2 border-dashed border-slate-800 bg-slate-950/50 py-12 animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
               <div className="mb-8 text-center space-y-2">
-                <div className="text-sm font-bold text-emerald-500 uppercase tracking-widest">Preview</div>
+                <div className="text-sm font-bold text-emerald-500 uppercase tracking-widest">年度成就卡片</div>
                 <div className="text-xs text-slate-500">預覽畫面：下載後的圖片將會以此比例呈現 (3:4)</div>
               </div>
 

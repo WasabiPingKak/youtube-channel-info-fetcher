@@ -1,6 +1,6 @@
 // src/components/annual-review/AnnualReviewShareCard.tsx
 
-import React from "react";
+import React, { useMemo } from "react";
 import { formatDurationHM, formatDateTimeGMT8 } from "@/components/annual-review/utils";
 import type { AnnualStatsSectionProps } from "@/components/annual-review/AnnualStatsSection";
 import type { SpecialStatsData } from "@/utils/statistics/types";
@@ -21,15 +21,23 @@ interface AnnualReviewShareCardProps {
   special: SpecialStatsData;
 }
 
+/**
+ * 🏆 年度稱號邏輯 (與網頁版保持一致，但針對分享圖微調顏色)
+ */
+const getAnnualTitle = (hours: number) => {
+  if (hours >= 1000) return { label: "傳奇級", color: "text-orange-400", bg: "bg-orange-500/20", border: "border-orange-500/30" };
+  if (hours >= 500) return { label: "年度高產", color: "text-emerald-400", bg: "bg-emerald-500/20", border: "border-emerald-500/30" };
+  if (hours >= 100) return { label: "熱血創作者", color: "text-blue-400", bg: "bg-blue-500/20", border: "border-blue-500/30" };
+  return { label: "持續耕耘", color: "text-slate-400", bg: "bg-slate-500/20", border: "border-slate-500/30" };
+};
+
 // 🛠️ 小工具：格式化日期範圍
 function formatDateRange(startStr: string, endStr: string) {
   const start = new Date(startStr);
   const end = new Date(endStr);
-
   const yyyy = start.getFullYear();
   const mm1 = (start.getMonth() + 1).toString().padStart(2, '0');
   const dd1 = start.getDate().toString().padStart(2, '0');
-
   const mm2 = (end.getMonth() + 1).toString().padStart(2, '0');
   const dd2 = end.getDate().toString().padStart(2, '0');
 
@@ -54,35 +62,28 @@ export default function AnnualReviewShareCard({
     glass: "bg-white/5 backdrop-blur-md border border-white/10 shadow-inner",
   };
 
-  // 🧮 計算平均數據
+  // 🧮 計算稱號與平均數據
+  const titleInfo = useMemo(() => getAnnualTitle(stats.totalLiveHours), [stats.totalLiveHours]);
   const avgHoursPerWeek = (stats.totalLiveHours / 52).toFixed(1);
   const avgDaysPerWeek = (stats.totalLiveDays / 52).toFixed(1);
 
-  // 🎮 判斷是否有遊戲資料
   const hasGames = special.topLiveGames && special.topLiveGames.length > 0;
 
   return (
-    // 📷 外框：維持 3:4 比例 (600px * 800px)
     <div
       id="share-card-node"
       className={`relative w-[600px] h-[800px] ${styles.cardBg} ${styles.textPrimary} p-8 flex flex-col justify-between overflow-hidden shadow-2xl`}
       style={{ fontFamily: '"Noto Sans TC", sans-serif' }}
     >
-      {/* 裝飾背景光暈 */}
       <div className="absolute top-0 right-0 w-80 h-80 bg-purple-600/20 rounded-full blur-[100px] -translate-y-1/2 translate-x-1/3 pointer-events-none" />
       <div className="absolute bottom-0 left-0 w-80 h-80 bg-indigo-600/20 rounded-full blur-[100px] translate-y-1/2 -translate-x-1/3 pointer-events-none" />
 
-      {/* 1. Header (順序：年份 -> 頭像 -> 名稱，靠左對齊) */}
+      {/* 1. Header */}
       <header className="relative z-10 flex items-center gap-4 mb-4">
-        {/* 年份 */}
         <h1 className="shrink-0 text-5xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-br from-indigo-400 to-purple-400 drop-shadow-sm">
           {year}
         </h1>
-
-        {/* 垂直分隔線 (選擇性加入，或單純靠 gap) */}
         <div className="w-px h-10 bg-white/10 shrink-0" />
-
-        {/* 頭像 */}
         {channelAvatar ? (
           <img
             src={channelAvatar}
@@ -94,26 +95,37 @@ export default function AnnualReviewShareCard({
             {channelName.slice(0, 1)}
           </div>
         )}
-
-        {/* 頻道名稱 (使用 min-w-0 確保 line-clamp 正常運作) */}
-        <div className="min-w-0 flex flex-col justify-center">
-          <h2 className="font-bold text-lg leading-tight text-white line-clamp-2 text-left">
+        <div className="min-w-0 flex flex-col justify-center text-left">
+          <h2 className="font-bold text-lg leading-tight text-white line-clamp-2">
             {channelName}
           </h2>
-          <p className={`text-sm ${styles.textSecondary} text-left`}>Year in Review</p>
+          <p className={`text-sm ${styles.textSecondary}`}>Year in Review</p>
         </div>
       </header>
 
-      {/* 2. Core Stats Grid - Rows 8 */}
+      {/* 2. Core Stats Grid */}
       <div className="relative z-10 grid grid-cols-6 grid-rows-[repeat(8,minmax(0,1fr))] gap-3 flex-1">
 
+        {/* A. 總直播時數 (3x2) + ✨ 勳章徽章 */}
         {/* A. 總直播時數 (3x2) */}
-        <div className={`col-span-3 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col justify-between group hover:bg-white/10 transition-colors`}>
-          <div className="flex items-center gap-2 text-indigo-400">
-            <Clock size={18} />
-            <span className="text-sm font-bold tracking-wide">總直播時數</span>
+        <div className={`relative col-span-3 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col justify-between group hover:bg-white/10 transition-colors`}>
+
+          {/* 上半部：標題 + 徽章 */}
+          <div className="flex flex-col gap-1.5 text-left">
+            <div className="flex items-center gap-2 text-indigo-400">
+              <Clock size={18} />
+              <span className="text-sm font-bold tracking-wide">總直播時數</span>
+            </div>
+
+            {/* 🚀 稱號徽章：現在位於標題下方，寬度自適應 (w-fit) */}
+            <div className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest w-fit ${titleInfo.bg} ${titleInfo.color} ${titleInfo.border} backdrop-blur-md shadow-sm`}>
+              <Trophy size={10} />
+              {titleInfo.label}
+            </div>
           </div>
-          <div>
+
+          {/* 下半部：數值 */}
+          <div className="text-left">
             <div className="text-4xl font-bold tracking-tight">
               {Math.floor(stats.totalLiveHours)} <span className="text-base font-medium text-slate-400">小時</span>
             </div>
@@ -125,11 +137,11 @@ export default function AnnualReviewShareCard({
 
         {/* B. 活躍天數 (3x2) */}
         <div className={`col-span-3 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col justify-between group hover:bg-white/10 transition-colors`}>
-          <div className="flex items-center gap-2 text-emerald-400">
+          <div className="flex items-center gap-2 text-emerald-400 text-left">
             <Calendar size={18} />
             <span className="text-sm font-bold tracking-wide">活躍天數</span>
           </div>
-          <div>
+          <div className="text-left">
             <div className="text-4xl font-bold tracking-tight">
               {stats.totalLiveDays} <span className="text-base font-medium text-slate-400">天</span>
             </div>
@@ -141,11 +153,11 @@ export default function AnnualReviewShareCard({
 
         {/* C. 影片數量 (2x2) */}
         <div className={`col-span-2 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col group hover:bg-white/10 transition-colors`}>
-          <div className="flex items-center gap-2 text-blue-400 mb-2">
+          <div className="flex items-center gap-2 text-blue-400 mb-2 text-left">
             <Video size={18} />
             <span className="text-sm font-bold tracking-wide">年度創作產出</span>
           </div>
-          <div className="flex flex-col gap-1 justify-center flex-1">
+          <div className="flex flex-col gap-1 justify-center flex-1 text-left">
             <div className="flex items-center gap-2 text-sm text-slate-300">
               <span className="w-1.5 h-1.5 rounded-full bg-red-500 shadow-[0_0_6px_rgba(239,68,68,0.8)]"></span>
               <span>直播：<span className="font-bold text-white">{stats.videoCounts.live}</span></span>
@@ -163,19 +175,16 @@ export default function AnnualReviewShareCard({
 
         {/* D. 最長連續直播 (4x2) */}
         <div className={`col-span-4 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-row items-center justify-between group hover:bg-white/10 transition-colors`}>
-          <div className="flex flex-col justify-center h-full gap-1">
+          <div className="flex flex-col justify-center h-full gap-1 text-left">
             <div className="flex items-center gap-2 text-orange-400 mb-0.5">
               <Flame size={18} />
               <span className="text-sm font-bold tracking-wide">最長連續直播</span>
             </div>
-
-            {/* ✨ 日期範圍：放大並強調 */}
             <div className="text-sm font-bold text-white tracking-wide bg-white/10 border border-white/5 px-2.5 py-1 rounded-md w-fit shadow-sm">
               {special.longestLiveStreak ? (
                 formatDateRange(special.longestLiveStreak.startDate, special.longestLiveStreak.endDate)
               ) : 'N/A'}
             </div>
-
             {special.longestLiveStreak && (
               <div className="text-xs text-slate-500 mt-0.5 font-medium">
                 期間總時數：{formatDurationHM(special.longestLiveStreak.totalDuration)}
@@ -192,11 +201,11 @@ export default function AnnualReviewShareCard({
         {/* E. 遊戲排行 (3x4) */}
         {hasGames && (
           <div className={`col-span-3 row-span-4 ${styles.glass} rounded-2xl p-4 flex flex-col group hover:bg-white/10 transition-colors`}>
-            <div className="flex items-center gap-2 text-pink-400 mb-4">
+            <div className="flex items-center gap-2 text-pink-400 mb-4 text-left">
               <Gamepad2 size={18} />
               <span className="text-sm font-bold tracking-wide">最常玩遊戲</span>
             </div>
-            <div className="flex-1 flex flex-col gap-2 overflow-hidden justify-start">
+            <div className="flex-1 flex flex-col gap-2 overflow-hidden justify-start text-left">
               {special.topLiveGames?.slice(0, 5).map((g, i) => (
                 <div key={g.game} className="flex justify-between items-baseline text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
                   <div className="flex items-center gap-2 min-w-0 flex-1">
@@ -212,39 +221,59 @@ export default function AnnualReviewShareCard({
           </div>
         )}
 
-        {/* F. 年度之最 (3x4 或 6x4) */}
-        <div className={`${hasGames ? 'col-span-3' : 'col-span-6'} row-span-4 ${styles.glass} rounded-2xl p-4 flex flex-col group hover:bg-white/10 transition-colors`}>
-          <div className="flex items-center gap-2 text-yellow-400 mb-2">
+        {/* F. 年度之最 (年度最長直播) */}
+        <div className={`${hasGames ? 'col-span-3' : 'col-span-6'} row-span-4 ${styles.glass} rounded-2xl p-5 flex flex-col group hover:bg-white/10 transition-colors relative overflow-hidden`}>
+          {/* 背景裝飾 */}
+          <Trophy size={80} className="absolute -right-4 -bottom-4 text-yellow-500/5 -rotate-12 pointer-events-none" />
+
+          {/* Header */}
+          <div className="flex items-center gap-2 text-yellow-500 mb-3 text-left">
             <Trophy size={18} />
-            <span className="text-sm font-bold tracking-wide">年度最長直播</span>
+            <span className="text-sm font-bold tracking-widest uppercase">年度最長直播紀錄</span>
           </div>
 
+          {/* 🚀 關鍵修正：確保 i.longestLive 存在才渲染內容 */}
           {special.longestLive ? (
-            <div className="flex-1 flex flex-col">
-              <p className={`text-sm font-medium text-slate-200 leading-relaxed tracking-wide mb-2 ${hasGames ? 'line-clamp-4' : 'line-clamp-6'}`}>
-                {special.longestLive.title}
-              </p>
-
-              <div className="text-xs text-slate-500 mb-auto">
-                {formatDateTimeGMT8(special.longestLive.publishDate)}
+            <>
+              {/* 紀錄方塊 (移動到判斷式內，避免 crash) */}
+              <div className="mb-4 flex flex-col items-start">
+                <div className="bg-gradient-to-r from-yellow-500 to-amber-600 px-4 py-1.5 rounded-xl shadow-lg shadow-yellow-900/20">
+                  <span className="text-2xl font-black text-slate-950 tracking-tighter">
+                    {formatDurationHM(special.longestLive.duration)}
+                  </span>
+                </div>
+                <div className="text-[10px] font-bold text-slate-500 uppercase tracking-[0.2em] mt-2 ml-1">
+                  紀錄時長
+                </div>
               </div>
 
-              <div className="mt-4 text-right">
-                <span className="text-xs text-slate-500 mr-2 uppercase tracking-wider">時長</span>
-                <span className="text-xl font-bold text-yellow-400">
-                  {formatDurationHM(special.longestLive.duration)}
-                </span>
+              <div className="flex-1 flex flex-col justify-between text-left">
+                <p className={`text-base font-bold text-white leading-relaxed tracking-wide mb-4 ${hasGames ? 'line-clamp-3' : 'line-clamp-5'}`}>
+                  {special.longestLive.title}
+                </p>
+
+                <div className="mt-auto space-y-2">
+                  <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                    紀錄時刻
+                  </div>
+                  <div className="text-xs font-bold text-yellow-500/80 bg-yellow-500/10 border border-yellow-500/20 px-3 py-1.5 rounded-lg w-fit">
+                    {formatDateTimeGMT8(special.longestLive.publishDate)}
+                  </div>
+                </div>
               </div>
-            </div>
+            </>
           ) : (
-            <div className="text-sm text-slate-500">無資料</div>
+            /* 🚀 當 i.longestLive 為空時顯示的 Fallback UI */
+            <div className="flex-1 flex flex-col items-center justify-center text-slate-600 italic text-sm text-center">
+              今年度尚無直播紀錄
+            </div>
           )}
         </div>
       </div>
 
       {/* 3. Footer */}
       <footer className="relative z-10 mt-5 pt-3 border-t border-white/10 flex justify-between items-end">
-        <div className="flex flex-col gap-1">
+        <div className="flex flex-col gap-1 text-left">
           <div className="text-[10px] text-slate-500 uppercase tracking-[0.2em]">Generated by</div>
           <div className="text-sm font-bold text-slate-300 tracking-wide">
             VTMap 頻道旅圖｜Vtuber TrailMap
