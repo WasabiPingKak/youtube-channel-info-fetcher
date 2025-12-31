@@ -107,20 +107,25 @@ export default function AnnualReviewShareCard({
       <div className="relative z-10 grid grid-cols-6 grid-rows-[repeat(8,minmax(0,1fr))] gap-3 flex-1">
 
         {/* A. 總直播時數 (3x2) + ✨ 勳章徽章 */}
-        {/* A. 總直播時數 (3x2) */}
         <div className={`relative col-span-3 row-span-2 ${styles.glass} rounded-2xl p-4 flex flex-col justify-between group hover:bg-white/10 transition-colors`}>
 
           {/* 上半部：標題 + 徽章 */}
-          <div className="flex flex-col gap-1.5 text-left">
+          {/* 💡 移除 flex-col 的 gap，改用子元素的 margin 確保截圖時座標固定 */}
+          <div className="flex flex-col text-left">
             <div className="flex items-center gap-2 text-indigo-400">
               <Clock size={18} />
               <span className="text-sm font-bold tracking-wide">總直播時數</span>
             </div>
 
-            {/* 🚀 稱號徽章：現在位於標題下方，寬度自適應 (w-fit) */}
-            <div className={`flex items-center gap-1 rounded-full border px-2 py-0.5 text-[9px] font-black uppercase tracking-widest w-fit ${titleInfo.bg} ${titleInfo.color} ${titleInfo.border} backdrop-blur-md shadow-sm`}>
-              <Trophy size={10} />
-              {titleInfo.label}
+            {/* 🚀 關鍵修正點：
+                1. 移除 backdrop-blur-md (截圖庫的大敵)
+                2. 將背景顏色稍微加深 (bg-opacity 從 20 提高到 40) 以維持質感
+                3. 增加 mt-1.5 替代原本父層的 gap
+                4. 加入 leading-none 確保文字行高不干擾邊距計算
+            */}
+            <div className={`mt-1.5 flex items-center gap-1 rounded-full border px-2.5 py-0.5 text-[9px] font-black uppercase tracking-wide w-fit shadow-sm leading-none whitespace-nowrap ${titleInfo.color} ${titleInfo.border.replace('30', '50')} bg-slate-900/40`}>
+              <Trophy size={10} className="shrink-0" />
+              <span className="inline-block pt-0.5">{titleInfo.label}</span>
             </div>
           </div>
 
