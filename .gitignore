@@ -11,4 +11,5 @@ node_modules
 .env.*local
 .env.local
 .cursorrules
+.claude/
 channel_list*
