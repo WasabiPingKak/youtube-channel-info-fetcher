@@ -13,7 +13,7 @@ else
 fi
 
 REGION="asia-east1"
-RESERVE_COUNT=10
+RESERVE_COUNT=5
 
 echo "📦 正在列出所有 revisions..."
 ALL_REVISIONS=$(gcloud run revisions list \
