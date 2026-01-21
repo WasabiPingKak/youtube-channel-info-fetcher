@@ -118,6 +118,53 @@ cd backend
 
 ---
 
+#### 🗄️ Firestore 資料庫環境隔離
+
+專案使用**雙資料庫**架構，確保 Staging 和 Production 環境完全隔離：
+
+- **Production**: 使用 `(default)` 資料庫
+- **Staging**: 使用 `staging` 資料庫
+
+部署腳本會自動根據 `.env.staging` 或 `.env.production` 設定連線到對應的資料庫。
+
+---
+
+#### 🔄 資料庫遷移工具
+
+使用 `migrate_prod_to_staging.py` 將 Production 資料複製到 Staging 進行測試：
+
+```bash
+cd backend
+
+# 完整複製（保留 90 天資料，自動脫敏）
+python tools/migrate_prod_to_staging.py --full --days 90
+
+# 複製所有歷史資料（不過濾）
+python tools/migrate_prod_to_staging.py --full --all-history
+
+# 只複製指定 Collections
+python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch --days 90
+
+# Dry Run 模式（只顯示會複製什麼，不實際寫入）
+python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
+
+# 保留敏感資料模式（不脫敏，僅用於特殊測試）
+python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
+```
+
+**安全機制**：
+- ✅ 自動脫敏：移除 OAuth tokens 等敏感資料
+- ✅ 安全檢查：禁止從 Staging 複製到 Production
+- ✅ 互動確認：執行前需輸入 'yes' 確認
+- ✅ 進度顯示：即時顯示複製進度與統計
+
+**使用時機**：
+- 在 Staging 環境測試新功能前，先同步 Production 資料
+- 驗證資料結構變更對現有資料的影響
+- 建立測試環境的真實資料集
+
+---
+
 ### 🌐 前端部署（Firebase Hosting）
 
 請先安裝 Firebase CLI，並於 `frontend/` 目錄中完成初始化（需有 `.firebaserc` 與 `firebase.json` 設定）。
