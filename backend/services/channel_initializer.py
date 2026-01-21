@@ -7,8 +7,9 @@ from google.api_core.exceptions import GoogleAPIError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime, timezone
+from services.firestore_client import get_firestore_client
 
-db = firestore.Client()
+db = get_firestore_client()
 
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"

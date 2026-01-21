@@ -1,8 +1,9 @@
 from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
 import logging
+from services.firestore_client import get_firestore_client
 
-db = firestore.Client()
+db = get_firestore_client()
 
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 SPECIAL_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"  # 可抽成設定
