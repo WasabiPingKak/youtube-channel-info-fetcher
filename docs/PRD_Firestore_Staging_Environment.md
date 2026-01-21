@@ -264,21 +264,29 @@ gcloud run deploy $SERVICE_NAME \
 **執行模式:**
 
 ```bash
-# 完整複製所有 Collection
-python tools/migrate_prod_to_staging.py --full
+# 完整複製（保留 90 天資料，預設會脫敏）
+python tools/migrate_prod_to_staging.py --full --days 90
+
+# 完整複製所有歷史資料
+python tools/migrate_prod_to_staging.py --full --all-history
 
 # 只複製指定 Collections
-python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch
+python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch --days 90
 
 # 增量更新（只複製有 updatedAt 欄位且時間較新的文件）
 python tools/migrate_prod_to_staging.py --incremental --since "2026-01-20T00:00:00Z"
 
-# 脫敏模式（移除 OAuth tokens 等敏感資料）
-python tools/migrate_prod_to_staging.py --full --sanitize
+# 不脫敏模式（保留 OAuth tokens，僅用於特殊測試）
+python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
 
 # 乾跑模式（只顯示會複製什麼，不實際執行）
-python tools/migrate_prod_to_staging.py --full --dry-run
+python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
 ```
+
+**預設行為:**
+- 自動脫敏（移除 OAuth tokens）
+- 保留 90 天資料
+- 完整複製時效性資料（`live_redirect_cache`, `trending_games_daily`）
 
 **複製策略:**
 
@@ -514,12 +522,9 @@ def confirm_migration():
 ## 8. 維運計畫
 
 ### 8.1 定期遷移
-建議每週執行一次 Production → Staging 遷移，確保測試資料與正式環境一致：
+採用**手動執行**策略，在需要時執行 Production → Staging 遷移。
 
-```bash
-# 排程範例 (cron)
-0 2 * * 0 cd /path/to/backend && python tools/migrate_prod_to_staging.py --full --sanitize
-```
+遷移命令會記錄在專案 README.md 中，方便隨時查閱。
 
 ### 8.2 監控指標
 - Staging Firestore 資料庫大小（應與 Production 相近）
@@ -533,27 +538,30 @@ def confirm_migration():
 
 ## 9. 開放問題與決策點
 
-### 9.1 需要確認的事項
-1. ❓ **OAuth Tokens 脫敏**: Staging 環境是否需要保留 OAuth refresh tokens？
-   - 選項 A: 完全移除（無法使用 YouTube API 功能，需手動重新授權）
-   - 選項 B: 保留（可完整測試 API 功能，但有安全風險）
+### 9.1 已確認的決策（2026-01-21）
 
-2. ❓ **遷移頻率**: 建議的遷移頻率為何？
-   - 選項 A: 每週自動遷移（確保資料新鮮，但成本較高）
-   - 選項 B: 需要時手動遷移（成本低，但資料可能過時）
-   - 選項 C: 每月自動遷移（平衡選項）
+1. ✅ **OAuth Tokens 脫敏**: **完全移除**
+   - 決策: 選項 A - 完全移除 OAuth tokens
+   - 理由: Staging 測試時會使用開發者自己的帳號登入授權，不需要保留 Production 的 tokens
 
-3. ❓ **歷史資料保留**: Staging 是否需要保留所有歷史資料？
-   - 選項 A: 只複製最近 30 天的資料（減少儲存成本）
-   - 選項 B: 完整複製所有資料（完整測試環境）
+2. ✅ **遷移頻率**: **手動執行**
+   - 決策: 選項 B - 需要時手動遷移
+   - 理由: 開發頻率較低，手動執行更具成本效益
+   - 配套: 在 README.md 補充遷移腳本使用說明
 
-4. ❓ **時效性資料處理**:
-   - `live_redirect_cache` (只保留 3 天) - 是否需要複製？
-   - `trending_games_daily` (30 天歷史) - 是否需要全部複製？
+3. ✅ **歷史資料保留**: **保留 90 天**
+   - 決策: 自訂選項 - 保留最近 90 天的資料
+   - 理由: 30 天資料量不足以進行完整測試，90 天提供更充足的測試資料
+   - 實作: 遷移工具支援 `--days 90` 參數
 
-5. ❓ **Firestore 安全規則**: Staging 資料庫是否需要獨立的安全規則？
-   - 目前狀況: Frontend 不直接存取 Firestore（所有操作透過 Backend API）
-   - 建議: 兩個資料庫使用相同的安全規則即可
+4. ✅ **時效性資料處理**: **完整複製**
+   - 決策: 複製所有時效性資料
+   - 包含: `live_redirect_cache` (3天) 和 `trending_games_daily` (30天)
+   - 理由: 確保 Staging 環境功能完整性
+
+5. ✅ **Firestore 安全規則**: **使用相同規則**
+   - 決策: 兩個資料庫使用相同的安全規則
+   - 理由: Frontend 不直接存取 Firestore，所有操作透過 Backend API
 
 ### 9.2 技術選型確認
 1. ✅ **資料庫位置**: 與 Production 相同（asia-east1）
@@ -587,11 +595,17 @@ def confirm_migration():
 
 ## 審核與核准
 
-- [ ] 技術審核: _______________
-- [ ] 產品審核: _______________
-- [ ] 核准執行: _______________
+- [x] 技術審核: 已完成 (2026-01-21)
+- [x] 產品審核: 已完成 (2026-01-21)
+- [x] 核准執行: 已核准 (2026-01-21)
 
-**審核意見:**
+**審核決議:**
 ```
-(待填寫)
+所有決策點已確認：
+- OAuth Tokens: 完全移除
+- 遷移頻率: 手動執行
+- 歷史資料: 保留 90 天
+- 時效性資料: 完整複製
+
+核准開始實作。
 ```
