@@ -33,7 +33,7 @@ set -o allexport
 source .env.local
 set +o allexport
 
-# ✅ 若為 production，進一步載入 .env.production（你說兩者無交集）
+# ✅ 根據環境載入對應的環境變數檔案
 if [ "$ENV_MODE" == "production" ]; then
   if [ ! -f ".env.production" ]; then
     echo "❌ 找不到 .env.production"
@@ -42,6 +42,15 @@ if [ "$ENV_MODE" == "production" ]; then
   echo "📂 載入 production 參數：.env.production"
   set -o allexport
   source .env.production
+  set +o allexport
+elif [ "$ENV_MODE" == "staging" ]; then
+  if [ ! -f ".env.staging" ]; then
+    echo "❌ 找不到 .env.staging"
+    exit 1
+  fi
+  echo "📂 載入 staging 參數：.env.staging"
+  set -o allexport
+  source .env.staging
   set +o allexport
 fi
 
@@ -109,7 +118,8 @@ gcloud run deploy "$SERVICE_NAME" \
     GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI,\
     FRONTEND_BASE_URL=$FRONTEND_BASE_URL,\
     ALLOWED_ORIGINS=$ALLOWED_ORIGINS,\
-    WEBSUB_CALLBACK_URL=$WEBSUB_CALLBACK_URL"
+    WEBSUB_CALLBACK_URL=$WEBSUB_CALLBACK_URL,\
+    FIRESTORE_DATABASE=$FIRESTORE_DATABASE"
 
 echo "✅ 部署指令完成"
 
