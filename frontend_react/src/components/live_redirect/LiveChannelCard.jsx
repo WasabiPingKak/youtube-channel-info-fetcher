@@ -139,14 +139,14 @@ export default function LiveChannelCard({ channel }) {
         <div className="flex gap-2 mt-2">
           <button
             type="button"
-            onClick={(e) => handleCopy(channel.name, setCopiedChannel, e)}
+            onClick={(e) => handleCopy(videoId, setCopiedChannel, e)}
             className={`flex items-center gap-1 text-xs px-2 py-1 rounded border transition-colors
               ${copiedChannel
                 ? "bg-green-500 text-white border-green-500"
                 : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
               }`}
           >
-            {copiedChannel ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製頻道名</>}
+            {copiedChannel ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製直播ID</>}
           </button>
           <button
             type="button"
@@ -157,7 +157,7 @@ export default function LiveChannelCard({ channel }) {
                 : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
               }`}
           >
-            {copiedTitle ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製影片標題</>}
+            {copiedTitle ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製直播標題</>}
           </button>
         </div>
       </div>
