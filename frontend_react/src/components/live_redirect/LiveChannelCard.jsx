@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import CountryFlags from "@/components/badges/CountryFlags";
 import VideoBadge from "@/components/common/VideoBadge";
 import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
@@ -49,8 +49,18 @@ function getStatusLabelAndStyle(channel) {
 export default function LiveChannelCard({ channel }) {
   const live = channel.live;
   const videoId = live?.videoId;
+  const [copiedChannel, setCopiedChannel] = useState(false);
+  const [copiedTitle, setCopiedTitle] = useState(false);
 
   if (!live || !videoId) return null;
+
+  function handleCopy(text, setCopied, e) {
+    e.preventDefault();
+    e.stopPropagation();
+    navigator.clipboard.writeText(text);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1000);
+  }
 
   const videoUrl = `https://www.youtube.com/watch?v=${videoId}`;
   const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/mqdefault.jpg`;
@@ -122,6 +132,32 @@ export default function LiveChannelCard({ channel }) {
         {/* 標題與開播資訊 */}
         <div className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900 dark:text-white">
           {live.title}
+        </div>
+
+        {/* 複製按鈕列 */}
+        <div className="flex gap-2 mt-2">
+          <button
+            type="button"
+            onClick={(e) => handleCopy(channel.name, setCopiedChannel, e)}
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded border transition-colors
+              ${copiedChannel
+                ? "bg-green-500 text-white border-green-500"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
+              }`}
+          >
+            {copiedChannel ? "✓ 已複製" : "📋 頻道名"}
+          </button>
+          <button
+            type="button"
+            onClick={(e) => handleCopy(live.title, setCopiedTitle, e)}
+            className={`flex items-center gap-1 text-xs px-2 py-1 rounded border transition-colors
+              ${copiedTitle
+                ? "bg-green-500 text-white border-green-500"
+                : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
+              }`}
+          >
+            {copiedTitle ? "✓ 已複製" : "📋 影片標題"}
+          </button>
         </div>
       </div>
     </a>
