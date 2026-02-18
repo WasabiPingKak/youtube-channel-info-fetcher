@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { PiCopySimple } from "react-icons/pi";
 import CountryFlags from "@/components/badges/CountryFlags";
 import VideoBadge from "@/components/common/VideoBadge";
 import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
@@ -145,7 +146,7 @@ export default function LiveChannelCard({ channel }) {
                 : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
               }`}
           >
-            {copiedChannel ? "✓ 已複製" : "📋 頻道名"}
+            {copiedChannel ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製頻道名</>}
           </button>
           <button
             type="button"
@@ -156,7 +157,7 @@ export default function LiveChannelCard({ channel }) {
                 : "bg-white dark:bg-zinc-800 text-gray-600 dark:text-gray-300 border-gray-300 dark:border-zinc-600 hover:bg-gray-100 dark:hover:bg-zinc-700"
               }`}
           >
-            {copiedTitle ? "✓ 已複製" : "📋 影片標題"}
+            {copiedTitle ? "✓ 已複製" : <><PiCopySimple className="w-4 h-4" />複製影片標題</>}
           </button>
         </div>
       </div>
