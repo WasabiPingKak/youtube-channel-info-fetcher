@@ -78,7 +78,7 @@ cd frontend_react
 - **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`
 - **Frontend uses `@/` alias** for imports (maps to `src/`)
 - **React Query persistence**: 12-hour cache with localStorage
-- **Dual environments**: staging and production with separate `.env` files
+- **Dual environments**: staging and production with separate `.env` files and **separate Firestore databases**
 
 ### Data Flow
 ```
@@ -86,6 +86,42 @@ Frontend → Firebase Hosting → Cloud Run Backend → YouTube API / Firestore
                                               ↓
                               WebSub (push notifications for new videos)
 ```
+
+### Firestore Database Architecture
+
+專案使用雙資料庫環境隔離設計：
+
+- **Production**: 使用 `(default)` 資料庫
+- **Staging**: 使用 `staging` 資料庫
+
+環境變數 `FIRESTORE_DATABASE` 控制連線的資料庫：
+- `.env.production` 設定 `FIRESTORE_DATABASE=(default)`
+- `.env.staging` 設定 `FIRESTORE_DATABASE=staging`
+
+#### 資料庫遷移
+
+使用 `migrate_prod_to_staging.py` 將 Production 資料複製到 Staging：
+
+```bash
+cd backend
+
+# 完整複製（保留 90 天資料，自動脫敏）
+python tools/migrate_prod_to_staging.py --full --days 90
+
+# 複製所有歷史資料
+python tools/migrate_prod_to_staging.py --full --all-history
+
+# 只複製指定 Collections
+python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch --days 90
+
+# Dry Run 模式（不實際寫入）
+python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
+```
+
+**安全機制**：
+- 自動脫敏：移除 OAuth refresh_token 和 access_token
+- 安全檢查：禁止從 Staging 複製到 Production
+- 互動確認：執行前需輸入 'yes' 確認
 
 ## Code Style
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments

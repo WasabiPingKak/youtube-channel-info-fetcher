@@ -3,8 +3,9 @@
 from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
 import logging
+from services.firestore_client import get_firestore_client
 
-db = firestore.Client()
+db = get_firestore_client()
 
 def save_channel_auth(channel_id: str, refresh_token: str):
     try:
@@ -26,7 +27,6 @@ def save_channel_auth(channel_id: str, refresh_token: str):
         logging.error(f"[Auth] ❌ Firestore 寫入失敗：{e}")
         raise
 
-db = firestore.Client()
 
 def get_refresh_token(channel_id: str) -> str | None:
     """
