@@ -3,6 +3,12 @@ import MainLayout from "../components/layout/MainLayout";
 
 const changelog = [
   {
+    date: "2026-02-19",
+    items: [
+      "於降落轉機塔臺新增複製直播 ID 與複製直播標題按鈕",
+    ],
+  },
+  {
     date: "2025-12-18",
     items: [
       "於個人頭像頁面，新增年度回顧功能",
