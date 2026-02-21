@@ -167,14 +167,14 @@ python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
 
 ### 🌐 前端部署（Firebase Hosting）
 
-請先安裝 Firebase CLI，並於 `frontend/` 目錄中完成初始化（需有 `.firebaserc` 與 `firebase.json` 設定）。
+請先安裝 Firebase CLI，並於 `frontend_react/` 目錄中完成初始化（需有 `.firebaserc` 與 `firebase.json` 設定）。
 
 #### 📦 自動部署前端網站
 
 使用 `deploy_frontend.sh` 一鍵打包並部署：
 
 ```bash
-cd frontend
+cd frontend_react
 ./deploy_frontend.sh --staging   # 部署至 staging target
 ./deploy_frontend.sh --prod      # 部署至 production target
 ```
