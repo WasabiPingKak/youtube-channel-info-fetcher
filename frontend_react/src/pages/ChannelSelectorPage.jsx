@@ -40,6 +40,7 @@ const ChannelSelectorPage = () => {
     isLoading,
     channels,
     newlyJoinedChannels,
+    totalRegisteredCount,
     error,
   } = useSelectableChannelList(searchText, sortMode);
 
@@ -219,7 +220,11 @@ const ChannelSelectorPage = () => {
         {!isLoading && !isActivityTab && channels.length > 0 && (
           <>
             <h2 className="text-sm font-bold text-gray-700 dark:text-gray-200 mb-3">
-              全部頻道（{channels.length}）
+              公開頻道（{channels.length}）{totalRegisteredCount > 0 && (
+                <span className="font-normal text-gray-400 dark:text-gray-500">
+                  ／共 {totalRegisteredCount} 位創作者登記
+                </span>
+              )}
             </h2>
             <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
               分類比例總和可能超過 100%，因為同一部影片可能同時屬於多個分類。且未分類的影片會在計數中被排除。

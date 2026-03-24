@@ -44,7 +44,7 @@ export function useSelectableChannelList(
     data: allChannelsData,
     isLoading,
     error,
-  } = useQuery<{ channels: ChannelIndexEntry[]; newly_joined_channels: ChannelIndexEntry[] }>({
+  } = useQuery<{ channels: ChannelIndexEntry[]; newly_joined_channels: ChannelIndexEntry[]; total_registered_count: number }>({
     queryKey: ['selectable-channel-list'],
     queryFn: async () => {
       const res = await fetch(`${API_BASE}/api/channels/index`);
@@ -58,6 +58,7 @@ export function useSelectableChannelList(
       return {
         channels: result.channels,
         newly_joined_channels: result.newly_joined_channels || [],
+        total_registered_count: result.total_registered_count ?? 0,
       };
     },
     // gcTime: 1000 * 60 * 3, // 快取 3 分鐘
@@ -65,6 +66,7 @@ export function useSelectableChannelList(
 
   const allChannels = allChannelsData?.channels || [];
   const newlyJoinedChannels = searchText === "" ? (allChannelsData?.newly_joined_channels || []) : [];
+  const totalRegisteredCount = allChannelsData?.total_registered_count ?? 0;
 
   const filtered = useMemo(() => {
     const norm = normalize(searchText);
@@ -124,5 +126,6 @@ export function useSelectableChannelList(
     error,
     channels: filtered,
     newlyJoinedChannels,
+    totalRegisteredCount,
   };
 }

@@ -83,8 +83,15 @@ echo "🔖 寫入 Git Commit Hash: $commit_hash"
 echo "$commit_hash" > version.txt
 
 echo ""
-echo "📦 建立 Container 映像..."
-gcloud builds submit --tag "$IMAGE_URI"
+echo "📦 建立 Container 映像（no-cache）..."
+cat > /tmp/_cloudbuild.yaml <<EOF
+steps:
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '--no-cache', '-t', '${IMAGE_URI}', '.']
+images:
+  - '${IMAGE_URI}'
+EOF
+gcloud builds submit --config /tmp/_cloudbuild.yaml .
 echo "✅ 建立映像成功：$IMAGE_URI"
 
 # ✅ 檢查服務是否已存在
@@ -111,15 +118,7 @@ gcloud run deploy "$SERVICE_NAME" \
   --allow-unauthenticated \
   $NO_TRAFFIC_FLAG \
   --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ADMIN_CHANNEL_IDS=${ADMIN_CHANNEL_IDS_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
-  --set-env-vars \
-    "INPUT_CHANNEL=$INPUT_CHANNEL,\
-    GOOGLE_CLOUD_PROJECT=$PROJECT_ID,\
-    GOOGLE_CLIENT_ID=$GOOGLE_CLIENT_ID,\
-    GOOGLE_REDIRECT_URI=$GOOGLE_REDIRECT_URI,\
-    FRONTEND_BASE_URL=$FRONTEND_BASE_URL,\
-    ALLOWED_ORIGINS=$ALLOWED_ORIGINS,\
-    WEBSUB_CALLBACK_URL=$WEBSUB_CALLBACK_URL,\
-    FIRESTORE_DATABASE=$FIRESTORE_DATABASE"
+  --set-env-vars "^@@^INPUT_CHANNEL=${INPUT_CHANNEL}@@GOOGLE_CLOUD_PROJECT=${PROJECT_ID}@@GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}@@GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}@@FRONTEND_BASE_URL=${FRONTEND_BASE_URL}@@ALLOWED_ORIGINS=${ALLOWED_ORIGINS}@@WEBSUB_CALLBACK_URL=${WEBSUB_CALLBACK_URL}@@FIRESTORE_DATABASE=${FIRESTORE_DATABASE}"
 
 echo "✅ 部署指令完成"
 

@@ -4,7 +4,7 @@ isodate
 pytz
 google-api-python-client
 requests
-firebase-admin
+firebase-admin>=6.2.0
 pytest
 google-cloud-firestore
 pytest-cov

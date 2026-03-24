@@ -38,7 +38,7 @@ def init_firestore():
             logging.info("✅ Firebase Admin 初始化成功")
 
         print(f"✅ [firebase.py] Initializing Firestore client (database: {database_id})")
-        db = firestore.client(database=database_id)
+        db = firestore.client(database_id=database_id)
         print(f"🧩 Firestore client 建立完成 (database: {database_id})")
         logging.info(f"✅ Firestore 客戶端連線至資料庫: {database_id}")
         return db

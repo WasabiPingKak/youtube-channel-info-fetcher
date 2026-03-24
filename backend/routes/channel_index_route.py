@@ -37,11 +37,13 @@ def init_channel_index_route(app, db):
 
             all_channels = []
             joined_at_dates = []
+            total_registered_count = 0
 
             for doc in docs:
                 data = doc.to_dict()
                 batch_channels = data.get("channels", [])
                 for entry in batch_channels:
+                    total_registered_count += 1
                     if entry.get("enabled") is not True:
                         continue
 
@@ -93,7 +95,8 @@ def init_channel_index_route(app, db):
             return jsonify({
                 "success": True,
                 "channels": sorted_channels,
-                "newly_joined_channels": newly_joined_channels
+                "newly_joined_channels": newly_joined_channels,
+                "total_registered_count": total_registered_count
             })
 
         except Exception as e:
