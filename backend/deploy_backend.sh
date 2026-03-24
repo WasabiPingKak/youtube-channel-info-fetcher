@@ -94,19 +94,9 @@ EOF
 gcloud builds submit --config /tmp/_cloudbuild.yaml .
 echo "✅ 建立映像成功：$IMAGE_URI"
 
-# ✅ 檢查服務是否已存在
-SERVICE_EXISTS=$(gcloud run services describe "$SERVICE_NAME" --region="$REGION" --format="value(metadata.name)" 2>/dev/null || true)
-if [ -z "$SERVICE_EXISTS" ]; then
-  echo ""
-  echo "🆕 第一次建立 Cloud Run 服務（不使用 --no-traffic）"
-  NO_TRAFFIC_FLAG=""
-else
-  echo ""
-  echo "🔁 Cloud Run 服務已存在，使用 --no-traffic 部署"
-  NO_TRAFFIC_FLAG="--no-traffic"
-fi
-
 # ✅ 部署到 Cloud Run
+# 不使用 --no-traffic：gcloud run deploy 會自動等 health check 通過後才切流量
+# 如果 health check 失敗，deploy 指令會失敗，流量自動留在舊版本
 echo "🚀 部署映像至 Cloud Run：$SERVICE_NAME"
 
 # ✅ 重要：敏感值全部改走 Secret Manager（不再用 --set-env-vars 注入）
@@ -116,44 +106,18 @@ gcloud run deploy "$SERVICE_NAME" \
   --image "$IMAGE_URI" \
   --region="$REGION" \
   --allow-unauthenticated \
-  $NO_TRAFFIC_FLAG \
   --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ADMIN_CHANNEL_IDS=${ADMIN_CHANNEL_IDS_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
   --set-env-vars "^@@^INPUT_CHANNEL=${INPUT_CHANNEL}@@GOOGLE_CLOUD_PROJECT=${PROJECT_ID}@@GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}@@GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}@@FRONTEND_BASE_URL=${FRONTEND_BASE_URL}@@ALLOWED_ORIGINS=${ALLOWED_ORIGINS}@@WEBSUB_CALLBACK_URL=${WEBSUB_CALLBACK_URL}@@FIRESTORE_DATABASE=${FIRESTORE_DATABASE}"
 
-echo "✅ 部署指令完成"
+# ✅ 取得部署結果
+DEPLOYED_REVISION=$(gcloud run services describe "$SERVICE_NAME" \
+  --region="$REGION" \
+  --format="value(status.latestReadyRevisionName)")
 
-# ✅ 切換流量（僅限非首次部署時執行）
-if [ -n "$NO_TRAFFIC_FLAG" ]; then
-  echo ""
-  echo "🔍 查詢最新 READY 狀態的 revision..."
-  LATEST_READY_REVISION=$(gcloud run revisions list \
-    --service="$SERVICE_NAME" \
-    --region="$REGION" \
-    --filter="status.conditions.type=Ready AND status.conditions.status=True" \
-    --sort-by="~metadata.creationTimestamp" \
-    --limit=1 \
-    --format="value(metadata.name)")
+SERVICE_URL=$(gcloud run services describe "$SERVICE_NAME" \
+  --region="$REGION" \
+  --format="value(status.url)")
 
-  if [ -n "$LATEST_READY_REVISION" ]; then
-    LATEST_URL=$(gcloud run revisions describe "$LATEST_READY_REVISION" \
-      --region="$REGION" \
-      --format="value(status.url)")
-
-    echo "🔁 切換流量到最新 READY 版本：$LATEST_READY_REVISION"
-    gcloud run services update-traffic "$SERVICE_NAME" \
-      --region="$REGION" \
-      --to-revisions="$LATEST_READY_REVISION=100"
-
-    echo ""
-    echo "✅ 部署完成，流量已導向：$LATEST_READY_REVISION"
-    echo "🔗 可用於測試的後端 URL：$LATEST_URL"
-  else
-    echo "❌ 找不到 READY 的 revision，無法切換流量"
-    echo "📋 以下是目前 revision 狀態："
-    gcloud run revisions list --service="$SERVICE_NAME" --region="$REGION"
-    exit 1
-  fi
-else
-  echo ""
-  echo "✅ 第一次部署完成，Cloud Run 服務已建立並預設導流"
-fi
+echo ""
+echo "✅ 部署完成，流量已導向：$DEPLOYED_REVISION"
+echo "🔗 服務 URL：$SERVICE_URL"
