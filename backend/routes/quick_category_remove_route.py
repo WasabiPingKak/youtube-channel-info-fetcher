@@ -1,29 +1,13 @@
 from flask import request, jsonify
 import logging
-from utils.jwt_util import verify_jwt
+from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
 def init_quick_category_remove_route(app, db):
     @app.route("/api/quick-editor/channel-config-remove", methods=["POST"])
-    def remove_keyword_from_config():
+    @require_auth
+    def remove_keyword_from_config(auth_channel_id=None):
         try:
-            # ✅ 檢查 JWT cookie
-            token = request.cookies.get("__session")
-            if not token:
-                logging.warning("🔒 [config-remove] 未提供 __session JWT")
-                return jsonify({"error": "未登入或權限不足"}), 401
-
-            decoded = verify_jwt(token)
-            if not decoded:
-                logging.warning("🔒 [config-remove] JWT 驗證失敗")
-                return jsonify({"error": "無效的 token"}), 403
-
-            user_channel_id = decoded.get("channelId")
-            if not user_channel_id:
-                logging.warning("🔒 [config-remove] JWT 中缺少 channelId")
-                return jsonify({"error": "無效的使用者身份"}), 403
-
-            # ✅ 解析 payload
             data = request.get_json()
             logging.info(f"📨 [config-remove] 接收到前端 POST 資料：{data}")
 
@@ -38,8 +22,8 @@ def init_quick_category_remove_route(app, db):
                 return jsonify({"status": "error", "message": "缺少必要欄位 keyword"}), 400
 
             # ✅ 驗證身份是否與目標 channel 相符
-            if channel_id != user_channel_id:
-                logging.warning(f"⛔ 嘗試移除他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+            if channel_id != auth_channel_id:
+                logging.warning(f"⛔ 嘗試移除他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={channel_id}")
                 return jsonify({"error": "無權限操作此頻道資料"}), 403
 
             # 🔧 讀取並處理 Firestore 設定
@@ -90,4 +74,4 @@ def init_quick_category_remove_route(app, db):
 
         except Exception as e:
             logging.error("🔥 [config-remove] 發生錯誤", exc_info=True)
-            return jsonify({"status": "error", "message": str(e)}), 500
+            return jsonify({"status": "error", "message": "內部伺服器錯誤"}), 500

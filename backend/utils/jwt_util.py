@@ -9,7 +9,6 @@ if os.getenv("ENV") != "production":
     from pathlib import Path
 
     env_path = Path(__file__).resolve().parent.parent / ".env.local"
-    print("🔍 env_path =", env_path)
     load_dotenv(dotenv_path=env_path)
 
 JWT_SECRET = os.getenv("JWT_SECRET")

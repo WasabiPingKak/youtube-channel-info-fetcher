@@ -4,7 +4,7 @@ from services.firestore.auth_service import save_channel_auth
 from utils.jwt_util import generate_jwt
 import logging
 
-def init_oauth_callback_route(app):
+def init_oauth_callback_route(app, db):
     oauth_bp = Blueprint("oauth", __name__)
 
     @oauth_bp.route("/oauth/callback")
@@ -40,7 +40,7 @@ def init_oauth_callback_route(app):
                 logging.error("❌ 無法取得頻道 ID")
                 return "Failed to fetch channel ID", 400
 
-            save_channel_auth(channel_id, refresh_token)
+            save_channel_auth(db, channel_id, refresh_token)
             logging.info(f"✅ 頻道授權成功：{channel_id}")
 
             # 🎯 簽出 JWT 並寫入登入 cookie
@@ -53,6 +53,7 @@ def init_oauth_callback_route(app):
                 "__session",
                 jwt_token,
                 max_age=60 * 60 * 24 * 30,  # 30 天
+                path="/",
                 httponly=True,
                 secure=True,
                 samesite="Lax"
@@ -61,6 +62,6 @@ def init_oauth_callback_route(app):
 
         except Exception as e:
             logging.exception("❌ OAuth callback 過程失敗")
-            return f"OAuth failed: {str(e)}", 500
+            return "OAuth 認證失敗，請稍後再試", 500
 
     app.register_blueprint(oauth_bp)

@@ -1,7 +1,7 @@
 from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 import logging
-from utils.jwt_util import verify_jwt
+from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
@@ -9,32 +9,11 @@ logger = logging.getLogger(__name__)
 def init_skip_keyword_routes(app, db):
     bp = Blueprint("skip_keyword", __name__, url_prefix="/api/quick-editor/skip-keyword")
 
-    def verify_auth():
-        token = request.cookies.get("__session")
-        if not token:
-            logger.warning("🔒 未提供 __session JWT")
-            return None, (jsonify({"error": "未登入或權限不足"}), 401)
-
-        decoded = verify_jwt(token)
-        if not decoded:
-            logger.warning("🔒 JWT 驗證失敗")
-            return None, (jsonify({"error": "無效的 token"}), 403)
-
-        channel_id = decoded.get("channelId")
-        if not channel_id:
-            logger.warning("🔒 JWT 中缺少 channelId")
-            return None, (jsonify({"error": "無效的使用者身份"}), 403)
-
-        return channel_id, None
-
     @bp.route("/add", methods=["POST"])
-    def add_skipped_keyword():
+    @require_auth
+    def add_skipped_keyword(auth_channel_id=None):
         try:
-            user_channel_id, error = verify_auth()
-            if error:
-                return error
-
-            logger.info(f"✅ /skip-keyword/add 驗證成功，channel_id = {user_channel_id}")
+            logger.info(f"✅ /skip-keyword/add 驗證成功，channel_id = {auth_channel_id}")
 
             data = request.get_json()
             channel_id = data.get("channelId")
@@ -45,8 +24,8 @@ def init_skip_keyword_routes(app, db):
             if not is_valid_channel_id(channel_id):
                 return jsonify({"error": "channelId 格式不合法"}), 400
 
-            if channel_id != user_channel_id:
-                logger.warning(f"⛔ 嘗試略過他人頻道：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+            if channel_id != auth_channel_id:
+                logger.warning(f"⛔ 嘗試略過他人頻道：JWT={auth_channel_id}, 請求 channel_id={channel_id}")
                 return jsonify({"error": "無權限操作此頻道資料"}), 403
 
             doc_ref = db.collection("channel_data").document(channel_id).collection("settings").document("skip_keywords")
@@ -59,13 +38,10 @@ def init_skip_keyword_routes(app, db):
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/remove", methods=["POST"])
-    def remove_skipped_keyword():
+    @require_auth
+    def remove_skipped_keyword(auth_channel_id=None):
         try:
-            user_channel_id, error = verify_auth()
-            if error:
-                return error
-
-            logger.info(f"✅ /skip-keyword/remove 驗證成功，channel_id = {user_channel_id}")
+            logger.info(f"✅ /skip-keyword/remove 驗證成功，channel_id = {auth_channel_id}")
 
             data = request.get_json()
             channel_id = data.get("channelId")
@@ -76,8 +52,8 @@ def init_skip_keyword_routes(app, db):
             if not is_valid_channel_id(channel_id):
                 return jsonify({"error": "channelId 格式不合法"}), 400
 
-            if channel_id != user_channel_id:
-                logger.warning(f"⛔ 嘗試移除他人略過關鍵字：JWT={user_channel_id}, 請求 channel_id={channel_id}")
+            if channel_id != auth_channel_id:
+                logger.warning(f"⛔ 嘗試移除他人略過關鍵字：JWT={auth_channel_id}, 請求 channel_id={channel_id}")
                 return jsonify({"error": "無權限操作此頻道資料"}), 403
 
             doc_ref = db.collection("channel_data").document(channel_id).collection("settings").document("skip_keywords")

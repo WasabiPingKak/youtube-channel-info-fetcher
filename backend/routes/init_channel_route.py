@@ -7,7 +7,7 @@ from routes.websub_subscribe_route import subscribe_channel_by_id
 from utils.channel_validator import is_valid_channel_id
 import logging
 
-def init_channel_route(app):
+def init_channel_route(app, db):
     bp = Blueprint("init_channel", __name__)
 
     @bp.route("/api/init-channel", methods=["GET"])
@@ -31,7 +31,7 @@ def init_channel_route(app):
             }), 400
 
         try:
-            token = get_refresh_token(channel_id)
+            token = get_refresh_token(db, channel_id)
             if not token:
                 logging.warning(f"[InitAPI] ⚠️ 該頻道尚未授權：{channel_id}")
                 return jsonify({

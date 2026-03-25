@@ -3,11 +3,9 @@
 from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
 import logging
-from services.firestore_client import get_firestore_client
 
-db = get_firestore_client()
 
-def save_channel_auth(channel_id: str, refresh_token: str):
+def save_channel_auth(db, channel_id: str, refresh_token: str):
     try:
         doc_ref = (
             db.collection("channel_data")
@@ -28,7 +26,7 @@ def save_channel_auth(channel_id: str, refresh_token: str):
         raise
 
 
-def get_refresh_token(channel_id: str) -> str | None:
+def get_refresh_token(db, channel_id: str) -> str | None:
     """
     讀取已授權頻道的 refresh_token。如果不存在或發生錯誤則回傳 None。
     """

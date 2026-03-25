@@ -1,31 +1,15 @@
 from flask import request, jsonify
 import logging
 from firebase_admin import firestore
-from utils.jwt_util import verify_jwt
+from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
 
 def init_quick_category_apply_route(app, db):
     @app.route("/api/quick-editor/channel-config-apply", methods=["POST"])
-    def apply_quick_category():
+    @require_auth
+    def apply_quick_category(auth_channel_id=None):
         try:
-            # ✅ 取出 JWT 並驗證
-            token = request.cookies.get("__session")
-            if not token:
-                logging.warning("🔒 未提供 __session JWT")
-                return jsonify({"error": "未登入或權限不足"}), 401
-
-            decoded = verify_jwt(token)
-            if not decoded:
-                logging.warning("🔒 JWT 驗證失敗")
-                return jsonify({"error": "無效的 token"}), 403
-
-            user_channel_id = decoded.get("channelId")
-            if not user_channel_id:
-                logging.warning("🔒 JWT 中缺少 channelId")
-                return jsonify({"error": "無效的使用者身份"}), 403
-
-            # ✅ 處理 payload
             data = request.get_json()
             channel_id = data.get("channelId")
             keyword = data.get("keyword")
@@ -53,9 +37,9 @@ def init_quick_category_apply_route(app, db):
                 )
 
             # 🔐 channelId 與使用者 JWT 是否一致
-            if channel_id != user_channel_id:
+            if channel_id != auth_channel_id:
                 logging.warning(
-                    f"⛔ 嘗試寫入他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}"
+                    f"⛔ 嘗試寫入他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={channel_id}"
                 )
                 return jsonify({"error": "無權限操作此頻道資料"}), 403
 
