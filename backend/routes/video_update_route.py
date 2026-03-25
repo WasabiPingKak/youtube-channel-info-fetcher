@@ -8,6 +8,7 @@ from services.heatmap_cache_writer import append_to_pending_cache
 from services.classified_video_fetcher import get_classified_videos
 from services.video_analyzer.category_counter import count_category_counts
 from services.firestore.category_writer import write_category_counts_to_channel_index_batch
+from utils.channel_validator import is_valid_channel_id
 from datetime import datetime, timezone, timedelta
 import logging
 
@@ -23,6 +24,8 @@ def init_video_update_route(app, db):
 
             if not channel_id or not update_token:
                 return jsonify({"error": "channelId 與 updateToken 為必填"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"error": "channelId 格式不合法"}), 400
 
             # 讀取 Firestore 中儲存的 token
             token_ref = db.document(f"channel_data/{channel_id}/channel_info/update_token")

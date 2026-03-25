@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
+from utils.channel_validator import is_valid_channel_id
 import logging
 from datetime import datetime, timedelta, timezone
 
@@ -27,6 +28,9 @@ def init_video_routes(app, db):
             if not channel_id:
                 logger.warning("⚠️ 缺少 channel_id")
                 return jsonify({"error": "channel_id 為必填"}), 400
+            if not is_valid_channel_id(channel_id):
+                logger.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
+                return jsonify({"error": "channel_id 格式不合法"}), 400
 
             logger.info(
                 f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）"
@@ -67,6 +71,8 @@ def init_video_routes(app, db):
             channel_id = request.args.get("channelId")
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"error": "channelId 格式不合法"}), 400
 
             index_ref = db.collection("channel_sync_index").document("index_list")
             doc = index_ref.get()

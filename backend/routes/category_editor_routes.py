@@ -17,6 +17,7 @@ from typing import Any, Dict, List
 
 from flask import jsonify, request
 from firebase_admin import firestore
+from utils.channel_validator import is_valid_channel_id
 
 # 服務層：讀取分類設定
 from services.firestore_settings_service import load_category_settings, db as fs_db
@@ -53,6 +54,9 @@ def init_category_editor_routes(app):
         if not channel_id:
             logging.warning("⚠️ 缺少 channel_id 參數")
             return jsonify({"error": "channel_id is required"}), 400
+        if not is_valid_channel_id(channel_id):
+            logging.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
+            return jsonify({"error": "channel_id 格式不合法"}), 400
 
         try:
             logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")

@@ -1,6 +1,7 @@
 # routes/category_save_apply_routes.py
 
 from flask import Blueprint, request, jsonify
+from utils.channel_validator import is_valid_channel_id
 import logging
 from services.firestore_settings_service import (
     load_category_settings,
@@ -21,6 +22,11 @@ def init_category_save_apply_routes(app, db):
                 return jsonify({
                     "success": False,
                     "error":   "缺少必要欄位 channel_id 或 settings"
+                }), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({
+                    "success": False,
+                    "error":   "channel_id 格式不合法"
                 }), 400
 
             # 1. 讀取現有設定

@@ -1,6 +1,7 @@
 from flask import request, jsonify
 import logging
 from utils.jwt_util import verify_jwt
+from utils.channel_validator import is_valid_channel_id
 
 def init_quick_category_remove_route(app, db):
     @app.route("/api/quick-editor/channel-config-remove", methods=["POST"])
@@ -31,6 +32,8 @@ def init_quick_category_remove_route(app, db):
 
             if not channel_id:
                 return jsonify({"status": "error", "message": "缺少必要欄位 channelId"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"status": "error", "message": "channelId 格式不合法"}), 400
             if not keyword:
                 return jsonify({"status": "error", "message": "缺少必要欄位 keyword"}), 400
 

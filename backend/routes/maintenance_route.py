@@ -2,6 +2,7 @@
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 from utils.date_based_cache_cleaner import clean_all_expired_documents
+import hmac
 import os
 import logging
 
@@ -14,7 +15,7 @@ def is_authorized(request) -> bool:
     token_prefix = "Bearer "
     expected_token = os.getenv("ADMIN_API_KEY")
     auth_header = request.headers.get("Authorization", "")
-    return auth_header.startswith(token_prefix) and auth_header[len(token_prefix):] == expected_token
+    return auth_header.startswith(token_prefix) and hmac.compare_digest(auth_header[len(token_prefix):], expected_token)
 
 @maintenance_bp.route("/maintenance/clean-live-cache", methods=["POST"])
 def clean_live_cache():

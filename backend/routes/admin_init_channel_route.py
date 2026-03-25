@@ -1,6 +1,8 @@
 from flask import Blueprint, request, jsonify
 from google.api_core.exceptions import GoogleAPIError
 from services.channel_initializer import run_channel_initialization
+from utils.channel_validator import is_valid_channel_id
+import hmac
 import logging
 import os
 
@@ -22,7 +24,7 @@ def init_admin_init_channel_route(app, db):
                 return jsonify({"error": "Invalid authorization format"}), 401
 
             token = auth_header.split(" ", 1)[1]
-            if token != admin_key_expected:
+            if not hmac.compare_digest(token, admin_key_expected):
                 logging.warning("❌ 管理員密鑰錯誤")
                 return jsonify({"error": "Unauthorized"}), 401
 
@@ -31,6 +33,8 @@ def init_admin_init_channel_route(app, db):
             target_channel_id = data.get("target_channel_id")
             if not target_channel_id:
                 return jsonify({"error": "Missing target_channel_id"}), 400
+            if not is_valid_channel_id(target_channel_id):
+                return jsonify({"error": "target_channel_id 格式不合法"}), 400
 
             logging.info(f"🛠️ 管理員授權初始化頻道：{target_channel_id}")
             run_channel_initialization(target_channel_id)

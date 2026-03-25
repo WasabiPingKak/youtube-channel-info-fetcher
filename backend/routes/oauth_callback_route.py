@@ -45,7 +45,7 @@ def init_oauth_callback_route(app):
 
             # 🎯 簽出 JWT 並寫入登入 cookie
             jwt_token = generate_jwt(channel_id)
-            frontend_base = current_app.config.get("FRONTEND_BASE_URL", "https://your-frontend.com")
+            frontend_base = current_app.config.get("FRONTEND_BASE_URL", "")
             redirect_url = f"{frontend_base}/auth-loading?channel={channel_id}"
 
             response = make_response(redirect(redirect_url))

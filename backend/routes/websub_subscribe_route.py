@@ -4,6 +4,7 @@ import time
 import requests
 from flask import Blueprint, request, Response
 from google.cloud.firestore import Client
+from utils.channel_validator import is_valid_channel_id
 
 websub_subscribe_bp = Blueprint("websub_subscribe", __name__)
 HUB_URL = "https://pubsubhubbub.appspot.com/subscribe"
@@ -87,6 +88,8 @@ def init_websub_subscribe_route(app, db: Client):
         channel_id = request.args.get("channel_id")
         if not channel_id:
             return Response("❌ 缺少 channel_id 參數", status=400)
+        if not is_valid_channel_id(channel_id):
+            return Response("❌ channel_id 格式不合法", status=400)
 
         success = subscribe_channel_by_id(channel_id)
         if success:

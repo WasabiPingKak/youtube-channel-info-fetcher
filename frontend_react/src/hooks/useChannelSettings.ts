@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { loadChannelSettings, saveChannelSettings } from "../lib/firestore";
-import { toast } from "react-toastify";
+import toast from "react-hot-toast";
 
 interface ChannelSettings {
   live: {
@@ -75,7 +75,7 @@ export const useChannelSettings = (channelId: string) => {
         } else if (response.code === "not-found") {
           const defaultSettings = createDefaultSettings();
           setChannelSettings(defaultSettings);
-          toast.info("尚未設定分類，已載入預設設定");
+          toast("尚未設定分類，已載入預設設定");
         } else {
           toast.error(`讀取分類設定失敗：${response.error || "未知錯誤"}`);
           console.error("load-category-settings failed:", response);

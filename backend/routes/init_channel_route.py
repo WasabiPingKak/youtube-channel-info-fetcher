@@ -4,6 +4,7 @@ from services.google_oauth import get_channel_id
 from services.firestore.auth_service import get_refresh_token
 from services.channel_initializer import run_channel_initialization
 from routes.websub_subscribe_route import subscribe_channel_by_id
+from utils.channel_validator import is_valid_channel_id
 import logging
 
 def init_channel_route(app):
@@ -20,6 +21,13 @@ def init_channel_route(app):
                 "success": False,
                 "error": "Missing channelId",
                 "code": "MISSING_CHANNEL_ID"
+            }), 400
+        if not is_valid_channel_id(channel_id):
+            logging.warning(f"[InitAPI] ⚠️ channelId 格式不合法：{channel_id}")
+            return jsonify({
+                "success": False,
+                "error": "Invalid channelId format",
+                "code": "INVALID_CHANNEL_ID"
             }), 400
 
         try:

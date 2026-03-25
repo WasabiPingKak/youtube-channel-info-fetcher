@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 import logging
 from utils.jwt_util import verify_jwt
+from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
 
@@ -41,6 +42,8 @@ def init_skip_keyword_routes(app, db):
 
             if not channel_id or not keyword:
                 return jsonify({"error": "channelId 與 keyword 為必填"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"error": "channelId 格式不合法"}), 400
 
             if channel_id != user_channel_id:
                 logger.warning(f"⛔ 嘗試略過他人頻道：JWT={user_channel_id}, 請求 channel_id={channel_id}")
@@ -70,6 +73,8 @@ def init_skip_keyword_routes(app, db):
 
             if not channel_id or not keyword:
                 return jsonify({"error": "channelId 與 keyword 為必填"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"error": "channelId 格式不合法"}), 400
 
             if channel_id != user_channel_id:
                 logger.warning(f"⛔ 嘗試移除他人略過關鍵字：JWT={user_channel_id}, 請求 channel_id={channel_id}")

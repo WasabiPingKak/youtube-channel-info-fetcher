@@ -1,5 +1,4 @@
 from flask import Flask
-print("✅ [app.py] Flask app module loaded")
 from flask_cors import CORS
 import logging
 import os
@@ -35,15 +34,13 @@ from routes.maintenance_route import init_maintenance_route
 logging.basicConfig(level=logging.INFO)
 
 app = Flask(__name__)
-print("✅ [app.py] Flask app created")
 
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]
-print(f"🔓 CORS 允許來源：{allowed_origins}")
 CORS(app, origins=allowed_origins, supports_credentials=True)
 
 app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
-app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "https://your-frontend.com")
+app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "")
 
 # 初始化 Firebase，加入錯誤處理
 try:

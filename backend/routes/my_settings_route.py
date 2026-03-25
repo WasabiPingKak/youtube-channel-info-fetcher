@@ -2,6 +2,7 @@ from flask import Blueprint, request, jsonify
 from firebase_admin import firestore
 import logging
 from utils.jwt_util import verify_jwt
+from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
 
@@ -37,6 +38,8 @@ def init_my_settings_route(app):
         channel_id = request.args.get("channelId")
         if not channel_id:
             return jsonify({"error": "Missing channelId"}), 400
+        if not is_valid_channel_id(channel_id):
+            return jsonify({"error": "channelId 格式不合法"}), 400
 
         if channel_id != user_channel_id:
             logger.warning(f"⛔ get_my_settings 嘗試讀取他人頻道設定：JWT={user_channel_id}, 請求 channel_id={channel_id}")
@@ -83,6 +86,8 @@ def init_my_settings_route(app):
 
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
+            if not is_valid_channel_id(channel_id):
+                return jsonify({"error": "channelId 格式不合法"}), 400
             if channel_id != user_channel_id:
                 logger.warning(f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={user_channel_id}, 請求 channel_id={channel_id}")
                 return jsonify({"error": "無權限修改此頻道資料"}), 403
