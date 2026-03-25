@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect, current_app, jsonify, make_respo
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
 from services.firestore.auth_service import save_channel_auth
 from utils.jwt_util import generate_jwt
+import hmac
 import logging
 
 def init_oauth_callback_route(app, db):
@@ -17,6 +18,16 @@ def init_oauth_callback_route(app, db):
                 "debug": "🧪 OAuth callback 測試模式",
                 "request_args": request.args.to_dict()
             })
+
+        # ✅ 驗證 OAuth state 防止 CSRF
+        state_from_url = request.args.get("state")
+        state_from_cookie = request.cookies.get("oauth_state")
+        if not state_from_url or not state_from_cookie:
+            logging.warning("⚠️ 缺少 OAuth state 參數")
+            return "Missing OAuth state", 400
+        if not hmac.compare_digest(state_from_url, state_from_cookie):
+            logging.warning("⚠️ OAuth state 不一致，疑似 CSRF 攻擊")
+            return "Invalid OAuth state", 403
 
         code = request.args.get("code")
         if not code:
@@ -58,6 +69,8 @@ def init_oauth_callback_route(app, db):
                 secure=True,
                 samesite="Lax"
             )
+            # 清除已驗證的 oauth_state cookie
+            response.set_cookie("oauth_state", "", max_age=0, path="/")
             return response
 
         except Exception as e:

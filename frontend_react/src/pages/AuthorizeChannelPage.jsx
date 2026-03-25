@@ -11,6 +11,10 @@ const AuthorizeChannelPage = () => {
   const [confirmed, setConfirmed] = useState(false);
 
   const handleAuthorize = () => {
+    // 產生隨機 state 防止 CSRF，存入 cookie 供後端 callback 比對
+    const state = crypto.randomUUID();
+    document.cookie = `oauth_state=${state}; path=/; max-age=600; SameSite=Lax; Secure`;
+
     const authUrl =
       `https://accounts.google.com/o/oauth2/v2/auth?` +
       `client_id=${GOOGLE_CLIENT_ID}` +
@@ -18,7 +22,8 @@ const AuthorizeChannelPage = () => {
       `&response_type=code` +
       `&scope=${encodeURIComponent(SCOPE)}` +
       `&access_type=offline` +
-      `&prompt=consent`;
+      `&prompt=consent` +
+      `&state=${state}`;
 
     window.location.href = authUrl;
   };
