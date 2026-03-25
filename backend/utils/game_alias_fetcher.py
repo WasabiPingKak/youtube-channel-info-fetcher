@@ -3,14 +3,8 @@ import time
 import requests
 import logging
 from typing import Dict, List
-from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
-
-# ✅ 載入 .env 檔案
-env_path = os.path.join(os.path.dirname(__file__), ".env.game_alias")
-load_dotenv(dotenv_path=env_path)
-logger.debug("🟢 已嘗試載入環境變數檔案：%s", env_path)
 
 # ✅ API Endpoint
 ALIAS_API_URL = os.getenv("GAME_ALIAS_ENDPOINT")

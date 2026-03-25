@@ -31,7 +31,7 @@ from routes.ecpay_return_route import init_ecpay_return_route
 from routes.donation_route import init_donation_route
 from routes.maintenance_route import init_maintenance_route
 
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, force=True)
 
 app = Flask(__name__)
 
