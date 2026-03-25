@@ -7,10 +7,6 @@ from google.api_core.exceptions import GoogleAPIError
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from datetime import datetime, timezone
-from services.firestore_client import get_firestore_client
-
-db = get_firestore_client()
-
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
@@ -19,7 +15,7 @@ SPECIAL_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"
 YOUTUBE_API_KEY = os.getenv("API_KEY")
 
 
-def init_config_if_absent(channel_id: str, channel_name: str = "") -> None:
+def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
     try:
         doc_path = FIRESTORE_CONFIG_PATH.format(channel_id=channel_id)
         doc_ref = db.document(doc_path)
@@ -49,7 +45,7 @@ def init_config_if_absent(channel_id: str, channel_name: str = "") -> None:
         raise
 
 
-def run_channel_initialization(channel_id: str):
+def run_channel_initialization(db, channel_id: str):
     logging.info(f"[Init] 🔄 開始初始化頻道：{channel_id}")
 
     if not YOUTUBE_API_KEY:
@@ -85,9 +81,9 @@ def run_channel_initialization(channel_id: str):
         }
 
         # ✅ 初始化設定（如尚未存在）
-        init_config_if_absent(channel_id, info_data["name"])
+        init_config_if_absent(db, channel_id, info_data["name"])
 
-        append_channel_to_batch(channel_id, info_data)
+        append_channel_to_batch(db, channel_id, info_data)
 
         logging.info(f"[Init] 🎉 頻道初始化完成：{channel_id}")
 
@@ -100,7 +96,7 @@ def run_channel_initialization(channel_id: str):
         raise
 
 
-def append_channel_to_batch(channel_id: str, info_data: dict):
+def append_channel_to_batch(db, channel_id: str, info_data: dict):
     try:
         logging.info(f"[Batch] 🚀 開始處理 channel_index_batch 寫入：{channel_id}")
         root_ref = db.collection("channel_index_batch")

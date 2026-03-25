@@ -37,7 +37,7 @@ def init_admin_init_channel_route(app, db):
                 return jsonify({"error": "target_channel_id 格式不合法"}), 400
 
             logging.info(f"🛠️ 管理員授權初始化頻道：{target_channel_id}")
-            run_channel_initialization(target_channel_id)
+            run_channel_initialization(db, target_channel_id)
             logging.info(f"✅ 管理員初始化完成：{target_channel_id}")
 
             return jsonify({

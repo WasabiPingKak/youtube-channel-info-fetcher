@@ -1,14 +1,10 @@
-from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
 import logging
-from services.firestore_client import get_firestore_client
-
-db = get_firestore_client()
 
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 SPECIAL_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"  # 可抽成設定
 
-def write_channel_index(channel_id: str, name: str, thumbnail: str) -> None:
+def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
     """
     建立或更新 channel_index/{channel_id} 文件，若內容無變化則略過。
     """

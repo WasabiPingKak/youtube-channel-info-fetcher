@@ -41,7 +41,7 @@ def init_channel_route(app, db):
                 }), 401
 
             logging.info(f"[InitAPI] ✅ 開始執行初始化流程 for {channel_id}")
-            run_channel_initialization(channel_id)
+            run_channel_initialization(db, channel_id)
             logging.info(f"[InitAPI] 🎉 初始化完成 for {channel_id}")
 
             if not subscribe_channel_by_id(channel_id):
