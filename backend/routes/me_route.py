@@ -1,5 +1,5 @@
-from flask import Blueprint, request, jsonify
-from utils.jwt_util import verify_jwt, is_admin_channel_id
+from flask import Blueprint, request, jsonify, make_response
+from utils.jwt_util import verify_jwt, is_admin_channel_id, generate_jwt, should_renew, JWT_EXP_HOURS
 import logging
 
 
@@ -29,6 +29,20 @@ def init_me_route(app, db):
         channel_id = decoded.get("channelId")
         is_admin = is_admin_channel_id(channel_id)
 
+        # ✅ 撤銷檢查：revoked_at 晚於 token 簽發時間 → token 已作廢
+        meta_ref = (
+            db.collection("channel_data")
+            .document(channel_id)
+            .collection("channel_info")
+            .document("meta")
+        )
+        meta = meta_ref.get().to_dict() or {}
+        revoked_at = meta.get("revoked_at")
+        iat = decoded.get("iat", 0)
+        if revoked_at and revoked_at.timestamp() > iat:
+            logging.warning(f"🔒 /api/me：token 已被撤銷，channel_id = {channel_id}")
+            return jsonify({"error": "Token revoked"}), 403
+
         logging.info(
             f"✅ /api/me：驗證成功，channel_id = {channel_id}, isAdmin = {is_admin}"
         )
@@ -39,29 +53,37 @@ def init_me_route(app, db):
 
         if not doc.exists:
             logging.error(f"❌ Firestore 找不到頻道：{channel_id}")
-            return (
-                jsonify(
-                    {
-                        "channelId": channel_id,
-                        "isAdmin": is_admin,
-                        "name": None,
-                        "thumbnail": None,
-                    }
-                ),
-                200,
-            )
+            response_data = {
+                "channelId": channel_id,
+                "isAdmin": is_admin,
+                "name": None,
+                "thumbnail": None,
+            }
+        else:
+            data = doc.to_dict()
+            response_data = {
+                "channelId": channel_id,
+                "isAdmin": is_admin,
+                "name": data.get("name"),
+                "thumbnail": data.get("thumbnail"),
+            }
 
-        data = doc.to_dict()
-        return (
-            jsonify(
-                {
-                    "channelId": channel_id,
-                    "isAdmin": is_admin,
-                    "name": data.get("name"),
-                    "thumbnail": data.get("thumbnail"),
-                }
-            ),
-            200,
-        )
+        response = make_response(jsonify(response_data), 200)
+
+        # ✅ 滑動續期：JWT 即將過期時自動簽發新 token
+        if should_renew(decoded):
+            new_token = generate_jwt(channel_id)
+            response.set_cookie(
+                "__session",
+                new_token,
+                max_age=60 * 60 * JWT_EXP_HOURS,
+                path="/",
+                httponly=True,
+                secure=True,
+                samesite="Lax",
+            )
+            logging.info(f"🔄 /api/me：JWT 即將過期，已自動續期，channel_id = {channel_id}")
+
+        return response
 
     app.register_blueprint(me_bp)

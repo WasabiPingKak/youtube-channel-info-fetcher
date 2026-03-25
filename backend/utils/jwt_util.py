@@ -13,7 +13,8 @@ if os.getenv("ENV") != "production":
 
 JWT_SECRET = os.getenv("JWT_SECRET")
 JWT_ALGORITHM = "HS256"
-JWT_EXP_DAYS = 30
+JWT_EXP_HOURS = 2
+JWT_RENEW_THRESHOLD_SECONDS = 30 * 60  # 剩不到 30 分鐘就續期
 
 # ✅ Admin allowlist（逗號分隔 channelId）
 _ADMIN_CHANNEL_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
@@ -37,16 +38,25 @@ def is_admin_channel_id(channel_id: str) -> bool:
 
 
 def generate_jwt(channel_id: str) -> str:
+    now = datetime.now(timezone.utc)
     payload = {
         "channelId": channel_id,
-        "exp": datetime.now(timezone.utc) + timedelta(days=JWT_EXP_DAYS),
+        "iat": now,
+        "exp": now + timedelta(hours=JWT_EXP_HOURS),
     }
     token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
     if isinstance(token, bytes):
         token = token.decode("utf-8")
 
-    logging.info(f"[JWT] 登入成功，channel_id = {channel_id}")
+    logging.info(f"[JWT] 簽發 token，channel_id = {channel_id}")
     return token
+
+
+def should_renew(decoded: dict) -> bool:
+    """檢查 JWT 是否即將過期，需要續期"""
+    exp = decoded.get("exp", 0)
+    now = datetime.now(timezone.utc).timestamp()
+    return (exp - now) < JWT_RENEW_THRESHOLD_SECONDS
 
 
 def verify_jwt(token: str) -> dict | None:

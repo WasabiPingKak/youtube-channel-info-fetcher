@@ -1,7 +1,7 @@
 from flask import Blueprint, request, redirect, current_app, jsonify, make_response
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
 from services.firestore.auth_service import save_channel_auth
-from utils.jwt_util import generate_jwt
+from utils.jwt_util import generate_jwt, JWT_EXP_HOURS
 import hmac
 import logging
 
@@ -63,7 +63,7 @@ def init_oauth_callback_route(app, db):
             response.set_cookie(
                 "__session",
                 jwt_token,
-                max_age=60 * 60 * 24 * 30,  # 30 天
+                max_age=60 * 60 * JWT_EXP_HOURS,
                 path="/",
                 httponly=True,
                 secure=True,
