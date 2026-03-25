@@ -68,10 +68,16 @@ ADMIN_API_KEY_SECRET_NAME="youtube-api-admin-api-key"
 # ✅ Admin allowlist
 ADMIN_CHANNEL_IDS_SECRET_NAME="ADMIN_CHANNEL_IDS"
 
-# ✅ Secret Manager（ECPay，不用 youtube 前綴）
-ECPAY_MERCHANT_ID_SECRET_NAME="ecpay-merchant-id"
-ECPAY_HASH_KEY_SECRET_NAME="ecpay-hash-key"
-ECPAY_HASH_IV_SECRET_NAME="ecpay-hash-iv"
+# ✅ Secret Manager（ECPay，依環境區分）
+if [ "$ENV_MODE" == "staging" ]; then
+  ECPAY_MERCHANT_ID_SECRET_NAME="ecpay-merchant-id-staging"
+  ECPAY_HASH_KEY_SECRET_NAME="ecpay-hash-key-staging"
+  ECPAY_HASH_IV_SECRET_NAME="ecpay-hash-iv-staging"
+else
+  ECPAY_MERCHANT_ID_SECRET_NAME="ecpay-merchant-id"
+  ECPAY_HASH_KEY_SECRET_NAME="ecpay-hash-key"
+  ECPAY_HASH_IV_SECRET_NAME="ecpay-hash-iv"
+fi
 
 # ✅ 設定 GCP 專案與啟用服務
 gcloud config set project "$PROJECT_ID"
@@ -108,6 +114,11 @@ gcloud run deploy "$SERVICE_NAME" \
   --allow-unauthenticated \
   --update-secrets "JWT_SECRET=${JWT_SECRET_NAME}:latest,API_KEY=${API_KEY_SECRET_NAME}:latest,GOOGLE_CLIENT_SECRET=${GOOGLE_CLIENT_SECRET_NAME}:latest,ADMIN_API_KEY=${ADMIN_API_KEY_SECRET_NAME}:latest,ADMIN_CHANNEL_IDS=${ADMIN_CHANNEL_IDS_SECRET_NAME}:latest,ECPAY_MERCHANT_ID=${ECPAY_MERCHANT_ID_SECRET_NAME}:latest,ECPAY_HASH_KEY=${ECPAY_HASH_KEY_SECRET_NAME}:latest,ECPAY_HASH_IV=${ECPAY_HASH_IV_SECRET_NAME}:latest" \
   --set-env-vars "^@@^INPUT_CHANNEL=${INPUT_CHANNEL}@@GOOGLE_CLOUD_PROJECT=${PROJECT_ID}@@GOOGLE_CLIENT_ID=${GOOGLE_CLIENT_ID}@@GOOGLE_REDIRECT_URI=${GOOGLE_REDIRECT_URI}@@FRONTEND_BASE_URL=${FRONTEND_BASE_URL}@@ALLOWED_ORIGINS=${ALLOWED_ORIGINS}@@WEBSUB_CALLBACK_URL=${WEBSUB_CALLBACK_URL}@@FIRESTORE_DATABASE=${FIRESTORE_DATABASE}"
+
+# ✅ 確保流量導向最新 revision
+gcloud run services update-traffic "$SERVICE_NAME" \
+  --to-latest \
+  --region="$REGION"
 
 # ✅ 取得部署結果
 DEPLOYED_REVISION=$(gcloud run services describe "$SERVICE_NAME" \

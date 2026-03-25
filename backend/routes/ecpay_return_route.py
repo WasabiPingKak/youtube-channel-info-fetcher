@@ -9,9 +9,6 @@ def init_ecpay_return_route(app, db):
 
     @blueprint.route("/ecpay/return", methods=["POST"])
     def ecpay_return():
-        logging.debug("[ECPay Route] request.get_data: %r", request.get_data())
-        logging.debug("[ECPay Route] request.form: %s", request.form)
-
         try:
             if request.is_json:
                 payload = request.get_json()

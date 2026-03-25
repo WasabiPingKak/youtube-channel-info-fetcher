@@ -22,49 +22,27 @@ def unpad_pkcs7(data: bytes) -> bytes:
     pad_len = data[-1]
     return data[:-pad_len]
 
-def aes_decrypt(data: str, key: str, iv: str) -> str:
-    """解密 AES-128-CBC 的 Base64 字串"""
+def aes_decrypt(data: str, key: str, iv: str) -> tuple:
+    """解密 AES-128-CBC 的 Base64 字串，回傳 (URL decoded 明文, URL decode 前原始字串)"""
     cipher = AES.new(key.encode("utf-8"), AES.MODE_CBC, iv.encode("utf-8"))
     decoded = base64.b64decode(data)
     decrypted = cipher.decrypt(decoded)
     unpadded = unpad_pkcs7(decrypted)
-    return urllib.parse.unquote(unpadded.decode("utf-8"))
+    raw_decrypted = unpadded.decode("utf-8")
+    url_decoded = urllib.parse.unquote(raw_decrypted)
+    return url_decoded, raw_decrypted
 
-def generate_check_mac_value_for_livestream(data_plain_text: str, hash_key: str, hash_iv: str) -> str:
+def generate_check_mac_value_for_livestream(raw_decrypted: str, hash_key: str, hash_iv: str) -> str:
     """
     根據直播主收款API規格計算CheckMacValue
-    官方文件顯示Data明文是key-value參數字串，不是JSON
-    需要將參數解析後按字母順序排列重新計算
+    參考：https://developers.ecpay.com.tw/41068/
+
+    實際驗證結果：公式為 SHA256(lowercase(HashKey值 + AES解密原始字串 + HashIV值))
+    - AES 解密後的原始字串本身已是 URL encoded，不需再做 URL encode/decode
+    - 文件範例的 Data 明文恰好不含特殊字元，URL encode 前後無差異，因此文件描述有誤導性
     """
-    # 解析解密後的參數字串
-    parsed_params = urllib.parse.parse_qs(data_plain_text, keep_blank_values=True)
-    # 將list轉為單一值
-    params_dict = {k: v[0] if v else '' for k, v in parsed_params.items()}
-
-    # 按照一般ECPay CheckMacValue計算方式
-    # 排序參數
-    sorted_items = sorted(params_dict.items())
-
-    # 組合字串：HashKey=xxx&key1=value1&key2=value2&HashIV=xxx
-    raw_string = f"{hash_key}" + "&".join(
-        f"{k}={v}" for k, v in sorted_items
-    ) + f"{hash_iv}"
-
-    logging.debug("[ECPay] 原始待編碼字串: %s", raw_string)
-
-    # URL encode + 特殊字符處理
-    encoded_string = urllib.parse.quote_plus(raw_string).lower()
-    encoded_string = encoded_string.replace("%21", "!").replace("%28", "(").replace("%29", ")") \
-                     .replace("%2a", "*").replace("%2d", "-").replace("%2e", ".") \
-                     .replace("%5f", "_")
-
-    logging.debug("[ECPay] 編碼後字串: %s", encoded_string)
-
-    # SHA256加密並轉大寫
-    sha256_hash = hashlib.sha256(encoded_string.encode('utf-8')).hexdigest().upper()
-    logging.debug("[ECPay] 最終MAC: %s", sha256_hash)
-
-    return sha256_hash
+    raw_string = (hash_key + raw_decrypted + hash_iv).lower()
+    return hashlib.sha256(raw_string.encode('utf-8')).hexdigest().upper()
 
 # 原本的函數保留給一般API使用
 def generate_check_mac_value(data: dict) -> str:
@@ -116,23 +94,20 @@ def handle_ecpay_return(form: dict, db):
     logging.debug("[ECPay] CheckMacValue (Received): %s", received_mac)
 
     if merchant_id != MERCHANT_ID:
+        logging.error("[ECPay] MerchantID 不符：收到=%s, 預期=%s", merchant_id, MERCHANT_ID)
         raise ValueError("MerchantID 不正確")
 
     # 解密
-    decrypted_json_str = aes_decrypt(data_encrypted, HASH_KEY, HASH_IV)
-    logging.debug("[ECPay] 解密後 JSON 字串：%s", decrypted_json_str)
+    decrypted_json_str, raw_decrypted_str = aes_decrypt(data_encrypted, HASH_KEY, HASH_IV)
 
-    # CheckMacValue 驗證
+    # CheckMacValue 驗證（使用 AES 解密後的原始 URL encoded 字串）
     expected_mac = generate_check_mac_value_for_livestream(
-        decrypted_json_str, HASH_KEY, HASH_IV
+        raw_decrypted_str, HASH_KEY, HASH_IV
     )
 
     if expected_mac != received_mac:
-        logging.warning("[ECPay] ⚠️ CheckMacValue 驗證失敗")
-        logging.debug("[ECPay] 解密後明文: %s", decrypted_json_str)
-        logging.debug("[ECPay] 計算出 MAC: %s", expected_mac)
-        logging.debug("[ECPay] 實際收到 MAC: %s", received_mac)
-        # return "0|FAIL"
+        logging.warning("[ECPay] CheckMacValue 驗證失敗")
+        return "0|FAIL"
 
     try:
         parsed = json.loads(decrypted_json_str)
