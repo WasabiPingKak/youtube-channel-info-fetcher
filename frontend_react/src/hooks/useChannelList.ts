@@ -28,14 +28,14 @@ export function useChannelList() {
       /* --- 將符合 enabled == true 的文件收集成陣列 --- */
       const list: ChannelListItem[] = [];
       snap.forEach((docSnap) => {
-        const d = docSnap.data() as any;
+        const d = docSnap.data();
         if (d.enabled !== true) return; // 只保留已啟用的頻道
 
         list.push({
           id: docSnap.id,
-          name: d.name,
-          thumbnail: d.thumbnail,
-          url: d.url,
+          name: String(d.name ?? ""),
+          thumbnail: String(d.thumbnail ?? ""),
+          url: String(d.url ?? ""),
           priority: typeof d.priority === "number" ? d.priority : undefined,
         });
       });

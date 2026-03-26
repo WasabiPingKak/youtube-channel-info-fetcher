@@ -28,7 +28,8 @@ const MAIN_PALE_CLASS = {
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
-  const [sortMode, setSortMode] = useState<string>("latest");
+  type SortMode = "latest" | "alphabetical" | "activeTime" | "talkRatio" | "gameRatio" | "musicRatio" | "showRatio";
+  const [sortMode, setSortMode] = useState<SortMode>("latest");
 
   const [isFlagGrouping, setIsFlagGrouping] = useState(() =>
     localStorage.getItem("useFlagGrouping") === "true"
@@ -36,13 +37,14 @@ const ChannelSelectorPage = () => {
 
   const navigate = useNavigate();
 
+  const hookSortMode = (sortMode === "alphabetical" || sortMode === "activeTime") ? sortMode : "latest";
   const {
     isLoading,
     channels,
     newlyJoinedChannels,
     totalRegisteredCount,
     error,
-  } = useSelectableChannelList(searchText, sortMode as any);
+  } = useSelectableChannelList(searchText, hookSortMode);
 
   const handleClick = (channelId) => {
     addRecentChannel(channelId);

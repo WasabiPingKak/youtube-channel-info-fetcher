@@ -6,16 +6,16 @@ type Channel = {
   [key: string]: unknown;
 };
 
-type GroupedChannel = {
+type GroupedChannel<T extends Channel = Channel> = {
   code: string; // 國碼或 __unclassified
-  channels: Channel[];
+  channels: T[];
 };
 
-export function groupChannelsByCountry(
-  channels: Channel[],
-  sortFn: (a: Channel, b: Channel) => number
-): GroupedChannel[] {
-  const groupMap: Map<string, Channel[]> = new Map();
+export function groupChannelsByCountry<T extends Channel>(
+  channels: T[],
+  sortFn: (a: T, b: T) => number
+): GroupedChannel<T>[] {
+  const groupMap: Map<string, T[]> = new Map();
 
   for (const channel of channels) {
     const codes = channel.countryCode;
@@ -30,7 +30,7 @@ export function groupChannelsByCountry(
     }
   }
 
-  const grouped: GroupedChannel[] = Array.from(groupMap.entries()).map(
+  const grouped: GroupedChannel<T>[] = Array.from(groupMap.entries()).map(
     ([code, chs]) => ({
       code,
       channels: chs.sort(sortFn),

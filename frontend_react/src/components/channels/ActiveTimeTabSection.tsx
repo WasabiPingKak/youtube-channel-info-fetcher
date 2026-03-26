@@ -82,7 +82,7 @@ export default function ActiveTimeTabSection({
         </div>
       ) : isFlagGrouping ? (
         <GroupedChannelList
-          groupedChannels={groupChannelsByCountry(filteredChannels as any, () => 0)}
+          groupedChannels={groupChannelsByCountry(filteredChannels, () => 0)}
           onClick={onClick}
           renderCard={(channel) => (
             <ChannelHeatmapCard

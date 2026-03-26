@@ -12,6 +12,7 @@ type ActiveTimeMatrix = Record<string, Record<string, number>>;
 
 type ActiveTimeChannel = {
   channelId: string;
+  channel_id: string;
   name: string;
   thumbnail: string;
   countryCode?: string[];
@@ -19,6 +20,7 @@ type ActiveTimeChannel = {
   totalCount: number;
   enabled?: boolean;
   lastVideoUploadedAt?: string; // ISO 字串
+  [key: string]: unknown;
 };
 
 type UseFilteredActiveChannelsProps = {

@@ -116,7 +116,7 @@ export default function CategoryRatioCard({
                       {/* 🚀 中心雙層標籤優化位移 */}
                       <Label
                         content={({ viewBox }) => {
-                          const { cx, cy } = viewBox as any;
+                          const { cx, cy } = viewBox as { cx?: number; cy?: number };
                           return (
                             <text
                               x={cx}
