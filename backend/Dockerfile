@@ -10,4 +10,4 @@ COPY services/firestore/config/default_config.json ./services/config/default_con
 
 EXPOSE 8080
 
-CMD ["python", "app.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8080", "--workers", "1", "--threads", "8", "--timeout", "120", "app:app"]
