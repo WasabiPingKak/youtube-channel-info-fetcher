@@ -1,4 +1,5 @@
 from flask import Blueprint, jsonify, abort
+from utils.channel_validator import is_valid_channel_id
 import logging
 
 def init_api_heatmap_route(app, db):
@@ -6,6 +7,9 @@ def init_api_heatmap_route(app, db):
 
     @bp.route("/api/heatmap/<channel_id>", methods=["GET"])
     def get_video_heatmap(channel_id):
+        if not is_valid_channel_id(channel_id):
+            return jsonify({"error": "channel_id 格式不合法"}), 400
+
         try:
             # Firestore 路徑：channel_data/{channel_id}/heat_map/channel_video_heatmap
             doc_ref = (
