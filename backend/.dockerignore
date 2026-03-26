@@ -3,6 +3,9 @@
 *.zip
 *.md
 __pycache__/
+*.pyc
+.pytest_cache/
+tests/
 .vscode/
 .git/
 *.log
