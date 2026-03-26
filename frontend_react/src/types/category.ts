@@ -8,7 +8,7 @@ export interface ClassifiedVideoItem {
     game?: string | null;
     matchedKeywords?: string[];
     matchedPairs?: { main: string; keyword: string; hitKeywords: string[] }[];
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 export interface SuggestedKeywordCardState {

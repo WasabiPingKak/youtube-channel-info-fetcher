@@ -7,7 +7,7 @@ export const useSubcategoryModals = ({
   setIsSaved,
 }: {
   editableData: Record<string, Record<string, string[]>>;
-  setEditableData: (data: any) => void;
+  setEditableData: (data: Record<string, Record<string, string[]>>) => void;
   activeTab: string;
   setIsSaved: (val: boolean) => void;
 }) => {

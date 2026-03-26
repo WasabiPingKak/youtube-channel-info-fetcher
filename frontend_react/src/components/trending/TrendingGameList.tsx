@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import VideoCardSimple from "./VideoCardSimple";
 import ChannelCard from "./ChannelCard";
+import type { ChannelVideoGroup } from "@/types/trending";
 
 /**
  * @param {Object} props
@@ -19,11 +20,11 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
   return (
     <div className="mt-6 space-y-4">
       {gameList.map((game) => {
-        const gameDetails: Record<string, any> = details[game] || {};
+        const gameDetails = details[game] || {};
         const isOpen = expandedGames[game];
 
         const videoCount = Object.values(gameDetails).reduce(
-          (acc: number, ch: any) => acc + ch.videos.length,
+          (acc: number, ch: ChannelVideoGroup) => acc + ch.videos.length,
           0
         );
         const channelCount = Object.keys(gameDetails).length;
@@ -83,14 +84,14 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
                     </div>
                   ) : (
                     Object.entries(gameDetails)
-                      .sort(([, a]: [string, any], [, b]: [string, any]) => {
+                      .sort(([, a], [, b]) => {
                         const aDate = new Date(a.videos?.[0]?.publishedAt || 0);
                         const bDate = new Date(b.videos?.[0]?.publishedAt || 0);
                         return bDate.getTime() - aDate.getTime();
                       })
-                      .map(([channelId, channelData]: [string, any]) => {
+                      .map(([channelId, channelData]) => {
                         const sortedVideos = [...(channelData?.videos || [])].sort(
-                          (a: any, b: any) =>
+                          (a, b) =>
                             new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
                         );
 

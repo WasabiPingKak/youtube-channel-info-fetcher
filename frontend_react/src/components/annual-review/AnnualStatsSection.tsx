@@ -34,7 +34,7 @@ const BASE_COLORS = {
 /**
  * 🛠️ 輔助工具：找出數據中的最高峰月份
  */
-const findPeakMonth = (data: any[], keys: string[]) => {
+const findPeakMonth = (data: Record<string, string | number>[], keys: string[]) => {
   if (!data || data.length === 0) return null;
   return data.reduce((prev, current) => {
     const prevTotal = keys.reduce((sum, key) => sum + (prev[key] || 0), 0);

@@ -3,7 +3,7 @@
 type Channel = {
   channel_id: string;
   countryCode?: string[];
-  [key: string]: any;
+  [key: string]: unknown;
 };
 
 type GroupedChannel = {

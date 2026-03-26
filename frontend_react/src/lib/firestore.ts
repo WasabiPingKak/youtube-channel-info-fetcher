@@ -27,9 +27,10 @@ export const loadChannelSettings = async (channelId: string) => {
       error: result.error || null,
       code: result.code || null,
     };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("loadChannelSettings error:", error);
-    return { success: false, error: error.message || "未知錯誤", code: "FETCH_ERROR" };
+    const message = error instanceof Error ? error.message : "未知錯誤";
+    return { success: false, error: message, code: "FETCH_ERROR" };
   }
 };
 
@@ -38,7 +39,7 @@ export const loadChannelSettings = async (channelId: string) => {
  * @param channelId 頻道 ID
  * @param data 要儲存的資料
  */
-export const saveChannelSettings = async (channelId: string, data: any) => {
+export const saveChannelSettings = async (channelId: string, data: Record<string, unknown>) => {
   try {
     const res = await fetch(`${API_BASE}/api/categories/save-and-apply`, {
       method: "POST",
@@ -60,8 +61,9 @@ export const saveChannelSettings = async (channelId: string, data: any) => {
     }
 
     return { success: true, updated_count: result.updated_count };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("saveChannelSettings error:", error);
-    return { success: false, error: error.message || "未知錯誤" };
+    const message = error instanceof Error ? error.message : "未知錯誤";
+    return { success: false, error: message };
   }
 };

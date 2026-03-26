@@ -11,7 +11,7 @@ import {
 } from "recharts";
 
 interface MonthlyBarChartProps {
-  chartData: any[];
+  chartData: Record<string, string | number>[];
   dataKeys: string[];
   colorMap: Record<string, string>;
   nameMap?: Record<string, string>;
@@ -25,10 +25,15 @@ interface MonthlyBarChartProps {
 /**
  * 🚀 自定義懸停提示元件：計算並顯示單月總和
  */
-const CustomTooltip = ({ active, payload, label, yUnit }: any) => {
+const CustomTooltip = ({ active, payload, label, yUnit }: {
+  active?: boolean;
+  payload?: { name: string; value: number; color: string }[];
+  label?: string;
+  yUnit?: string;
+}) => {
   if (active && payload && payload.length) {
     // 計算該月份所有項目的總和
-    const total = payload.reduce((sum: number, entry: any) => sum + (entry.value || 0), 0);
+    const total = payload.reduce((sum, entry) => sum + (entry.value || 0), 0);
 
     return (
       <div className="rounded-2xl border border-slate-200 bg-white/95 p-4 shadow-2xl backdrop-blur-md dark:border-slate-800 dark:bg-slate-950/90 min-w-[180px]">
@@ -39,7 +44,7 @@ const CustomTooltip = ({ active, payload, label, yUnit }: any) => {
 
         {/* 各項目清單 */}
         <div className="space-y-2">
-          {payload.map((entry: any, index: number) => (
+          {payload.map((entry, index) => (
             <div key={index} className="flex items-center justify-between gap-6">
               <div className="flex items-center gap-2">
                 <div
@@ -77,11 +82,12 @@ const CustomTooltip = ({ active, payload, label, yUnit }: any) => {
 /**
  * 🚀 自定義圖例元件：膠囊風格 Pills
  */
-const CustomLegend = (props: any) => {
+const CustomLegend = (props: { payload?: { value: string; color: string }[] }) => {
   const { payload } = props;
+  if (!payload) return null;
   return (
     <div className="flex flex-wrap justify-center gap-4 mt-8">
-      {payload.map((entry: any, index: number) => (
+      {payload.map((entry, index) => (
         <div key={`item-${index}`} className="flex items-center gap-2 px-3 py-1 rounded-full border border-slate-100 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-900/50 shadow-sm">
           <div
             className="w-2.5 h-2.5 rounded-full"

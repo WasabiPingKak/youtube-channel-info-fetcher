@@ -53,7 +53,7 @@ const getDisplayDateLabel = (dateObj) => {
  * 將頻道依據 joinedAt 日期分組
  */
 const groupByJoinedDate = (channels) => {
-  const groups: Record<string, { label: string; list: any[] }> = {};
+  const groups: Record<string, { label: string; list: typeof channels }> = {};
   channels.forEach((channel) => {
     const dateObj = toDateObj(channel.joinedAt);
     if (!dateObj) return;

@@ -28,7 +28,7 @@ const TrendingChartDaily = ({
         const channels = gameMap[game];
         if (channels) {
           const count = Object.values(channels).reduce(
-            (sum: number, item: any) => sum + item.count,
+            (sum: number, item: { count: number }) => sum + item.count,
             0
           );
           entry[game] = count;

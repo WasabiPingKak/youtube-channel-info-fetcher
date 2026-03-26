@@ -2,7 +2,7 @@ import React from "react";
 
 interface SimpleTooltipWithColorProps {
   active?: boolean;
-  payload?: any[];
+  payload?: { dataKey: string; value: number; color: string }[];
   label?: string;
   yUnit?: string; // ex: "部", "小時"
 }

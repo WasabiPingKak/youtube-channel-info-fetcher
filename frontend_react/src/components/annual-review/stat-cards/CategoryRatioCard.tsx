@@ -50,7 +50,7 @@ export default function CategoryRatioCard({
   // 🚀 依據總數決定字級，避免破千時撞到圓環邊緣
   const centerFontSize = total >= 1000 ? "text-3xl" : "text-4xl";
 
-  const renderTooltip = ({ active, payload }: any) => {
+  const renderTooltip = ({ active, payload }: { active?: boolean; payload?: { payload: { category: string; hours: number } }[] }) => {
     if (active && payload?.length) {
       const { category, hours } = payload[0].payload;
       return (

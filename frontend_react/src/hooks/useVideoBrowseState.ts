@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ClassifiedVideoItem } from "@/types/category";
 
 const SORT_FIELDS = {
   TITLE: "title",
@@ -10,7 +11,7 @@ const SORT_FIELDS = {
 
 type SortField = typeof SORT_FIELDS[keyof typeof SORT_FIELDS];
 
-export const useVideoBrowseState = (videos: any[]) => {
+export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
   const [videoType, setVideoType] = useState<"live" | "videos" | "shorts">("live");
   const [activeCategory, setActiveCategory] = useState("全部");
   const [sortField, setSortField] = useState<SortField>(SORT_FIELDS.PUBLISH_DATE);
@@ -36,7 +37,7 @@ export const useVideoBrowseState = (videos: any[]) => {
 
     const direction = sortOrder === "asc" ? 1 : -1;
 
-    const getVal = (video: any, field: SortField): any => {
+    const getVal = (video: ClassifiedVideoItem, field: SortField): string | number => {
       switch (field) {
         case SORT_FIELDS.TITLE:
           return video.title;

@@ -1,6 +1,13 @@
 export type VideoItem = {
   videoId: string;
-  [key: string]: any; // 允許其他動態欄位，如 publishDate, duration 等
+  title?: string;
+  publishDate?: string;
+  duration?: number;
+  type?: string;
+  matchedCategories?: string[];
+  matchedKeywords?: string[];
+  matchedPairs?: { main: string; keyword: string; hitKeywords?: string[] }[];
+  game?: string | null;
 };
 
 export interface Badge {

@@ -1,12 +1,20 @@
+interface TreemapDataItem {
+  name: string;
+  value: number;
+  videoCount?: number;
+  lastUpdatedDaysAgo?: number;
+  children?: TreemapDataItem[];
+}
+
 interface TreemapProps {
-  data: any[];
+  data: TreemapDataItem[];
   selectedCategory: string | null;
 }
 
 export function getTreemapOption({ data, selectedCategory }: TreemapProps) {
   return {
     tooltip: {
-      formatter: (info: any) => {
+      formatter: (info: { name: string; value: number; data: TreemapDataItem }) => {
         const { name, value, data } = info;
         if (!data?.videoCount) return "";
         return `
