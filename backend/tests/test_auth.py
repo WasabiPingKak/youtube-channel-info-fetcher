@@ -60,6 +60,32 @@ class TestRequireAuth:
 # OAuth callback CSRF 防護
 # ═══════════════════════════════════════════════════════
 
+class TestOAuthStateGeneration:
+    """POST /api/oauth/state — 產生 state 並寫入 Firestore"""
+
+    def test_returns_state_uuid(self, client, mock_db):
+        """成功回傳 UUID 格式的 state"""
+        resp = client.post("/api/oauth/state")
+        assert resp.status_code == 200
+        data = resp.get_json()
+        assert "state" in data
+        assert len(data["state"]) == 36  # UUID 格式
+
+    def test_writes_to_firestore(self, client, mock_db):
+        """呼叫後會寫入 oauth_states collection"""
+        resp = client.post("/api/oauth/state")
+        state = resp.get_json()["state"]
+
+        mock_db.collection.assert_called_with("oauth_states")
+        mock_db.collection.return_value.document.assert_called_with(state)
+        mock_db.collection.return_value.document.return_value.set.assert_called_once()
+
+    def test_get_method_not_allowed(self, client):
+        """GET 方法不允許"""
+        resp = client.get("/api/oauth/state")
+        assert resp.status_code == 405
+
+
 class TestOAuthCsrf:
     """OAuth callback 的 state 參數驗證（server-side Firestore）"""
 
@@ -91,6 +117,26 @@ class TestOAuthCsrf:
 
         resp = client.get("/oauth/callback?code=test_code&state=abc123")
         assert resp.status_code == 403
+
+    def test_valid_state_gets_deleted(self, client, mock_db):
+        """合法 state 驗證通過後會從 Firestore 刪除（一次性使用）"""
+        now = datetime.now(timezone.utc)
+        state_doc = MagicMock()
+        state_doc.exists = True
+        state_doc.to_dict.return_value = {"created_at": now}
+
+        state_ref = MagicMock()
+        state_ref.get.return_value = state_doc
+
+        mock_db.collection.return_value \
+            .document.return_value = state_ref
+
+        # 會因為缺少 code 之後的 token exchange 而失敗，但 state 應已被刪除
+        with patch("routes.oauth_callback_route.exchange_code_for_tokens",
+                   side_effect=Exception("mock")):
+            resp = client.get("/oauth/callback?code=test_code&state=valid_state")
+
+        state_ref.delete.assert_called_once()
 
 
 # ═══════════════════════════════════════════════════════

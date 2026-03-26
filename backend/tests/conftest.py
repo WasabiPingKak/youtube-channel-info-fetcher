@@ -24,6 +24,7 @@ def app(mock_db):
     """建立最小化的 Flask test app，只掛需要測的路由"""
     from flask import Flask
     from routes.oauth_callback_route import init_oauth_callback_route
+    from routes.oauth_state_route import init_oauth_state_route
     from routes.me_route import init_me_route
 
     from utils.rate_limiter import limiter
@@ -35,6 +36,7 @@ def app(mock_db):
 
     limiter.init_app(app)
     init_oauth_callback_route(app, mock_db)
+    init_oauth_state_route(app, mock_db)
     init_me_route(app, mock_db)
 
     return app
