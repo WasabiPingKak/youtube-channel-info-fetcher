@@ -3,8 +3,11 @@ from services.google_oauth import exchange_code_for_tokens, get_channel_id
 from services.firestore.auth_service import save_channel_auth
 from utils.jwt_util import generate_jwt, JWT_EXP_HOURS
 from utils.rate_limiter import limiter
-import hmac
+from datetime import datetime, timezone, timedelta
 import logging
+
+OAUTH_STATE_TTL_SECONDS = 600  # 10 分鐘
+
 
 def init_oauth_callback_route(app, db):
     oauth_bp = Blueprint("oauth", __name__)
@@ -21,15 +24,30 @@ def init_oauth_callback_route(app, db):
                 "request_args": request.args.to_dict()
             })
 
-        # ✅ 驗證 OAuth state 防止 CSRF
-        state_from_url = request.args.get("state")
-        state_from_cookie = request.cookies.get("oauth_state")
-        if not state_from_url or not state_from_cookie:
+        # ✅ 驗證 OAuth state（從 Firestore 讀取，防止 CSRF）
+        state = request.args.get("state")
+        if not state:
             logging.warning("⚠️ 缺少 OAuth state 參數")
             return "Missing OAuth state", 400
-        if not hmac.compare_digest(state_from_url, state_from_cookie):
-            logging.warning("⚠️ OAuth state 不一致，疑似 CSRF 攻擊")
+
+        state_ref = db.collection("oauth_states").document(state)
+        state_doc = state_ref.get()
+        if not state_doc.exists:
+            logging.warning("⚠️ OAuth state 不存在或已使用")
             return "Invalid OAuth state", 403
+
+        # 檢查是否過期
+        state_data = state_doc.to_dict()
+        created_at = state_data.get("created_at")
+        if created_at:
+            now = datetime.now(timezone.utc)
+            if now - created_at > timedelta(seconds=OAUTH_STATE_TTL_SECONDS):
+                state_ref.delete()
+                logging.warning("⚠️ OAuth state 已過期")
+                return "OAuth state expired", 403
+
+        # 立即刪除，確保一次性使用
+        state_ref.delete()
 
         code = request.args.get("code")
         if not code:
@@ -71,8 +89,6 @@ def init_oauth_callback_route(app, db):
                 secure=True,
                 samesite="Lax"
             )
-            # 清除已驗證的 oauth_state cookie
-            response.set_cookie("oauth_state", "", max_age=0, path="/")
             return response
 
         except Exception as e:

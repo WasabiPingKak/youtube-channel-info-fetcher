@@ -61,22 +61,35 @@ class TestRequireAuth:
 # ═══════════════════════════════════════════════════════
 
 class TestOAuthCsrf:
-    """OAuth callback 的 state 參數驗證"""
+    """OAuth callback 的 state 參數驗證（server-side Firestore）"""
 
     def test_missing_state_returns_400(self, client):
         """完全沒有 state 參數 → 400"""
         resp = client.get("/oauth/callback?code=test_code")
         assert resp.status_code == 400
 
-    def test_missing_cookie_state_returns_400(self, client):
-        """URL 有 state 但 cookie 沒有 → 400"""
-        resp = client.get("/oauth/callback?code=test_code&state=abc123")
-        assert resp.status_code == 400
+    def test_nonexistent_state_returns_403(self, client, mock_db):
+        """URL 有 state 但 Firestore 找不到 → 403"""
+        state_doc = MagicMock()
+        state_doc.exists = False
+        mock_db.collection.return_value \
+            .document.return_value \
+            .get.return_value = state_doc
 
-    def test_mismatched_state_returns_403(self, client):
-        """URL state 和 cookie state 不一致 → 403（CSRF 攻擊）"""
-        client.set_cookie("oauth_state", "correct_state")
-        resp = client.get("/oauth/callback?code=test_code&state=wrong_state")
+        resp = client.get("/oauth/callback?code=test_code&state=abc123")
+        assert resp.status_code == 403
+
+    def test_expired_state_returns_403(self, client, mock_db):
+        """Firestore 有 state 但已過期 → 403"""
+        expired_time = datetime(2020, 1, 1, tzinfo=timezone.utc)
+        state_doc = MagicMock()
+        state_doc.exists = True
+        state_doc.to_dict.return_value = {"created_at": expired_time}
+        mock_db.collection.return_value \
+            .document.return_value \
+            .get.return_value = state_doc
+
+        resp = client.get("/oauth/callback?code=test_code&state=abc123")
         assert resp.status_code == 403
 
 
