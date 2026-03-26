@@ -40,6 +40,8 @@ limiter.init_app(app)
 
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]
+if not allowed_origins or "*" in allowed_origins:
+    raise ValueError("❌ ALLOWED_ORIGINS 必須設定具體域名，不可為空或 *")
 CORS(app, origins=allowed_origins, supports_credentials=True)
 
 app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
