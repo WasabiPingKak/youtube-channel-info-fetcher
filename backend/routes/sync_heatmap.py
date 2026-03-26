@@ -1,11 +1,13 @@
 from flask import Blueprint, request, jsonify
 import logging
+from utils.admin_auth import require_admin_key
 from services.heatmap_analyzer import analyze_and_update_all_channels
 
 def init_sync_heatmap_route(app, db):
     bp = Blueprint("sync_heatmap_route", __name__)
 
     @bp.route("/api/sync/channel_video_heatmap", methods=["GET"])
+    @require_admin_key
     def sync_channel_video_heatmap():
         try:
             logging.info(f"📊 [sync] 接收到活躍統計請求（每次皆進行全量重算）")

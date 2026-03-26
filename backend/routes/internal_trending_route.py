@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
+from utils.admin_auth import require_admin_key
 import logging
 from datetime import datetime, timedelta
 from pytz import timezone
@@ -17,6 +18,7 @@ def init_internal_trending_route(app, db: Client):
     bp = Blueprint("internal_trending", __name__, url_prefix="/api/internal")
 
     @bp.route("/build-daily-trending", methods=["POST"])
+    @require_admin_key
     def build_daily_trending_api():
         try:
             data = request.get_json(force=True)
@@ -51,6 +53,7 @@ def init_internal_trending_route(app, db: Client):
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @bp.route("/refresh-daily-cache", methods=["POST"])
+    @require_admin_key
     def refresh_daily_cache_api():
         try:
             data = request.get_json(force=True)

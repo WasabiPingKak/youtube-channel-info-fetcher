@@ -1,11 +1,13 @@
 from flask import Blueprint, jsonify
 import logging
+from utils.admin_auth import require_admin_key
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
 
 def init_weekly_heatmap_cache_route(app, db):
     bp = Blueprint("weekly_heatmap_cache_route", __name__)
 
     @bp.route("/admin/update_weekly_heatmap_cache", methods=["GET"])
+    @require_admin_key
     def update_weekly_heatmap_cache():
         try:
             logging.info("🧱 [admin] 開始重新建構 weekly heatmap 快取資料...")

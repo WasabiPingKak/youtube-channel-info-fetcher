@@ -2,8 +2,7 @@
 from flask import Blueprint, request, jsonify
 from google.cloud.firestore import Client
 from utils.date_based_cache_cleaner import clean_all_expired_documents
-import hmac
-import os
+from utils.admin_auth import require_admin_key
 import logging
 
 maintenance_bp = Blueprint("maintenance", __name__)
@@ -11,18 +10,9 @@ maintenance_bp = Blueprint("maintenance", __name__)
 def init_maintenance_route(app, db: Client):
     app.register_blueprint(maintenance_bp, url_prefix="/api")
 
-def is_authorized(request) -> bool:
-    token_prefix = "Bearer "
-    expected_token = os.getenv("ADMIN_API_KEY")
-    auth_header = request.headers.get("Authorization", "")
-    return auth_header.startswith(token_prefix) and hmac.compare_digest(auth_header[len(token_prefix):], expected_token)
-
 @maintenance_bp.route("/maintenance/clean-live-cache", methods=["POST"])
+@require_admin_key
 def clean_live_cache():
-    if not is_authorized(request):
-        logging.warning("🚫 嘗試未授權存取 clean-live-cache API")
-        return jsonify({"error": "Unauthorized"}), 401
-
     try:
         payload = request.get_json(force=True)
         mode = payload.get("mode")
@@ -43,11 +33,8 @@ def clean_live_cache():
         return jsonify({"error": "Internal server error"}), 500
 
 @maintenance_bp.route("/maintenance/clean-trending-games-cache", methods=["POST"])
+@require_admin_key
 def clean_trending_games_cache():
-    if not is_authorized(request):
-        logging.warning("🚫 嘗試未授權存取 clean-trending-games-cache API")
-        return jsonify({"error": "Unauthorized"}), 401
-
     try:
         payload = request.get_json(force=True)
         mode = payload.get("mode")
@@ -61,4 +48,3 @@ def clean_trending_games_cache():
     except Exception as e:
         logging.exception("❌ 清除 trending games 快取失敗")
         return jsonify({"error": "Internal server error"}), 500
-

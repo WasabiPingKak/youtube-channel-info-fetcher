@@ -2,6 +2,7 @@
 
 from flask import Blueprint, request, jsonify
 from utils.channel_validator import is_valid_channel_id
+from utils.auth_decorator import require_auth
 import logging
 from services.firestore_settings_service import (
     load_category_settings,
@@ -12,7 +13,8 @@ category_save_apply_bp = Blueprint("category_save_apply", __name__)
 
 def init_category_save_apply_routes(app, db):
     @category_save_apply_bp.route("/api/categories/save-and-apply", methods=["POST"])
-    def save_and_apply():
+    @require_auth(db)
+    def save_and_apply(auth_channel_id=None):
         try:
             data = request.get_json()
             channel_id = data.get("channel_id")
@@ -28,6 +30,13 @@ def init_category_save_apply_routes(app, db):
                     "success": False,
                     "error":   "channel_id 格式不合法"
                 }), 400
+
+            if channel_id != auth_channel_id:
+                logging.warning(f"⛔ 嘗試儲存他人頻道分類：JWT={auth_channel_id}, 請求={channel_id}")
+                return jsonify({
+                    "success": False,
+                    "error": "無權限操作此頻道"
+                }), 403
 
             # 1. 讀取現有設定
             old = load_category_settings(channel_id)

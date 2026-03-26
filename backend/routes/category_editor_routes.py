@@ -16,11 +16,11 @@ from datetime import datetime
 from typing import Any, Dict, List
 
 from flask import jsonify, request
-from firebase_admin import firestore
 from utils.channel_validator import is_valid_channel_id
+from utils.auth_decorator import require_auth
 
 # 服務層：讀取分類設定
-from services.firestore_settings_service import load_category_settings, db as fs_db
+from services.firestore_settings_service import load_category_settings
 
 
 def _serialize_timestamp(ts: Any) -> str:
@@ -44,11 +44,12 @@ def _normalize_type(raw: Any) -> str:
     return "unknown"
 
 
-def init_category_editor_routes(app):
+def init_category_editor_routes(app, db):
     """註冊 category editor 相關 API 路由到 app。"""
 
     @app.route("/api/categories/editor-data", methods=["GET"])
-    def get_editor_data():
+    @require_auth(db)
+    def get_editor_data(auth_channel_id=None):
         """一次取得 settings/config 與所有影片文件。"""
         channel_id = request.args.get("channel_id")
         if not channel_id:
@@ -57,6 +58,10 @@ def init_category_editor_routes(app):
         if not is_valid_channel_id(channel_id):
             logging.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
             return jsonify({"error": "channel_id 格式不合法"}), 400
+
+        if channel_id != auth_channel_id:
+            logging.warning(f"⛔ 嘗試讀取他人頻道編輯資料：JWT={auth_channel_id}, 請求={channel_id}")
+            return jsonify({"error": "無權限存取此頻道"}), 403
 
         try:
             logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")
@@ -69,7 +74,7 @@ def init_category_editor_routes(app):
 
             # 2. 讀取影片清單
             videos_coll = (
-                fs_db.collection("channel_data")
+                db.collection("channel_data")
                 .document(channel_id)
                 .collection("videos")
             )

@@ -2,32 +2,16 @@ from flask import Blueprint, request, jsonify
 from google.api_core.exceptions import GoogleAPIError
 from services.channel_initializer import run_channel_initialization
 from utils.channel_validator import is_valid_channel_id
-import hmac
+from utils.admin_auth import require_admin_key
 import logging
-import os
 
 def init_admin_init_channel_route(app, db):
     bp = Blueprint("admin_init_channel", __name__)
 
     @bp.route("/api/admin/initialize_channel", methods=["POST"])
+    @require_admin_key
     def initialize_channel_by_admin():
         try:
-            # 驗證 Bearer Token 是否為管理員金鑰
-            admin_key_expected = os.getenv("ADMIN_API_KEY")
-            if not admin_key_expected:
-                logging.error("❌ 未設定 ADMIN_API_KEY，拒絕操作")
-                return jsonify({"error": "Server misconfigured"}), 500
-
-            auth_header = request.headers.get("Authorization", "")
-            if not auth_header.startswith("Bearer "):
-                logging.warning("❌ Authorization 格式錯誤")
-                return jsonify({"error": "Invalid authorization format"}), 401
-
-            token = auth_header.split(" ", 1)[1]
-            if not hmac.compare_digest(token, admin_key_expected):
-                logging.warning("❌ 管理員密鑰錯誤")
-                return jsonify({"error": "Unauthorized"}), 401
-
             # 讀取要初始化的目標頻道 ID
             data = request.get_json()
             target_channel_id = data.get("target_channel_id")
