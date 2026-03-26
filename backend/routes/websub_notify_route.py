@@ -1,10 +1,14 @@
+import hashlib
+import hmac
 import logging
+import os
 from flask import Blueprint, request, Response
 from xml.etree import ElementTree as ET
 from datetime import datetime, timezone
 
 websub_notify_bp = Blueprint("websub_notify", __name__)
 COLLECTION_NAME = "live_redirect_notify_queue"
+WEBSUB_SECRET = os.getenv("WEBSUB_SECRET", "")
 
 def init_websub_notify_route(app, db):
     @websub_notify_bp.route("/websub-callback", methods=["GET", "POST"])
@@ -22,6 +26,16 @@ def init_websub_notify_route(app, db):
         elif request.method == "POST":
             try:
                 xml_data = request.data
+
+                # 驗證 Hub 簽名（若有設定 WEBSUB_SECRET）
+                if WEBSUB_SECRET:
+                    signature = request.headers.get("X-Hub-Signature", "")
+                    expected = "sha1=" + hmac.new(
+                        WEBSUB_SECRET.encode(), xml_data, hashlib.sha1
+                    ).hexdigest()
+                    if not hmac.compare_digest(signature, expected):
+                        logging.warning("⚠️ WebSub 簽名驗證失敗")
+                        return Response("Invalid signature", status=403)
                 root = ET.fromstring(xml_data)
 
                 # YouTube 推播的 XML 格式 namespace
