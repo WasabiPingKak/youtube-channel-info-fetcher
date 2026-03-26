@@ -15,11 +15,11 @@ def init_quick_category_remove_route(app, db):
             keyword = data.get("keyword")
 
             if not channel_id:
-                return jsonify({"status": "error", "message": "缺少必要欄位 channelId"}), 400
+                return jsonify({"success": False, "message": "缺少必要欄位 channelId"}), 400
             if not is_valid_channel_id(channel_id):
-                return jsonify({"status": "error", "message": "channelId 格式不合法"}), 400
+                return jsonify({"success": False, "message": "channelId 格式不合法"}), 400
             if not keyword:
-                return jsonify({"status": "error", "message": "缺少必要欄位 keyword"}), 400
+                return jsonify({"success": False, "message": "缺少必要欄位 keyword"}), 400
 
             # ✅ 驗證身份是否與目標 channel 相符
             if channel_id != auth_channel_id:
@@ -70,8 +70,8 @@ def init_quick_category_remove_route(app, db):
             else:
                 logging.warning(f"❗ [config-remove] keyword「{keyword}」未出現在任何子分類名稱或陣列中，無需修改")
 
-            return jsonify({"status": "success"})
+            return jsonify({"success": True})
 
         except Exception as e:
             logging.error("🔥 [config-remove] 發生錯誤", exc_info=True)
-            return jsonify({"status": "error", "message": "內部伺服器錯誤"}), 500
+            return jsonify({"success": False, "message": "內部伺服器錯誤"}), 500

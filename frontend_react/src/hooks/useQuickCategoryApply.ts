@@ -31,7 +31,7 @@ export function useQuickCategoryApply() {
     }
 
     const result = await res.json();
-    if (result.status !== 'success') {
+    if (!result.success) {
       throw new Error(result.message || '快速分類儲存失敗');
     }
 

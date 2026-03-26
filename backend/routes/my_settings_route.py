@@ -101,7 +101,7 @@ def init_my_settings_route(app, db):
                 "show_live_status": show_live_status
             }, merge=True)
 
-            return jsonify({"status": "ok"}), 200
+            return jsonify({"success": True}), 200
 
         except Exception as e:
             logger.exception("❌ update_my_settings 發生例外錯誤")

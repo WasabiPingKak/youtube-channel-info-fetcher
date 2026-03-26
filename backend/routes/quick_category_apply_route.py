@@ -17,22 +17,22 @@ def init_quick_category_apply_route(app, db):
 
             if not channel_id:
                 return (
-                    jsonify({"status": "error", "message": "缺少必要欄位 channelId"}),
+                    jsonify({"success": False, "message": "缺少必要欄位 channelId"}),
                     400,
                 )
             if not is_valid_channel_id(channel_id):
                 return (
-                    jsonify({"status": "error", "message": "channelId 格式不合法"}),
+                    jsonify({"success": False, "message": "channelId 格式不合法"}),
                     400,
                 )
             if not keyword:
                 return (
-                    jsonify({"status": "error", "message": "缺少必要欄位 keyword"}),
+                    jsonify({"success": False, "message": "缺少必要欄位 keyword"}),
                     400,
                 )
             if not isinstance(targets, list) or not targets:
                 return (
-                    jsonify({"status": "error", "message": "缺少必要欄位 targets"}),
+                    jsonify({"success": False, "message": "缺少必要欄位 targets"}),
                     400,
                 )
 
@@ -82,8 +82,8 @@ def init_quick_category_apply_route(app, db):
             logging.info(f"📥 正在儲存快速分類設定：{channel_id} - {keyword}")
             config_ref.set(updated_config, merge=True)
 
-            return jsonify({"status": "success", "message": "已儲存分類設定"})
+            return jsonify({"success": True, "message": "已儲存分類設定"})
 
         except Exception as e:
             logging.error("🔥 快速分類 API 發生錯誤", exc_info=True)
-            return jsonify({"status": "error", "message": "內部錯誤，請稍後再試"}), 500
+            return jsonify({"success": False, "message": "內部錯誤，請稍後再試"}), 500
