@@ -3,7 +3,6 @@ import { doc, setDoc } from "firebase/firestore";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5173";
 
-console.log("🌐 API Base = ", API_BASE); // ← 顯示實際使用的後端 URL
 
 /**
  * 從後端 API 讀取指定頻道的分類設定
@@ -60,7 +59,6 @@ export const saveChannelSettings = async (channelId: string, data: any) => {
       return { success: false, error: result.error || "未知錯誤" };
     }
 
-    console.log(`✅ 分類設定儲存成功，更新影片 ${result.updated_count} 筆`);
     return { success: true, updated_count: result.updated_count };
   } catch (error: any) {
     console.error("saveChannelSettings error:", error);

@@ -63,7 +63,6 @@ const VideoExplorerPage = () => {
   const isPublic = channelInfo?.enabled !== false;
 
   if (!isPublic && !isOwner) {
-    console.log("❌ 渲染前再判斷一次權限：不通過");
     return null; // toast + redirect 已處理
   }
 

@@ -103,7 +103,7 @@ def init_channel_index_route(app, db):
             logging.exception("❌ 無法讀取頻道索引")
             return jsonify({
                 "success": False,
-                "error": str(e)
+                "error": "無法讀取頻道索引"
             }), 500
 
     app.register_blueprint(bp)

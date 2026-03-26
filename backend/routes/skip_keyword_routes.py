@@ -34,7 +34,7 @@ def init_skip_keyword_routes(app, db):
             return jsonify({"success": True})
 
         except Exception as e:
-            logger.error("🔥 加入略過關鍵字失敗：%s", str(e), exc_info=True)
+            logger.error("🔥 加入略過關鍵字失敗", exc_info=True)
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/remove", methods=["POST"])
@@ -62,7 +62,7 @@ def init_skip_keyword_routes(app, db):
             return jsonify({"success": True})
 
         except Exception as e:
-            logger.error("🔥 移除略過關鍵字失敗：%s", str(e), exc_info=True)
+            logger.error("🔥 移除略過關鍵字失敗", exc_info=True)
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     app.register_blueprint(bp)

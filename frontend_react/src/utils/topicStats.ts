@@ -25,7 +25,6 @@ export function getLiveTopicStats(channels: LiveChannelData[]): Record<string, n
             const isLiveOrUpcoming = isUpcoming || !endTime;
 
             if (!isLiveOrUpcoming) {
-                console.log(`[getLiveTopicStats] ⏭️ 非即將或直播中（跳過）: ${channelId}`);
                 continue;
             }
 

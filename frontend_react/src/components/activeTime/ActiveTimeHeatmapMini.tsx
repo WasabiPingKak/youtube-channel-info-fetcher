@@ -112,8 +112,6 @@ export default function ActiveTimeHeatmapMini({
   const dataToUse = Object.keys(activeTime).length > 0 ? activeTime : testData;
   const maxCount = getMaxCount(dataToUse);
 
-  console.log('isDark:', isDark); // 調試用
-
   return (
     <div className="text-[10px] text-gray-600 dark:text-gray-300 w-full">
       {/* X 軸：星期 */}

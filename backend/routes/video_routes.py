@@ -61,7 +61,7 @@ def init_video_routes(app, db):
 
         except Exception as e:
             logger.exception("🔥 /api/videos/classified 發生錯誤")
-            return jsonify({"error": "發生錯誤", "details": str(e)}), 500
+            return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @video_bp.route("/api/videos/check-update", methods=["GET"])
     def check_update():
@@ -176,7 +176,7 @@ def init_video_routes(app, db):
 
         except Exception as e:
             logger.exception("🔥 /api/videos/check-update 發生錯誤")
-            return jsonify({"error": "發生錯誤", "details": str(e)}), 500
+            return jsonify({"error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(video_bp)
     logger.info("✅ [video_routes] /api/videos/* 路由已註冊")

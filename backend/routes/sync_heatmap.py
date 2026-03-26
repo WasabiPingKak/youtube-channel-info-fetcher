@@ -1,6 +1,5 @@
 from flask import Blueprint, request, jsonify
 import logging
-import traceback
 from services.heatmap_analyzer import analyze_and_update_all_channels
 
 def init_sync_heatmap_route(app, db):
@@ -25,10 +24,9 @@ def init_sync_heatmap_route(app, db):
             }), 200
 
         except Exception as e:
-            logging.error("🔥 [sync] 頻道影片活躍統計失敗：%s", traceback.format_exc())
+            logging.error("🔥 [sync] 頻道影片活躍統計失敗", exc_info=True)
             return jsonify({
                 "error": "Internal server error",
-                "message": str(e)
             }), 500
 
     app.register_blueprint(bp)

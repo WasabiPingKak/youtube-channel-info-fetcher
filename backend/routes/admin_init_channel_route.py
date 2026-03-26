@@ -46,12 +46,12 @@ def init_admin_init_channel_route(app, db):
                 "message": "初始化完成（由管理員執行）"
             }), 200
 
-        except GoogleAPIError as e:
+        except GoogleAPIError:
             logging.exception("🔥 Firestore 操作失敗")
-            return jsonify({"success": False, "error": str(e)}), 500
+            return jsonify({"success": False, "error": "Firestore 操作失敗"}), 500
 
-        except Exception as e:
+        except Exception:
             logging.exception("🔥 初始化過程發生未知錯誤")
-            return jsonify({"success": False, "error": str(e)}), 500
+            return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(bp)

@@ -55,19 +55,19 @@ def init_channel_route(app, db):
                 "message": "初始化完成"
             }), 200
 
-        except GoogleAPIError as e:
+        except GoogleAPIError:
             logging.exception(f"[InitAPI] ❌ Firestore 操作失敗 for {channel_id}")
             return jsonify({
                 "success": False,
-                "error": str(e),
+                "error": "Firestore 操作失敗",
                 "code": "FIRESTORE_ERROR"
             }), 500
 
-        except Exception as e:
+        except Exception:
             logging.exception(f"[InitAPI] ❌ 初始化過程錯誤 for {channel_id}")
             return jsonify({
                 "success": False,
-                "error": str(e),
+                "error": "伺服器內部錯誤",
                 "code": "INTERNAL_ERROR"
             }), 500
 

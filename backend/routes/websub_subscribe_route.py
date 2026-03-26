@@ -149,7 +149,7 @@ def init_websub_subscribe_route(app, db: Client):
         except Exception as e:
             result["duration_seconds"] = round(time.monotonic() - start_time, 2)
             result["status"] = "error"
-            result["message"] = str(e)
+            result["message"] = "訂閱派發過程發生錯誤"
             logging.error("🔥 訂閱派發失敗", exc_info=True)
             _log_job_result(db, "websub-subscribe-all", result)
             return jsonify(result), 500

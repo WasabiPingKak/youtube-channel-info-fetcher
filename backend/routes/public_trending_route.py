@@ -34,6 +34,6 @@ def init_public_trending_route(app, db: Client):
 
         except Exception as e:
             logger.error("🔥 /api/trending-games 發生例外錯誤", exc_info=True)
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(bp)

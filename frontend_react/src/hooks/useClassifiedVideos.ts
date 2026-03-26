@@ -49,7 +49,6 @@ export function useClassifiedVideos(
         return v;
       });
 
-      console.log(`📦 取得 ${videos.length} 部影片（type=${videoType}）`);
       return { videos };
     },
     // staleTime: import.meta.env.DEV ? 0 : 1 * 60 * 1000,

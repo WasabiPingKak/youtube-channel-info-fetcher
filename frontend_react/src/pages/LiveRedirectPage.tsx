@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useLiveRedirectData } from "@/hooks/useLiveRedirectData";
 import FilterPanel from "@/components/live_redirect/FilterPanel";
 import LiveRedirectSection from "@/components/live_redirect/LiveRedirectSection";
@@ -24,15 +24,6 @@ export default function LiveRedirectPage() {
   const [selectedTopics, setSelectedTopics] = useState([]); // 主題過濾選項
   const [collapseUpcoming, setCollapseUpcoming] = useState(false);
 
-  React.useEffect(() => {
-    if (data) {
-      console.log("[Page] 分類結果", {
-        upcoming: data.upcoming.map((c) => c.live.videoId),
-        live: data.live.map((c) => c.live.videoId),
-        ended: data.ended.map((c) => c.live.videoId),
-      });
-    }
-  }, [data]);
 
   const topicStats = data ? getLiveTopicStats([...data.live, ...data.upcoming]) : {};
 

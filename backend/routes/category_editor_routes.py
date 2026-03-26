@@ -114,7 +114,7 @@ def init_category_editor_routes(app):
             return (
                 jsonify({
                     "error": "internal_error",
-                    "message": str(exc),
+                    "message": "伺服器內部錯誤",
                 }),
                 500,
             )

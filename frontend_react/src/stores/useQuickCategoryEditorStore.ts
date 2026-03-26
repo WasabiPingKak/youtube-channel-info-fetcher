@@ -34,12 +34,10 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
     cards: [],
 
     setChannelId: (id) => {
-      console.log('[🆔 Zustand] 設定 channelId：', id);
       set({ channelId: id });
     },
 
     initializeCards: (newCards) => {
-      console.log('[📥 Zustand] 初始化 cards：', newCards.length, '筆');
       // 每張卡片預設補上 isSaving 與 isSuccess
       const initialized = newCards.map((card) => ({
         ...card,
@@ -80,7 +78,6 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
 
       try {
         const result = await applyQuickCategory(state.channelId, keyword, targets);
-        console.log('✅ [applyAgree] 分類儲存成功：', result);
 
         // ➤ 儲存成功
         set({
@@ -188,12 +185,6 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       set({ cards: newCards });
 
       const channelId = get().channelId;
-      console.log(`📡 [setKeywordSkipped] 準備送出 API (${skipped ? 'add' : 'remove'})`, {
-        keyword,
-        skipped,
-        channelId,
-      });
-
       try {
         const res = await fetch(`/api/quick-editor/skip-keyword/${skipped ? 'add' : 'remove'}`, {
           method: 'POST',
@@ -208,7 +199,6 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
           throw new Error(msg);
         }
 
-        console.log(`✅ [setKeywordSkipped] API 成功 (${skipped ? 'add' : 'remove'})`, keyword);
         toast.success(skipped ? `已略過「${keyword}」` : `已取消略過「${keyword}」`);
       } catch (err) {
         console.error('🔥 [setKeywordSkipped] 發送 API 失敗，還原狀態', err);

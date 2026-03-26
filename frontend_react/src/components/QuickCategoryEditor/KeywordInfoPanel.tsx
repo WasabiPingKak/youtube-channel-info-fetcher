@@ -79,9 +79,7 @@ const KeywordInfoPanel: React.FC<Props> = ({
           onRemoveAgree={() => removeAppliedKeyword(card.keyword)}
           onToggleSkip={setKeywordSkipped}
           onEditStart={() => setIsEditing(true)}
-          onCardFinished={(keyword, action) => {
-            console.log(`${keyword} 被 ${action}，可通知 KeywordCard 收合`);
-          }}
+          onCardFinished={() => {}}
         />
       </div>
     </div>

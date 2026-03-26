@@ -94,7 +94,6 @@ export function useFrequentKeywordSuggestions(
         return a.keyword.localeCompare(b.keyword);
       });
 
-    console.log('[KeywordHook] mergedSuggestions (useMemo)', merged);
     return merged;
   }, [videos, rebuildTrigger]);
 

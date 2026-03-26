@@ -1,6 +1,5 @@
 from flask import Blueprint, jsonify
 import logging
-import traceback
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
 
 def init_weekly_heatmap_cache_route(app, db):
@@ -16,8 +15,8 @@ def init_weekly_heatmap_cache_route(app, db):
             else:
                 return jsonify({"error": "⚠️ 快取更新失敗"}), 500
         except Exception as e:
-            logging.error("🔥 快取更新時發生例外：%s", traceback.format_exc())
-            return jsonify({"error": str(e)}), 500
+            logging.error("🔥 快取更新時發生例外", exc_info=True)
+            return jsonify({"error": "快取更新失敗"}), 500
 
     @bp.route("/api/heatmap/weekly", methods=["GET"])
     def get_weekly_heatmap_cache():
@@ -51,7 +50,7 @@ def init_weekly_heatmap_cache_route(app, db):
             return jsonify(response), 200
 
         except Exception as e:
-            logging.error("🔥 讀取 weekly heatmap cache 失敗：%s", traceback.format_exc())
+            logging.error("🔥 讀取 weekly heatmap cache 失敗", exc_info=True)
             return jsonify({"error": "internal server error"}), 500
 
     app.register_blueprint(bp)

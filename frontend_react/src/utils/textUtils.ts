@@ -138,9 +138,6 @@ export function isSerialPattern(word: string): boolean {
     for (const pattern of REGEX_SKIP_PATTERNS) {
       const wrappedRegex = new RegExp(`^\\${open}${pattern.source}\\${close}$`, pattern.flags);
       if (wrappedRegex.test(normalized)) {
-        if (normalized === '二周目') {
-          console.log(`  ✅ 命中包覆樣式 REGEX_SKIP_PATTERNS: ${wrappedRegex}`);
-        }
         return true;
       }
     }
@@ -150,9 +147,6 @@ export function isSerialPattern(word: string): boolean {
       const raw = prefixMatch[1].toLowerCase();
       const subMatch = raw.match(/^([a-z\.]+)(\d{1,4})$/);
       if (subMatch && SERIAL_PREFIXES.includes(subMatch[1])) {
-        if (normalized === '二周目') {
-          console.log(`  ✅ 命中包覆 prefix+數字: ${raw}`);
-        }
         return true;
       }
     }

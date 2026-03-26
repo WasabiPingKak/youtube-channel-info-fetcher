@@ -19,7 +19,6 @@ const VideoCardSimple = ({ video }) => {
   const videoUrl = `https://www.youtube.com/watch?v=${id}`;
 
   const openInNewTab = () => {
-    console.log(`🖱️ 開啟影片：${title} (${id})`);
     window.open(videoUrl, "_blank");
   };
 

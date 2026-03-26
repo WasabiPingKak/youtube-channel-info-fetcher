@@ -71,8 +71,6 @@ export function useAnnualReviewData(channelId: string, year: number) {
         return v;
       });
 
-      console.log(`📦 取得 ${videos.length} 部影片（年=${year}）`);
-
       const { stats, special } = computeAnnualReviewStats(videos);
       return { stats, special };
     },

@@ -44,11 +44,11 @@ def init_internal_trending_route(app, db: Client):
 
         except ValueError as e:
             logger.warning(f"⚠️ 參數錯誤: {e}")
-            return jsonify({"error": str(e)}), 400
+            return jsonify({"error": "參數錯誤"}), 400
 
-        except Exception as e:
+        except Exception:
             logger.error("❌ /build-daily-trending 發生未預期錯誤", exc_info=True)
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @bp.route("/refresh-daily-cache", methods=["POST"])
     def refresh_daily_cache_api():
@@ -91,10 +91,10 @@ def init_internal_trending_route(app, db: Client):
 
         except ValueError as e:
             logger.warning(f"⚠️ 參數錯誤: {e}")
-            return jsonify({"error": str(e)}), 400
+            return jsonify({"error": "參數錯誤"}), 400
 
-        except Exception as e:
+        except Exception:
             logger.error("❌ /refresh-daily-cache 發生未預期錯誤", exc_info=True)
-            return jsonify({"error": str(e)}), 500
+            return jsonify({"error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(bp)

@@ -1,3 +1,4 @@
+import hmac
 from flask import request, jsonify
 from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
@@ -38,7 +39,7 @@ def init_video_update_route(app, db):
             stored_token = token_data.get("token")
             expires_at = token_data.get("expiresAt")
 
-            if not stored_token or stored_token != update_token:
+            if not stored_token or not hmac.compare_digest(stored_token, update_token):
                 return jsonify({"error": "Token 驗證失敗"}), 403
 
             now = datetime.now(timezone.utc)
@@ -83,5 +84,4 @@ def init_video_update_route(app, db):
             logger.exception("🔥 /api/videos/update 發生錯誤")
             return jsonify({
                 "error": "更新失敗",
-                "details": str(e)
             }), 500

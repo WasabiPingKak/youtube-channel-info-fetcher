@@ -20,7 +20,6 @@ export function useChannelIndex(channelId: string) {
       setIsLoading(true);
       setError(null);
 
-      console.log("🎯 正在嘗試讀取 Firestore channel_index：", channelId);
       const docRef = doc(db, "channel_index", channelId);
       try {
         const docSnap = await getDoc(docRef);
