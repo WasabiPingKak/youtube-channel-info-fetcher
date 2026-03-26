@@ -45,6 +45,14 @@ CORS(app, origins=allowed_origins, supports_credentials=True)
 app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"
 app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "")
 
+
+@app.after_request
+def set_security_headers(response):
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    return response
+
 # 初始化 Firebase，加入錯誤處理
 try:
     db = init_firestore()
