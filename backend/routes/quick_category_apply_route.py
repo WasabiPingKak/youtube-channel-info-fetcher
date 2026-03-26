@@ -7,7 +7,7 @@ from utils.channel_validator import is_valid_channel_id
 
 def init_quick_category_apply_route(app, db):
     @app.route("/api/quick-editor/channel-config-apply", methods=["POST"])
-    @require_auth
+    @require_auth(db)
     def apply_quick_category(auth_channel_id=None):
         try:
             data = request.get_json()

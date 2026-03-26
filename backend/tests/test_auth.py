@@ -12,18 +12,27 @@ from datetime import datetime, timezone
 # ═══════════════════════════════════════════════════════
 
 class TestRequireAuth:
-    """測試 @require_auth 對不同 token 狀態的反應"""
+    """測試 @require_auth(db) 對不同 token 狀態的反應"""
 
     def _make_app_with_protected_route(self, mock_db):
         """建一個只有一條受保護路由的最小 app"""
         from flask import Flask, jsonify
         from utils.auth_decorator import require_auth
 
+        # 預設 mock：meta 文件無 revoked_at（正常狀態）
+        meta_doc = MagicMock()
+        meta_doc.to_dict.return_value = {}
+        mock_db.collection.return_value \
+            .document.return_value \
+            .collection.return_value \
+            .document.return_value \
+            .get.return_value = meta_doc
+
         app = Flask(__name__)
         app.config["TESTING"] = True
 
         @app.route("/protected")
-        @require_auth
+        @require_auth(mock_db)
         def protected(auth_channel_id=None):
             return jsonify({"channelId": auth_channel_id})
 
@@ -54,6 +63,37 @@ class TestRequireAuth:
 
         assert resp.status_code == 200
         assert resp.get_json()["channelId"] == "UC_AUTH_TEST"
+
+    def test_revoked_token_returns_403(self, mock_db):
+        """require_auth 應檢查 revoked_at，被撤銷的 token 回傳 403"""
+        from flask import Flask, jsonify
+        from utils.auth_decorator import require_auth
+
+        # meta 有 revoked_at（設為未來，確保晚於 iat）
+        revoked_time = datetime(2099, 1, 1, tzinfo=timezone.utc)
+        meta_doc = MagicMock()
+        meta_doc.to_dict.return_value = {"revoked_at": revoked_time}
+        mock_db.collection.return_value \
+            .document.return_value \
+            .collection.return_value \
+            .document.return_value \
+            .get.return_value = meta_doc
+
+        app = Flask(__name__)
+        app.config["TESTING"] = True
+
+        @app.route("/protected")
+        @require_auth(mock_db)
+        def protected(auth_channel_id=None):
+            return jsonify({"channelId": auth_channel_id})
+
+        client = app.test_client()
+        token = generate_jwt("UC_REVOKED_TEST")
+        client.set_cookie("__session", token)
+        resp = client.get("/protected")
+
+        assert resp.status_code == 403
+        assert resp.get_json()["error"] == "Token revoked"
 
 
 # ═══════════════════════════════════════════════════════

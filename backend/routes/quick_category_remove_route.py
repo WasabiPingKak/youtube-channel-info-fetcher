@@ -5,7 +5,7 @@ from utils.channel_validator import is_valid_channel_id
 
 def init_quick_category_remove_route(app, db):
     @app.route("/api/quick-editor/channel-config-remove", methods=["POST"])
-    @require_auth
+    @require_auth(db)
     def remove_keyword_from_config(auth_channel_id=None):
         try:
             data = request.get_json()

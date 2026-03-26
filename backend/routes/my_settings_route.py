@@ -9,7 +9,7 @@ def init_my_settings_route(app, db):
     bp = Blueprint("my_settings", __name__, url_prefix="/api/my-settings")
 
     @bp.route("/get", methods=["GET"])
-    @require_auth
+    @require_auth(db)
     def get_my_settings(auth_channel_id=None):
         logger.info(f"✅ /my-settings/get 驗證成功，channel_id = {auth_channel_id}")
 
@@ -47,7 +47,7 @@ def init_my_settings_route(app, db):
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/update", methods=["POST"])
-    @require_auth
+    @require_auth(db)
     def update_my_settings(auth_channel_id=None):
         logger.info(f"✅ /my-settings/update 驗證成功，channel_id = {auth_channel_id}")
 

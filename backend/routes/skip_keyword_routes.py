@@ -10,7 +10,7 @@ def init_skip_keyword_routes(app, db):
     bp = Blueprint("skip_keyword", __name__, url_prefix="/api/quick-editor/skip-keyword")
 
     @bp.route("/add", methods=["POST"])
-    @require_auth
+    @require_auth(db)
     def add_skipped_keyword(auth_channel_id=None):
         try:
             logger.info(f"✅ /skip-keyword/add 驗證成功，channel_id = {auth_channel_id}")
@@ -38,7 +38,7 @@ def init_skip_keyword_routes(app, db):
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/remove", methods=["POST"])
-    @require_auth
+    @require_auth(db)
     def remove_skipped_keyword(auth_channel_id=None):
         try:
             logger.info(f"✅ /skip-keyword/remove 驗證成功，channel_id = {auth_channel_id}")
