@@ -3,7 +3,7 @@ import hmac
 import logging
 import os
 from flask import Blueprint, request, Response
-from xml.etree import ElementTree as ET
+from defusedxml.ElementTree import fromstring as safe_xml_fromstring
 from datetime import datetime, timezone
 
 websub_notify_bp = Blueprint("websub_notify", __name__)
@@ -36,7 +36,7 @@ def init_websub_notify_route(app, db):
                     if not hmac.compare_digest(signature, expected):
                         logging.warning("⚠️ WebSub 簽名驗證失敗")
                         return Response("Invalid signature", status=403)
-                root = ET.fromstring(xml_data)
+                root = safe_xml_fromstring(xml_data)
 
                 # YouTube 推播的 XML 格式 namespace
                 ns = {"atom": "http://www.w3.org/2005/Atom", "yt": "http://www.youtube.com/xml/schemas/2015"}
