@@ -35,6 +35,6 @@ def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
         logging.exception(f"[Index] ❌ Firestore 存取失敗：{channel_id}")
         raise
 
-    except Exception:
+    except (FileNotFoundError, ValueError) as e:
         logging.exception(f"[Index] ❌ 更新 index 過程發生錯誤：{channel_id}")
         raise

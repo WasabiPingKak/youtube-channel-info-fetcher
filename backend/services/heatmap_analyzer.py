@@ -36,7 +36,7 @@ def analyze_and_update_all_channels(db):
             last_sync_dt = datetime.fromisoformat(last_sync_raw)
             if last_sync_dt.tzinfo is None:
                 last_sync_dt = last_sync_dt.replace(tzinfo=timezone.utc)
-        except Exception as e:
+        except ValueError as e:
             logging.warning(f"❗ 無法解析 lastVideoSyncAt：{last_sync_raw}，錯誤：{e}")
             skipped += 1
             skipped_channels.append(channel_id)

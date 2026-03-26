@@ -1,6 +1,7 @@
 import logging
 from typing import List, Dict, Optional
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from dateutil.parser import parse
 
 logger = logging.getLogger(__name__)
@@ -23,7 +24,7 @@ def get_last_video_sync_time(db: Client, channel_id: str):
                     return raw_sync.to_datetime()
         return None
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("🔥 無法讀取 lastVideoSyncAt (新版 index): %s", e, exc_info=True)
         return None
 
@@ -70,6 +71,6 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: List[Dict]) -
         logger.info(f"🕒 更新 lastVideoSyncAt 為 {latest}")
         return latest
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.warning("⚠️ 無法更新 lastVideoSyncAt: %s", e, exc_info=True)
         return None

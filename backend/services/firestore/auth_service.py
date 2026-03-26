@@ -54,6 +54,6 @@ def get_refresh_token(db, channel_id: str) -> str | None:
         logging.exception(f"[Auth] ❌ Firestore 讀取失敗：channel_id={channel_id}")
         return None
 
-    except Exception as e:
-        logging.exception(f"[Auth] ❌ 發生未知錯誤：channel_id={channel_id}")
+    except (KeyError, AttributeError) as e:
+        logging.exception(f"[Auth] ❌ 資料存取錯誤：channel_id={channel_id}")
         return None

@@ -2,6 +2,7 @@ import logging
 from datetime import datetime
 from dateutil.parser import parse
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from typing import List, Dict
 from utils.youtube_utils import normalize_video_item
 
@@ -108,7 +109,7 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: List[Dic
             "videos_written": len(normalized_videos)
         }
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("🔥 寫入 Firestore batch 時發生錯誤: %s", e, exc_info=True)
         return {
             "batches_written": 0,

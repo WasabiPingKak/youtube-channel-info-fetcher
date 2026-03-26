@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Any, Set
 
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from .firestore_date_utils import parse_firestore_date
 
 logger = logging.getLogger(__name__)
@@ -64,6 +65,6 @@ def get_active_channels(db: Client) -> List[Dict[str, Any]]:
         logger.info("✅ 篩選後活躍頻道數量：%d", len(active))
         return active
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("❌ 讀取活躍頻道失敗: %s", e, exc_info=True)
         return []

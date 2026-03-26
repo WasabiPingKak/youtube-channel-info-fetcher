@@ -1,6 +1,7 @@
 from datetime import datetime, timezone
 import logging
 import json
+from google.api_core.exceptions import GoogleAPIError
 
 def is_channel_heatmap_initialized(db, channel_id: str) -> bool:
     """
@@ -25,7 +26,7 @@ def is_channel_heatmap_initialized(db, channel_id: str) -> bool:
         else:
             logging.info(f"🆕 頻道 {channel_id} heatmap 文件不存在（尚未初始化）")
             return False
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"❗ 檢查 heatmap 初始化狀態失敗：{channel_id} - {e}")
         return False
 
@@ -81,5 +82,5 @@ def write_channel_heatmap_result(
         doc_ref.set(update_data)
         logging.info(f"✅ 寫入成功：{channel_id}（欄位數：{len(update_data)}）")
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 寫入 {channel_id} 統計資料失敗：{e}")

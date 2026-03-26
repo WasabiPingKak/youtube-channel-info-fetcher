@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import List, Dict, Optional
 
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from services.youtube.fetcher import get_video_data
 from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.sync_time_index import (
@@ -54,7 +55,7 @@ def select_channels_for_scan(
 
             scored.append((age, entry))
 
-        except Exception as e:
+        except ValueError as e:
             logger.warning(f"⚠️ 無法解析時間格式：{last_checked_at} | {e}")
 
     scored.sort(reverse=True, key=lambda x: x[0])
@@ -211,7 +212,7 @@ def run_daily_channel_refresh(
     try:
         index_ref.set(index_data)
         logger.info("📁 回寫 index_list 完成")
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("🔥 回寫 index_list 發生錯誤", exc_info=True)
 
     return {

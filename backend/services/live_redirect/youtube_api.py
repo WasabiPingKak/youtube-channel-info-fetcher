@@ -3,6 +3,7 @@
 import os
 import logging
 import requests
+from requests.exceptions import RequestException
 
 YOUTUBE_API_KEY = os.getenv("API_KEY")
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
@@ -29,7 +30,7 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
             items = resp.json().get("items", [])
             results.extend(items)
             logging.info(f"📦 成功取得 {len(items)} 筆影片資訊")
-        except Exception as e:
+        except RequestException as e:
             logging.warning(f"⚠️ 查詢失敗：{e}")
 
     return results

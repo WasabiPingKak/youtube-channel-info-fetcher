@@ -43,7 +43,7 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
                     logging.info(
                         f"🧹 清除過期直播：{c['live'].get('videoId')}（endTime={end_time}）"
                     )
-            except Exception as e:
+            except ValueError as e:
                 logging.warning(
                     f"⚠️ 解析 endTime 失敗：{c['live'].get('videoId')} / {end_time} / error={e}"
                 )
@@ -194,7 +194,7 @@ def _filter_video_ids_to_query(
                     if start_time > now + timedelta(minutes=15):
                         # 預約影片時間超過 15 分鐘
                         continue
-                except Exception as e:
+                except ValueError as e:
                     logging.warning(
                         f"⚠️ 解析 startTime 失敗：{vid} / {scheduled} / error={e}"
                     )

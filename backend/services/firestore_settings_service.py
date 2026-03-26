@@ -1,5 +1,6 @@
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.api_core.exceptions import GoogleAPIError
 import logging
 
 # 初始化 Firestore（若尚未初始化，這邊可以加保護）
@@ -22,6 +23,6 @@ def save_category_settings(channel_id: str, settings: dict) -> bool:
         doc_ref.set(settings)  # 完整覆蓋設定
         logging.info(f"✅ 成功儲存分類設定 - channel_id: {channel_id}")
         return True
-    except Exception:
+    except GoogleAPIError:
         logging.exception("🔥 無法儲存分類設定")
         return False

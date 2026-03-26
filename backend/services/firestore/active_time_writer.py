@@ -1,5 +1,6 @@
 from datetime import datetime
 import logging
+from google.api_core.exceptions import GoogleAPIError
 
 def write_active_time_all_to_channel_index_batch(
     db,
@@ -46,5 +47,5 @@ def write_active_time_all_to_channel_index_batch(
 
         logging.warning(f"❗ 找不到符合的 channel_id：{channel_id}，無法寫入 active_time_all")
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 寫入 active_time_all 失敗（{channel_id}）：{e}")

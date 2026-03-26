@@ -5,7 +5,7 @@ import logging
 def get_youtube_service(api_key):
     try:
         return googleapiclient.discovery.build("youtube", "v3", developerKey=api_key)
-    except Exception as e:
+    except googleapiclient.errors.HttpError as e:
         logging.error("🔥 [get_youtube_service] 建立 YouTube API 服務失敗: %s", e, exc_info=True)
         return None
 
@@ -41,7 +41,7 @@ def get_uploads_playlist_id(youtube, channel_id):
             logging.warning("⚠️ [get_uploads_playlist_id] 找不到頻道內容，頻道 ID: %s", channel_id)
             return None
         return items[0]['contentDetails']['relatedPlaylists']['uploads']
-    except Exception as e:
+    except googleapiclient.errors.HttpError as e:
         logging.error("🔥 [get_uploads_playlist_id] 無法取得上傳清單（頻道 ID: %s）: %s", channel_id, e, exc_info=True)
         return None
 

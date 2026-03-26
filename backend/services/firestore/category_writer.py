@@ -1,6 +1,7 @@
 import logging
 from typing import Dict
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 
 def write_category_counts_to_channel_index_batch(
     db: Client,
@@ -38,5 +39,5 @@ def write_category_counts_to_channel_index_batch(
 
         logging.warning(f"❗ 找不到符合的 channel_id：{channel_id}，無法寫入 category_counts")
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 寫入 category_counts 失敗（{channel_id}）：{e}", exc_info=True)

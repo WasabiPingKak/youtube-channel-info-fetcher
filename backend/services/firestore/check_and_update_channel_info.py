@@ -1,5 +1,7 @@
 import logging
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
+from googleapiclient.errors import HttpError
 from services.youtube.channel_info_fetcher import fetch_channel_basic_info
 
 logger = logging.getLogger(__name__)
@@ -73,5 +75,5 @@ def check_and_update_channel_info(db: Client, channel_id: str, batch_id: str) ->
             f"    - 頭像：原「{old_thumbnail}」→ 新「{new_thumbnail}」"
         )
 
-    except Exception as e:
+    except (HttpError, GoogleAPIError) as e:
         logger.warning(f"⚠️ 頻道 {channel_id} 同步名稱與頭像失敗：{e}", exc_info=True)

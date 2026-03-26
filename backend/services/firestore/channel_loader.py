@@ -1,5 +1,6 @@
 import logging
 import re
+from google.api_core.exceptions import GoogleAPIError
 
 def load_all_channels_from_index_list(db):
     try:
@@ -14,7 +15,7 @@ def load_all_channels_from_index_list(db):
         logging.info(f"📥 從 index_list 載入 {len(channels)} 個頻道")
         return channels
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 無法讀取 channel_sync_index/index_list：{e}")
         return []
 
@@ -48,6 +49,6 @@ def load_videos_for_channel(db, channel_id):
         logging.info(f"🎞️ {channel_id} 最終統計影片數量：{len(all_videos)}")
         return all_videos
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 無法讀取 {channel_id} 的影片資料：{e}")
         return []

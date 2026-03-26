@@ -1,6 +1,7 @@
 import logging
 from datetime import datetime, timezone
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from services.firestore.channel_loader import load_all_channels_from_index_list
 from services.heatmap.utils import convert_matrix_to_count
 from services.heatmap.metadata_loader import build_channel_metadata_lookup
@@ -91,7 +92,7 @@ def write_weekly_heatmap_cache(db: Client):
         logging.info("🧹 已清空 active_time_pending")
 
         return True
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 寫入 weekly heatmap cache 失敗：{e}")
         return False
 
@@ -150,5 +151,5 @@ def append_to_pending_cache(db, channel_id: str):
         pending_ref.set({"channels": filtered})
         logging.info(f"🟣 [pending] 已將 {channel_id} 加入 active_time_pending 快取（共 {len(filtered)} 筆）")
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.error(f"🔥 寫入 active_time_pending 快取失敗：{e}")

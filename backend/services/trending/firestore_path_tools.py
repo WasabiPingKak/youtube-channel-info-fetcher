@@ -1,5 +1,6 @@
 import logging
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 
 logger = logging.getLogger(__name__)
 
@@ -11,7 +12,7 @@ def document_exists(db: Client, path: str) -> bool:
             doc_ref = doc_ref.document(parts[i]).collection(parts[i + 1])
         doc = doc_ref.document(parts[-1]).get()
         return doc.exists
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.warning("⚠️ 無法檢查文件是否存在 [%s]: %s", path, e)
         return False
 
@@ -22,5 +23,5 @@ def write_document(db: Client, path: str, data: dict):
         for i in range(1, len(parts) - 1, 2):
             doc_ref = doc_ref.document(parts[i]).collection(parts[i + 1])
         doc_ref.document(parts[-1]).set(data)
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("❌ 寫入文件失敗 [%s]: %s", path, e, exc_info=True)

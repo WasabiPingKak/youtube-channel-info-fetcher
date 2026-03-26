@@ -6,6 +6,7 @@ import json
 import os
 from Crypto.Cipher import AES
 from firebase_admin import firestore
+from google.api_core.exceptions import GoogleAPIError
 from datetime import datetime, timezone
 
 MERCHANT_ID = os.getenv("ECPAY_MERCHANT_ID")
@@ -64,7 +65,7 @@ def generate_check_mac_value(data: dict) -> str:
 def get_amount_bucket(trade_amt_str: str) -> str:
     try:
         amount = int(float(trade_amt_str))  # 支援 "100.0" 也可被分類
-    except Exception as e:
+    except (ValueError, TypeError) as e:
         logging.warning("[ECPay] ⚠️ TradeAmt 解析失敗，預設使用 30 區間: %s", trade_amt_str)
         return "30"
 
@@ -112,7 +113,7 @@ def handle_ecpay_return(form: dict, db):
     try:
         parsed = json.loads(decrypted_json_str)
         logging.debug("[ECPay] 成功解析 JSON: %s", parsed)
-    except Exception as e:
+    except json.JSONDecodeError as e:
         logging.exception("[ECPay] JSON 解碼失敗")
         return "FAIL", 400
 
@@ -141,7 +142,7 @@ def handle_ecpay_return(form: dict, db):
                 "updatedAt": datetime.now(timezone.utc),
             })
             logging.info("✅ [ECPay] 寫入 Firestore: donations_by_amount/%s", bucket_key)
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.exception("[ECPay] Firestore 寫入失敗")
         return "FAIL", 500
 

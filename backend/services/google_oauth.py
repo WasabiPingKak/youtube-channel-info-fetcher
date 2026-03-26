@@ -1,4 +1,5 @@
 # services/google_oauth.py
+import json
 import os
 import requests
 import logging
@@ -28,7 +29,7 @@ def exchange_code_for_tokens(code: str) -> dict:
     if response.status_code != 200:
         try:
             detail = response.json()
-        except Exception:
+        except (ValueError, json.JSONDecodeError):
             detail = response.text
         logging.error(f"[OAuth] ❌ Google 回應錯誤: {response.status_code} → {detail}")
         raise Exception(f"❌ Failed to exchange token: {response.status_code} → {detail}")

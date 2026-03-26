@@ -96,7 +96,7 @@ def get_classified_videos(
                 if end and publish_dt > end:
                     skipped += 1
                     continue
-            except Exception as e:
+            except ValueError as e:
                 logger.warning("⚠️ 解析 publishDate 失敗：%s", item["publishDate"])
                 continue
 

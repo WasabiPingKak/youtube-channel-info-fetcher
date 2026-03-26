@@ -3,6 +3,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, Any, List
 
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 from .firestore_path_tools import document_exists, write_document
 from .channel_status_loader import get_active_channels
 from .firestore_date_utils import parse_firestore_date
@@ -101,6 +102,6 @@ def build_trending_for_date_range(
             "results": results,
         }
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logger.error("🔥 批次建立 trending_games_daily 發生錯誤", exc_info=True)
         return {"error": str(e), "startDate": start_date}

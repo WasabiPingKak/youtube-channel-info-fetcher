@@ -122,7 +122,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
                     n = int(doc.id.replace("batch_", ""))
                     if n > max_batch_number:
                         max_batch_number = n
-                except Exception:
+                except ValueError:
                     logging.warning(f"[Batch] ❓ 無法解析 batch ID：{doc.id}")
 
             last_batch_id = f"batch_{max_batch_number or 1}"
@@ -169,7 +169,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
         else:
             logging.info(f"[Index] ⚠️ channel_index/{channel_id} 已存在，略過寫入")
 
-    except Exception:
+    except GoogleAPIError:
         logging.exception(
             f"[Batch] ❌ 寫入 batch 索引或 channel_index 失敗：{channel_id}"
         )

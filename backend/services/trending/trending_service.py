@@ -1,6 +1,7 @@
 import logging
 from typing import Dict, Any
 from google.cloud.firestore import Client
+from google.api_core.exceptions import GoogleAPIError
 
 # 如果你在同一層 services/trending 下
 from services.trending.channel_info_loader import load_channel_info_index
@@ -57,7 +58,7 @@ def get_trending_games_summary(db: Client, days: int = 30) -> Dict[str, Any]:
         )
         return result
 
-    except Exception as e:
+    except GoogleAPIError as e:
         logging.getLogger(__name__).error(
             "🔥 無法產生 trending_games_summary", exc_info=True
         )
