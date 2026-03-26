@@ -3,28 +3,11 @@ import { useQuery } from "@tanstack/react-query";
 
 const BASE_URL = import.meta.env.VITE_API_BASE || "";
 
-type LiveInfo = {
-  videoId: string;
-  title: string;
-  startTime: string;
-  viewers: number;
-  isUpcoming: boolean;
-  endTime: string | null;
-};
+import type { LiveChannelData, LiveRedirectCacheResponse } from "@/types/live";
 
-export type ChannelData = {
-  channel_id: string;
-  name: string;
-  thumbnail: string;
-  badge: string;
-  countryCode: string[];
-  live: LiveInfo;
-};
-
-type LiveRedirectCacheResponse = {
-  updatedAt: string;
-  channels: ChannelData[];
-};
+export type { LiveChannelData, LiveInfo, LiveRedirectCacheResponse } from "@/types/live";
+/** @deprecated 請改用 LiveChannelData */
+export type ChannelData = LiveChannelData;
 
 export function useLiveRedirectData() {
   return useQuery({
@@ -45,9 +28,9 @@ export function useLiveRedirectData() {
       const upcomingLimitMs = nowMs + 15 * 60 * 1000;
       const endedLimitMs = nowMs - 60 * 60 * 12000;
 
-      const upcoming: ChannelData[] = [];
-      const live: ChannelData[] = [];
-      const ended: ChannelData[] = [];
+      const upcoming: LiveChannelData[] = [];
+      const live: LiveChannelData[] = [];
+      const ended: LiveChannelData[] = [];
 
       for (const channel of json.channels) {
         const info = channel.live;

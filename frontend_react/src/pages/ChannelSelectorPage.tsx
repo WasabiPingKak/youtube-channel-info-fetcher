@@ -28,7 +28,7 @@ const MAIN_PALE_CLASS = {
 
 const ChannelSelectorPage = () => {
   const [searchText, setSearchText] = useState("");
-  const [sortMode, setSortMode] = useState("latest");
+  const [sortMode, setSortMode] = useState<string>("latest");
 
   const [isFlagGrouping, setIsFlagGrouping] = useState(() =>
     localStorage.getItem("useFlagGrouping") === "true"
@@ -42,7 +42,7 @@ const ChannelSelectorPage = () => {
     newlyJoinedChannels,
     totalRegisteredCount,
     error,
-  } = useSelectableChannelList(searchText, sortMode);
+  } = useSelectableChannelList(searchText, sortMode as any);
 
   const handleClick = (channelId) => {
     addRecentChannel(channelId);
@@ -239,6 +239,7 @@ const ChannelSelectorPage = () => {
               <GroupedChannelList
                 groupedChannels={groupedChannels}
                 onClick={handleClick}
+                renderCard={undefined}
               />
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
@@ -246,7 +247,6 @@ const ChannelSelectorPage = () => {
                   <ChannelSelectorCard
                     key={channel.channel_id}
                     channel={channel}
-                    onClick={handleClick}
                   />
                 ))}
               </div>

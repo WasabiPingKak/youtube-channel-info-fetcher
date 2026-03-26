@@ -1,5 +1,7 @@
+import type { DonationItem } from "@/types/donations";
+
 // 用來補充測試階段沒出現的級距顯示，或手動補漏資料
-export const mockDonations = [
+export const mockDonations: DonationItem[] = [
   {
     patronName: "大抖內哥",
     patronNote: "感謝開發者\n支持 VTMap",

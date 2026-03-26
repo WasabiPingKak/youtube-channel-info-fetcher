@@ -20,7 +20,6 @@ const RecentChannelsSection = ({ channels, onClick }) => {
           <ChannelSelectorCard
             key={channel.channel_id}
             channel={channel}
-            onClick={onClick}
           />
         ))}
       </div>

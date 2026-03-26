@@ -12,8 +12,8 @@ const SubcategoryEditorModal = ({
 }) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
-  const backdropRef = useRef();
-  const inputRef = useRef();
+  const backdropRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (isOpen) {

@@ -19,11 +19,11 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
   return (
     <div className="mt-6 space-y-4">
       {gameList.map((game) => {
-        const gameDetails = details[game] || {};
+        const gameDetails: Record<string, any> = details[game] || {};
         const isOpen = expandedGames[game];
 
         const videoCount = Object.values(gameDetails).reduce(
-          (acc, ch) => acc + ch.videos.length,
+          (acc: number, ch: any) => acc + ch.videos.length,
           0
         );
         const channelCount = Object.keys(gameDetails).length;
@@ -83,15 +83,15 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
                     </div>
                   ) : (
                     Object.entries(gameDetails)
-                      .sort(([, a], [, b]) => {
+                      .sort(([, a]: [string, any], [, b]: [string, any]) => {
                         const aDate = new Date(a.videos?.[0]?.publishedAt || 0);
                         const bDate = new Date(b.videos?.[0]?.publishedAt || 0);
-                        return bDate - aDate;
+                        return bDate.getTime() - aDate.getTime();
                       })
-                      .map(([channelId, channelData]) => {
+                      .map(([channelId, channelData]: [string, any]) => {
                         const sortedVideos = [...(channelData?.videos || [])].sort(
-                          (a, b) =>
-                            new Date(b.publishedAt) - new Date(a.publishedAt)
+                          (a: any, b: any) =>
+                            new Date(b.publishedAt).getTime() - new Date(a.publishedAt).getTime()
                         );
 
                         const info = channelInfo?.[channelId];

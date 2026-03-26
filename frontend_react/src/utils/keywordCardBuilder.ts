@@ -1,18 +1,9 @@
-import type { ClassifiedVideoItem } from '@/hooks/useClassifiedVideos';
+import type { ClassifiedVideoItem } from '@/types/category';
 import type { SuggestedKeyword } from '@/hooks/useFrequentKeywordSuggestions';
 import { normalize } from '@/utils/textUtils';
 
-export interface SuggestedKeywordCardState {
-  keyword: string;
-  count: number;
-  agreed: boolean;
-  skipped: boolean;
-  subcategoryName: string;
-  isSaving?: boolean;
-  isSuccess?: boolean;
-  mainCategories: string[]; // 雜談 / 遊戲 / 節目 / 音樂
-  matchedVideos: ClassifiedVideoItem[];
-}
+export type { SuggestedKeywordCardState } from '@/types/category';
+import type { SuggestedKeywordCardState } from '@/types/category';
 
 /**
  * 根據高頻詞與影片清單，建立分類建議卡片的初始狀態陣列

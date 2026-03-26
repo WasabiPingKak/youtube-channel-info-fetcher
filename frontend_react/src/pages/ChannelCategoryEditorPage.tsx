@@ -254,6 +254,7 @@ const ChannelCategoryEditorPage = () => {
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
           onRename={(_, newName) => handleAddSubcategory(newName)}
+          originalName=""
           existingNames={existingNames}
           videos={videos}
         />

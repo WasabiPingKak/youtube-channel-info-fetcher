@@ -1,6 +1,6 @@
 // utils/filterAndSortAliases.ts
 
-type SortOption = "name-asc" | "name-desc" | "alias-more" | "alias-less";
+export type SortOption = "name-asc" | "name-desc" | "alias-more" | "alias-less";
 
 interface FlatInput {
   [name: string]: string[];

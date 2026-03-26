@@ -3,25 +3,8 @@ import { useMemo } from 'react';
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
-export type ChannelIndexEntry = {
-  channel_id: string;
-  name: string;
-  url: string;
-  thumbnail: string;
-  priority?: number;
-  enabled?: boolean;
-  joinedAt?: string;
-  countryCode?: string[];
-  lastVideoUploadedAt?: string;
-  active_time_all?: {
-    凌: number;
-    早: number;
-    午: number;
-    晚: number;
-    totalCount: number;
-    updatedAt?: string;
-  };
-};
+export type { ChannelIndexEntry } from "@/types/channel";
+import type { ChannelIndexEntry } from "@/types/channel";
 
 const normalize = (text: string) =>
   text.toLowerCase().replace(/\s/g, '').replace(/　/g, ''); // 全形空白也移除

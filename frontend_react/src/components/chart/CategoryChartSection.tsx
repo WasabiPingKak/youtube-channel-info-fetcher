@@ -25,7 +25,7 @@ const CategoryChartSection = ({
   }, [videos, typeLabel, activeCategory]);
 
   const { countData, durationData } = useMemo(() => {
-    const counts = {};
+    const counts: Record<string, { category: string; count: number; duration: number }> = {};
     videos.forEach((video) => {
       if (video.type !== typeLabel) return;
 

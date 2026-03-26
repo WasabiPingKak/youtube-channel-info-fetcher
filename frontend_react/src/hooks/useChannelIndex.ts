@@ -2,14 +2,8 @@ import { useEffect, useState } from "react";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-export interface ChannelIndexInfo {
-  name: string;
-  url: string;
-  thumbnail: string;
-  countryCode: string[];
-  enabled: boolean;
-  priority: number;
-}
+export type { ChannelIndexInfo } from "@/types/channel";
+import type { ChannelIndexInfo } from "@/types/channel";
 
 export function useChannelIndex(channelId: string) {
   const [data, setData] = useState<ChannelIndexInfo | null>(null);

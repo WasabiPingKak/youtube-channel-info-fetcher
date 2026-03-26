@@ -10,7 +10,7 @@ import clsx from "clsx";
 import SmartLink from "@/components/common/SmartLink";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick }) => {
+const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick = undefined }) => {
   const navigate = useNavigate();
   const { data: user } = useMyChannelId();
   const isLoggedIn = !!user?.channelId;

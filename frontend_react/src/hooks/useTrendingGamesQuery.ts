@@ -1,69 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import type { TrendingGamesResponse } from "@/types/trending";
 
-export interface VideoItem {
-  videoId: string;
-  channelId: string;
-  title: string;
-  publishDate: string; // ISO string
-  type: string; // "videos" | "live" | "shorts"
-}
+export type { VideoItem, SummaryStats, ChartDataPoint, ChannelVideoGroup, TrendingGamesResponse } from "@/types/trending";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
-
-export interface SummaryStats {
-  [game: string]: {
-    videoCount: number;
-    channelCount: number;
-  };
-}
-
-export interface ChartDataPoint {
-  date: string;
-  [game: string]: number | string; // e.g., "Minecraft": 4, ...
-}
-
-export interface ChannelVideoGroup {
-  channelName: string;
-  videos: {
-    id: string;
-    title: string;
-    publishedAt: string;
-    thumbnail: string;
-    url: string;
-  }[];
-}
-
-export interface TrendingGamesResponse {
-  dates: string[];
-  gameList: string[];
-  videoCountByGameAndDate: {
-    [game: string]: {
-      [date: string]: number;
-    };
-  };
-  contributorsByDateAndGame: {
-    [date: string]: {
-      [game: string]: {
-        [channelId: string]: {
-          channelName: string;
-          count: number;
-        };
-      };
-    };
-  };
-  details: {
-    [game: string]: {
-      [channelId: string]: ChannelVideoGroup;
-    };
-  };
-  channelInfo: {
-    [channelId: string]: {
-      name: string;
-      thumbnail: string;
-      url: string;
-    };
-  };
-}
 
 
 export const useTrendingGamesQuery = (days: 7 | 14 | 30 = 30) => {

@@ -10,7 +10,6 @@ const defaultRenderCard = (channel, onClick) => (
   <ChannelSelectorCard
     key={channel.channel_id || channel.channelId}
     channel={channel}
-    onClick={onClick}
   />
 );
 
@@ -19,7 +18,7 @@ const defaultRenderCard = (channel, onClick) => (
  * @param {Function} onClick - 點擊頻道卡片後的處理函式
  * @param {Function} [renderCard] - （可選）自訂卡片渲染函式 (channel) => JSX
  */
-const GroupedChannelList = ({ groupedChannels, onClick, renderCard }) => {
+const GroupedChannelList = ({ groupedChannels, onClick, renderCard = undefined }) => {
   // 展開狀態初始化（全部開啟）
   const [expandedGroups, setExpandedGroups] = useState(() =>
     Object.fromEntries(groupedChannels.map((g) => [g.code, true]))

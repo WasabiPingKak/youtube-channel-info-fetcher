@@ -26,6 +26,7 @@ const MobileSidebarDrawer = ({ open, onClose }) => {
                     collapsed={false}
                     setCollapsed={() => { }}
                     isMobile={true}
+                    onItemClick={onClose}
                 />
             </div>
         </>

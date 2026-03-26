@@ -11,7 +11,7 @@ const TIME_RANGES = {
 };
 
 const TrendingGamesPage = () => {
-  const [days, setDays] = useState(30);
+  const [days, setDays] = useState<7 | 14 | 30>(30);
   const { data, isLoading, isError } = useTrendingGamesQuery(days);
 
   return (
@@ -27,7 +27,7 @@ const TrendingGamesPage = () => {
             onChange={(e) => {
               const value = parseInt(e.target.value, 10);
               if ([7, 14, 30].includes(value)) {
-                setDays(value);
+                setDays(value as 7 | 14 | 30);
               }
             }}
           >
@@ -45,12 +45,14 @@ const TrendingGamesPage = () => {
           </div>
         )}
 
-        {isError && (
-          <div className="text-center text-red-500 dark:text-red-400 py-10">
-            ❌ 無法載入資料
-            {console.error("[/trending] 資料載入失敗", { isError })}
-          </div>
-        )}
+        {isError && (() => {
+          console.error("[/trending] 資料載入失敗", { isError });
+          return (
+            <div className="text-center text-red-500 dark:text-red-400 py-10">
+              ❌ 無法載入資料
+            </div>
+          );
+        })()}
 
         {data && (
           <>

@@ -67,7 +67,6 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
 
       <DropdownMenu.Portal>
         <DropdownMenu.Content
-          portalled={false}
           sideOffset={8}
           className="w-64 rounded-md border border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg p-1 z-[9999]"
         >

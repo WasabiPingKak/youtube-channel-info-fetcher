@@ -34,7 +34,7 @@ const TrendingChartCumulative = ({
       style={{
         "--recharts-tick-color": isDark ? "#ddd" : "#000",
         colorScheme: "light dark",
-      }}
+      } as React.CSSProperties}
     >
       <ResponsiveContainer width="100%" height="100%">
         <LineChart
@@ -62,7 +62,7 @@ const TrendingChartCumulative = ({
             allowDecimals={false}
             tick={{ fill: "var(--recharts-tick-color)" }}
           />
-          <Tooltip content={<CustomTooltip />} />
+          <Tooltip content={<CustomTooltip active={false} payload={[]} label="" />} />
           <Legend
             content={
               <ChartLegend

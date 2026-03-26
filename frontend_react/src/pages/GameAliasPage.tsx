@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import MainLayout from "../components/layout/MainLayout";
-import { filterAndSortAliases } from "../utils/filterAndSortAliases";
+import { filterAndSortAliases, type SortOption } from "../utils/filterAndSortAliases";
 import AliasSearchBar from "../utils/AliasSearchBar";
 import GameAliasContributorsSection from "../components/contributors/GameAliasContributorsSection";
 
@@ -16,7 +16,7 @@ const GameAliasPage = () => {
   });
 
   const [searchText, setSearchText] = useState("");
-  const [sortOption, setSortOption] = useState("name-asc");
+  const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [openItems, setOpenItems] = useState(new Set());
 
   useEffect(() => {
@@ -32,7 +32,7 @@ const GameAliasPage = () => {
       mode: "flat",
       searchText,
       sortOption,
-    });
+    }) as { name: string; aliases: string[] }[];
   }, [data, searchText, sortOption]);
 
   if (isLoading) {

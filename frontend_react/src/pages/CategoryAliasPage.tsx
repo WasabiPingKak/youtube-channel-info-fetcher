@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../lib/firebase";
 import MainLayout from "../components/layout/MainLayout";
-import { filterAndSortAliases } from "../utils/filterAndSortAliases";
+import { filterAndSortAliases, type SortOption } from "../utils/filterAndSortAliases";
 import AliasSearchBar from "../utils/AliasSearchBar";
 
 const SKIPPED_CATEGORY = "遊戲";
@@ -20,7 +20,7 @@ const CategoryAliasPage = () => {
   });
 
   const [searchText, setSearchText] = useState("");
-  const [sortOption, setSortOption] = useState("name-asc");
+  const [sortOption, setSortOption] = useState<SortOption>("name-asc");
   const [openItems, setOpenItems] = useState(new Set());
 
   useEffect(() => {
@@ -42,7 +42,7 @@ const CategoryAliasPage = () => {
       searchText,
       sortOption,
       skipTopLevelKey: SKIPPED_CATEGORY,
-    });
+    }) as Record<string, [string, string[]][]>;
   }, [data, searchText, sortOption]);
 
   const totalSubcategories = Object.values(filteredSortedData).reduce(

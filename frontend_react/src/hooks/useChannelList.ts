@@ -8,19 +8,8 @@ import { useQuery } from "@tanstack/react-query";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../lib/firebase";
 
-/** 前端使用的頻道清單物件 */
-export interface ChannelListItem {
-  /** Firestore 文件 ID（即 YouTube channelId） */
-  id: string;
-  /** 頻道名稱 */
-  name: string;
-  /** YouTube 頭像 URL */
-  thumbnail: string;
-  /** YouTube 頻道首頁 URL */
-  url: string;
-  /** 排序值；數字越小越前面（可選） */
-  priority?: number;
-}
+export type { ChannelListItem } from "@/types/channel";
+import type { ChannelListItem } from "@/types/channel";
 
 /**
  * 讀取並快取頻道清單的 Hook

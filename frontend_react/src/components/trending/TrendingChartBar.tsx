@@ -28,7 +28,7 @@ const TrendingChartDaily = ({
         const channels = gameMap[game];
         if (channels) {
           const count = Object.values(channels).reduce(
-            (sum, item) => sum + item.count,
+            (sum: number, item: any) => sum + item.count,
             0
           );
           entry[game] = count;
@@ -52,7 +52,7 @@ const TrendingChartDaily = ({
         "--recharts-tick-color": isDark ? "#ddd" : "#000",
         "--recharts-tooltip-bg": isDark ? "#1f2937" : "#fff", // Tailwind zinc-800
         colorScheme: "light dark",
-      }}
+      } as React.CSSProperties}
     >
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
@@ -80,7 +80,7 @@ const TrendingChartDaily = ({
             allowDecimals={false}
             tick={{ fill: "var(--recharts-tick-color)" }}
           />
-          <Tooltip content={<CustomTooltipWithColor />} />
+          <Tooltip content={<CustomTooltipWithColor active={false} payload={[]} label="" />} />
           <Legend
             content={
               <ChartLegend

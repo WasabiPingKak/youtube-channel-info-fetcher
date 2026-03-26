@@ -64,6 +64,7 @@ export default function LiveRedirectSection({
         groupByCountry ? (
           <GroupedChannelList
             groupedChannels={groupChannelsByCountry(sortedChannels, sortFn)}
+            onClick={() => {}}
             renderCard={(channel) => (
               <LiveChannelCard key={channel.live.videoId} channel={channel} />
             )}

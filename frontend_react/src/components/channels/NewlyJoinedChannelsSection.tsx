@@ -8,7 +8,7 @@ const toDateObj = (raw) => {
   if (!raw) return null;
   if (typeof raw === "string") {
     const parsed = new Date(raw);
-    return isNaN(parsed) ? null : parsed;
+    return isNaN(parsed.getTime()) ? null : parsed;
   }
   if (typeof raw.toDate === "function") {
     return raw.toDate();
@@ -53,7 +53,7 @@ const getDisplayDateLabel = (dateObj) => {
  * 將頻道依據 joinedAt 日期分組
  */
 const groupByJoinedDate = (channels) => {
-  const groups = {};
+  const groups: Record<string, { label: string; list: any[] }> = {};
   channels.forEach((channel) => {
     const dateObj = toDateObj(channel.joinedAt);
     if (!dateObj) return;
@@ -121,7 +121,6 @@ const NewlyJoinedChannelsSection = ({ channels, onClick }) => {
                 <ChannelSelectorCard
                   key={channel.channel_id}
                   channel={channel}
-                  onClick={onClick}
                 />
               ))}
             </div>

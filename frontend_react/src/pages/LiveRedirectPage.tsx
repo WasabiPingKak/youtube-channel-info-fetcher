@@ -99,8 +99,6 @@ export default function LiveRedirectPage() {
         <FilterPanel
           showUpcoming={true}
           setShowUpcoming={() => { }} // 無作用
-          groupByCountry={groupByCountry}
-          setGroupByCountry={setGroupByCountry}
           showEnded={showEnded}
           setShowEnded={setShowEnded}
         />
@@ -185,6 +183,7 @@ export default function LiveRedirectPage() {
             groupByCountry={groupByCountry}
             sortMode={sortMode}
             sortAsc={sortAsc}
+            onToggleCollapse={() => {}}
           />
         )}
         {filterByTopic(data.live).length === 0 && (
@@ -202,6 +201,7 @@ export default function LiveRedirectPage() {
             groupByCountry={groupByCountry}
             sortMode={sortMode}
             sortAsc={sortAsc}
+            onToggleCollapse={() => {}}
           />
         )}
       </div>

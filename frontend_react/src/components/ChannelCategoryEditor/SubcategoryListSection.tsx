@@ -19,7 +19,6 @@ const SubcategoryListSection = ({
             key={subcatName}
             name={subcatName}
             keywords={keywords}
-            onNameChange={(newName) => onNameChange(subcatName, newName)}
             onKeywordsChange={(kwList) => onKeywordsChange(subcatName, kwList)}
             onEdit={onEdit ? () => onEdit(subcatName) : undefined}
             onDelete={() => onDeleteSubcategory(subcatName)}

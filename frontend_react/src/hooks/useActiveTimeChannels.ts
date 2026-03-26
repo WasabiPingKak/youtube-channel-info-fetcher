@@ -1,23 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
+import type { ActiveTimeResponse } from "@/types/activeTime";
+
+export type { ActiveTimeMatrix, ActiveTimeChannel, ActiveTimeResponse } from "@/types/activeTime";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
-
-export type ActiveTimeMatrix = Record<string, Record<string, number>>; // DayKey -> hour -> count
-
-export interface ActiveTimeChannel {
-  channelId: string;
-  name: string;
-  thumbnail: string;
-  countryCode: string[];
-  activeTime: ActiveTimeMatrix;
-  totalCount: number;
-}
-
-export interface ActiveTimeResponse {
-  generatedAt: string;
-  version: number;
-  channels: ActiveTimeChannel[];
-}
 
 const fetchActiveTimeChannels = async (): Promise<ActiveTimeResponse> => {
   const res = await fetch(`${API_BASE}/api/heatmap/weekly`, {
