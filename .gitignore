@@ -8,8 +8,9 @@ __pycache__/
 .coverage
 node_modules
 .pytest_cache
-.env.*local
-.env.local
+.env
+.env.*
+!.env.example
 .cursorrules
 .claude/
 channel_list*

@@ -6,7 +6,7 @@ import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import ReactGA from "react-ga4";
 
-ReactGA.initialize("G-Q2S0XSEW74");
+ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
 
 import VideoExplorerPage from "./pages/VideoExplorerPage";
 import ThanksPage from "./pages/ThanksPage";

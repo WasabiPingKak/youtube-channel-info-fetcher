@@ -13,7 +13,7 @@ import { useChannelIndex } from "@/hooks/useChannelIndex";
 import MainLayout from "../components/layout/MainLayout";
 import VideoExplorerContent from "./VideoExplorerContent";
 
-const ADMIN_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng";
+const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
 const VideoExplorerPage = () => {
   const [searchParams] = useSearchParams();

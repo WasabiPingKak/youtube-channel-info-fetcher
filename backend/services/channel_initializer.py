@@ -11,7 +11,8 @@ FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "config" / "default_config.json"
-SPECIAL_CHANNEL_ID = "UCLxa0YOtqi8IR5r2dSLXPng"
+_ADMIN_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
+ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_IDS_RAW.split(",") if cid.strip()}
 YOUTUBE_API_KEY = os.getenv("API_KEY")
 
 
@@ -148,7 +149,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
                 "thumbnail": info_data["thumbnail"],
                 "url": info_data["url"],
                 "enabled": False,
-                "priority": 1 if channel_id == SPECIAL_CHANNEL_ID else 100,
+                "priority": 1 if channel_id in ADMIN_CHANNEL_IDS else 100,
                 "joinedAt": now_iso,
             }
 
