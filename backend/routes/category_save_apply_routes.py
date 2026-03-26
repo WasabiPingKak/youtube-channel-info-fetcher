@@ -39,7 +39,7 @@ def init_category_save_apply_routes(app, db):
                 }), 403
 
             # 1. 讀取現有設定
-            old = load_category_settings(channel_id)
+            old = load_category_settings(db, channel_id)
             # 2. 若已有且與新 settings 完全相同，直接跳過儲存與套用
             if old is not None and old == settings:
                 return jsonify({
@@ -49,7 +49,7 @@ def init_category_save_apply_routes(app, db):
                 })
 
             # 儲存分類設定
-            saved = save_category_settings(channel_id, settings)
+            saved = save_category_settings(db, channel_id, settings)
             if not saved:
                 return jsonify({
                     "success": False,

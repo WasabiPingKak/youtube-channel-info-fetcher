@@ -54,7 +54,7 @@ except Exception:
 
 # 初始化各路由模組
 init_base_routes(app)
-init_firestore_settings_routes(app)
+init_firestore_settings_routes(app, db)
 init_category_save_apply_routes(app, db)
 init_category_editor_routes(app, db)
 init_video_routes(app, db)

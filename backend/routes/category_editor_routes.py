@@ -67,7 +67,7 @@ def init_category_editor_routes(app, db):
             logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")
 
             # 1. 讀取分類設定
-            config = load_category_settings(channel_id) or {}
+            config = load_category_settings(db, channel_id) or {}
             logging.info(f"✅ config 載入成功，欄位數：{len(config)}")
             if not config:
                 logging.warning("⚠️ 該頻道尚未建立 config 文件")
