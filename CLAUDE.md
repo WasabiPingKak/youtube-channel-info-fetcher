@@ -47,7 +47,7 @@ cd frontend_react
 ### Tech Stack
 - **Frontend**: React 19 + TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query (data fetching), shadcn/ui components
 - **Backend**: Flask + Python, Google Cloud Firestore, YouTube Data API v3
-- **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend)
+- **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch)
 
 ### Project Structure
 ```
