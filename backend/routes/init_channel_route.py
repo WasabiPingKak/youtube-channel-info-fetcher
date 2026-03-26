@@ -5,12 +5,14 @@ from services.firestore.auth_service import get_refresh_token
 from services.channel_initializer import run_channel_initialization
 from routes.websub_subscribe_route import subscribe_channel_by_id
 from utils.channel_validator import is_valid_channel_id
+from utils.rate_limiter import limiter
 import logging
 
 def init_channel_route(app, db):
     bp = Blueprint("init_channel", __name__)
 
     @bp.route("/api/init-channel", methods=["GET"])
+    @limiter.limit("5 per minute")
     def init_channel():
         channel_id = request.args.get("channel")
         logging.debug(f"📥 [InitAPI] 收到初始化請求：channel={channel_id}")

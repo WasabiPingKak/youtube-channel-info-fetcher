@@ -26,10 +26,14 @@ def app(mock_db):
     from routes.oauth_callback_route import init_oauth_callback_route
     from routes.me_route import init_me_route
 
+    from utils.rate_limiter import limiter
+
     app = Flask(__name__)
     app.config["TESTING"] = True
+    app.config["RATELIMIT_ENABLED"] = False
     app.config["FRONTEND_BASE_URL"] = "http://localhost:5173"
 
+    limiter.init_app(app)
     init_oauth_callback_route(app, mock_db)
     init_me_route(app, mock_db)
 

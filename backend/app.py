@@ -3,6 +3,7 @@ from flask_cors import CORS
 import logging
 import os
 from services.firebase_init_service import init_firestore
+from utils.rate_limiter import limiter
 from routes.base_routes import init_base_routes
 from routes.firestore_settings_routes import init_firestore_settings_routes
 from routes.category_save_apply_routes import init_category_save_apply_routes
@@ -34,6 +35,7 @@ from routes.maintenance_route import init_maintenance_route
 logging.basicConfig(level=logging.INFO, force=True)
 
 app = Flask(__name__)
+limiter.init_app(app)
 
 allowed_origins_str = os.getenv("ALLOWED_ORIGINS", "")
 allowed_origins = [o.strip() for o in allowed_origins_str.split(",") if o.strip()]

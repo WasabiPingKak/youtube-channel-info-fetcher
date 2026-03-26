@@ -2,6 +2,7 @@ from flask import Blueprint, request, redirect, current_app, jsonify, make_respo
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
 from services.firestore.auth_service import save_channel_auth
 from utils.jwt_util import generate_jwt, JWT_EXP_HOURS
+from utils.rate_limiter import limiter
 import hmac
 import logging
 
@@ -9,6 +10,7 @@ def init_oauth_callback_route(app, db):
     oauth_bp = Blueprint("oauth", __name__)
 
     @oauth_bp.route("/oauth/callback")
+    @limiter.limit("10 per minute")
     def oauth_callback():
         # ✅ 測試模式：印出授權結果並終止流程
         if current_app.config.get("OAUTH_DEBUG_MODE", False):

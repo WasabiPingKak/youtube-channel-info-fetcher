@@ -1,5 +1,6 @@
 flask
 flask-cors
+Flask-Limiter
 isodate
 pytz
 google-api-python-client

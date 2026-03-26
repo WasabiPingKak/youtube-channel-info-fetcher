@@ -1,5 +1,6 @@
 from flask import Blueprint, request, jsonify, make_response
 from utils.jwt_util import verify_jwt, is_admin_channel_id, generate_jwt, should_renew, JWT_EXP_HOURS
+from utils.rate_limiter import limiter
 import logging
 
 
@@ -7,6 +8,7 @@ def init_me_route(app, db):
     me_bp = Blueprint("me", __name__, url_prefix="/api")
 
     @me_bp.route("/me", methods=["GET"])
+    @limiter.limit("30 per minute")
     def get_me():
         token = request.cookies.get("__session")
         if not token:

@@ -3,11 +3,13 @@ import logging
 from flask import request
 from flask import Blueprint
 from services.ecpay_service import handle_ecpay_return
+from utils.rate_limiter import limiter
 
 def init_ecpay_return_route(app, db):
     blueprint = Blueprint("ecpay_return", __name__)
 
     @blueprint.route("/ecpay/return", methods=["POST"])
+    @limiter.limit("20 per minute")
     def ecpay_return():
         try:
             if request.is_json:
