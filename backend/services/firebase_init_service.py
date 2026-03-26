@@ -31,8 +31,6 @@ def init_firestore():
 
         if not firebase_admin._apps:
             cred = credentials.Certificate(path)
-            logger.info("Firebase 使用者：%s", cred.service_account_email)
-            logger.info("Firebase 金鑰專案 ID：%s", cred.project_id)
             firebase_admin.initialize_app(cred)
             logger.info("✅ Firebase Admin 初始化成功")
 
