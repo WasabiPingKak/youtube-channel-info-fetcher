@@ -15,13 +15,12 @@ def init_oauth_callback_route(app, db):
     @oauth_bp.route("/oauth/callback")
     @limiter.limit("10 per minute")
     def oauth_callback():
-        # ✅ 測試模式：印出授權結果並終止流程
+        # ✅ 測試模式：僅記錄收到 callback，不回傳敏感參數
         if current_app.config.get("OAUTH_DEBUG_MODE", False):
-            logging.info("🧪 [Debug] OAuth callback triggered with:")
-            logging.info(request.args.to_dict())
+            logging.info("🧪 [Debug] OAuth callback triggered, state=%s", request.args.get("state"))
             return jsonify({
                 "debug": "🧪 OAuth callback 測試模式",
-                "request_args": request.args.to_dict()
+                "message": "callback 已收到，詳細參數請查看 server log",
             })
 
         # ✅ 驗證 OAuth state（從 Firestore 讀取，防止 CSRF）
