@@ -1,5 +1,6 @@
 import base64
 import hashlib
+import hmac
 import json
 import logging
 import os
@@ -118,7 +119,7 @@ def handle_ecpay_return(form: dict, db):
     # CheckMacValue 驗證（使用 AES 解密後的原始 URL encoded 字串）
     expected_mac = generate_check_mac_value_for_livestream(raw_decrypted_str, HASH_KEY, HASH_IV)
 
-    if expected_mac != received_mac:
+    if not hmac.compare_digest(expected_mac, received_mac):
         logging.warning("[ECPay] CheckMacValue 驗證失敗")
         return "0|FAIL"
 
