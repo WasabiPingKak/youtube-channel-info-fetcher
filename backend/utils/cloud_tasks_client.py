@@ -63,13 +63,19 @@ def dispatch_task(
         query = "&".join(f"{k}={v}" for k, v in params.items())
         url = f"{url}?{query}"
 
+    # Cloud Tasks 帶 Admin Key，讓 worker endpoint 驗證來源
+    admin_key = os.getenv("ADMIN_API_KEY", "")
+    headers = {"Content-Type": "application/json"}
+    if admin_key:
+        headers["Authorization"] = f"Bearer {admin_key}"
+
     task = {
         "http_request": {
             "http_method": tasks_v2.HttpMethod.POST
             if method == "POST"
             else tasks_v2.HttpMethod.GET,
             "url": url,
-            "headers": {"Content-Type": "application/json"},
+            "headers": headers,
         }
     }
 

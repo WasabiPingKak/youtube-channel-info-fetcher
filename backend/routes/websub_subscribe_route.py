@@ -158,9 +158,10 @@ def init_websub_subscribe_route(app, db: Client):
             return jsonify(result), 500
 
     @websub_subscribe_bp.route("/api/websub/subscribe-one", methods=["POST"])
+    @require_admin_key
     def subscribe_single_channel():
         """
-        訂閱單一頻道。可由 Cloud Tasks 呼叫，也可手動測試。
+        訂閱單一頻道。由 Cloud Tasks 呼叫（帶 Admin Key），也可手動測試。
         Cloud Tasks 會自動 retry 失敗的 task。
         """
         channel_id = request.args.get("channel_id")
