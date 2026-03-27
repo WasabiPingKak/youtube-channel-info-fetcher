@@ -28,6 +28,24 @@ pytest                             # Run tests
 pytest --cov                       # Run tests with coverage
 ```
 
+### Linting & Formatting
+```bash
+# Pre-commit hooks（Ruff + ESLint + .env 保護）
+pip install pre-commit           # 安裝 pre-commit framework
+pre-commit install               # 啟用 git hook
+pre-commit run --all-files       # 手動跑全部檢查
+
+# Backend — Ruff
+cd backend
+ruff check . --config ruff.toml       # Lint
+ruff check . --config ruff.toml --fix # Lint + 自動修正
+ruff format . --config ruff.toml      # Format
+
+# Frontend — ESLint
+cd frontend_react
+npm run lint                     # Lint src/
+```
+
 ### Deployment
 ```bash
 # Backend (Google Cloud Run)
