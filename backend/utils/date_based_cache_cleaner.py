@@ -1,7 +1,8 @@
 # utils/date_based_cache_cleaner.py
-from google.cloud.firestore import Client
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import UTC, datetime, timedelta
+
+from google.cloud.firestore import Client
 
 # 📋 全部清除規則表
 CLEANUP_RULES = {
@@ -11,8 +12,9 @@ CLEANUP_RULES = {
     },
     "trending_games": {
         "trending_games_daily": 60,
-    }
+    },
 }
+
 
 def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
     """
@@ -25,7 +27,7 @@ def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
         dict: { collection_name: { toDelete, toKeep, error? }, ... }
     """
     db = Client()
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
 
     if cache_type not in CLEANUP_RULES:
         raise ValueError(f"不支援的快取類型: {cache_type}")
@@ -43,11 +45,7 @@ def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
             all_docs = collection_ref.list_documents()
         except Exception as e:
             logging.error(f"❌ 無法讀取集合 {collection_name}：{e}")
-            results[collection_name] = {
-                "error": str(e),
-                "toDelete": [],
-                "toKeep": []
-            }
+            results[collection_name] = {"error": str(e), "toDelete": [], "toKeep": []}
             continue
 
         for doc_ref in all_docs:
@@ -71,7 +69,7 @@ def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
             try:
                 for i in range(0, len(docs_to_delete), 500):
                     batch = db.batch()
-                    for doc_id in docs_to_delete[i:i+500]:
+                    for doc_id in docs_to_delete[i : i + 500]:
                         try:
                             doc_ref = collection_ref.document(doc_id)
                             batch.delete(doc_ref)
@@ -82,9 +80,6 @@ def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
             except Exception as e:
                 logging.error(f"❌ 刪除 {collection_name} 文件時發生錯誤：{e}")
 
-        results[collection_name] = {
-            "toDelete": docs_to_delete,
-            "toKeep": docs_to_keep
-        }
+        results[collection_name] = {"toDelete": docs_to_delete, "toKeep": docs_to_keep}
 
     return results

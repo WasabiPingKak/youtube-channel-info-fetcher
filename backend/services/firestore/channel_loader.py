@@ -1,6 +1,8 @@
 import logging
 import re
+
 from google.api_core.exceptions import GoogleAPIError
+
 
 def load_all_channels_from_index_list(db):
     try:
@@ -18,6 +20,7 @@ def load_all_channels_from_index_list(db):
     except GoogleAPIError as e:
         logging.error(f"🔥 無法讀取 channel_sync_index/index_list：{e}")
         return []
+
 
 def load_videos_for_channel(db, channel_id):
     try:

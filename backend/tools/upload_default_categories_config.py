@@ -5,16 +5,16 @@
 # ✅ 寫入 global_settings/default_categories_config_v2
 # ---------------------------------------------------
 
-import sys
-import os
 import json
+import os
+import sys
 from pathlib import Path
 
 # ✅ 加入專案根目錄，允許匯入 backend.services
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
-from google.cloud import firestore
+
 from backend.services.firebase_init_service import init_firestore
 
 # ✅ 載入 .env.local，並解析 Firebase 金鑰路徑
@@ -30,6 +30,7 @@ COLLECTION = "global_settings"
 DOCUMENT_ID = "default_categories_config_v2"
 JSON_FILE_PATH = Path(__file__).parent / "default_categories_config_v2.json"
 
+
 def main():
     # ✅ 檢查檔案是否存在
     if not JSON_FILE_PATH.exists():
@@ -38,7 +39,7 @@ def main():
 
     # ✅ 讀取 JSON 檔案
     try:
-        with open(JSON_FILE_PATH, "r", encoding="utf-8") as f:
+        with open(JSON_FILE_PATH, encoding="utf-8") as f:
             config_data = json.load(f)
     except Exception as e:
         print(f"❌ 無法讀取 JSON 檔案：{e}")
@@ -58,6 +59,7 @@ def main():
     except Exception as e:
         print(f"❌ Firestore 寫入失敗：{e}")
         sys.exit(1)
+
 
 if __name__ == "__main__":
     main()

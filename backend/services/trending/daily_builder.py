@@ -1,36 +1,37 @@
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import Dict, Any, List
+from datetime import datetime, timedelta
+from typing import Any
 
-from google.cloud.firestore import Client
 from google.api_core.exceptions import GoogleAPIError
-from .firestore_path_tools import document_exists, write_document
-from .channel_status_loader import get_active_channels
-from .firestore_date_utils import parse_firestore_date
+from google.cloud.firestore import Client
 
 from utils.categorizer import match_category_and_game
 from utils.channel_data_loader import load_channel_settings_and_videos
 from utils.trending_classifier import classify_videos_to_games
 
+from .channel_status_loader import get_active_channels
+from .firestore_date_utils import parse_firestore_date
+from .firestore_path_tools import document_exists, write_document
+
 logger = logging.getLogger(__name__)
+
 
 def build_trending_for_date_range(
     start_date: str, days: int, db: Client, force: bool = False
-) -> Dict[str, Any]:
+) -> dict[str, Any]:
     """從 start_date 開始，往前處理 N 天的 trending 分析"""
     try:
         target_start = datetime.strptime(start_date, "%Y-%m-%d").date()
-        date_range = [
-            (target_start - timedelta(days=offset)).isoformat()
-            for offset in range(days)
-        ]
+        date_range = [(target_start - timedelta(days=offset)).isoformat() for offset in range(days)]
         logger.info(f"📆 開始批次處理 {len(date_range)} 天：{date_range[0]} ～ {date_range[-1]}")
 
         # 快取頻道清單、設定與影片
         active_channels = get_active_channels(db)
         logger.info(f"📡 活躍頻道數量：{len(active_channels)}")
 
-        channel_settings_map, channel_videos_map = load_channel_settings_and_videos(db, active_channels)
+        channel_settings_map, channel_videos_map = load_channel_settings_and_videos(
+            db, active_channels
+        )
 
         # 每日處理
         results = []
@@ -38,11 +39,9 @@ def build_trending_for_date_range(
             trending_doc_path = f"trending_games_daily/{date_str}"
             if not force and document_exists(db, trending_doc_path):
                 logger.info(f"⚠️ {date_str} 已存在，略過建立")
-                results.append({
-                    "date": date_str,
-                    "skipped": True,
-                    "reason": "Document already exists"
-                })
+                results.append(
+                    {"date": date_str, "skipped": True, "reason": "Document already exists"}
+                )
                 continue
 
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
@@ -62,9 +61,10 @@ def build_trending_for_date_range(
 
                 # 當日影片過濾
                 videos = [
-                    v for v in all_videos
-                    if parse_firestore_date(v.get("publishDate")) and
-                    parse_firestore_date(v.get("publishDate")).date() == target_date
+                    v
+                    for v in all_videos
+                    if parse_firestore_date(v.get("publishDate"))
+                    and parse_firestore_date(v.get("publishDate")).date() == target_date
                 ]
 
                 # 使用共用函式分類
@@ -88,12 +88,14 @@ def build_trending_for_date_range(
 
             write_document(db, trending_doc_path, game_map)
             logger.info(f"✅ 寫入完成 {date_str}，共 {len(game_map)} 個遊戲")
-            results.append({
-                "date": date_str,
-                "skipped": False,
-                "games": list(game_map.keys()),
-                "stats": stats,
-            })
+            results.append(
+                {
+                    "date": date_str,
+                    "skipped": False,
+                    "games": list(game_map.keys()),
+                    "stats": stats,
+                }
+            )
 
         return {
             "startDate": start_date,

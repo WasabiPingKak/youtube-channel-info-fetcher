@@ -1,6 +1,4 @@
-from typing import Dict, Optional
-
-def needs_update_info(existing: Optional[Dict], new: Dict) -> bool:
+def needs_update_info(existing: dict | None, new: dict) -> bool:
     if not existing:
         return True
     return (

@@ -1,10 +1,12 @@
-from flask import Blueprint, request, redirect, current_app, jsonify, make_response
-from services.google_oauth import exchange_code_for_tokens, get_channel_id
-from services.firestore.auth_service import save_channel_auth
-from utils.jwt_util import generate_jwt, JWT_EXP_HOURS
-from utils.rate_limiter import limiter
-from datetime import datetime, timezone, timedelta
 import logging
+from datetime import UTC, datetime, timedelta
+
+from flask import Blueprint, current_app, jsonify, make_response, redirect, request
+
+from services.firestore.auth_service import save_channel_auth
+from services.google_oauth import exchange_code_for_tokens, get_channel_id
+from utils.jwt_util import JWT_EXP_HOURS, generate_jwt
+from utils.rate_limiter import limiter
 
 OAUTH_STATE_TTL_SECONDS = 600  # 10 分鐘
 
@@ -18,10 +20,12 @@ def init_oauth_callback_route(app, db):
         # ✅ 測試模式：僅記錄收到 callback，不回傳敏感參數
         if current_app.config.get("OAUTH_DEBUG_MODE", False):
             logging.info("🧪 [Debug] OAuth callback triggered, state=%s", request.args.get("state"))
-            return jsonify({
-                "debug": "🧪 OAuth callback 測試模式",
-                "message": "callback 已收到，詳細參數請查看 server log",
-            })
+            return jsonify(
+                {
+                    "debug": "🧪 OAuth callback 測試模式",
+                    "message": "callback 已收到，詳細參數請查看 server log",
+                }
+            )
 
         # ✅ 驗證 OAuth state（從 Firestore 讀取，防止 CSRF）
         state = request.args.get("state")
@@ -39,7 +43,7 @@ def init_oauth_callback_route(app, db):
         state_data = state_doc.to_dict()
         created_at = state_data.get("created_at")
         if created_at:
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             if now - created_at > timedelta(seconds=OAUTH_STATE_TTL_SECONDS):
                 state_ref.delete()
                 logging.warning("⚠️ OAuth state 已過期")
@@ -86,11 +90,11 @@ def init_oauth_callback_route(app, db):
                 path="/",
                 httponly=True,
                 secure=True,
-                samesite="Lax"
+                samesite="Lax",
             )
             return response
 
-        except Exception as e:
+        except Exception:
             logging.exception("❌ OAuth callback 過程失敗")
             return "OAuth 認證失敗，請稍後再試", 500
 

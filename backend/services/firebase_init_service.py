@@ -1,9 +1,11 @@
-import firebase_admin
-from firebase_admin import credentials, firestore
 import logging
 import os
 
+import firebase_admin
+from firebase_admin import credentials, firestore
+
 logger = logging.getLogger(__name__)
+
 
 def init_firestore():
     """

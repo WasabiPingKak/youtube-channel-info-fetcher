@@ -1,23 +1,23 @@
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Optional
+from datetime import UTC, datetime, timedelta
 
-from google.cloud.firestore import Client
 from google.api_core.exceptions import GoogleAPIError
-from services.youtube.fetcher import get_video_data
-from services.firestore.batch_writer import write_batches_to_firestore
-from services.firestore.sync_time_index import (
-    get_last_video_sync_time,
-    update_last_sync_time,
-)
+from google.cloud.firestore import Client
+
 from services.classified_video_fetcher import get_classified_videos
-from services.video_analyzer.category_counter import count_category_counts
+from services.firestore.batch_writer import write_batches_to_firestore
 from services.firestore.category_writer import (
     write_category_counts_to_channel_index_batch,
 )
 from services.firestore.check_and_update_channel_info import (
     check_and_update_channel_info,
 )
+from services.firestore.sync_time_index import (
+    get_last_video_sync_time,
+    update_last_sync_time,
+)
+from services.video_analyzer.category_counter import count_category_counts
+from services.youtube.fetcher import get_video_data
 
 DEFAULT_REFRESH_LIMIT = 50
 RECENT_CHECK_INTERVAL_SECONDS = 2 * 86400  # 2 天
@@ -26,11 +26,11 @@ logger = logging.getLogger(__name__)
 
 
 def select_channels_for_scan(
-    all_channels: List[Dict],
+    all_channels: list[dict],
     limit: int = DEFAULT_REFRESH_LIMIT,
     include_recent: bool = False,
-) -> List[Dict]:
-    now = datetime.now(timezone.utc)
+) -> list[dict]:
+    now = datetime.now(UTC)
     scored = []
 
     for entry in all_channels:
@@ -66,7 +66,7 @@ def select_channels_for_scan(
 
 
 def update_index_entry(
-    index_data: Dict, channel_id: str, checked_at: datetime, sync_at: Optional[str]
+    index_data: dict, channel_id: str, checked_at: datetime, sync_at: str | None
 ) -> None:
     updated = False
     for entry in index_data["channels"]:
@@ -87,7 +87,7 @@ def update_index_entry(
         )
 
 
-def get_batch_id_map(db: Client) -> Dict[str, str]:
+def get_batch_id_map(db: Client) -> dict[str, str]:
     """
     扫描所有 channel_index_batch，建立 channel_id → batch_id 的對照表。
     """
@@ -109,7 +109,7 @@ def run_daily_channel_refresh(
     dry_run: bool = False,
     full_scan: bool = False,
     force_category_counts: bool = False,
-) -> Dict:
+) -> dict:
     index_ref = db.collection("channel_sync_index").document("index_list")
     index_doc = index_ref.get()
     if not index_doc.exists:
@@ -119,9 +119,7 @@ def run_daily_channel_refresh(
     index_data = index_doc.to_dict()
     all_channels = index_data.get("channels", [])
 
-    selected = select_channels_for_scan(
-        all_channels, limit=limit, include_recent=include_recent
-    )
+    selected = select_channels_for_scan(all_channels, limit=limit, include_recent=include_recent)
     selected_ids = [ch["channel_id"] for ch in selected]
 
     if dry_run:
@@ -138,7 +136,7 @@ def run_daily_channel_refresh(
     # 🆕 預先建立 batch_id map（一次性查詢）
     batch_id_map = get_batch_id_map(db)
 
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     processed = []
     skipped = []
 
@@ -152,9 +150,7 @@ def run_daily_channel_refresh(
             if batch_id:
                 check_and_update_channel_info(db, channel_id, batch_id)
             else:
-                logger.warning(
-                    f"⚠️ 找不到頻道 {channel_id} 所屬的 batch_id，略過名稱與頭像同步"
-                )
+                logger.warning(f"⚠️ 找不到頻道 {channel_id} 所屬的 batch_id，略過名稱與頭像同步")
 
             # 🔄 抓取影片
             if full_scan:
@@ -162,9 +158,7 @@ def run_daily_channel_refresh(
                 limit_pages = None
             else:
                 last_sync_time = get_last_video_sync_time(db, channel_id)
-                safe_sync_time = (
-                    last_sync_time + timedelta(seconds=1) if last_sync_time else None
-                )
+                safe_sync_time = last_sync_time + timedelta(seconds=1) if last_sync_time else None
                 date_ranges = [(safe_sync_time, now)] if safe_sync_time else None
                 limit_pages = 2
 
@@ -201,9 +195,7 @@ def run_daily_channel_refresh(
                 checked_at=now,
                 sync_at=latest_sync if new_videos else None,
             )
-            processed.append(
-                {"channel_id": channel_id, "videos_written": videos_written}
-            )
+            processed.append({"channel_id": channel_id, "videos_written": videos_written})
 
         except Exception as e:
             logger.warning(f"⚠️ 更新頻道 {channel_id} 失敗：{e}", exc_info=True)
@@ -212,7 +204,7 @@ def run_daily_channel_refresh(
     try:
         index_ref.set(index_data)
         logger.info("📁 回寫 index_list 完成")
-    except GoogleAPIError as e:
+    except GoogleAPIError:
         logger.error("🔥 回寫 index_list 發生錯誤", exc_info=True)
 
     return {

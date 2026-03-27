@@ -1,7 +1,15 @@
-from flask import Blueprint, request, jsonify, make_response
-from utils.jwt_util import verify_jwt, is_admin_channel_id, generate_jwt, should_renew, JWT_EXP_HOURS
-from utils.rate_limiter import limiter
 import logging
+
+from flask import Blueprint, jsonify, make_response, request
+
+from utils.jwt_util import (
+    JWT_EXP_HOURS,
+    generate_jwt,
+    is_admin_channel_id,
+    should_renew,
+    verify_jwt,
+)
+from utils.rate_limiter import limiter
 
 
 def init_me_route(app, db):
@@ -45,9 +53,7 @@ def init_me_route(app, db):
             logging.warning(f"🔒 /api/me：token 已被撤銷，channel_id = {channel_id}")
             return jsonify({"error": "Token revoked"}), 403
 
-        logging.info(
-            f"✅ /api/me：驗證成功，channel_id = {channel_id}, isAdmin = {is_admin}"
-        )
+        logging.info(f"✅ /api/me：驗證成功，channel_id = {channel_id}, isAdmin = {is_admin}")
 
         # Firestore 讀取使用者名稱與頭像
         doc_ref = db.collection("channel_index").document(channel_id)

@@ -2,11 +2,13 @@ import hmac
 import logging
 import os
 from functools import wraps
-from flask import request, jsonify
+
+from flask import jsonify, request
 
 
 def require_admin_key(f):
     """驗證 Authorization: Bearer {ADMIN_API_KEY}，適用於 internal/admin 端點"""
+
     @wraps(f)
     def decorated(*args, **kwargs):
         expected = os.getenv("ADMIN_API_KEY")
@@ -20,10 +22,11 @@ def require_admin_key(f):
             logging.warning("🚫 缺少或格式錯誤的 Authorization header")
             return jsonify({"error": "Unauthorized"}), 401
 
-        token = auth_header[len(prefix):]
+        token = auth_header[len(prefix) :]
         if not hmac.compare_digest(token, expected):
             logging.warning("🚫 Admin API Key 驗證失敗")
             return jsonify({"error": "Unauthorized"}), 401
 
         return f(*args, **kwargs)
+
     return decorated

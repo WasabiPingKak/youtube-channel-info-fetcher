@@ -1,9 +1,11 @@
 # routes/ecpay_return_route.py
 import logging
-from flask import request
-from flask import Blueprint
+
+from flask import Blueprint, request
+
 from services.ecpay_service import handle_ecpay_return
 from utils.rate_limiter import limiter
+
 
 def init_ecpay_return_route(app, db):
     blueprint = Blueprint("ecpay_return", __name__)

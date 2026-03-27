@@ -1,15 +1,16 @@
-from flask import Blueprint, request, jsonify
-from google.cloud.firestore import Client
-from utils.admin_auth import require_admin_key
 import logging
 from datetime import datetime, timedelta
+
+from flask import Blueprint, jsonify, request
+from google.cloud.firestore import Client
 from pytz import timezone
 
-from services.trending.daily_builder import build_trending_for_date_range
 from services.channel_updater.daily_refresh_service import (
-    run_daily_channel_refresh,
     DEFAULT_REFRESH_LIMIT,
+    run_daily_channel_refresh,
 )
+from services.trending.daily_builder import build_trending_for_date_range
+from utils.admin_auth import require_admin_key
 
 logger = logging.getLogger(__name__)
 

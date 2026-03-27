@@ -3,19 +3,20 @@
 # CLI 工具：找出 channel_data/*/videos_batch 中重複的影片 ID
 # --------------------------------------------------
 
+import argparse
+import logging
 import os
 import sys
-import logging
-from pathlib import Path
-import argparse
 from collections import defaultdict
+from pathlib import Path
 
-from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 # ✅ 載入 Firestore 初始化設定
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from dotenv import load_dotenv
+
 from backend.services.firebase_init_service import init_firestore
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
@@ -41,11 +42,11 @@ def fetch_all_channel_ids(db: firestore.Client):
 
 
 def check_channel_batches(db: firestore.Client, channel_id: str, fix: bool = False):
-    from collections import defaultdict
-
     batch_col = db.collection("channel_data").document(channel_id).collection("videos_batch")
     batch_docs = {}
-    video_locations = defaultdict(list)  # videoId -> list of (batch_index, batch_id, index_in_batch, video)
+    video_locations = defaultdict(
+        list
+    )  # videoId -> list of (batch_index, batch_id, index_in_batch, video)
 
     try:
         # 讀取所有 batch 文件並建立反查表
@@ -113,7 +114,9 @@ def check_channel_batches(db: firestore.Client, channel_id: str, fix: bool = Fal
 
 
 def main():
-    parser = argparse.ArgumentParser(description="找出 channel_data/{channel}/videos_batch 中重複的影片 ID")
+    parser = argparse.ArgumentParser(
+        description="找出 channel_data/{channel}/videos_batch 中重複的影片 ID"
+    )
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--channel", type=str, help="指定要檢查的頻道 ID")
     group.add_argument("--all", action="store_true", help="檢查所有頻道")

@@ -1,10 +1,12 @@
-from google.api_core.exceptions import GoogleAPIError
 import logging
 import os
+
+from google.api_core.exceptions import GoogleAPIError
 
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 _ADMIN_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
 ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_IDS_RAW.split(",") if cid.strip()}
+
 
 def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
     """
@@ -35,6 +37,6 @@ def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
         logging.exception(f"[Index] ❌ Firestore 存取失敗：{channel_id}")
         raise
 
-    except (FileNotFoundError, ValueError) as e:
+    except (FileNotFoundError, ValueError):
         logging.exception(f"[Index] ❌ 更新 index 過程發生錯誤：{channel_id}")
         raise

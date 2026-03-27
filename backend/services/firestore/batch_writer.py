@@ -1,19 +1,25 @@
 import logging
-from datetime import datetime
-from dateutil.parser import parse
-from google.cloud.firestore import Client
+
 from google.api_core.exceptions import GoogleAPIError
-from typing import List, Dict
+from google.cloud.firestore import Client
+
 from utils.youtube_utils import normalize_video_item
 
 BATCH_SIZE = 2000
 logger = logging.getLogger(__name__)
 
+
 # Firestore 路徑常數
 def get_batch_doc_ref(db: Client, channel_id: str, batch_index: int):
-    return db.collection("channel_data").document(channel_id).collection("videos_batch").document(f"batch_{batch_index}")
+    return (
+        db.collection("channel_data")
+        .document(channel_id)
+        .collection("videos_batch")
+        .document(f"batch_{batch_index}")
+    )
 
-def write_batches_to_firestore(db: Client, channel_id: str, new_videos: List[Dict]) -> Dict:
+
+def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dict]) -> dict:
     try:
         # 🔎 預處理：只保留特定欄位
         normalized_videos = []
@@ -31,13 +37,15 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: List[Dic
                 logger.warning("⚠️ 略過不完整影片：%s", item)
                 continue
 
-            normalized_videos.append({
-                "videoId": video_id,
-                "title": title,
-                "publishDate": publish_date,
-                "duration": duration,
-                "type": video_type
-            })
+            normalized_videos.append(
+                {
+                    "videoId": video_id,
+                    "title": title,
+                    "publishDate": publish_date,
+                    "duration": duration,
+                    "type": video_type,
+                }
+            )
 
         # ✅ 先去除自身 videoId 重複（保留最新的）
         video_map = {}
@@ -47,15 +55,14 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: List[Dic
 
         if not normalized_videos:
             logger.info("📭 無有效影片可寫入")
-            return {
-                "batches_written": 0,
-                "videos_written": 0
-            }
+            return {"batches_written": 0, "videos_written": 0}
 
         # 取得目前最大的 batch index
         batch_col = db.collection("channel_data").document(channel_id).collection("videos_batch")
         docs = list(batch_col.stream())
-        batch_indices = [int(doc.id.replace("batch_", "")) for doc in docs if doc.id.startswith("batch_")]
+        batch_indices = [
+            int(doc.id.replace("batch_", "")) for doc in docs if doc.id.startswith("batch_")
+        ]
         max_index = max(batch_indices) if batch_indices else -1
 
         last_index = max_index
@@ -96,23 +103,21 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: List[Dic
                 remaining = [v for v in normalized_videos if v["videoId"] not in written_ids]
 
         # 剩下的資料分批寫入
-        new_batches = [remaining[i:i + BATCH_SIZE] for i in range(0, len(remaining), BATCH_SIZE)]
+        new_batches = [remaining[i : i + BATCH_SIZE] for i in range(0, len(remaining), BATCH_SIZE)]
         for i, batch in enumerate(new_batches):
             new_index = max_index + 1 + i
             get_batch_doc_ref(db, channel_id, new_index).set({"videos": batch})
             logger.info(f"📦 新增 batch_{new_index}，包含 {len(batch)} 筆影片")
 
-        logger.info(f"✅ 寫入完成，共 {len(normalized_videos)} 筆影片，分為 {len(new_batches) + (1 if merged_count else 0)} 批")
+        logger.info(
+            f"✅ 寫入完成，共 {len(normalized_videos)} 筆影片，分為 {len(new_batches) + (1 if merged_count else 0)} 批"
+        )
 
         return {
             "batches_written": len(new_batches) + (1 if merged_count else 0),
-            "videos_written": len(normalized_videos)
+            "videos_written": len(normalized_videos),
         }
 
     except GoogleAPIError as e:
         logger.error("🔥 寫入 Firestore batch 時發生錯誤: %s", e, exc_info=True)
-        return {
-            "batches_written": 0,
-            "videos_written": 0,
-            "error": str(e)
-        }
+        return {"batches_written": 0, "videos_written": 0, "error": str(e)}

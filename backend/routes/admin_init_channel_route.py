@@ -1,9 +1,12 @@
-from flask import Blueprint, request, jsonify
-from google.api_core.exceptions import GoogleAPIError
-from services.channel_initializer import run_channel_initialization
-from utils.channel_validator import is_valid_channel_id
-from utils.admin_auth import require_admin_key
 import logging
+
+from flask import Blueprint, jsonify, request
+from google.api_core.exceptions import GoogleAPIError
+
+from services.channel_initializer import run_channel_initialization
+from utils.admin_auth import require_admin_key
+from utils.channel_validator import is_valid_channel_id
+
 
 def init_admin_init_channel_route(app, db):
     bp = Blueprint("admin_init_channel", __name__)
@@ -24,11 +27,13 @@ def init_admin_init_channel_route(app, db):
             run_channel_initialization(db, target_channel_id)
             logging.info(f"✅ 管理員初始化完成：{target_channel_id}")
 
-            return jsonify({
-                "success": True,
-                "channel_id": target_channel_id,
-                "message": "初始化完成（由管理員執行）"
-            }), 200
+            return jsonify(
+                {
+                    "success": True,
+                    "channel_id": target_channel_id,
+                    "message": "初始化完成（由管理員執行）",
+                }
+            ), 200
 
         except GoogleAPIError:
             logging.exception("🔥 Firestore 操作失敗")

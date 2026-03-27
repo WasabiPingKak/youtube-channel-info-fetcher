@@ -1,7 +1,9 @@
-from functools import wraps
-from flask import request, jsonify
-from utils.jwt_util import verify_jwt
 import logging
+from functools import wraps
+
+from flask import jsonify, request
+
+from utils.jwt_util import verify_jwt
 
 
 def require_auth(db):
@@ -12,6 +14,7 @@ def require_auth(db):
 
     用法：@require_auth(db)
     """
+
     def decorator(f):
         @wraps(f)
         def decorated(*args, **kwargs):
@@ -46,5 +49,7 @@ def require_auth(db):
 
             kwargs["auth_channel_id"] = channel_id
             return f(*args, **kwargs)
+
         return decorated
+
     return decorator

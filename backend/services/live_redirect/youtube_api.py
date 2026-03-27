@@ -1,12 +1,14 @@
 # services/live_redirect/youtube_api.py
 
-import os
 import logging
+import os
+
 import requests
 from requests.exceptions import RequestException
 
 YOUTUBE_API_KEY = os.getenv("API_KEY")
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
+
 
 def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
     if not YOUTUBE_API_KEY:
@@ -16,11 +18,11 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
     results = []
 
     for i in range(0, len(video_ids), 50):
-        batch = video_ids[i:i + 50]
+        batch = video_ids[i : i + 50]
         params = {
             "part": "snippet,liveStreamingDetails,status",
             "id": ",".join(batch),
-            "key": YOUTUBE_API_KEY
+            "key": YOUTUBE_API_KEY,
         }
 
         try:

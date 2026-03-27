@@ -1,12 +1,11 @@
 import logging
-from typing import Dict
-from google.cloud.firestore import Client
+
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud.firestore import Client
+
 
 def write_category_counts_to_channel_index_batch(
-    db: Client,
-    channel_id: str,
-    counts: Dict[str, int]
+    db: Client, channel_id: str, counts: dict[str, int]
 ) -> None:
     """
     寫入 category_counts 至 channel_index_batch 中對應的頻道資料。
@@ -30,11 +29,11 @@ def write_category_counts_to_channel_index_batch(
                 if ch.get("channel_id") == channel_id:
                     channels[i]["category_counts"] = counts
 
-                    doc_ref.set({
-                        "channels": channels
-                    }, merge=True)
+                    doc_ref.set({"channels": channels}, merge=True)
 
-                    logging.info(f"📊 成功寫入 category_counts → {channel_id}（位於 {batch_id}, index={i}）")
+                    logging.info(
+                        f"📊 成功寫入 category_counts → {channel_id}（位於 {batch_id}, index={i}）"
+                    )
                     return
 
         logging.warning(f"❗ 找不到符合的 channel_id：{channel_id}，無法寫入 category_counts")

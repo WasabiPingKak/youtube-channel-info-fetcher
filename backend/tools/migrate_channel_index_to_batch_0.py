@@ -16,12 +16,14 @@
 # 2. 為了能匯入 backend.services 內部模組（如 firebase_init_service.py），需將專案根目錄加入 sys.path
 # ---------------------------------------------------
 
-import sys
 import os
+import sys
 from pathlib import Path
+
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 
 project_root = Path(__file__).resolve().parents[2]
@@ -33,17 +35,17 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 print("🔧 絕對 FIREBASE_KEY_PATH =", os.environ["FIREBASE_KEY_PATH"])
 
 import os
+
 print("🔧 GOOGLE_APPLICATION_CREDENTIALS =", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 print("🔧 FIREBASE_KEY_PATH =", os.getenv("FIREBASE_KEY_PATH"))
 
-import logging
 import argparse
+import logging
 
-from typing import List
-from google.cloud import firestore
 from google.api_core.exceptions import GoogleAPIError
-from backend.services.firebase_init_service import init_firestore
+from google.cloud import firestore
 
+from backend.services.firebase_init_service import init_firestore
 
 # ✅ 初始化 logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
@@ -54,7 +56,7 @@ BATCH_DOC_PATH = "channel_index_batch/batch_0"
 MAX_BATCH_SIZE = 1000
 
 
-def fetch_all_channel_index(db) -> List[dict]:
+def fetch_all_channel_index(db) -> list[dict]:
     logging.info("📥 開始讀取 channel_index/* 文件...")
     all_channels = []
     try:
@@ -72,7 +74,7 @@ def fetch_all_channel_index(db) -> List[dict]:
     return all_channels
 
 
-def write_to_batch_0(db, channels: List[dict], dry_run: bool = False):
+def write_to_batch_0(db, channels: list[dict], dry_run: bool = False):
     if len(channels) > MAX_BATCH_SIZE:
         raise ValueError(f"❌ 頻道數量超過 {MAX_BATCH_SIZE}，請自行分批處理")
 
@@ -86,14 +88,17 @@ def write_to_batch_0(db, channels: List[dict], dry_run: bool = False):
         return
 
     try:
-        batch_doc.set({
-            "channels": channels,
-            "updatedAt": firestore.SERVER_TIMESTAMP,  # 雖然建議用 firestore.SERVER_TIMESTAMP，也可用這種方式
-        })
+        batch_doc.set(
+            {
+                "channels": channels,
+                "updatedAt": firestore.SERVER_TIMESTAMP,  # 雖然建議用 firestore.SERVER_TIMESTAMP，也可用這種方式
+            }
+        )
         logging.info(f"✅ 寫入 batch_0 成功，共 {len(channels)} 筆")
     except GoogleAPIError:
         logging.exception("❌ 寫入 batch_0 時發生錯誤")
         raise
+
 
 def main():
     parser = argparse.ArgumentParser(description="將 channel_index 資料移轉至 batch_0")
@@ -106,6 +111,7 @@ def main():
         write_to_batch_0(db, channels, dry_run=args.dry_run)
     except Exception as e:
         logging.error(f"❌ 遷移流程中斷：{e}")
+
 
 if __name__ == "__main__":
     main()

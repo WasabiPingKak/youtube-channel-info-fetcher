@@ -2,7 +2,9 @@
 
 import logging
 from datetime import timedelta
+
 from google.cloud.firestore import Client
+
 
 def get_pending_video_ids(db: Client, force: bool, now) -> list[dict]:
     today_str = now.date().isoformat()

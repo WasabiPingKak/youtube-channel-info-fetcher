@@ -1,7 +1,8 @@
 # routes/donation_route.py
-from flask import Blueprint, jsonify
-from datetime import datetime
 import logging
+from datetime import datetime
+
+from flask import Blueprint, jsonify
 
 
 def init_donation_route(app, db):
@@ -45,31 +46,28 @@ def init_donation_route(app, db):
 
                     if isinstance(patron_note, str) and "vtmap" in patron_note.lower():
                         try:
-                            payment_dt = datetime.strptime(
-                                payment_date_str, "%Y/%m/%d+%H:%M:%S"
+                            payment_dt = datetime.strptime(payment_date_str, "%Y/%m/%d+%H:%M:%S")
+                            result.append(
+                                {
+                                    "patronName": patron_name,
+                                    "patronNote": patron_note,
+                                    "tradeAmt": trade_amt,
+                                    "paymentDate": payment_date_str,
+                                    "_sortKey": payment_dt,
+                                }
                             )
-                            result.append({
-                                "patronName": patron_name,
-                                "patronNote": patron_note,
-                                "tradeAmt": trade_amt,
-                                "paymentDate": payment_date_str,
-                                "_sortKey": payment_dt,
-                            })
                         except Exception as parse_err:
                             logging.warning(
-                                "[Donation] 日期格式解析失敗: %s | %s",
-                                payment_date_str, parse_err
+                                "[Donation] 日期格式解析失敗: %s | %s", payment_date_str, parse_err
                             )
 
-            sorted_result = sorted(
-                result, key=lambda x: x["_sortKey"], reverse=True
-            )
+            sorted_result = sorted(result, key=lambda x: x["_sortKey"], reverse=True)
             for r in sorted_result:
                 r.pop("_sortKey", None)
 
             return jsonify(sorted_result)
 
-        except Exception as e:
+        except Exception:
             logging.exception("[Donation] 讀取捐款資料失敗")
             return jsonify({"error": "Internal server error"}), 500
 

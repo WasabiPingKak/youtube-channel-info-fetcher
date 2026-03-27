@@ -4,13 +4,15 @@ services/trending/trending_loader.py
 """
 
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Any
+from datetime import UTC, datetime, timedelta
+from typing import Any
+
 from google.cloud.firestore import Client
 
 logger = logging.getLogger(__name__)
 
-def load_trending_videos_by_date_range(db: Client, days: int = 30) -> List[Dict[str, Any]]:
+
+def load_trending_videos_by_date_range(db: Client, days: int = 30) -> list[dict[str, Any]]:
     """
     從 Firestore 'trending_games_daily/{YYYY-MM-DD}' 批次載入影片，
     並合併成一份包含 'game', 'channelId', 'publishDate', 及其他欄位的影片清單。
@@ -22,8 +24,8 @@ def load_trending_videos_by_date_range(db: Client, days: int = 30) -> List[Dict[
     回傳:
         List of video dicts
     """
-    videos: List[Dict[str, Any]] = []
-    today = datetime.now(timezone.utc).date()
+    videos: list[dict[str, Any]] = []
+    today = datetime.now(UTC).date()
     dates = [(today - timedelta(days=i)).isoformat() for i in range(1, days + 1)]
     logger.info(f"📅 讀取過去 {days} 天資料：{dates[-1]} ~ {dates[0]}")
 

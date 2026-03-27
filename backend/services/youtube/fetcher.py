@@ -1,19 +1,21 @@
-import os
 import datetime
-import pytz
 import logging
+import os
 
-from services.youtube.client import get_youtube_service, get_channel_id, get_uploads_playlist_id
-from services.youtube.videos import get_video_ids_from_playlist, fetch_video_details
+import pytz
+
+from services.youtube.client import get_channel_id, get_uploads_playlist_id, get_youtube_service
+from services.youtube.videos import fetch_video_details, get_video_ids_from_playlist
 from utils.youtube_utils import get_video_type
+
 
 def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
     api_key = os.getenv("API_KEY")
 
     if not api_key:
-        raise EnvironmentError("❌ 未設定 API_KEY 環境變數")
+        raise OSError("❌ 未設定 API_KEY 環境變數")
     if not input_channel:
-        raise EnvironmentError("❌ 未設定 INPUT_CHANNEL 環境變數")
+        raise OSError("❌ 未設定 INPUT_CHANNEL 環境變數")
 
     youtube = get_youtube_service(api_key)
     if youtube is None:
@@ -40,7 +42,7 @@ def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
     if date_ranges:
         logging.info("🔎 啟用日期篩選，範圍如下：")
         for i, (start, end) in enumerate(date_ranges):
-            logging.info(f"  ⏳ 區間 {i+1}: {start.isoformat()} ～ {end.isoformat()}")
+            logging.info(f"  ⏳ 區間 {i + 1}: {start.isoformat()} ～ {end.isoformat()}")
 
     results = []
     skipped = 0
@@ -52,7 +54,9 @@ def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
                 continue
 
             # 正確轉換時區處理 publishedAt
-            published_dt = datetime.datetime.strptime(video['snippet']['publishedAt'], "%Y-%m-%dT%H:%M:%SZ")
+            published_dt = datetime.datetime.strptime(
+                video["snippet"]["publishedAt"], "%Y-%m-%dT%H:%M:%SZ"
+            )
             published_dt = pytz.UTC.localize(published_dt).astimezone(pytz.timezone("Asia/Taipei"))
 
             if date_ranges and not any(start <= published_dt < end for start, end in date_ranges):
@@ -63,7 +67,9 @@ def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
             results.append(video)
 
         except Exception as e:
-            logging.error("🔥 處理影片時發生錯誤（ID: %s）: %s", video.get("id", "未知"), e, exc_info=True)
+            logging.error(
+                "🔥 處理影片時發生錯誤（ID: %s）: %s", video.get("id", "未知"), e, exc_info=True
+            )
             continue
 
     logging.info(f"✅ 處理完成，共取得 {len(results)} 筆，略過 {skipped} 筆")

@@ -6,4 +6,6 @@ _CHANNEL_ID_PATTERN = re.compile(r"^UC[\w-]{22}$")
 
 def is_valid_channel_id(channel_id: str) -> bool:
     """驗證 YouTube channel ID 格式是否合法"""
-    return bool(channel_id and isinstance(channel_id, str) and _CHANNEL_ID_PATTERN.match(channel_id))
+    return bool(
+        channel_id and isinstance(channel_id, str) and _CHANNEL_ID_PATTERN.match(channel_id)
+    )

@@ -1,5 +1,7 @@
 import logging
+
 from google.api_core.exceptions import GoogleAPIError
+
 
 def build_channel_metadata_lookup(db) -> dict:
     """
@@ -23,7 +25,7 @@ def build_channel_metadata_lookup(db) -> dict:
                     lookup[cid] = {
                         "name": entry.get("name"),
                         "thumbnail": entry.get("thumbnail"),
-                        "countryCode": entry.get("countryCode", [])
+                        "countryCode": entry.get("countryCode", []),
                     }
         logging.info(f"🧾 從 channel_index_batch 建立 metadata lookup，共 {len(lookup)} 筆")
     except GoogleAPIError as e:

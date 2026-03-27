@@ -1,12 +1,15 @@
-from flask import Blueprint, request, jsonify
-from google.cloud.firestore import Client
-from datetime import datetime, timedelta, timezone
 import logging
-from services.live_redirect.notify_queue_reader import get_pending_video_ids
+from datetime import UTC, datetime, timedelta
+
+from flask import Blueprint, jsonify, request
+from google.cloud.firestore import Client
+
 from services.live_redirect.cache_updater import process_video_ids
+from services.live_redirect.notify_queue_reader import get_pending_video_ids
 from utils.rate_limiter import limiter
 
 live_redirect_bp = Blueprint("live_redirect", __name__)
+
 
 def init_live_redirect_route(app, db: Client):
     @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
@@ -15,7 +18,7 @@ def init_live_redirect_route(app, db: Client):
         try:
             force = request.args.get("force", "false").lower() == "true"
             skip_cache = request.args.get("skipCache", "false").lower() == "true"
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
 
             # 🔍 檢查是否已有新鮮快取
             if not skip_cache:

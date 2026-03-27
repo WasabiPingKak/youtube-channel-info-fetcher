@@ -1,12 +1,14 @@
 import logging
 import re
-from typing import List, Dict, Any
+from typing import Any
+
 
 def normalize(text: str) -> str:
     # 移除 @某人ID（如 @wasabi_pingkak）
     text = re.sub(r"@\w+", "", text)
     # 轉小寫並去除空白與全形空白
     return text.lower().replace(" ", "").replace("　", "")
+
 
 def tokenize_title(title: str) -> set[str]:
     """
@@ -27,6 +29,7 @@ def tokenize_title(title: str) -> set[str]:
 
     return english_tokens
 
+
 def keyword_in_title(keyword: str, tokens: set[str], raw_title: str) -> bool:
     """
     根據關鍵字類型使用不同策略：
@@ -38,10 +41,20 @@ def keyword_in_title(keyword: str, tokens: set[str], raw_title: str) -> bool:
 
     if re.fullmatch(r"[a-z0-9]{2,}", kw_lower):
         result = kw_lower in tokens
-        logging.debug("🔎 keyword_in_title | keyword=%s | type=EN | tokens=%s | result=%s", keyword, tokens, result)
+        logging.debug(
+            "🔎 keyword_in_title | keyword=%s | type=EN | tokens=%s | result=%s",
+            keyword,
+            tokens,
+            result,
+        )
     else:
         result = keyword.lower() in raw_title.lower()
-        logging.debug("🔎 keyword_in_title | keyword=%r | raw_title=%r | result=%s", keyword, raw_title, result)
+        logging.debug(
+            "🔎 keyword_in_title | keyword=%r | raw_title=%r | result=%s",
+            keyword,
+            raw_title,
+            result,
+        )
 
     return result
 
@@ -51,12 +64,13 @@ TYPE_MAP = {
     "直播": "live",
     "影片": "videos",
     "Shorts": "shorts",
-    "shorts": "shorts"
+    "shorts": "shorts",
 }
 
+
 def match_category_and_game(
-    title: str, video_type: str, settings: Dict[str, Any]
-) -> Dict[str, Any]:
+    title: str, video_type: str, settings: dict[str, Any]
+) -> dict[str, Any]:
     """
     根據設定檔判斷影片標題屬於哪些主分類，並解析遊戲名稱。
 
@@ -69,9 +83,9 @@ def match_category_and_game(
     }
     """
     try:
-        matched_categories: List[str] = []
-        matched_keywords: List[str] = []
-        matched_pairs: List[Dict[str, Any]] = []
+        matched_categories: list[str] = []
+        matched_keywords: list[str] = []
+        matched_pairs: list[dict[str, Any]] = []
         matched_game: str | None = None
 
         logging.debug("🧪 settings 結構：%s", settings.keys())
@@ -110,19 +124,19 @@ def match_category_and_game(
                     if main_category not in matched_categories:
                         matched_categories.append(main_category)
                     matched_keywords.extend(hit_keywords)
-                    matched_pairs.append({
-                        "main": main_category,
-                        "keyword": sub_name,
-                        "hitKeywords": hit_keywords
-                    })
-                    logging.debug("🏷️ 命中分類 [%s > %s] via %s", main_category, sub_name, hit_keywords)
+                    matched_pairs.append(
+                        {"main": main_category, "keyword": sub_name, "hitKeywords": hit_keywords}
+                    )
+                    logging.debug(
+                        "🏷️ 命中分類 [%s > %s] via %s", main_category, sub_name, hit_keywords
+                    )
 
         # ────────────────────────────────────────────────
         # 2️⃣ 遊戲分類比對
         # ────────────────────────────────────────────────
         game_entries = category_settings.get("遊戲", {})
         matched_game_name: str | None = None
-        hit_keywords: List[str] = []
+        hit_keywords: list[str] = []
 
         if isinstance(game_entries, dict):
             for game_name, keywords in game_entries.items():
@@ -137,11 +151,9 @@ def match_category_and_game(
                     matched_game_name = game_name
                     matched_keywords.extend(local_hits)
                     hit_keywords = local_hits
-                    matched_pairs.append({
-                        "main": "遊戲",
-                        "keyword": game_name,
-                        "hitKeywords": hit_keywords
-                    })
+                    matched_pairs.append(
+                        {"main": "遊戲", "keyword": game_name, "hitKeywords": hit_keywords}
+                    )
                     logging.debug("🎮 命中遊戲 [%s] via keywords %s", game_name, local_hits)
                     break
 
@@ -153,9 +165,7 @@ def match_category_and_game(
             if "遊戲" not in matched_categories:
                 matched_categories.append("遊戲")
         else:
-            matched_categories = [
-                cat for cat in matched_categories if cat != "遊戲"
-            ]
+            matched_categories = [cat for cat in matched_categories if cat != "遊戲"]
 
         matched_categories = list(dict.fromkeys(matched_categories))
         matched_keywords = list(dict.fromkeys(matched_keywords))
@@ -164,14 +174,19 @@ def match_category_and_game(
             matched_categories = ["其他"]
             logging.debug("➕ 無命中分類，自動套用 [其他]")
 
-        logging.debug("✅ [match] 結果 | Categories: %s | Game: %s | Keywords: %s | Pairs: %s",
-                      matched_categories, matched_game, matched_keywords, matched_pairs)
+        logging.debug(
+            "✅ [match] 結果 | Categories: %s | Game: %s | Keywords: %s | Pairs: %s",
+            matched_categories,
+            matched_game,
+            matched_keywords,
+            matched_pairs,
+        )
 
         return {
             "matchedCategories": matched_categories,
             "game": matched_game,
             "matchedKeywords": matched_keywords,
-            "matchedPairs": matched_pairs
+            "matchedPairs": matched_pairs,
         }
 
     except Exception:  # noqa: BLE001
@@ -180,5 +195,5 @@ def match_category_and_game(
             "matchedCategories": ["其他"],
             "game": None,
             "matchedKeywords": [],
-            "matchedPairs": [{"main": "其他", "keyword": "", "hitKeywords": []}]
+            "matchedPairs": [{"main": "其他", "keyword": "", "hitKeywords": []}],
         }

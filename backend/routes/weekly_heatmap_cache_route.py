@@ -1,7 +1,10 @@
-from flask import Blueprint, jsonify
 import logging
-from utils.admin_auth import require_admin_key
+
+from flask import Blueprint, jsonify
+
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
+from utils.admin_auth import require_admin_key
+
 
 def init_weekly_heatmap_cache_route(app, db):
     bp = Blueprint("weekly_heatmap_cache_route", __name__)
@@ -16,7 +19,7 @@ def init_weekly_heatmap_cache_route(app, db):
                 return jsonify({"message": "✅ 快取更新成功"}), 200
             else:
                 return jsonify({"error": "⚠️ 快取更新失敗"}), 500
-        except Exception as e:
+        except Exception:
             logging.error("🔥 快取更新時發生例外", exc_info=True)
             return jsonify({"error": "快取更新失敗"}), 500
 
@@ -46,12 +49,12 @@ def init_weekly_heatmap_cache_route(app, db):
             response = {
                 "generatedAt": weekly_data.get("generatedAt"),
                 "version": weekly_data.get("version", 1),
-                "channels": merged_channels_list
+                "channels": merged_channels_list,
             }
 
             return jsonify(response), 200
 
-        except Exception as e:
+        except Exception:
             logging.error("🔥 讀取 weekly heatmap cache 失敗", exc_info=True)
             return jsonify({"error": "internal server error"}), 500
 

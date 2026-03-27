@@ -1,8 +1,10 @@
-from flask import Blueprint, request, jsonify
+import logging
+from datetime import UTC, datetime, timedelta
+
+from flask import Blueprint, jsonify, request
+
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 from utils.channel_validator import is_valid_channel_id
-import logging
-from datetime import datetime, timedelta, timezone
 
 logger = logging.getLogger(__name__)
 video_bp = Blueprint("video", __name__)
@@ -14,9 +16,7 @@ def init_video_routes(app, db):
         try:
             data = request.get_json()
             if data is None:
-                logger.warning(
-                    "⚠️ 無法解析 JSON，可能缺少 Content-Type: application/json"
-                )
+                logger.warning("⚠️ 無法解析 JSON，可能缺少 Content-Type: application/json")
 
             logger.info(f"📥 請求內容：{data}")
 
@@ -32,9 +32,7 @@ def init_video_routes(app, db):
                 logger.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
                 return jsonify({"error": "channel_id 格式不合法"}), 400
 
-            logger.info(
-                f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）"
-            )
+            logger.info(f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）")
 
             if only_settings:
                 settings = get_merged_settings(db, channel_id)
@@ -59,15 +57,13 @@ def init_video_routes(app, db):
             result = get_classified_videos(db, channel_id, start=start, end=end)
             return jsonify({"videos": result})
 
-        except Exception as e:
+        except Exception:
             logger.exception("🔥 /api/videos/classified 發生錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @video_bp.route("/api/videos/check-update", methods=["GET"])
     def check_update():
         try:
-            from services.youtube.fetcher import get_video_data
-
             channel_id = request.args.get("channelId")
             if not channel_id:
                 return jsonify({"error": "Missing channelId"}), 400
@@ -76,7 +72,7 @@ def init_video_routes(app, db):
 
             index_ref = db.collection("channel_sync_index").document("index_list")
             doc = index_ref.get()
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             now_iso = now.isoformat()
 
             last_checked_at = None
@@ -84,9 +80,7 @@ def init_video_routes(app, db):
             should_update = False
 
             if not doc.exists:
-                logger.info(
-                    f"📄 [check-update] 尚未存在 index_list，初始化頻道 {channel_id}"
-                )
+                logger.info(f"📄 [check-update] 尚未存在 index_list，初始化頻道 {channel_id}")
                 index_ref.set(
                     {
                         "channels": [
@@ -122,9 +116,7 @@ def init_video_routes(app, db):
                             delta = now - last_checked_dt
                             if delta > timedelta(hours=12):
                                 should_update = True
-                                logger.info(
-                                    f"⏰ [check-update] 距離上次檢查已超過 {delta}，需更新"
-                                )
+                                logger.info(f"⏰ [check-update] 距離上次檢查已超過 {delta}，需更新")
 
                         if should_update:
                             ch["lastCheckedAt"] = now_iso
@@ -174,7 +166,7 @@ def init_video_routes(app, db):
 
             return jsonify(response)
 
-        except Exception as e:
+        except Exception:
             logger.exception("🔥 /api/videos/check-update 發生錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 

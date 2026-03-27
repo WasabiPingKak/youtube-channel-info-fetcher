@@ -1,18 +1,22 @@
-from datetime import datetime
 import logging
+from datetime import datetime
+
 from google.api_core.exceptions import GoogleAPIError
+
 
 def write_active_time_all_to_channel_index_batch(
     db,
     channel_id: str,
     slot_counter: list[int],  # [凌, 早, 午, 晚]
     total_count: int,
-    updated_at: datetime
+    updated_at: datetime,
 ):
     try:
         # 從 batch_0 開始掃描所有 batch 文件
         batch_prefix = "channel_index_batch"
-        batch_ids = [doc.id for doc in db.collection(batch_prefix).stream() if doc.id.startswith("batch_")]
+        batch_ids = [
+            doc.id for doc in db.collection(batch_prefix).stream() if doc.id.startswith("batch_")
+        ]
         batch_ids.sort()  # 保證順序掃描（雖然順序不影響）
 
         for batch_id in batch_ids:
@@ -32,17 +36,22 @@ def write_active_time_all_to_channel_index_batch(
                         "午": slot_counter[2],
                         "晚": slot_counter[3],
                         "totalCount": total_count,
-                        "updatedAt": updated_at
+                        "updatedAt": updated_at,
                     }
 
                     channels[i]["active_time_all"] = new_stat
 
                     # 寫回整個 channels 陣列
-                    doc_ref.set({
-                        "channels": channels,
-                    }, merge=True)
+                    doc_ref.set(
+                        {
+                            "channels": channels,
+                        },
+                        merge=True,
+                    )
 
-                    logging.info(f"📝 成功寫入 active_time_all → {channel_id}（位於 {batch_id}, index={i}）")
+                    logging.info(
+                        f"📝 成功寫入 active_time_all → {channel_id}（位於 {batch_id}, index={i}）"
+                    )
                     return
 
         logging.warning(f"❗ 找不到符合的 channel_id：{channel_id}，無法寫入 active_time_all")

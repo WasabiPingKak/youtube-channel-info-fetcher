@@ -3,13 +3,12 @@
 # CLI 工具：比對 channel_index_batch 與 channel_index/{channelId} 資料是否一致
 # --------------------------------------------------
 
+import argparse
+import json
+import logging
 import os
 import sys
-import logging
 from pathlib import Path
-from typing import List, Dict
-import json
-import argparse
 
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
@@ -17,6 +16,7 @@ from google.cloud import firestore
 # ✅ 載入 .env.local 並設定 FIREBASE_KEY_PATH
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 from dotenv import load_dotenv
+
 from backend.services.firebase_init_service import init_firestore
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
@@ -32,7 +32,8 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(mes
 BATCH_COLLECTION = "channel_index_batch"
 INDEX_COLLECTION = "channel_index"
 
-def fetch_all_batch_channels(db: firestore.Client) -> List[Dict]:
+
+def fetch_all_batch_channels(db: firestore.Client) -> list[dict]:
     logging.info("📥 正在讀取 channel_index_batch/* 所有資料...")
     result = []
     try:
@@ -49,7 +50,8 @@ def fetch_all_batch_channels(db: firestore.Client) -> List[Dict]:
         logging.exception("❌ Firestore 存取錯誤")
         raise
 
-def compare_documents(expected: Dict, actual: Dict) -> List[str]:
+
+def compare_documents(expected: dict, actual: dict) -> list[str]:
     differences = []
 
     # 移除不需比對的欄位（如 channel_id）
@@ -63,7 +65,9 @@ def compare_documents(expected: Dict, actual: Dict) -> List[str]:
     # 值不同的欄位
     for key in expected_keys & actual_keys:
         if expected_filtered[key] != actual_filtered[key]:
-            differences.append(f"  - {key} 欄位不同：\n      🔸 預期：{expected_filtered[key]}\n      🔹 實際：{actual_filtered[key]}")
+            differences.append(
+                f"  - {key} 欄位不同：\n      🔸 預期：{expected_filtered[key]}\n      🔹 實際：{actual_filtered[key]}"
+            )
 
     # 遺漏欄位
     missing_keys = list(expected_keys - actual_keys)
@@ -77,7 +81,10 @@ def compare_documents(expected: Dict, actual: Dict) -> List[str]:
 
     return differences
 
-def check_consistency(db: firestore.Client, batch_channels: List[Dict], dry_run: bool = True) -> None:
+
+def check_consistency(
+    db: firestore.Client, batch_channels: list[dict], dry_run: bool = True
+) -> None:
     missing = []
     mismatched = []
     matched = 0
@@ -97,12 +104,14 @@ def check_consistency(db: firestore.Client, batch_channels: List[Dict], dry_run:
         differences = compare_documents(ch, firestore_data)
 
         if differences:
-            mismatched.append({
-                "channel_id": channel_id,
-                "name": ch.get("name", ""),
-                "differences": differences,
-                "replacement": ch
-            })
+            mismatched.append(
+                {
+                    "channel_id": channel_id,
+                    "name": ch.get("name", ""),
+                    "differences": differences,
+                    "replacement": ch,
+                }
+            )
         else:
             matched += 1
 
@@ -130,7 +139,13 @@ def check_consistency(db: firestore.Client, batch_channels: List[Dict], dry_run:
         print("\n🛠️ 預覽將修正的頻道資料（Dry Run 模式，不會實際寫入）：")
         for ch in to_update:
             print(f"\n📌 {ch['channel_id']}（{ch.get('name', '')}）")
-            print(json.dumps({k: v for k, v in ch.items() if k not in {"channel_id", "joinedAt"}}, indent=2, ensure_ascii=False))
+            print(
+                json.dumps(
+                    {k: v for k, v in ch.items() if k not in {"channel_id", "joinedAt"}},
+                    indent=2,
+                    ensure_ascii=False,
+                )
+            )
     else:
         print("\n📝 實際開始修正 Firestore 資料...")
         for ch in to_update:
@@ -142,6 +157,7 @@ def check_consistency(db: firestore.Client, batch_channels: List[Dict], dry_run:
                 print(json.dumps(filtered_data, indent=2, ensure_ascii=False))
             except Exception as e:
                 print(f"❌ 寫入失敗：{channel_id} - {e}")
+
 
 def main():
     parser = argparse.ArgumentParser(description="比對 channel_index 與 batch 一致性")

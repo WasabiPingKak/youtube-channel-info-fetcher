@@ -1,9 +1,12 @@
-from flask import Blueprint, request, jsonify
 import logging
+
+from flask import Blueprint, jsonify, request
+
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
+
 
 def init_my_settings_route(app, db):
     bp = Blueprint("my_settings", __name__, url_prefix="/api/my-settings")
@@ -20,7 +23,9 @@ def init_my_settings_route(app, db):
             return jsonify({"error": "channelId 格式不合法"}), 400
 
         if channel_id != auth_channel_id:
-            logger.warning(f"⛔ get_my_settings 嘗試讀取他人頻道設定：JWT={auth_channel_id}, 請求 channel_id={channel_id}")
+            logger.warning(
+                f"⛔ get_my_settings 嘗試讀取他人頻道設定：JWT={auth_channel_id}, 請求 channel_id={channel_id}"
+            )
             return jsonify({"error": "無權限存取此頻道"}), 403
 
         try:
@@ -30,19 +35,21 @@ def init_my_settings_route(app, db):
                 batch = doc.to_dict()
                 for item in batch.get("channels", []):
                     if item.get("channel_id") == channel_id:
-                        return jsonify({
-                            "enabled": item.get("enabled", False),
-                            "countryCode": item.get("countryCode", []),
-                            "channel_id": item.get("channel_id"),
-                            "name": item.get("name"),
-                            "thumbnail": item.get("thumbnail"),
-                            "url": item.get("url"),
-                            "show_live_status": item.get("show_live_status", True)
-                        })
+                        return jsonify(
+                            {
+                                "enabled": item.get("enabled", False),
+                                "countryCode": item.get("countryCode", []),
+                                "channel_id": item.get("channel_id"),
+                                "name": item.get("name"),
+                                "thumbnail": item.get("thumbnail"),
+                                "url": item.get("url"),
+                                "show_live_status": item.get("show_live_status", True),
+                            }
+                        )
 
             return jsonify({"error": "Channel not found"}), 404
 
-        except Exception as e:
+        except Exception:
             logger.exception("❌ get_my_settings 發生例外錯誤")
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
@@ -63,7 +70,9 @@ def init_my_settings_route(app, db):
             if not is_valid_channel_id(channel_id):
                 return jsonify({"error": "channelId 格式不合法"}), 400
             if channel_id != auth_channel_id:
-                logger.warning(f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={channel_id}")
+                logger.warning(
+                    f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={channel_id}"
+                )
                 return jsonify({"error": "無權限修改此頻道資料"}), 403
 
             if isinstance(country_code, list):
@@ -90,20 +99,21 @@ def init_my_settings_route(app, db):
             if not target_doc_ref:
                 return jsonify({"error": "Channel not found"}), 404
 
-            target_doc_ref.update({
-                "channels": target_channels
-            })
+            target_doc_ref.update({"channels": target_channels})
 
             index_doc_ref = db.collection("channel_index").document(channel_id)
-            index_doc_ref.set({
-                "countryCode": country_code,
-                "enabled": enabled,
-                "show_live_status": show_live_status
-            }, merge=True)
+            index_doc_ref.set(
+                {
+                    "countryCode": country_code,
+                    "enabled": enabled,
+                    "show_live_status": show_live_status,
+                },
+                merge=True,
+            )
 
             return jsonify({"success": True}), 200
 
-        except Exception as e:
+        except Exception:
             logger.exception("❌ update_my_settings 發生例外錯誤")
             return jsonify({"error": "內部伺服器錯誤"}), 500
 

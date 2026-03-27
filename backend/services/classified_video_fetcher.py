@@ -1,12 +1,12 @@
-from typing import List, Dict, Optional
-from firebase_admin.firestore import Client
-from utils.categorizer import match_category_and_game
-from utils.youtube_utils import normalize_video_item
-from utils.settings_main_merger import merge_main_categories_with_user_config
-from utils.settings_game_merger import merge_game_categories_with_aliases
+import logging
 from datetime import datetime
 
-import logging
+from firebase_admin.firestore import Client
+
+from utils.categorizer import match_category_and_game
+from utils.settings_game_merger import merge_game_categories_with_aliases
+from utils.settings_main_merger import merge_main_categories_with_user_config
+from utils.youtube_utils import normalize_video_item
 
 logger = logging.getLogger(__name__)
 
@@ -20,16 +20,13 @@ type_map = {
 }
 
 
-def get_merged_settings(db: Client, channel_id: str) -> Dict:
+def get_merged_settings(db: Client, channel_id: str) -> dict:
     """
     讀取並合併後端設定，包含主分類與遊戲別名。
     可用於影片分類前的準備，或除錯用途。
     """
     settings_ref = (
-        db.collection("channel_data")
-        .document(channel_id)
-        .collection("settings")
-        .document("config")
+        db.collection("channel_data").document(channel_id).collection("settings").document("config")
     )
     settings_doc = settings_ref.get()
     if not settings_doc.exists:
@@ -50,9 +47,9 @@ def get_merged_settings(db: Client, channel_id: str) -> Dict:
 def get_classified_videos(
     db: Client,
     channel_id: str,
-    start: Optional[datetime] = None,
-    end: Optional[datetime] = None,
-) -> List[Dict]:
+    start: datetime | None = None,
+    end: datetime | None = None,
+) -> list[dict]:
     """
     從 videos_batch 撈出影片，套用分類設定後回傳，格式與舊 API 一致。
     - 支援傳入 start / end 為 UTC+0 時間範圍（datetime，含時區）
@@ -64,11 +61,7 @@ def get_classified_videos(
         if not settings:
             return []
 
-        batch_ref = (
-            db.collection("channel_data")
-            .document(channel_id)
-            .collection("videos_batch")
-        )
+        batch_ref = db.collection("channel_data").document(channel_id).collection("videos_batch")
         docs = list(batch_ref.stream())
         raw_items = []
         for doc in docs:
@@ -87,16 +80,14 @@ def get_classified_videos(
 
             # 🕓 時間過濾處理
             try:
-                publish_dt = datetime.fromisoformat(
-                    item["publishDate"]
-                )  # aware UTC+0 datetime
+                publish_dt = datetime.fromisoformat(item["publishDate"])  # aware UTC+0 datetime
                 if start and publish_dt < start:
                     skipped += 1
                     continue
                 if end and publish_dt > end:
                     skipped += 1
                     continue
-            except ValueError as e:
+            except ValueError:
                 logger.warning("⚠️ 解析 publishDate 失敗：%s", item["publishDate"])
                 continue
 

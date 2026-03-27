@@ -1,10 +1,12 @@
 import logging
 import os
 import time
+from datetime import UTC, datetime
+
 import requests
-from datetime import datetime, timezone
-from flask import Blueprint, request, Response, jsonify
+from flask import Blueprint, jsonify, request
 from google.cloud.firestore import Client
+
 from utils.admin_auth import require_admin_key
 from utils.channel_validator import is_valid_channel_id
 from utils.cloud_tasks_client import dispatch_tasks_batch
@@ -50,9 +52,7 @@ def subscribe_channel_by_id(channel_id: str) -> bool:
             logging.info(f"✅ 訂閱成功：{channel_id}")
             return True
         else:
-            logging.warning(
-                f"❗訂閱失敗：{channel_id} → {response.status_code} - {response.text}"
-            )
+            logging.warning(f"❗訂閱失敗：{channel_id} → {response.status_code} - {response.text}")
             return False
     except requests.exceptions.RequestException:
         logging.error(f"🔥 單筆訂閱發生例外：{channel_id}", exc_info=True)
@@ -62,19 +62,21 @@ def subscribe_channel_by_id(channel_id: str) -> bool:
 def _log_job_result(db: Client, job_name: str, result: dict):
     """將排程任務執行結果寫入 Firestore scheduler_job_logs"""
     try:
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         doc_id = f"{job_name}_{now.strftime('%Y%m%d_%H%M%S')}"
-        db.collection("scheduler_job_logs").document(doc_id).set({
-            "job_name": job_name,
-            "executed_at": now,
-            "duration_seconds": result.get("duration_seconds"),
-            "status": result.get("status"),
-            "total_channels": result.get("total_channels", 0),
-            "dispatched": result.get("dispatched", 0),
-            "failed": result.get("failed", 0),
-            "skipped": result.get("skipped", 0),
-            "message": result.get("message"),
-        })
+        db.collection("scheduler_job_logs").document(doc_id).set(
+            {
+                "job_name": job_name,
+                "executed_at": now,
+                "duration_seconds": result.get("duration_seconds"),
+                "status": result.get("status"),
+                "total_channels": result.get("total_channels", 0),
+                "dispatched": result.get("dispatched", 0),
+                "failed": result.get("failed", 0),
+                "skipped": result.get("skipped", 0),
+                "message": result.get("message"),
+            }
+        )
     except Exception:
         logging.error("🔥 寫入 scheduler_job_logs 失敗", exc_info=True)
 
@@ -140,15 +142,14 @@ def init_websub_subscribe_route(app, db: Client):
             result["duration_seconds"] = round(time.monotonic() - start_time, 2)
             result["status"] = "success" if result["failed"] == 0 else "partial"
             result["message"] = (
-                f"已派發 {result['dispatched']} 個訂閱任務，"
-                f"失敗 {result['failed']} 個"
+                f"已派發 {result['dispatched']} 個訂閱任務，失敗 {result['failed']} 個"
             )
 
             logging.info(f"✅ websub subscribe-all 完成：{result}")
             _log_job_result(db, "websub-subscribe-all", result)
             return jsonify(result), 200
 
-        except Exception as e:
+        except Exception:
             result["duration_seconds"] = round(time.monotonic() - start_time, 2)
             result["status"] = "error"
             result["message"] = "訂閱派發過程發生錯誤"

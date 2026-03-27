@@ -1,5 +1,6 @@
 from datetime import datetime
 
+
 def parse_firestore_date(raw) -> datetime | None:
     if isinstance(raw, str):
         try:

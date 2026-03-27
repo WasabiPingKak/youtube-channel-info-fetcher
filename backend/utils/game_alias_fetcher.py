@@ -1,8 +1,8 @@
+import logging
 import os
 import time
+
 import requests
-import logging
-from typing import Dict, List
 
 logger = logging.getLogger(__name__)
 
@@ -10,14 +10,15 @@ logger = logging.getLogger(__name__)
 ALIAS_API_URL = os.getenv("GAME_ALIAS_ENDPOINT")
 if not ALIAS_API_URL:
     logger.error("❌ GAME_ALIAS_ENDPOINT 尚未設定，請檢查 .env.game_alias")
-    raise EnvironmentError("❌ GAME_ALIAS_ENDPOINT 尚未設定")
+    raise OSError("❌ GAME_ALIAS_ENDPOINT 尚未設定")
 
 # ✅ 快取區
-_cache: Dict[str, List[str]] = {}
+_cache: dict[str, list[str]] = {}
 _last_fetch_time: float = 0
 _CACHE_TTL = 3600  # 一小時（秒）
 
-def fetch_global_alias_map(force_refresh: bool = False) -> Dict[str, List[str]]:
+
+def fetch_global_alias_map(force_refresh: bool = False) -> dict[str, list[str]]:
     """
     從 Google Apps Script 抓取遊戲別名 JSON，使用記憶體快取。
     """

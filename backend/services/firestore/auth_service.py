@@ -1,8 +1,9 @@
 # services/firestore/auth_service.py
 
-from google.cloud import firestore
-from google.api_core.exceptions import GoogleAPIError
 import logging
+
+from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
 def save_channel_auth(db, channel_id: str, refresh_token: str):
@@ -50,10 +51,10 @@ def get_refresh_token(db, channel_id: str) -> str | None:
 
         return token
 
-    except GoogleAPIError as e:
+    except GoogleAPIError:
         logging.exception(f"[Auth] ❌ Firestore 讀取失敗：channel_id={channel_id}")
         return None
 
-    except (KeyError, AttributeError) as e:
+    except (KeyError, AttributeError):
         logging.exception(f"[Auth] ❌ 資料存取錯誤：channel_id={channel_id}")
         return None

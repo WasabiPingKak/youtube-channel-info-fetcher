@@ -1,12 +1,14 @@
 # services/live_redirect/cache_updater.py
 
 import logging
-from datetime import timedelta, datetime
+from datetime import datetime, timedelta
+
 from google.cloud.firestore import Client
-from services.live_redirect.youtube_api import batch_fetch_video_details
-from services.live_redirect.video_classifier import classify_video
-from services.live_redirect.fallback_builder import build_fallback_entry
+
 from services.classified_video_fetcher import classify_live_title
+from services.live_redirect.fallback_builder import build_fallback_entry
+from services.live_redirect.video_classifier import classify_video
+from services.live_redirect.youtube_api import batch_fetch_video_details
 
 logger = logging.getLogger(__name__)
 
@@ -16,16 +18,11 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
     yesterday_str = (now - timedelta(days=1)).date().isoformat()
 
     # 🔹 Step 1：載入昨天與今天的快取
-    today_cache = (
-        db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}
-    )
+    today_cache = db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}
     yesterday_cache = (
-        db.collection("live_redirect_cache").document(yesterday_str).get().to_dict()
-        or {}
+        db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}
     )
-    raw_old_channels = today_cache.get("channels", []) + yesterday_cache.get(
-        "channels", []
-    )
+    raw_old_channels = today_cache.get("channels", []) + yesterday_cache.get("channels", [])
 
     # 🧹 過濾已收播超過 retention_days 的舊資料
     retention_days = 3
@@ -170,14 +167,12 @@ def _filter_video_ids_to_query(
         list[str]: 需要查詢的 videoIds
     """
     # 🔍 額外列出 cached_map 中 endTime 為 null 的影片
-    no_endtime_ids = [
-        vid for vid, c in cached_map.items() if not c.get("live", {}).get("endTime")
-    ]
+    no_endtime_ids = [vid for vid, c in cached_map.items() if not c.get("live", {}).get("endTime")]
     logging.info(f"🔄 快取中尚未收播的影片 ID：{no_endtime_ids}")
 
     result = []
 
-    for vid, v in notify_ids.items():
+    for vid, _v in notify_ids.items():
         if vid in end_recorded:
             logging.info(f"✅ 已收播影片略過：{vid}")
             continue
@@ -195,9 +190,7 @@ def _filter_video_ids_to_query(
                         # 預約影片時間超過 15 分鐘
                         continue
                 except ValueError as e:
-                    logging.warning(
-                        f"⚠️ 解析 startTime 失敗：{vid} / {scheduled} / error={e}"
-                    )
+                    logging.warning(f"⚠️ 解析 startTime 失敗：{vid} / {scheduled} / error={e}")
         else:
             logging.info(f"🆕 全新影片，無快取紀錄：{vid}")
 
@@ -228,9 +221,7 @@ def _lazy_refresh_endtime(
         dict: {"channels": [...]} 補完後的影片列表
     """
     # 找出快取中 endTime 為 null 的影片
-    pending_ids = [
-        c["live"]["videoId"] for c in old_channels if not c["live"].get("endTime")
-    ]
+    pending_ids = [c["live"]["videoId"] for c in old_channels if not c["live"].get("endTime")]
 
     logging.info(f"🕒 懶更新：發現快取中尚未收播影片 {len(pending_ids)} 支，準備查詢")
 
@@ -255,8 +246,6 @@ def _lazy_refresh_endtime(
             refreshed_channels.append(fallback)
 
     video_ids = [c["live"]["videoId"] for c in refreshed_channels]
-    logging.info(
-        f"✅ 懶更新完成，共寫入 {len(refreshed_channels)} 筆，videoIds={video_ids}"
-    )
+    logging.info(f"✅ 懶更新完成，共寫入 {len(refreshed_channels)} 筆，videoIds={video_ids}")
 
     return {"channels": refreshed_channels}

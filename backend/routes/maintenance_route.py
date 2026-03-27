@@ -1,14 +1,18 @@
 # routes/maintenance_route.py
-from flask import Blueprint, request, jsonify
-from google.cloud.firestore import Client
-from utils.date_based_cache_cleaner import clean_all_expired_documents
-from utils.admin_auth import require_admin_key
 import logging
+
+from flask import Blueprint, jsonify, request
+from google.cloud.firestore import Client
+
+from utils.admin_auth import require_admin_key
+from utils.date_based_cache_cleaner import clean_all_expired_documents
 
 maintenance_bp = Blueprint("maintenance", __name__)
 
+
 def init_maintenance_route(app, db: Client):
     app.register_blueprint(maintenance_bp, url_prefix="/api")
+
 
 @maintenance_bp.route("/maintenance/clean-live-cache", methods=["POST"])
 @require_admin_key
@@ -23,14 +27,16 @@ def clean_live_cache():
         full_result = clean_all_expired_documents(mode, cache_type="live")
         # 只取與 live cache 有關的部分
         result = {
-            k: v for k, v in full_result.items()
+            k: v
+            for k, v in full_result.items()
             if k in ["live_redirect_notify_queue", "live_redirect_cache"]
         }
         return jsonify(result)
 
-    except Exception as e:
+    except Exception:
         logging.exception("❌ 清除 live 快取失敗")
         return jsonify({"error": "Internal server error"}), 500
+
 
 @maintenance_bp.route("/maintenance/clean-trending-games-cache", methods=["POST"])
 @require_admin_key
@@ -45,6 +51,6 @@ def clean_trending_games_cache():
         result = clean_all_expired_documents(mode, cache_type="trending_games")
         return jsonify(result)
 
-    except Exception as e:
+    except Exception:
         logging.exception("❌ 清除 trending games 快取失敗")
         return jsonify({"error": "Internal server error"}), 500

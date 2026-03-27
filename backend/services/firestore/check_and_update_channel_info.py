@@ -1,7 +1,9 @@
 import logging
-from google.cloud.firestore import Client
+
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud.firestore import Client
 from googleapiclient.errors import HttpError
+
 from services.youtube.channel_info_fetcher import fetch_channel_basic_info
 
 logger = logging.getLogger(__name__)
@@ -35,9 +37,7 @@ def check_and_update_channel_info(db: Client, channel_id: str, batch_id: str) ->
             (ch for ch in batch_channels if ch.get("channel_id") == channel_id), None
         )
         if batch_entry is None:
-            logger.warning(
-                f"⚠️ batch_id {batch_id} 中找不到頻道 {channel_id}，略過寫入該處"
-            )
+            logger.warning(f"⚠️ batch_id {batch_id} 中找不到頻道 {channel_id}，略過寫入該處")
 
         # 🧠 比對邏輯
         old_name = index_doc.get("name") or ""

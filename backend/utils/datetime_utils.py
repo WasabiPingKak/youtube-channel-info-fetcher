@@ -1,7 +1,8 @@
-from datetime import datetime, timedelta, timezone
 import logging
+from datetime import UTC, datetime, timedelta, timezone
 
 tz_taiwan = timezone(timedelta(hours=8))
+
 
 def get_taiwan_datetime_from_publish(video):
     """
@@ -18,7 +19,7 @@ def get_taiwan_datetime_from_publish(video):
     except ValueError:
         try:
             publish_dt = datetime.strptime(publish_str, "%Y-%m-%dT%H:%M:%SZ")
-            publish_dt = publish_dt.replace(tzinfo=timezone.utc)
+            publish_dt = publish_dt.replace(tzinfo=UTC)
             logging.debug(f"🕒 解析 publishDate（Z 格式）成功：{publish_dt.isoformat()}")
         except Exception as e:
             logging.warning(f"❗ 無法解析 publishDate：{publish_str}，錯誤：{e}")

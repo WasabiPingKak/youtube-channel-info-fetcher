@@ -1,10 +1,11 @@
 # routes/channel_index_route.py
 
 import logging
-from flask import Blueprint, jsonify
-from firebase_admin import firestore
-from datetime import datetime, timedelta, timezone
+from datetime import datetime
+
 from dateutil import parser as date_parser
+from flask import Blueprint, jsonify
+
 
 def init_channel_index_route(app, db):
     bp = Blueprint("channel_index_route", __name__)
@@ -29,7 +30,6 @@ def init_channel_index_route(app, db):
                     sync_time = item.get("lastVideoSyncAt")
                     if cid and sync_time:
                         sync_map[cid] = sync_time
-
 
             # 🔹 讀取所有 batch
             root_ref = db.collection("channel_index_batch")
@@ -62,25 +62,24 @@ def init_channel_index_route(app, db):
                     if parsed_date:
                         joined_at_dates.append(parsed_date)
 
-                    all_channels.append({
-                        "channel_id": channel_id,
-                        "name": entry.get("name"),
-                        "url": entry.get("url"),
-                        "thumbnail": entry.get("thumbnail"),
-                        "priority": entry.get("priority", 0),
-                        "joinedAt": joined_at,
-                        "countryCode": entry.get("countryCode", []),
-                        "enabled": entry.get("enabled", True),
-                        "lastVideoUploadedAt": sync_map.get(channel_id),
-                        "active_time_all": entry.get("active_time_all"),
-                        "category_counts": entry.get("category_counts"),
-                    })
+                    all_channels.append(
+                        {
+                            "channel_id": channel_id,
+                            "name": entry.get("name"),
+                            "url": entry.get("url"),
+                            "thumbnail": entry.get("thumbnail"),
+                            "priority": entry.get("priority", 0),
+                            "joinedAt": joined_at,
+                            "countryCode": entry.get("countryCode", []),
+                            "enabled": entry.get("enabled", True),
+                            "lastVideoUploadedAt": sync_map.get(channel_id),
+                            "active_time_all": entry.get("active_time_all"),
+                            "category_counts": entry.get("category_counts"),
+                        }
+                    )
 
             # 排序所有資料
-            sorted_channels = sorted(
-                all_channels,
-                key=lambda c: (-c["priority"], c["name"])
-            )
+            sorted_channels = sorted(all_channels, key=lambda c: (-c["priority"], c["name"]))
 
             # 找出最近的三個日期
             unique_dates = sorted(set(joined_at_dates), reverse=True)
@@ -88,23 +87,23 @@ def init_channel_index_route(app, db):
 
             # 篩出最近三天加入的頻道
             newly_joined_channels = [
-                ch for ch in sorted_channels
+                ch
+                for ch in sorted_channels
                 if ch.get("joinedAt") and try_parse_date(ch["joinedAt"]) in recent_dates
             ]
 
-            return jsonify({
-                "success": True,
-                "channels": sorted_channels,
-                "newly_joined_channels": newly_joined_channels,
-                "total_registered_count": total_registered_count
-            })
+            return jsonify(
+                {
+                    "success": True,
+                    "channels": sorted_channels,
+                    "newly_joined_channels": newly_joined_channels,
+                    "total_registered_count": total_registered_count,
+                }
+            )
 
-        except Exception as e:
+        except Exception:
             logging.exception("❌ 無法讀取頻道索引")
-            return jsonify({
-                "success": False,
-                "error": "無法讀取頻道索引"
-            }), 500
+            return jsonify({"success": False, "error": "無法讀取頻道索引"}), 500
 
     app.register_blueprint(bp)
 

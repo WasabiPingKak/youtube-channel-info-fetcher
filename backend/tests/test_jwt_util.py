@@ -1,16 +1,18 @@
 """
 JWT 工具函數測試：簽發、驗證、過期、續期判斷、admin 判斷
 """
+
 import time
+
 import jwt as pyjwt
-import pytest
+
 from utils.jwt_util import (
-    generate_jwt,
-    verify_jwt,
-    should_renew,
-    is_admin_channel_id,
-    JWT_SECRET,
     JWT_ALGORITHM,
+    JWT_SECRET,
+    generate_jwt,
+    is_admin_channel_id,
+    should_renew,
+    verify_jwt,
 )
 
 

@@ -1,12 +1,14 @@
-import os
-import jwt
 import logging
-from datetime import datetime, timedelta, timezone
+import os
+from datetime import UTC, datetime, timedelta
+
+import jwt
 
 # ✅ 僅在本地開發時讀取 .env.local（Cloud Run 不需要這一段）
 if os.getenv("ENV") != "production":
-    from dotenv import load_dotenv
     from pathlib import Path
+
+    from dotenv import load_dotenv
 
     env_path = Path(__file__).resolve().parent.parent / ".env.local"
     load_dotenv(dotenv_path=env_path)
@@ -18,9 +20,7 @@ JWT_RENEW_THRESHOLD_SECONDS = 30 * 60  # 剩不到 30 分鐘就續期
 
 # ✅ Admin allowlist（逗號分隔 channelId）
 _ADMIN_CHANNEL_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
-ADMIN_CHANNEL_IDS = {
-    cid.strip() for cid in _ADMIN_CHANNEL_IDS_RAW.split(",") if cid.strip()
-}
+ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_CHANNEL_IDS_RAW.split(",") if cid.strip()}
 
 if not JWT_SECRET:
     raise ValueError(
@@ -38,7 +38,7 @@ def is_admin_channel_id(channel_id: str) -> bool:
 
 
 def generate_jwt(channel_id: str) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "channelId": channel_id,
         "iat": now,
@@ -55,7 +55,7 @@ def generate_jwt(channel_id: str) -> str:
 def should_renew(decoded: dict) -> bool:
     """檢查 JWT 是否即將過期，需要續期"""
     exp = decoded.get("exp", 0)
-    now = datetime.now(timezone.utc).timestamp()
+    now = datetime.now(UTC).timestamp()
     return (exp - now) < JWT_RENEW_THRESHOLD_SECONDS
 
 

@@ -1,19 +1,22 @@
 import hmac
-from flask import request, jsonify
-from services.firestore.batch_writer import write_batches_to_firestore
-from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
-from services.youtube.fetcher import get_video_data
-from services.heatmap_analyzer import update_single_channel_heatmap
-from services.firestore.heatmap_writer import is_channel_heatmap_initialized
-from services.heatmap_cache_writer import append_to_pending_cache
-from services.classified_video_fetcher import get_classified_videos
-from services.video_analyzer.category_counter import count_category_counts
-from services.firestore.category_writer import write_category_counts_to_channel_index_batch
-from utils.channel_validator import is_valid_channel_id
-from datetime import datetime, timezone, timedelta
 import logging
+from datetime import UTC, datetime, timedelta
+
+from flask import jsonify, request
+
+from services.classified_video_fetcher import get_classified_videos
+from services.firestore.batch_writer import write_batches_to_firestore
+from services.firestore.category_writer import write_category_counts_to_channel_index_batch
+from services.firestore.heatmap_writer import is_channel_heatmap_initialized
+from services.firestore.sync_time_index import get_last_video_sync_time, update_last_sync_time
+from services.heatmap_analyzer import update_single_channel_heatmap
+from services.heatmap_cache_writer import append_to_pending_cache
+from services.video_analyzer.category_counter import count_category_counts
+from services.youtube.fetcher import get_video_data
+from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
+
 
 def init_video_update_route(app, db):
     @app.route("/api/videos/update", methods=["POST"])
@@ -42,7 +45,7 @@ def init_video_update_route(app, db):
             if not stored_token or not hmac.compare_digest(stored_token, update_token):
                 return jsonify({"error": "Token 驗證失敗"}), 403
 
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             if not expires_at or datetime.fromisoformat(expires_at) < now:
                 return jsonify({"error": "Token 已過期"}), 403
 
@@ -50,7 +53,7 @@ def init_video_update_route(app, db):
 
             last_sync_time = get_last_video_sync_time(db, channel_id)
             safe_sync_time = last_sync_time + timedelta(seconds=1) if last_sync_time else None
-            now = datetime.now(timezone.utc)
+            now = datetime.now(UTC)
             date_ranges = [(safe_sync_time, now)] if safe_sync_time else None
 
             videos = get_video_data(date_ranges=date_ranges, input_channel=channel_id)
@@ -80,8 +83,10 @@ def init_video_update_route(app, db):
 
             return jsonify({"message": "更新完成"})
 
-        except Exception as e:
+        except Exception:
             logger.exception("🔥 /api/videos/update 發生錯誤")
-            return jsonify({
-                "error": "更新失敗",
-            }), 500
+            return jsonify(
+                {
+                    "error": "更新失敗",
+                }
+            ), 500

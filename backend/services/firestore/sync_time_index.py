@@ -1,10 +1,11 @@
 import logging
-from typing import List, Dict, Optional
-from google.cloud.firestore import Client
-from google.api_core.exceptions import GoogleAPIError
+
 from dateutil.parser import parse
+from google.api_core.exceptions import GoogleAPIError
+from google.cloud.firestore import Client
 
 logger = logging.getLogger(__name__)
+
 
 def get_last_video_sync_time(db: Client, channel_id: str):
     try:
@@ -28,7 +29,8 @@ def get_last_video_sync_time(db: Client, channel_id: str):
         logger.error("🔥 無法讀取 lastVideoSyncAt (新版 index): %s", e, exc_info=True)
         return None
 
-def update_last_sync_time(db: Client, channel_id: str, new_videos: List[Dict]) -> Optional[str]:
+
+def update_last_sync_time(db: Client, channel_id: str, new_videos: list[dict]) -> str | None:
     if not new_videos:
         logger.info("ℹ️ 無影片可更新 lastVideoSyncAt")
         return None
@@ -41,12 +43,7 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: List[Dict]) -
 
         if not doc.exists:
             # 文件不存在，初始化新清單
-            index_ref.set({
-                "channels": [{
-                    "channel_id": channel_id,
-                    "lastVideoSyncAt": latest
-                }]
-            })
+            index_ref.set({"channels": [{"channel_id": channel_id, "lastVideoSyncAt": latest}]})
             logger.info(f"🕒 [init] 建立 index_list 並加入 {channel_id}")
         else:
             data = doc.to_dict()
@@ -60,10 +57,7 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: List[Dict]) -
                     break
 
             if not found:
-                channels.append({
-                    "channel_id": channel_id,
-                    "lastVideoSyncAt": latest
-                })
+                channels.append({"channel_id": channel_id, "lastVideoSyncAt": latest})
                 logger.info(f"➕ [append] 新增頻道 {channel_id} 至 index_list")
 
             index_ref.set({"channels": channels})

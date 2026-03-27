@@ -1,14 +1,16 @@
 import logging
-from typing import Dict, Any
-from google.cloud.firestore import Client
+from typing import Any
+
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud.firestore import Client
 
 # 如果你在同一層 services/trending 下
 from services.trending.channel_info_loader import load_channel_info_index
-from services.trending.trending_loader import load_trending_videos_by_date_range
 from services.trending.trending_analyzer import analyze_trending_summary
+from services.trending.trending_loader import load_trending_videos_by_date_range
 
-def get_trending_games_summary(db: Client, days: int = 30) -> Dict[str, Any]:
+
+def get_trending_games_summary(db: Client, days: int = 30) -> dict[str, Any]:
     """
     從 Firestore 的 trending_games_daily/{YYYY-MM-DD} 讀取指定區間資料，
     統計出熱門遊戲在各日期的影片數量與貢獻頻道，並彙整詳細頻道與影片清單。
@@ -59,7 +61,5 @@ def get_trending_games_summary(db: Client, days: int = 30) -> Dict[str, Any]:
         return result
 
     except GoogleAPIError as e:
-        logging.getLogger(__name__).error(
-            "🔥 無法產生 trending_games_summary", exc_info=True
-        )
+        logging.getLogger(__name__).error("🔥 無法產生 trending_games_summary", exc_info=True)
         return {"error": str(e)}

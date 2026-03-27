@@ -2,9 +2,11 @@
 
 import logging
 from datetime import datetime, timedelta
+
 from google.cloud.firestore import Client
 
 CHANNEL_INDEX_COLLECTION = "channel_index"
+
 
 def classify_video(db: Client, item: dict, now: datetime) -> dict | None:
     video_id = item.get("id")
@@ -66,7 +68,11 @@ def classify_video(db: Client, item: dict, now: datetime) -> dict | None:
         return None
 
     channel = channel_doc.to_dict()
-    viewers = int(live_details.get("concurrentViewers", "0")) if "concurrentViewers" in live_details else 0
+    viewers = (
+        int(live_details.get("concurrentViewers", "0"))
+        if "concurrentViewers" in live_details
+        else 0
+    )
 
     return {
         "channel_id": channel_id,
@@ -80,6 +86,6 @@ def classify_video(db: Client, item: dict, now: datetime) -> dict | None:
             "startTime": start_time,
             "viewers": viewers,
             "isUpcoming": is_upcoming,
-            "endTime": end_time
-        }
+            "endTime": end_time,
+        },
     }

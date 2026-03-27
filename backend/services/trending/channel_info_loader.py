@@ -1,7 +1,7 @@
-from typing import Dict
 from google.cloud.firestore import Client
 
-def load_channel_info_index(db: Client) -> Dict[str, Dict[str, str]]:
+
+def load_channel_info_index(db: Client) -> dict[str, dict[str, str]]:
     """
     從 channel_index_batch/* 合併頻道資訊，回傳 channel_id 對應的 info dict。
     僅包含 enabled == True 的頻道。

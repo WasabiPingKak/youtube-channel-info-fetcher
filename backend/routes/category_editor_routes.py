@@ -12,15 +12,14 @@ GET /api/categories/editor-data?channel_id={ID}
 """
 
 import logging
-from datetime import datetime
-from typing import Any, Dict, List
+from typing import Any
 
 from flask import jsonify, request
-from utils.channel_validator import is_valid_channel_id
-from utils.auth_decorator import require_auth
 
 # 服務層：讀取分類設定
 from services.firestore_settings_service import load_category_settings
+from utils.auth_decorator import require_auth
+from utils.channel_validator import is_valid_channel_id
 
 
 def _serialize_timestamp(ts: Any) -> str:
@@ -60,7 +59,9 @@ def init_category_editor_routes(app, db):
             return jsonify({"error": "channel_id 格式不合法"}), 400
 
         if channel_id != auth_channel_id:
-            logging.warning(f"⛔ 嘗試讀取他人頻道編輯資料：JWT={auth_channel_id}, 請求={channel_id}")
+            logging.warning(
+                f"⛔ 嘗試讀取他人頻道編輯資料：JWT={auth_channel_id}, 請求={channel_id}"
+            )
             return jsonify({"error": "無權限存取此頻道"}), 403
 
         try:
@@ -73,15 +74,11 @@ def init_category_editor_routes(app, db):
                 logging.warning("⚠️ 該頻道尚未建立 config 文件")
 
             # 2. 讀取影片清單
-            videos_coll = (
-                db.collection("channel_data")
-                .document(channel_id)
-                .collection("videos")
-            )
+            videos_coll = db.collection("channel_data").document(channel_id).collection("videos")
             docs = list(videos_coll.stream())
             logging.info(f"📦 讀取 Firestore 影片文件數量：{len(docs)}")
 
-            videos: List[Dict[str, Any]] = []
+            videos: list[dict[str, Any]] = []
             for i, doc in enumerate(docs):
                 data = doc.to_dict() or {}
                 logging.debug(f"🔍 處理影片 {i + 1}：{data.get('title', '無標題')}")
@@ -108,18 +105,22 @@ def init_category_editor_routes(app, db):
             if not videos:
                 logging.warning("⚠️ 該頻道目前影片為空，或全部無法解析")
 
-            return jsonify({
-                "config": config,
-                "videos": videos,
-                "removedSuggestedKeywords": config.get("removedSuggestedKeywords", [])
-            }), 200
+            return jsonify(
+                {
+                    "config": config,
+                    "videos": videos,
+                    "removedSuggestedKeywords": config.get("removedSuggestedKeywords", []),
+                }
+            ), 200
 
-        except Exception as exc:  # pylint: disable=broad-except
+        except Exception:  # pylint: disable=broad-except
             logging.exception("🔥 無法取得 editor-data")
             return (
-                jsonify({
-                    "error": "internal_error",
-                    "message": "伺服器內部錯誤",
-                }),
+                jsonify(
+                    {
+                        "error": "internal_error",
+                        "message": "伺服器內部錯誤",
+                    }
+                ),
                 500,
             )

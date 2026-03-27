@@ -1,14 +1,15 @@
 # /backend/tools/print_sync_index_channel_ids.py
 
-import sys
-import os
-import logging
 import argparse
+import logging
+import os
+import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 
 project_root = Path(__file__).resolve().parents[2]
@@ -19,14 +20,23 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 from google.api_core.exceptions import GoogleAPIError
+
 from backend.services.firebase_init_service import init_firestore
 
 DOC_PATH = "channel_sync_index/index_list"
 DEFAULT_EXPORT_FILENAME = "channel_index_list.txt"
 
+
 def main():
-    parser = argparse.ArgumentParser(description="列出 channel_sync_index/index_list 內所有 channel_id")
-    parser.add_argument("--export", nargs="?", const=DEFAULT_EXPORT_FILENAME, help="將 channel_id 匯出為文字檔（可選擇檔名）")
+    parser = argparse.ArgumentParser(
+        description="列出 channel_sync_index/index_list 內所有 channel_id"
+    )
+    parser.add_argument(
+        "--export",
+        nargs="?",
+        const=DEFAULT_EXPORT_FILENAME,
+        help="將 channel_id 匯出為文字檔（可選擇檔名）",
+    )
     args = parser.parse_args()
 
     try:
@@ -60,6 +70,7 @@ def main():
         logging.exception("❌ Firestore 存取錯誤")
     except Exception as e:
         logging.exception(f"❌ 程式執行中斷：{e}")
+
 
 if __name__ == "__main__":
     main()

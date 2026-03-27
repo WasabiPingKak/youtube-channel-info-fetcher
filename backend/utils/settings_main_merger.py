@@ -1,14 +1,13 @@
 import logging
-from typing import Dict, Any
+from typing import Any
+
 from firebase_admin.firestore import Client
 
 logger = logging.getLogger(__name__)
 logger.debug("✅ [settings_main_merger.py] 模組載入中...")
 
-def merge_main_categories_with_user_config(
-    db: Client,
-    settings: Dict[str, Any]
-) -> Dict[str, Any]:
+
+def merge_main_categories_with_user_config(db: Client, settings: dict[str, Any]) -> dict[str, Any]:
     """
     載入 default_categories_config_v2，與使用者自訂設定（扁平主分類格式）合併。
     - 相同子分類名稱合併關鍵字，去重
@@ -30,12 +29,13 @@ def merge_main_categories_with_user_config(
 
         # 🔍 使用者設定為扁平主分類格式
         user_config = {
-            k: v for k, v in settings.items()
+            k: v
+            for k, v in settings.items()
             if isinstance(v, dict) and k not in ("live", "videos", "shorts")
         }
 
         # 🧩 合併後的扁平格式結果
-        merged_flat: Dict[str, Dict[str, list[str]]] = {}
+        merged_flat: dict[str, dict[str, list[str]]] = {}
 
         # 1️⃣ 加入 default 結構
         for main_cat, subcats in default_config.items():
@@ -66,7 +66,9 @@ def merge_main_categories_with_user_config(
                 merged_keywords = [kw for kw in merged_keywords if kw != sub_name]
                 merged_flat[main_cat][sub_name] = merged_keywords
 
-                logger.debug("    ✅ 合併 %s > %s：%d 個關鍵字", main_cat, sub_name, len(merged_keywords))
+                logger.debug(
+                    "    ✅ 合併 %s > %s：%d 個關鍵字", main_cat, sub_name, len(merged_keywords)
+                )
 
         # 3️⃣ 將合併後扁平設定複製到 live/videos/shorts
         for video_type in ("live", "videos", "shorts"):
@@ -79,10 +81,16 @@ def merge_main_categories_with_user_config(
                 and isinstance(settings[video_type]["遊戲"], dict)
             ):
                 merged_config["遊戲"] = settings[video_type]["遊戲"]
-                logger.debug("🕹️ [%s] 保留原有遊戲設定，共 %d 條目", video_type, len(merged_config["遊戲"]))
+                logger.debug(
+                    "🕹️ [%s] 保留原有遊戲設定，共 %d 條目", video_type, len(merged_config["遊戲"])
+                )
             elif "遊戲" in settings and isinstance(settings["遊戲"], dict):
                 merged_config["遊戲"] = settings["遊戲"]
-                logger.debug("🕹️ [%s] 從最外層搬移遊戲設定，共 %d 條目", video_type, len(merged_config["遊戲"]))
+                logger.debug(
+                    "🕹️ [%s] 從最外層搬移遊戲設定，共 %d 條目",
+                    video_type,
+                    len(merged_config["遊戲"]),
+                )
             else:
                 merged_config["遊戲"] = {}
                 logger.debug("🕹️ [%s] 無遊戲設定，自動補空", video_type)

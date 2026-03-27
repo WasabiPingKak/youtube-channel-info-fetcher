@@ -1,0 +1,27 @@
+# Ruff — Python linter & formatter
+# https://docs.astral.sh/ruff/
+
+target-version = "py312"
+line-length = 100
+extend-exclude = ["tools/"]
+
+[lint]
+# 啟用的規則集
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort (import 排序)
+    "B",    # flake8-bugbear (常見 bug pattern)
+    "UP",   # pyupgrade (過時語法升級)
+]
+ignore = [
+    "E501",  # 行長度由 formatter 處理
+]
+
+[lint.isort]
+known-first-party = ["services", "routes", "utils"]
+
+[format]
+quote-style = "double"
+indent-style = "space"

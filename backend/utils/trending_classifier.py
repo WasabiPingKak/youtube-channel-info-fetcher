@@ -1,11 +1,13 @@
-from typing import List, Dict, Any, Callable
+from collections.abc import Callable
+from typing import Any
+
 
 def classify_videos_to_games(
-    videos: List[Dict[str, Any]],
+    videos: list[dict[str, Any]],
     channel_id: str,
-    settings: Dict[str, Any],
-    matcher_func: Callable[[str, str, Dict[str, Any]], Dict[str, Any]],
-) -> tuple[Dict[str, List[Dict[str, Any]]], Dict[str, Any]]:
+    settings: dict[str, Any],
+    matcher_func: Callable[[str, str, dict[str, Any]], dict[str, Any]],
+) -> tuple[dict[str, list[dict[str, Any]]], dict[str, Any]]:
     """
     將影片根據 matcher_func 結果分類至遊戲名稱下，並統計分類過程
     - matcher_func(title, type, settings) → {'game': str | None}
@@ -20,11 +22,7 @@ def classify_videos_to_games(
     for video in videos:
         stats["videos_processed"] += 1
 
-        result = matcher_func(
-            video["title"],
-            video.get("type", ""),
-            settings
-        )
+        result = matcher_func(video["title"], video.get("type", ""), settings)
         game = result.get("game")
         if not game:
             continue
@@ -39,7 +37,7 @@ def classify_videos_to_games(
             "publishDate": video["publishDate"],
             "duration": video.get("duration", 0),
             "type": video.get("type", ""),
-            "channelId": channel_id
+            "channelId": channel_id,
         }
         game_map.setdefault(game, []).append(video_data)
 

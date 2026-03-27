@@ -1,5 +1,6 @@
-import os
 import logging
+import os
+
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
@@ -16,7 +17,7 @@ def fetch_channel_basic_info(channel_id: str) -> dict:
     """
     api_key = os.getenv("API_KEY")
     if not api_key:
-        raise EnvironmentError("❌ 未設定 API_KEY 環境變數")
+        raise OSError("❌ 未設定 API_KEY 環境變數")
 
     try:
         youtube = build("youtube", "v3", developerKey=api_key)
@@ -46,6 +47,6 @@ def fetch_channel_basic_info(channel_id: str) -> dict:
         logging.exception(f"❌ YouTube API 呼叫失敗：{e}")
         raise
 
-    except Exception as e:
+    except Exception:
         logging.exception(f"❌ 頻道資訊抓取失敗：{channel_id}")
         raise

@@ -1,6 +1,5 @@
-import logging
-
 DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+
 
 def convert_matrix_to_count(matrix):
     """

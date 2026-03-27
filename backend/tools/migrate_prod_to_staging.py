@@ -17,22 +17,20 @@ migrate_prod_to_staging.py
   python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch
 """
 
-import sys
-import os
 import argparse
 import logging
+import os
+import sys
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from datetime import datetime, timezone, timedelta
-from typing import List, Dict, Optional, Set
-from collections import defaultdict
 
 # 加入專案根目錄以匯入模組
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 from google.oauth2 import service_account
-from google.api_core.exceptions import GoogleAPIError
 
 # 載入環境變數
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
@@ -46,7 +44,7 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s [%(levelname)s] %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S"
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
 
@@ -57,15 +55,15 @@ logger = logging.getLogger(__name__)
 
 # 所有 Collection 列表（按複製順序）
 ALL_COLLECTIONS = [
-    "global_settings",              # 全域設定（優先）
-    "channel_index_batch",          # 頻道索引批次
-    "channel_data",                 # 頻道資料（含 subcollections）
-    "channel_sync_index",           # 同步追蹤
-    "trending_games_daily",         # 趨勢資料
-    "stats_cache",                  # 快取資料
-    "live_redirect_cache",          # 直播快取
-    "live_redirect_notify_queue",   # 通知佇列
-    "channel_index",                # 遺留索引（最後）
+    "global_settings",  # 全域設定（優先）
+    "channel_index_batch",  # 頻道索引批次
+    "channel_data",  # 頻道資料（含 subcollections）
+    "channel_sync_index",  # 同步追蹤
+    "trending_games_daily",  # 趨勢資料
+    "stats_cache",  # 快取資料
+    "live_redirect_cache",  # 直播快取
+    "live_redirect_notify_queue",  # 通知佇列
+    "channel_index",  # 遺留索引（最後）
 ]
 
 # 需要脫敏的路徑（移除敏感資料）
@@ -85,6 +83,7 @@ BATCH_SIZE = 500
 # Firestore 客戶端初始化
 # ============================================================================
 
+
 def init_firestore_clients():
     """
     初始化 Production 和 Staging 的 Firestore 客戶端
@@ -96,26 +95,20 @@ def init_firestore_clients():
     source_db_id = os.getenv("SOURCE_FIRESTORE_DATABASE", "(default)")
     target_db_id = os.getenv("TARGET_FIRESTORE_DATABASE", "staging")
 
-    logger.info(f"初始化 Firestore 客戶端...")
+    logger.info("初始化 Firestore 客戶端...")
     logger.info(f"  來源資料庫: {source_db_id}")
     logger.info(f"  目標資料庫: {target_db_id}")
 
     try:
-        credentials = service_account.Credentials.from_service_account_file(
-            str(firebase_key_path)
-        )
+        credentials = service_account.Credentials.from_service_account_file(str(firebase_key_path))
         project_id = credentials.project_id
 
         source_db = firestore.Client(
-            credentials=credentials,
-            project=project_id,
-            database=source_db_id
+            credentials=credentials, project=project_id, database=source_db_id
         )
 
         target_db = firestore.Client(
-            credentials=credentials,
-            project=project_id,
-            database=target_db_id
+            credentials=credentials, project=project_id, database=target_db_id
         )
 
         logger.info("✓ Firestore 客戶端初始化成功")
@@ -129,6 +122,7 @@ def init_firestore_clients():
 # ============================================================================
 # 安全檢查
 # ============================================================================
+
 
 def validate_migration_direction(source_db_id: str, target_db_id: str):
     """
@@ -171,7 +165,7 @@ def confirm_migration(source_db_id: str, target_db_id: str, dry_run: bool):
 
     try:
         response = input("\n請輸入 'yes' 以確認繼續: ").strip().lower()
-        if response != 'yes':
+        if response != "yes":
             print("❌ 操作已取消")
             sys.exit(0)
     except KeyboardInterrupt:
@@ -184,6 +178,7 @@ def confirm_migration(source_db_id: str, target_db_id: str, dry_run: bool):
 # ============================================================================
 # 資料脫敏
 # ============================================================================
+
 
 def should_sanitize_document(doc_path: str, sanitize: bool) -> bool:
     """
@@ -209,7 +204,7 @@ def should_sanitize_document(doc_path: str, sanitize: bool) -> bool:
 
         match = all(
             p == "*" or p == path_part
-            for p, path_part in zip(pattern_parts, path_parts)
+            for p, path_part in zip(pattern_parts, path_parts, strict=False)
         )
 
         if match:
@@ -218,7 +213,7 @@ def should_sanitize_document(doc_path: str, sanitize: bool) -> bool:
     return False
 
 
-def sanitize_document_data(data: Dict, doc_path: str) -> Dict:
+def sanitize_document_data(data: dict, doc_path: str) -> dict:
     """
     移除文件中的敏感資料
 
@@ -250,11 +245,9 @@ def sanitize_document_data(data: Dict, doc_path: str) -> Dict:
 # 文件過濾
 # ============================================================================
 
+
 def should_copy_document(
-    doc_id: str,
-    data: Dict,
-    collection_name: str,
-    days_filter: Optional[int]
+    doc_id: str, data: dict, collection_name: str, days_filter: int | None
 ) -> bool:
     """
     判斷文件是否應該被複製
@@ -273,11 +266,15 @@ def should_copy_document(
         return True
 
     # 時效性資料：根據文件 ID 判斷（YYYY-MM-DD 格式）
-    if collection_name in ["trending_games_daily", "live_redirect_cache", "live_redirect_notify_queue"]:
+    if collection_name in [
+        "trending_games_daily",
+        "live_redirect_cache",
+        "live_redirect_notify_queue",
+    ]:
         try:
             # 文件 ID 格式: YYYY-MM-DD
-            doc_date = datetime.strptime(doc_id, "%Y-%m-%d").replace(tzinfo=timezone.utc)
-            cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_filter)
+            doc_date = datetime.strptime(doc_id, "%Y-%m-%d").replace(tzinfo=UTC)
+            cutoff_date = datetime.now(UTC) - timedelta(days=days_filter)
             return doc_date >= cutoff_date
         except ValueError:
             # 無法解析日期，全部複製
@@ -293,17 +290,13 @@ def should_copy_document(
                 # 處理 Firestore Timestamp
                 if hasattr(field_value, "timestamp"):
                     doc_timestamp = field_value
-                    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_filter)
-                    return datetime.fromtimestamp(
-                        doc_timestamp.timestamp(), tz=timezone.utc
-                    ) >= cutoff_date
+                    cutoff_date = datetime.now(UTC) - timedelta(days=days_filter)
+                    return datetime.fromtimestamp(doc_timestamp.timestamp(), tz=UTC) >= cutoff_date
 
                 # 處理 ISO 8601 字串
                 elif isinstance(field_value, str):
-                    doc_date = datetime.fromisoformat(
-                        field_value.replace("Z", "+00:00")
-                    )
-                    cutoff_date = datetime.now(timezone.utc) - timedelta(days=days_filter)
+                    doc_date = datetime.fromisoformat(field_value.replace("Z", "+00:00"))
+                    cutoff_date = datetime.now(UTC) - timedelta(days=days_filter)
                     return doc_date >= cutoff_date
 
             except (ValueError, AttributeError):
@@ -317,14 +310,15 @@ def should_copy_document(
 # Collection 複製
 # ============================================================================
 
+
 def copy_collection(
     source_db: firestore.Client,
     target_db: firestore.Client,
     collection_name: str,
     sanitize: bool = True,
-    days_filter: Optional[int] = None,
+    days_filter: int | None = None,
     dry_run: bool = False,
-    stats: Dict = None
+    stats: dict = None,
 ) -> int:
     """
     複製單個 Collection
@@ -397,10 +391,7 @@ def copy_collection(
         if batch_count > 0 and not dry_run:
             batch.commit()
 
-        logger.info(
-            f"[{collection_name}] 完成 - "
-            f"複製 {copied_docs} 筆，略過 {skipped_docs} 筆"
-        )
+        logger.info(f"[{collection_name}] 完成 - 複製 {copied_docs} 筆，略過 {skipped_docs} 筆")
 
         # 更新統計
         if stats is not None:
@@ -410,12 +401,9 @@ def copy_collection(
         # 遞迴複製 subcollections
         if collection_name in RECURSIVE_COLLECTIONS:
             subcol_count = copy_subcollections(
-                source_db, target_db, collection_name, docs,
-                sanitize, days_filter, dry_run, stats
+                source_db, target_db, collection_name, docs, sanitize, days_filter, dry_run, stats
             )
-            logger.info(
-                f"[{collection_name}] Subcollections 複製完成 - {subcol_count} 個文件"
-            )
+            logger.info(f"[{collection_name}] Subcollections 複製完成 - {subcol_count} 個文件")
 
         return copied_docs
 
@@ -431,11 +419,11 @@ def copy_subcollections(
     source_db: firestore.Client,
     target_db: firestore.Client,
     parent_collection: str,
-    parent_docs: List,
+    parent_docs: list,
     sanitize: bool,
-    days_filter: Optional[int],
+    days_filter: int | None,
     dry_run: bool,
-    stats: Dict
+    stats: dict,
 ) -> int:
     """
     遞迴複製 Subcollections
@@ -487,7 +475,9 @@ def copy_subcollections(
                 # 寫入
                 if not dry_run:
                     target_parent_ref = target_db.collection(parent_collection).document(parent_id)
-                    target_subdoc_ref = target_parent_ref.collection(subcol_name).document(subdoc_id)
+                    target_subdoc_ref = target_parent_ref.collection(subcol_name).document(
+                        subdoc_id
+                    )
                     batch.set(target_subdoc_ref, subdata)
                     batch_count += 1
 
@@ -515,6 +505,7 @@ def copy_subcollections(
 # 主程式
 # ============================================================================
 
+
 def parse_arguments():
     """解析命令列參數"""
     parser = argparse.ArgumentParser(
@@ -536,48 +527,35 @@ def parse_arguments():
 
   # 不脫敏模式（保留 OAuth tokens，僅用於特殊測試）
   python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
-        """
+        """,
     )
 
     # 模式選擇
     mode_group = parser.add_mutually_exclusive_group(required=True)
-    mode_group.add_argument(
-        "--full",
-        action="store_true",
-        help="完整複製所有 Collections"
-    )
+    mode_group.add_argument("--full", action="store_true", help="完整複製所有 Collections")
     mode_group.add_argument(
         "--collections",
         type=str,
-        help="只複製指定的 Collections（逗號分隔），例如: channel_data,channel_index_batch"
+        help="只複製指定的 Collections（逗號分隔），例如: channel_data,channel_index_batch",
     )
 
     # 資料過濾
     filter_group = parser.add_mutually_exclusive_group()
     filter_group.add_argument(
-        "--days",
-        type=int,
-        default=90,
-        help="保留最近 N 天的資料（預設: 90）"
+        "--days", type=int, default=90, help="保留最近 N 天的資料（預設: 90）"
     )
     filter_group.add_argument(
-        "--all-history",
-        action="store_true",
-        help="複製所有歷史資料（不過濾）"
+        "--all-history", action="store_true", help="複製所有歷史資料（不過濾）"
     )
 
     # 脫敏選項
     parser.add_argument(
-        "--no-sanitize",
-        action="store_true",
-        help="不脫敏（保留 OAuth tokens 等敏感資料）"
+        "--no-sanitize", action="store_true", help="不脫敏（保留 OAuth tokens 等敏感資料）"
     )
 
     # Dry Run
     parser.add_argument(
-        "--dry-run",
-        action="store_true",
-        help="Dry Run 模式：只顯示會複製什麼，不實際執行"
+        "--dry-run", action="store_true", help="Dry Run 模式：只顯示會複製什麼，不實際執行"
     )
 
     return parser.parse_args()
@@ -637,7 +615,7 @@ def main():
                 sanitize=sanitize,
                 days_filter=days_filter,
                 dry_run=args.dry_run,
-                stats=stats
+                stats=stats,
             )
 
         # 顯示摘要

@@ -1,6 +1,7 @@
-from flask import request, jsonify
 import logging
-from firebase_admin import firestore
+
+from flask import jsonify, request
+
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
@@ -84,6 +85,6 @@ def init_quick_category_apply_route(app, db):
 
             return jsonify({"success": True, "message": "已儲存分類設定"})
 
-        except Exception as e:
+        except Exception:
             logging.error("🔥 快速分類 API 發生錯誤", exc_info=True)
             return jsonify({"success": False, "message": "內部錯誤，請稍後再試"}), 500

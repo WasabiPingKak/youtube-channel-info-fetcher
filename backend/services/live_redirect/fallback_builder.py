@@ -2,6 +2,7 @@
 
 from datetime import datetime
 
+
 def build_fallback_entry(video_id: str, now: datetime) -> dict:
     """
     回傳一個無法存取影片的 fallback 快取資料（如已刪除或隱私）。
@@ -26,6 +27,6 @@ def build_fallback_entry(video_id: str, now: datetime) -> dict:
             "viewers": 0,
             "isUpcoming": False,
             "endTime": now.isoformat(),
-            "isAvailable": False
-        }
+            "isAvailable": False,
+        },
     }

@@ -1,6 +1,9 @@
-from flask import Blueprint, jsonify, abort
-from utils.channel_validator import is_valid_channel_id
 import logging
+
+from flask import Blueprint, abort, jsonify
+
+from utils.channel_validator import is_valid_channel_id
+
 
 def init_api_heatmap_route(app, db):
     bp = Blueprint("api_heatmap", __name__)
@@ -36,12 +39,9 @@ def init_api_heatmap_route(app, db):
                 logging.error(f"[heatmap] 欄位缺失：{channel_id}")
                 abort(500, description="matrix or totalCount missing.")
 
-            return jsonify({
-                "matrix": matrix,
-                "totalCount": total_count
-            })
+            return jsonify({"matrix": matrix, "totalCount": total_count})
 
-        except Exception as e:
+        except Exception:
             logging.exception(f"[heatmap] 發生錯誤：{channel_id}")
             abort(500, description="internal server error")
 

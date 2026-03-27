@@ -1,0 +1,36 @@
+# pre-commit hooks — 在 commit 前自動檢查程式碼品質
+# 安裝: pip install pre-commit && pre-commit install
+# 手動跑全部: pre-commit run --all-files
+
+repos:
+  # Ruff — Python linter & formatter
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.11.4
+    hooks:
+      - id: ruff
+        args: [--fix, --config, backend/ruff.toml]
+        files: ^backend/
+        exclude: ^backend/tools/
+      - id: ruff-format
+        args: [--config, backend/ruff.toml]
+        files: ^backend/
+        exclude: ^backend/tools/
+
+  # ESLint — TypeScript/React linter
+  - repo: local
+    hooks:
+      - id: eslint
+        name: eslint
+        entry: bash -c 'cd frontend_react && npx eslint src/'
+        language: system
+        files: ^frontend_react/src/.*\.(ts|tsx)$
+        pass_filenames: false
+
+      # 防止 .env 檔被意外 commit（排除 .env.example 和 .env.sample）
+      - id: no-env-files
+        name: no-env-files
+        entry: bash -c 'echo "❌ 以下 .env 檔案不應被 commit："; echo "$@"; echo ""; echo "請執行 git reset HEAD <file> 移除，或確認 .gitignore 設定"; exit 1' --
+        language: system
+        files: \.env
+        exclude: \.env\.(example|sample)$
+        types: [file]

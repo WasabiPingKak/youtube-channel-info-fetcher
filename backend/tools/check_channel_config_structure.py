@@ -1,14 +1,15 @@
 # /backend/tools/check_channel_config_structure.py
 
-import sys
-import os
-import logging
 import argparse
+import logging
+import os
+import sys
 from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
 from dotenv import load_dotenv
+
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 
 project_root = Path(__file__).resolve().parents[2]
@@ -19,10 +20,12 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 from google.api_core.exceptions import GoogleAPIError
+
 from backend.services.firebase_init_service import init_firestore
 
 CHANNEL_LIST_PATH = "channel_index_list.txt"
 TARGET_KEYS = {"live", "shorts", "videos"}
+
 
 def main():
     parser = argparse.ArgumentParser(description="檢查並選擇性清除頻道 config 結構")
@@ -68,6 +71,7 @@ def main():
 
     except Exception as e:
         logging.exception(f"❌ 程式執行失敗：{e}")
+
 
 if __name__ == "__main__":
     main()

@@ -1,28 +1,31 @@
 """
 ECPay 金流服務測試：AES 解密、CheckMacValue 驗證、金額分桶、重複防護
 """
+
 import base64
 import hashlib
 import json
 import urllib.parse
-import pytest
 from unittest.mock import MagicMock
+
+import pytest
 from Crypto.Cipher import AES
+
 from services.ecpay_service import (
+    HASH_IV,
+    HASH_KEY,
+    MERCHANT_ID,
     aes_decrypt,
     generate_check_mac_value_for_livestream,
     get_amount_bucket,
     handle_ecpay_return,
     pad_pkcs7,
-    HASH_KEY,
-    HASH_IV,
-    MERCHANT_ID,
 )
-
 
 # ═══════════════════════════════════════════════════════
 # 輔助函數：用已知 key/iv 加密測試資料
 # ═══════════════════════════════════════════════════════
+
 
 def _aes_encrypt(plaintext: str, key: str, iv: str) -> str:
     """AES-128-CBC 加密後 Base64 encode，供測試用"""
@@ -35,6 +38,7 @@ def _aes_encrypt(plaintext: str, key: str, iv: str) -> str:
 # ═══════════════════════════════════════════════════════
 # AES 解密
 # ═══════════════════════════════════════════════════════
+
 
 class TestAesDecrypt:
     """自己加密再解密，驗證 round-trip 正確"""
@@ -65,6 +69,7 @@ class TestAesDecrypt:
 # CheckMacValue 計算（踩坑核心）
 # ═══════════════════════════════════════════════════════
 
+
 class TestCheckMacValue:
     """
     驗證公式：SHA256(lowercase(HashKey + AES解密原始字串 + HashIV))
@@ -78,9 +83,7 @@ class TestCheckMacValue:
         raw_string = (HASH_KEY + raw_decrypted + HASH_IV).lower()
         expected = hashlib.sha256(raw_string.encode("utf-8")).hexdigest().upper()
 
-        result = generate_check_mac_value_for_livestream(
-            raw_decrypted, HASH_KEY, HASH_IV
-        )
+        result = generate_check_mac_value_for_livestream(raw_decrypted, HASH_KEY, HASH_IV)
         assert result == expected
 
     def test_different_input_produces_different_hash(self):
@@ -98,23 +101,26 @@ class TestCheckMacValue:
 # 金額分桶 — 邊界值測試
 # ═══════════════════════════════════════════════════════
 
-class TestGetAmountBucket:
 
-    @pytest.mark.parametrize("amount,expected", [
-        ("0", "30"),
-        ("30", "30"),
-        ("74", "30"),
-        ("75", "75"),       # 邊界：剛好 75 歸 "75"
-        ("149", "75"),
-        ("150", "150"),     # 邊界
-        ("299", "150"),
-        ("300", "300"),     # 邊界
-        ("749", "300"),
-        ("750", "750"),     # 邊界
-        ("1499", "750"),
-        ("1500", "1500"),   # 邊界
-        ("9999", "1500"),
-    ])
+class TestGetAmountBucket:
+    @pytest.mark.parametrize(
+        "amount,expected",
+        [
+            ("0", "30"),
+            ("30", "30"),
+            ("74", "30"),
+            ("75", "75"),  # 邊界：剛好 75 歸 "75"
+            ("149", "75"),
+            ("150", "150"),  # 邊界
+            ("299", "150"),
+            ("300", "300"),  # 邊界
+            ("749", "300"),
+            ("750", "750"),  # 邊界
+            ("1499", "750"),
+            ("1500", "1500"),  # 邊界
+            ("9999", "1500"),
+        ],
+    )
     def test_boundary_values(self, amount, expected):
         assert get_amount_bucket(amount) == expected
 
@@ -132,18 +138,21 @@ class TestGetAmountBucket:
 # handle_ecpay_return 整合測試
 # ═══════════════════════════════════════════════════════
 
+
 class TestHandleEcpayReturn:
     """測試完整的付款通知處理流程"""
 
     def _make_valid_form(self):
         """建構一組能通過驗證的 ECPay 表單資料"""
-        order_data = json.dumps({
-            "OrderInfo": {
-                "TradeNo": "TN20260326001",
-                "TradeAmt": "150",
-                "PaymentDate": "2026/03/26 12:00:00",
+        order_data = json.dumps(
+            {
+                "OrderInfo": {
+                    "TradeNo": "TN20260326001",
+                    "TradeAmt": "150",
+                    "PaymentDate": "2026/03/26 12:00:00",
+                }
             }
-        })
+        )
         # 先 URL encode 再 AES 加密（模擬 ECPay 的實際行為）
         url_encoded = urllib.parse.quote(order_data)
         encrypted = _aes_encrypt(url_encoded, HASH_KEY, HASH_IV)
@@ -160,9 +169,7 @@ class TestHandleEcpayReturn:
     def test_valid_payment_returns_ok(self):
         mock_db = MagicMock()
         # Firestore get 回傳空 document（沒有重複）
-        mock_db.collection.return_value \
-            .document.return_value \
-            .get.return_value.to_dict.return_value = None
+        mock_db.collection.return_value.document.return_value.get.return_value.to_dict.return_value = None
 
         form = self._make_valid_form()
         result = handle_ecpay_return(form, mock_db)
@@ -190,20 +197,12 @@ class TestHandleEcpayReturn:
         mock_db = MagicMock()
 
         # Firestore 已經有這筆 TradeNo
-        existing_doc = {
-            "items": [
-                {"OrderInfo": {"TradeNo": "TN20260326001"}}
-            ]
-        }
-        mock_db.collection.return_value \
-            .document.return_value \
-            .get.return_value.to_dict.return_value = existing_doc
+        existing_doc = {"items": [{"OrderInfo": {"TradeNo": "TN20260326001"}}]}
+        mock_db.collection.return_value.document.return_value.get.return_value.to_dict.return_value = existing_doc
 
         form = self._make_valid_form()
         result = handle_ecpay_return(form, mock_db)
 
         assert result == "1|OK"
         # 確認沒有呼叫 set()（因為是重複的）
-        mock_db.collection.return_value \
-            .document.return_value \
-            .set.assert_not_called()
+        mock_db.collection.return_value.document.return_value.set.assert_not_called()

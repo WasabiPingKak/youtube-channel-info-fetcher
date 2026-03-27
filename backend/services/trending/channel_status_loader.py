@@ -1,14 +1,16 @@
 import logging
-from datetime import datetime, timedelta, timezone
-from typing import List, Dict, Any, Set
+from datetime import UTC, datetime, timedelta
+from typing import Any
 
-from google.cloud.firestore import Client
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud.firestore import Client
+
 from .firestore_date_utils import parse_firestore_date
 
 logger = logging.getLogger(__name__)
 
-def get_active_channels(db: Client) -> List[Dict[str, Any]]:
+
+def get_active_channels(db: Client) -> list[dict[str, Any]]:
     try:
         logger.info("🔍 嘗試載入 channel_sync_index/index_list")
         doc = db.collection("channel_sync_index").document("index_list").get()
@@ -20,7 +22,7 @@ def get_active_channels(db: Client) -> List[Dict[str, Any]]:
         logger.info("📋 總頻道數量：%d", len(items))
 
         # 🔽 收集所有 disabled 的 channel_id
-        disabled_ids: Set[str] = set()
+        disabled_ids: set[str] = set()
         batch_docs = db.collection("channel_index_batch").stream()
         for batch_doc in batch_docs:
             batch_data = batch_doc.to_dict()
@@ -29,7 +31,7 @@ def get_active_channels(db: Client) -> List[Dict[str, Any]]:
                     disabled_ids.add(ch.get("channel_id"))
         logger.info("🚫 被停用頻道數量：%d", len(disabled_ids))
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         threshold_30d = now - timedelta(days=30)
         threshold_7d = now - timedelta(days=7)
 

@@ -1,12 +1,14 @@
 import json
 import logging
 import os
+from datetime import UTC, datetime
 from pathlib import Path
-from google.cloud import firestore
+
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from datetime import datetime, timezone
+
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
@@ -31,17 +33,17 @@ def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
             logging.error(f"❌ 找不到預設設定檔: {config_path}")
             raise FileNotFoundError(f"❌ 找不到預設設定檔: {config_path}")
 
-        with open(config_path, "r", encoding="utf-8") as f:
+        with open(config_path, encoding="utf-8") as f:
             default_config = json.load(f)
 
         doc_ref.set(default_config)
         logging.info(f"[Config] ✅ 寫入預設設定成功：{channel_id} {channel_name}")
 
-    except GoogleAPIError as e:
+    except GoogleAPIError:
         logging.exception(f"[Config] ❌ Firestore 存取錯誤：{channel_id}")
         raise
 
-    except Exception as e:
+    except Exception:
         logging.exception(f"[Config] ❌ 初始化設定失敗：{channel_id}")
         raise
 
@@ -55,9 +57,7 @@ def run_channel_initialization(db, channel_id: str):
     try:
         youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
 
-        response = (
-            youtube.channels().list(part="snippet,statistics", id=channel_id).execute()
-        )
+        response = youtube.channels().list(part="snippet,statistics", id=channel_id).execute()
 
         items = response.get("items", [])
         if not items:
@@ -92,7 +92,7 @@ def run_channel_initialization(db, channel_id: str):
         logging.exception(f"[Init] ❌ YouTube API 呼叫失敗：{e}")
         raise
 
-    except Exception as e:
+    except Exception:
         logging.exception(f"[Init] ❌ 初始化流程錯誤：{channel_id}")
         raise
 
@@ -109,9 +109,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
             data = doc.to_dict()
             channels = data.get("channels", [])
             if any(c.get("channel_id") == channel_id for c in channels):
-                logging.info(
-                    f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入 batch"
-                )
+                logging.info(f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入 batch")
                 break
         else:
             # 找出最後一個 batch 編號（排除 batch_0）
@@ -129,20 +127,16 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
             last_batch_ref = root_ref.document(last_batch_id)
             last_batch_data = last_batch_ref.get().to_dict() or {}
             current_channels = last_batch_data.get("channels", [])
-            logging.info(
-                f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）"
-            )
+            logging.info(f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）")
 
             # 若已滿 1000 筆，開新 batch
             if len(current_channels) >= 1000:
                 last_batch_id = f"batch_{max_batch_number + 1}"
                 last_batch_ref = root_ref.document(last_batch_id)
                 current_channels = []
-                logging.info(
-                    f"[Batch] 🔄 上一 batch 已滿，建立新 batch：{last_batch_id}"
-                )
+                logging.info(f"[Batch] 🔄 上一 batch 已滿，建立新 batch：{last_batch_id}")
 
-            now_iso = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
+            now_iso = datetime.now(UTC).isoformat().replace("+00:00", "Z")
             new_entry = {
                 "channel_id": channel_id,
                 "name": info_data["name"],
@@ -170,6 +164,4 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
             logging.info(f"[Index] ⚠️ channel_index/{channel_id} 已存在，略過寫入")
 
     except GoogleAPIError:
-        logging.exception(
-            f"[Batch] ❌ 寫入 batch 索引或 channel_index 失敗：{channel_id}"
-        )
+        logging.exception(f"[Batch] ❌ 寫入 batch 索引或 channel_index 失敗：{channel_id}")

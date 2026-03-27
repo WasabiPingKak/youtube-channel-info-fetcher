@@ -1,12 +1,14 @@
 # services/google_oauth.py
 import json
-import os
-import requests
 import logging
+import os
+
+import requests
 
 CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
 CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
 REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI")
+
 
 def exchange_code_for_tokens(code: str) -> dict:
     url = "https://oauth2.googleapis.com/token"

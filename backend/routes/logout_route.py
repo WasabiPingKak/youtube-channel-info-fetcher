@@ -2,6 +2,7 @@
 
 from flask import Blueprint, make_response
 
+
 def init_logout_route(app):
     logout_bp = Blueprint("logout", __name__, url_prefix="/api")
 
@@ -11,11 +12,11 @@ def init_logout_route(app):
         response.set_cookie(
             "__session",
             "",
-            max_age=0,            # ⏳ 立即過期
+            max_age=0,  # ⏳ 立即過期
             path="/",
             httponly=True,
             secure=True,
-            samesite="Lax"
+            samesite="Lax",
         )
         return response
 

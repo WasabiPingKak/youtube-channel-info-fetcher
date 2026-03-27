@@ -1,5 +1,4 @@
-from typing import List, Dict
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 CATEGORY_MAPPING = {
     "雜談": "talk",
@@ -9,7 +8,7 @@ CATEGORY_MAPPING = {
 }
 
 
-def count_category_counts(videos: List[Dict]) -> Dict[str, int]:
+def count_category_counts(videos: list[dict]) -> dict[str, int]:
     """
     接收經 get_classified_videos() 處理過的影片清單，
     回傳符合 Firestore 儲存結構的 category_counts 統計結果。
@@ -41,6 +40,6 @@ def count_category_counts(videos: List[Dict]) -> Dict[str, int]:
                 already_counted.add(key)
 
     # 加入更新時間
-    counts["updatedAt"] = datetime.now(timezone.utc).isoformat()
+    counts["updatedAt"] = datetime.now(UTC).isoformat()
 
     return counts
