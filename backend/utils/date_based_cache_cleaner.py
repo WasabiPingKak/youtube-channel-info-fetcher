@@ -16,17 +16,17 @@ CLEANUP_RULES = {
 }
 
 
-def clean_all_expired_documents(mode: str, cache_type: str) -> dict:
+def clean_all_expired_documents(db: Client, mode: str, cache_type: str) -> dict:
     """
     清除指定類型的快取資料。
 
     Args:
+        db: Firestore client（由呼叫端注入）
         mode: 'dry-run' 或 'execute'
         cache_type: 'live' 或 'trending_games'
     Returns:
         dict: { collection_name: { toDelete, toKeep, error? }, ... }
     """
-    db = Client()
     now = datetime.now(UTC)
 
     if cache_type not in CLEANUP_RULES:
