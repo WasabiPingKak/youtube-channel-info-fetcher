@@ -1,3 +1,6 @@
+// React 入口檔案不 export 元件，Fast Refresh 無法作用於此檔案，
+// 僅影響開發時 HMR 效率（最差情況為整頁 reload），不影響 production。
+/* eslint-disable react-refresh/only-export-components */
 import React, { Suspense, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";

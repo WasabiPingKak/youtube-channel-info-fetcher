@@ -1,3 +1,7 @@
+// eslint-disable-next-file react-refresh/only-export-components
+// shadcn/ui 標準模式：同時 export Button 元件與 buttonVariants 常數供外部組合使用，
+// 拆分會破壞 shadcn 的使用慣例，此 warning 僅影響開發時 HMR 效率，不影響 production。
+/* eslint-disable react-refresh/only-export-components */
 import * as React from "react"
 import { Slot } from "@radix-ui/react-slot"
 import { cva, type VariantProps } from "class-variance-authority"
