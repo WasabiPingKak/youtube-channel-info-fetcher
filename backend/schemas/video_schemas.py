@@ -2,22 +2,20 @@
 
 from datetime import datetime
 
-from pydantic import BaseModel, Field, field_validator
+from pydantic import Field
 
-from utils.channel_validator import is_valid_channel_id
+from schemas.common import ChannelIdBody, ChannelIdField
 
 
-class ClassifiedVideoRequest(BaseModel):
+class ClassifiedVideoRequest(ChannelIdBody):
     """POST /api/videos/classified 的請求 body"""
 
-    channel_id: str = Field(min_length=1)
     only_settings: bool = False
     start: datetime | None = None
     end: datetime | None = None
 
-    @field_validator("channel_id")
-    @classmethod
-    def validate_channel_id(cls, v: str) -> str:
-        if not is_valid_channel_id(v):
-            raise ValueError("channel_id 格式不合法")
-        return v
+
+class VideoUpdateRequest(ChannelIdField):
+    """POST /api/videos/update"""
+
+    updateToken: str = Field(min_length=1)

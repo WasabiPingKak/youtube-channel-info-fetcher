@@ -90,6 +90,11 @@ def create_app(config=None):
     )
     app.config.setdefault("FRONTEND_BASE_URL", os.getenv("FRONTEND_BASE_URL", ""))
 
+    # ── 全域錯誤處理 ──
+    from schemas import register_validation_error_handler
+
+    register_validation_error_handler(app)
+
     # ── Middleware ──
     @app.before_request
     def assign_request_id():

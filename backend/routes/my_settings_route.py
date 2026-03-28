@@ -1,7 +1,9 @@
 import logging
 
 from flask import Blueprint, jsonify, request
+from pydantic import ValidationError
 
+from schemas.settings_schemas import UpdateSettingsRequest
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
 
@@ -60,23 +62,13 @@ def init_my_settings_route(app, db):
 
         try:
             data = request.get_json()
-            channel_id = data.get("channelId")
-            enabled = data.get("enabled")
-            country_code = data.get("countryCode")
-            show_live_status = data.get("show_live_status", True)
+            body = UpdateSettingsRequest(**data)
 
-            if not channel_id:
-                return jsonify({"error": "Missing channelId"}), 400
-            if not is_valid_channel_id(channel_id):
-                return jsonify({"error": "channelId 格式不合法"}), 400
-            if channel_id != auth_channel_id:
+            if body.channelId != auth_channel_id:
                 logger.warning(
-                    f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={channel_id}"
+                    f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
                 )
                 return jsonify({"error": "無權限修改此頻道資料"}), 403
-
-            if isinstance(country_code, list):
-                country_code = country_code[:10]
 
             target_doc_ref = None
             target_channels = []
@@ -86,12 +78,12 @@ def init_my_settings_route(app, db):
                 doc_data = doc.to_dict()
                 channels = doc_data.get("channels", [])
                 for i, item in enumerate(channels):
-                    if item.get("channel_id") == channel_id:
+                    if item.get("channel_id") == body.channelId:
                         target_doc_ref = doc.reference
                         target_channels = channels
-                        target_channels[i]["enabled"] = enabled
-                        target_channels[i]["countryCode"] = country_code
-                        target_channels[i]["show_live_status"] = show_live_status
+                        target_channels[i]["enabled"] = body.enabled
+                        target_channels[i]["countryCode"] = body.countryCode
+                        target_channels[i]["show_live_status"] = body.show_live_status
                         break
                 if target_doc_ref:
                     break
@@ -101,18 +93,20 @@ def init_my_settings_route(app, db):
 
             target_doc_ref.update({"channels": target_channels})
 
-            index_doc_ref = db.collection("channel_index").document(channel_id)
+            index_doc_ref = db.collection("channel_index").document(body.channelId)
             index_doc_ref.set(
                 {
-                    "countryCode": country_code,
-                    "enabled": enabled,
-                    "show_live_status": show_live_status,
+                    "countryCode": body.countryCode,
+                    "enabled": body.enabled,
+                    "show_live_status": body.show_live_status,
                 },
                 merge=True,
             )
 
             return jsonify({"success": True}), 200
 
+        except ValidationError:
+            raise
         except Exception:
             logger.exception("❌ update_my_settings 發生例外錯誤")
             return jsonify({"error": "內部伺服器錯誤"}), 500

@@ -3,7 +3,9 @@ import logging
 
 from flask import Blueprint, jsonify, request
 from google.cloud.firestore import Client
+from pydantic import ValidationError
 
+from schemas.admin_schemas import MaintenanceRequest
 from utils.admin_auth import require_admin_key
 from utils.date_based_cache_cleaner import clean_all_expired_documents
 
@@ -16,12 +18,10 @@ def init_maintenance_route(app, db: Client):
     def clean_live_cache():
         try:
             payload = request.get_json(force=True)
-            mode = payload.get("mode")
-            if mode not in ["dry-run", "execute"]:
-                return jsonify({"error": "mode 無效，請使用 'dry-run' 或 'execute'。"}), 400
+            body = MaintenanceRequest(**payload)
 
-            logging.info(f"🧹 開始清除 live 快取資料，模式：{mode}")
-            full_result = clean_all_expired_documents(db, mode, cache_type="live")
+            logging.info(f"🧹 開始清除 live 快取資料，模式：{body.mode.value}")
+            full_result = clean_all_expired_documents(db, body.mode.value, cache_type="live")
             result = {
                 k: v
                 for k, v in full_result.items()
@@ -29,6 +29,8 @@ def init_maintenance_route(app, db: Client):
             }
             return jsonify(result)
 
+        except ValidationError:
+            raise
         except Exception:
             logging.exception("❌ 清除 live 快取失敗")
             return jsonify({"error": "Internal server error"}), 500
@@ -38,14 +40,14 @@ def init_maintenance_route(app, db: Client):
     def clean_trending_games_cache():
         try:
             payload = request.get_json(force=True)
-            mode = payload.get("mode")
-            if mode not in ["dry-run", "execute"]:
-                return jsonify({"error": "mode 無效，請使用 'dry-run' 或 'execute'。"}), 400
+            body = MaintenanceRequest(**payload)
 
-            logging.info(f"🧹 開始清除 trending games 快取，模式：{mode}")
-            result = clean_all_expired_documents(db, mode, cache_type="trending_games")
+            logging.info(f"🧹 開始清除 trending games 快取，模式：{body.mode.value}")
+            result = clean_all_expired_documents(db, body.mode.value, cache_type="trending_games")
             return jsonify(result)
 
+        except ValidationError:
+            raise
         except Exception:
             logging.exception("❌ 清除 trending games 快取失敗")
             return jsonify({"error": "Internal server error"}), 500

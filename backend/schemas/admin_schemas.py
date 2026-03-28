@@ -1,0 +1,49 @@
+"""管理員與內部 API 的 request schema"""
+
+from enum import Enum
+
+from pydantic import BaseModel, Field, field_validator
+
+from utils.channel_validator import is_valid_channel_id
+
+
+class AdminInitRequest(BaseModel):
+    """POST /api/admin/initialize_channel"""
+
+    target_channel_id: str = Field(min_length=1)
+
+    @field_validator("target_channel_id")
+    @classmethod
+    def validate_channel_id(cls, v: str) -> str:
+        if not is_valid_channel_id(v):
+            raise ValueError("target_channel_id 格式不合法")
+        return v
+
+
+class BuildTrendingRequest(BaseModel):
+    """POST /api/internal/build-daily-trending"""
+
+    startDate: str | None = None
+    days: int = Field(default=1, gt=0)
+    force: bool = False
+
+
+class RefreshCacheRequest(BaseModel):
+    """POST /api/internal/refresh-daily-cache"""
+
+    limit: int | None = None
+    include_recent: bool = False
+    dry_run: bool = False
+    full_scan: bool = False
+    force_category_counts: bool = False
+
+
+class MaintenanceMode(str, Enum):
+    DRY_RUN = "dry-run"
+    EXECUTE = "execute"
+
+
+class MaintenanceRequest(BaseModel):
+    """POST /api/maintenance/clean-*"""
+
+    mode: MaintenanceMode
