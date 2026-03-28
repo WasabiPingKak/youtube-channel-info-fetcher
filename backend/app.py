@@ -1,7 +1,8 @@
 import logging
 import os
+import uuid
 
-from flask import Flask
+from flask import Flask, g, request
 from flask_cors import CORS
 
 from routes.admin_init_channel_route import init_admin_init_channel_route
@@ -35,7 +36,26 @@ from routes.weekly_heatmap_cache_route import init_weekly_heatmap_cache_route
 from services.firebase_init_service import init_firestore
 from utils.rate_limiter import limiter
 
-logging.basicConfig(level=logging.INFO, force=True)
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s [%(name)s] [request_id=%(request_id)s] %(message)s",
+    force=True,
+)
+
+# 讓沒有 request context 的 log 也能正常輸出
+old_factory = logging.getLogRecordFactory()
+
+
+def record_factory(*args, **kwargs):
+    record = old_factory(*args, **kwargs)
+    try:
+        record.request_id = g.request_id
+    except (AttributeError, RuntimeError):
+        record.request_id = "-"
+    return record
+
+
+logging.setLogRecordFactory(record_factory)
 
 app = Flask(__name__)
 limiter.init_app(app)
@@ -50,11 +70,18 @@ app.config["OAUTH_DEBUG_MODE"] = os.getenv("OAUTH_DEBUG_MODE", "false").lower() 
 app.config["FRONTEND_BASE_URL"] = os.getenv("FRONTEND_BASE_URL", "")
 
 
+@app.before_request
+def assign_request_id():
+    # 允許前端或 load balancer 傳入既有的 request ID，否則自動產生
+    g.request_id = request.headers.get("X-Request-ID") or uuid.uuid4().hex[:16]
+
+
 @app.after_request
 def set_security_headers(response):
     response.headers["X-Content-Type-Options"] = "nosniff"
     response.headers["X-Frame-Options"] = "DENY"
     response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-Request-ID"] = g.get("request_id", "-")
     return response
 
 
