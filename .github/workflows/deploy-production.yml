@@ -1,0 +1,181 @@
+name: Deploy Production
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+env:
+  GCP_PROJECT_ID: vtuber-channel-analyzer-v3
+  GCP_REGION: asia-east1
+
+jobs:
+  # ── 品質閘門 ──────────────────────────────────────
+  backend-check:
+    name: Backend Lint & Test
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - run: pip install -r requirements.txt
+
+      - name: Ruff check
+        run: ruff check . --config ruff.toml
+
+      - name: Ruff format check
+        run: ruff format . --config ruff.toml --check
+
+      - name: Run pytest
+        run: pytest --tb=short -q
+        env:
+          JWT_SECRET: ci-test-secret
+          ADMIN_API_KEY: ci-test-admin-key
+          ADMIN_CHANNEL_IDS: UC_test_channel
+          ECPAY_HASH_KEY: test_hash_key_1234567
+          ECPAY_HASH_IV: test_hash_iv_12345
+          ECPAY_MERCHANT_ID: "2000132"
+
+  frontend-check:
+    name: Frontend Lint & Build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend_react
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: frontend_react/package-lock.json
+
+      - run: npm ci
+
+      - name: ESLint
+        run: npm run lint
+
+      - name: Build (production)
+        run: npm run build -- --mode production
+        env:
+          VITE_FIREBASE_API_KEY: ${{ vars.PROD_VITE_FIREBASE_API_KEY }}
+          VITE_FIREBASE_AUTH_DOMAIN: ${{ vars.PROD_VITE_FIREBASE_AUTH_DOMAIN }}
+          VITE_FIREBASE_PROJECT_ID: ${{ vars.PROD_VITE_FIREBASE_PROJECT_ID }}
+          VITE_FIREBASE_STORAGE_BUCKET: ${{ vars.PROD_VITE_FIREBASE_STORAGE_BUCKET }}
+          VITE_FIREBASE_MESSAGING_SENDER_ID: ${{ vars.PROD_VITE_FIREBASE_MESSAGING_SENDER_ID }}
+          VITE_FIREBASE_APP_ID: ${{ vars.PROD_VITE_FIREBASE_APP_ID }}
+          VITE_FIREBASE_MEASUREMENT_ID: ${{ vars.PROD_VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_GOOGLE_CLIENT_ID: ${{ vars.PROD_GOOGLE_CLIENT_ID }}
+          VITE_GOOGLE_REDIRECT_URI: ${{ vars.PROD_GOOGLE_REDIRECT_URI }}
+          VITE_API_BASE: ""
+          VITE_ENABLE_SETTINGS: "false"
+          VITE_ADMIN_CHANNEL_ID: ${{ vars.PROD_INPUT_CHANNEL }}
+          VITE_GA_MEASUREMENT_ID: G-Q2S0XSEW74
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: frontend-prod-dist
+          path: frontend_react/dist
+          retention-days: 1
+
+  # ── 部署 Backend ──────────────────────────────────
+  deploy-backend:
+    name: Deploy Backend (Production)
+    needs: [backend-check]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Authenticate to GCP
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GCP_SA_KEY }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Write version.txt
+        run: echo "$(git rev-parse --short=6 HEAD)" > version.txt
+
+      - name: Build container image
+        run: |
+          gcloud builds submit \
+            --tag "gcr.io/${{ env.GCP_PROJECT_ID }}/youtube-api-service:latest" \
+            --quiet .
+
+      - name: Deploy to Cloud Run
+        run: |
+          gcloud run deploy youtube-api-service \
+            --image "gcr.io/${{ env.GCP_PROJECT_ID }}/youtube-api-service:latest" \
+            --region "${{ env.GCP_REGION }}" \
+            --allow-unauthenticated \
+            --update-secrets "\
+          JWT_SECRET=youtube-api-jwt-secret:latest,\
+          API_KEY=youtube-api-api-key:latest,\
+          GOOGLE_CLIENT_SECRET=youtube-api-google-client-secret:latest,\
+          ADMIN_API_KEY=youtube-api-admin-api-key:latest,\
+          ADMIN_CHANNEL_IDS=ADMIN_CHANNEL_IDS:latest,\
+          ECPAY_MERCHANT_ID=ecpay-merchant-id:latest,\
+          ECPAY_HASH_KEY=ecpay-hash-key:latest,\
+          ECPAY_HASH_IV=ecpay-hash-iv:latest" \
+            --set-env-vars "\
+          INPUT_CHANNEL=${{ vars.PROD_INPUT_CHANNEL }},\
+          GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }},\
+          GOOGLE_CLIENT_ID=${{ vars.PROD_GOOGLE_CLIENT_ID }},\
+          GOOGLE_REDIRECT_URI=${{ vars.PROD_GOOGLE_REDIRECT_URI }},\
+          FRONTEND_BASE_URL=${{ vars.PROD_FRONTEND_BASE_URL }},\
+          ALLOWED_ORIGINS=${{ vars.PROD_ALLOWED_ORIGINS }},\
+          WEBSUB_CALLBACK_URL=${{ vars.PROD_WEBSUB_CALLBACK_URL }},\
+          FIRESTORE_DATABASE=${{ vars.PROD_FIRESTORE_DATABASE }},\
+          GAME_ALIAS_ENDPOINT=${{ vars.PROD_GAME_ALIAS_ENDPOINT }},\
+          CLOUD_TASKS_LOCATION=${{ env.GCP_REGION }},\
+          CLOUD_TASKS_QUEUE=websub-subscribe,\
+          CLOUD_RUN_SERVICE_URL=${{ vars.PROD_CLOUD_RUN_SERVICE_URL }}" \
+            --quiet
+
+      - name: Route traffic to latest
+        run: |
+          gcloud run services update-traffic youtube-api-service \
+            --to-latest \
+            --region "${{ env.GCP_REGION }}" \
+            --quiet
+
+  # ── 部署 Frontend ─────────────────────────────────
+  deploy-frontend:
+    name: Deploy Frontend (Production)
+    needs: [frontend-check]
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend_react
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: frontend-prod-dist
+          path: frontend_react/dist
+
+      - name: Deploy to Firebase Hosting
+        uses: FirebaseExtended/action-hosting-deploy@v0
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.GCP_SA_KEY }}
+          projectId: ${{ env.GCP_PROJECT_ID }}
+          target: prod
+          channelId: live
+          entryPoint: frontend_react

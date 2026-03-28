@@ -2,6 +2,7 @@
 config.py
 output.*
 firebase-key.json
+*-key.json
 venv/
 __pycache__/
 *.pyc
