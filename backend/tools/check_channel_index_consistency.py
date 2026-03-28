@@ -75,16 +75,12 @@ def compare_documents(expected: dict, actual: dict) -> list[str]:
     # 遺漏欄位
     missing_keys = list(expected_keys - actual_keys)
     if missing_keys:
-        differences.append(
-            f"  - 遺漏欄位：\n      🔸 expected 包含但 actual 缺少 {missing_keys}"
-        )
+        differences.append(f"  - 遺漏欄位：\n      🔸 expected 包含但 actual 缺少 {missing_keys}")
 
     # 多餘欄位
     extra_keys = list(actual_keys - expected_keys)
     if extra_keys:
-        differences.append(
-            f"  - 多出欄位：\n      🔹 actual 包含多餘欄位 {extra_keys}"
-        )
+        differences.append(f"  - 多出欄位：\n      🔹 actual 包含多餘欄位 {extra_keys}")
 
     return differences
 
