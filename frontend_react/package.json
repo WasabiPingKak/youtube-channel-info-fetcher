@@ -29,7 +29,7 @@
     "html-to-image": "^1.11.13",
     "i18n-iso-countries": "^7.14.0",
     "lodash.isequal": "^4.5.0",
-    "lucide-react": "^0.503.0",
+    "lucide-react": "^1.7.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
     "react-ga4": "^2.1.0",
