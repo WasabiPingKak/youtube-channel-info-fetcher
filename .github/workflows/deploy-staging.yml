@@ -110,10 +110,32 @@ jobs:
       - name: Write version.txt
         run: echo "$(git rev-parse --short=6 HEAD)" > version.txt
 
-      - name: Build & Deploy to Cloud Run
+      - name: Build container image
+        run: |
+          IMAGE="gcr.io/${{ env.GCP_PROJECT_ID }}/youtube-api-staging-service:latest"
+          BUILD_ID=$(gcloud builds submit --tag "$IMAGE" --async --format='value(id)' --quiet .)
+          echo "BUILD_ID=$BUILD_ID" >> "$GITHUB_ENV"
+          echo "IMAGE=$IMAGE" >> "$GITHUB_ENV"
+          echo "⏳ Build submitted: $BUILD_ID"
+
+          # 輪詢等待 build 完成
+          while true; do
+            STATUS=$(gcloud builds describe "$BUILD_ID" --format='value(status)' 2>/dev/null)
+            if [ "$STATUS" = "SUCCESS" ]; then
+              echo "✅ Build succeeded"
+              break
+            elif [ "$STATUS" = "FAILURE" ] || [ "$STATUS" = "CANCELLED" ] || [ "$STATUS" = "TIMEOUT" ]; then
+              echo "❌ Build failed: $STATUS"
+              gcloud builds describe "$BUILD_ID" --format='value(statusDetail)' 2>/dev/null || true
+              exit 1
+            fi
+            sleep 10
+          done
+
+      - name: Deploy to Cloud Run
         run: |
           gcloud run deploy youtube-api-staging-service \
-            --source . \
+            --image "${{ env.IMAGE }}" \
             --region "${{ env.GCP_REGION }}" \
             --allow-unauthenticated \
             --update-secrets "\
@@ -126,6 +148,13 @@ jobs:
           ECPAY_HASH_KEY=ecpay-hash-key-staging:latest,\
           ECPAY_HASH_IV=ecpay-hash-iv-staging:latest" \
             --set-env-vars "^@@^INPUT_CHANNEL=${{ vars.STAGING_INPUT_CHANNEL }}@@GOOGLE_CLOUD_PROJECT=${{ env.GCP_PROJECT_ID }}@@GOOGLE_CLIENT_ID=${{ vars.STAGING_GOOGLE_CLIENT_ID }}@@GOOGLE_REDIRECT_URI=${{ vars.STAGING_GOOGLE_REDIRECT_URI }}@@FRONTEND_BASE_URL=${{ vars.STAGING_FRONTEND_BASE_URL }}@@ALLOWED_ORIGINS=${{ vars.STAGING_ALLOWED_ORIGINS }}@@WEBSUB_CALLBACK_URL=${{ vars.STAGING_WEBSUB_CALLBACK_URL }}@@FIRESTORE_DATABASE=${{ vars.STAGING_FIRESTORE_DATABASE }}@@GAME_ALIAS_ENDPOINT=${{ vars.STAGING_GAME_ALIAS_ENDPOINT }}@@CLOUD_TASKS_LOCATION=${{ env.GCP_REGION }}@@CLOUD_TASKS_QUEUE=websub-subscribe@@CLOUD_RUN_SERVICE_URL=${{ vars.STAGING_CLOUD_RUN_SERVICE_URL }}" \
+            --quiet
+
+      - name: Route traffic to latest
+        run: |
+          gcloud run services update-traffic youtube-api-staging-service \
+            --to-latest \
+            --region "${{ env.GCP_REGION }}" \
             --quiet
 
   # ── 部署 Frontend ─────────────────────────────────
