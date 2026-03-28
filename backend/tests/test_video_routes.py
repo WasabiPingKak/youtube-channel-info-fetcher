@@ -8,6 +8,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 from flask import Flask
 
+from schemas import register_validation_error_handler
 from utils.rate_limiter import limiter
 
 
@@ -26,6 +27,7 @@ def video_app(shared_mock_db):
     app.config["TESTING"] = True
     app.config["RATELIMIT_ENABLED"] = False
     limiter.init_app(app)
+    register_validation_error_handler(app)
     mod.init_video_routes(app, shared_mock_db)
     return app
 

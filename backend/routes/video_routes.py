@@ -23,16 +23,7 @@ def init_video_routes(app, db):
 
             logger.info(f"📥 請求內容：{data}")
 
-            # Pydantic schema 驗證
-            try:
-                body = ClassifiedVideoRequest(**data)
-            except ValidationError as e:
-                details = [
-                    {"field": ".".join(str(x) for x in err["loc"]), "message": err["msg"]}
-                    for err in e.errors()
-                ]
-                logger.warning(f"⚠️ 請求驗證失敗：{details}")
-                return jsonify({"error": "請求參數驗證失敗", "details": details}), 422
+            body = ClassifiedVideoRequest(**data)
 
             logger.info(
                 f"🔍 取得分類影片清單：{body.channel_id}（only_settings={body.only_settings}）"
@@ -45,6 +36,8 @@ def init_video_routes(app, db):
             result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
             return jsonify({"videos": result})
 
+        except ValidationError:
+            raise
         except Exception:
             logger.exception("🔥 /api/videos/classified 發生錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
