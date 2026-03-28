@@ -1,6 +1,5 @@
-import { useNavigate } from "react-router-dom";
 import {
-  FaYoutube, FaTwitter, FaUser, FaGithub,
+  FaTwitter, FaUser, FaGithub,
   FaChartLine, FaClipboardList, FaTools, FaBug
 } from "react-icons/fa";
 import { PiAirplaneLandingFill } from "react-icons/pi";
@@ -10,8 +9,7 @@ import clsx from "clsx";
 import SmartLink from "@/components/common/SmartLink";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-const SidebarMenu = ({ collapsed, setCollapsed, isMobile = false, onItemClick = undefined }) => {
-  const navigate = useNavigate();
+const SidebarMenu = ({ collapsed, setCollapsed: _setCollapsed, isMobile = false, onItemClick = undefined }) => {
   const { data: user } = useMyChannelId();
   const isLoggedIn = !!user?.channelId;
 

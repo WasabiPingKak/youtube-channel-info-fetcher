@@ -1,6 +1,6 @@
 import React from "react";
 import type { SpecialStatsData } from "@/utils/statistics/types";
-import { Video, CalendarDays, Gamepad2, Layers, Trophy, Flame, PlayCircle, ChevronDown } from "lucide-react";
+import { Video, Gamepad2, Layers, Flame, PlayCircle, ChevronDown } from "lucide-react";
 import StatCardWrapper from "./stat-cards/StatCardWrapper";
 import StreakAxis from "./StreakAxis";
 import { formatDurationHM, formatDateTimeGMT8 } from "./utils";

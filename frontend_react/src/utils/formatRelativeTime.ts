@@ -24,7 +24,7 @@ export function formatRelativeTime(isoDateStr: string): string {
     const m = `${past.getMonth() + 1}`.padStart(2, "0");
     const d = `${past.getDate()}`.padStart(2, "0");
     return `${y}/${m}/${d}`;
-  } catch (e) {
+  } catch {
     return "";
   }
 }

@@ -14,6 +14,7 @@ export default function LiveRedirectSection({
   collapsed = false,
   onToggleCollapse,
 }) {
+  // eslint-disable-next-line react-hooks/purity -- now 用於排序計算，不影響 UI 純度
   const now = Date.now();
 
   const sortFn = (a, b) => {

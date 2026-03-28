@@ -20,7 +20,7 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
     const saved = localStorage.getItem("theme");
     if (saved === "dark") {
       document.documentElement.classList.add("dark");
-      setIsDark(true);
+      setIsDark(true); // eslint-disable-line react-hooks/set-state-in-effect -- 同步 DOM 與 localStorage 的主題狀態
     } else {
       document.documentElement.classList.remove("dark");
       setIsDark(false);
@@ -41,8 +41,6 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
       localStorage.setItem("theme", "light");
     }
   };
-
-  const currentYear = new Date().getFullYear();
 
   return (
     <DropdownMenu.Root>

@@ -1,9 +1,7 @@
 import type { ClassifiedVideoItem } from '@/types/category';
-import type { SuggestedKeyword } from '@/hooks/useFrequentKeywordSuggestions';
 import { normalize } from '@/utils/textUtils';
 
 export type { SuggestedKeywordCardState } from '@/types/category';
-import type { SuggestedKeywordCardState } from '@/types/category';
 
 /**
  * 根據高頻詞與影片清單，建立分類建議卡片的初始狀態陣列

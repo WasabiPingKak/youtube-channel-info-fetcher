@@ -5,7 +5,6 @@ import { PublicToggleSection } from "@/components/profile_settings/PublicToggleS
 import { CountryFlagSelector } from "@/components/profile_settings/CountryFlagSelector";
 import { LiveStatusToggleSection } from "@/components/profile_settings/LiveStatusToggleSection";
 import {
-  showSuccessToast,
   showFailureToast,
   showLoginRequiredToast,
   showPermissionDeniedToast,
@@ -15,7 +14,6 @@ import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { MdAnalytics } from "react-icons/md";
-import SmartLink from "@/components/common/SmartLink";
 
 export default function MySettingsPage() {
   const {
@@ -44,6 +42,7 @@ export default function MySettingsPage() {
       showLoginRequiredToast("請先登入以編輯頻道設定");
       navigate("/");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在登入狀態確定後檢查一次
   }, [meLoading, me]);
 
   // ✅ 權限驗證：登入者只能看自己的頻道設定
@@ -58,6 +57,7 @@ export default function MySettingsPage() {
       showPermissionDeniedToast("您沒有權限查看設定頁面");
       navigate("/");
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- 只在相關狀態變動時檢查權限
   }, [meLoading, me, meError, channelInfo?.channel_id]);
 
   const handleLogout = async () => {
@@ -66,7 +66,7 @@ export default function MySettingsPage() {
       if (!res.ok) throw new Error("Logout failed");
       toast.success("已成功登出");
       navigate("/");
-    } catch (err) {
+    } catch {
       showFailureToast("登出失敗");
     }
   };

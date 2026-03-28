@@ -17,7 +17,7 @@ const SubcategoryEditorModal = ({
 
   useEffect(() => {
     if (isOpen) {
-      setName(originalName || '');
+      setName(originalName || ''); // eslint-disable-line react-hooks/set-state-in-effect -- modal 開啟時重置表單狀態
       setError('');
     }
   }, [isOpen, originalName]);

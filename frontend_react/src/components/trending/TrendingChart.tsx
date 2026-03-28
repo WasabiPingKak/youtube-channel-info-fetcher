@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import ChartLegend from "./ChartLegend";
 import TrendingChartCumulative from "./TrendingChartCumulative";
 import TrendingChartDaily from "./TrendingChartBar";
 

@@ -57,7 +57,7 @@ export function useFrequentKeywordSuggestions(
       }
 
       // (2) 拆解剩下的文字，分詞、過濾停用詞/序號字串，再累計
-      const titleWithoutPhrases = rawTitle.replace(/[\[\(【（](.*?)[\]\)】）]/g, ' ');
+      const titleWithoutPhrases = rawTitle.replace(/[[(【（](.*?)[\])】）]/g, ' ');
       const tokens = normalize(titleWithoutPhrases)
         .split(' ')
         .map((t) => t.trim())
@@ -95,6 +95,7 @@ export function useFrequentKeywordSuggestions(
       });
 
     return merged;
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- rebuildTrigger 用於強制重新計算
   }, [videos, rebuildTrigger]);
 
   // 由於 useMemo 是同步計算，一旦 videos 傳進來、計算完就能拿到結果

@@ -75,6 +75,7 @@ export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
 
       return valA.localeCompare(valB, "zh-Hant-u-co-stroke") * direction;
     });
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- VIDEO_TYPE_MAP 是元件內常數，不需列為依賴
   }, [videos, videoType, activeCategory, sortField, sortOrder]);
 
   const handleSort = (field: SortField) => {

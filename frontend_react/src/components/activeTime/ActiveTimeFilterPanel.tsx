@@ -23,7 +23,7 @@ export default function ActiveTimeFilterPanel({
   setSelectedWeekdays,
   selectedPeriods,
   setSelectedPeriods,
-  resultCount,
+  resultCount: _resultCount,
 }) {
   const [showHelpModal, setShowHelpModal] = useState(false);
 

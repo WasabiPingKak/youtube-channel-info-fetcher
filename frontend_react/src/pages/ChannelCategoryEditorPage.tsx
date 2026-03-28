@@ -10,7 +10,7 @@ import { useCategoryConfig } from '../hooks/useCategoryConfig';
 import { useEditableCategories } from '../hooks/useEditableCategories';
 import { useClassifiedVideos } from '../hooks/useClassifiedVideos';
 import MainLayout from "../components/layout/MainLayout";
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
+import { showFailureToast, showLoginRequiredToast } from "@/components/common/ToastManager";
 
 import UnclassifiedVideosPreview from '../components/ChannelCategoryEditor/UnclassifiedVideosPreview';
 import SubcategoryListSection from '../components/ChannelCategoryEditor/SubcategoryListSection';
@@ -72,6 +72,7 @@ const ChannelCategoryEditorPage = () => {
     };
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- isCurrentTabDirty 使用 editableData/categoryData/activeTab 的最新值
   }, [editableData, categoryData, activeTab]);
 
   if (me?.channelId === null) return null;

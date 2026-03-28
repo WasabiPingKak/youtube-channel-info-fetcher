@@ -20,7 +20,7 @@ function useIsDarkMode(): boolean {
 
   useEffect(() => {
     const match = window.matchMedia("(prefers-color-scheme: dark)");
-    setIsDark(match.matches);
+    setIsDark(match.matches); // eslint-disable-line react-hooks/set-state-in-effect -- 初始化 + 訂閱外部 media query
     const listener = (e: MediaQueryListEvent) => setIsDark(e.matches);
     match.addEventListener("change", listener);
     return () => match.removeEventListener("change", listener);
@@ -93,7 +93,6 @@ export default function ActiveTimeHeatmapMini({
   highlightWeekdays = [],
   highlightPeriods = [],
 }: Props) {
-  const max = getMaxCount(activeTime);
   const isDark = useIsDarkMode();
   const highlightEnabled = highlightWeekdays.length > 0 || highlightPeriods.length > 0;
 

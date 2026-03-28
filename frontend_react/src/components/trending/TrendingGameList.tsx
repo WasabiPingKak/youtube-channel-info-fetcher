@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import VideoCardSimple from "./VideoCardSimple";
 import ChannelCard from "./ChannelCard";
 import type { ChannelVideoGroup } from "@/types/trending";
 
@@ -11,7 +10,6 @@ import type { ChannelVideoGroup } from "@/types/trending";
  */
 const TrendingGameList = ({ gameList, details, channelInfo }) => {
   const [expandedGames, setExpandedGames] = useState({});
-  const [expandedChannels, setExpandedChannels] = useState({});
 
   const toggleGame = (game) => {
     setExpandedGames((prev) => ({ ...prev, [game]: !prev[game] }));
@@ -41,7 +39,7 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
                 <div className="flex justify-between items-center">
                   <div className="text-lg font-semibold">{game}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
+                    👤 {channelCount} 頻道 ｜ 🎬 {videoCount} 部
                   </div>
                 </div>
 
@@ -73,7 +71,7 @@ const TrendingGameList = ({ gameList, details, channelInfo }) => {
                 >
                   <div className="text-lg font-semibold">{game}</div>
                   <div className="text-sm text-gray-600 dark:text-gray-300">
-                    👤 {channelCount} 頻道　｜　🎬 {videoCount} 部
+                    👤 {channelCount} 頻道 ｜ 🎬 {videoCount} 部
                   </div>
                 </div>
 

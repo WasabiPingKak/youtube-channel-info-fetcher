@@ -5,8 +5,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import {
   showSuccessToast,
   showFailureToast,
-  showLoginRequiredToast,
-  showPermissionDeniedToast,
 } from "@/components/common/ToastManager";
 
 interface MySettingsResponse {
@@ -40,7 +38,7 @@ export function useMySettings() {
       setEnabled(data.enabled ?? false);
       setSelectedCountries(data.countryCode ?? []);
       setVisibleLive(data.show_live_status ?? false); // ✅ 新增欄位處理
-    } catch (err) {
+    } catch {
       toast("⚠️ 載入設定失敗");
     } finally {
       setLoading(false);

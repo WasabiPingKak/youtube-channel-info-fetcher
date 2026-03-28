@@ -1,10 +1,6 @@
 import React, { useEffect } from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
-import { toast } from "react-hot-toast";
 import {
-  showSuccessToast,
-  showFailureToast,
-  showLoginRequiredToast,
   showPermissionDeniedToast,
 } from "@/components/common/ToastManager";
 

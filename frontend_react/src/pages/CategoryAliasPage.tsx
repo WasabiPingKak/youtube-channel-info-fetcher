@@ -32,7 +32,7 @@ const CategoryAliasPage = () => {
         allKeys.add(`${mainCategory}::${subCategory}`);
       });
     });
-    setOpenItems(allKeys);
+    setOpenItems(allKeys); // eslint-disable-line react-hooks/set-state-in-effect -- 資料載入後初始化展開狀態
   }, [data]);
 
   const filteredSortedData = useMemo(() => {
@@ -126,9 +126,11 @@ const CategoryAliasPage = () => {
                           className="font-bold px-4 py-2 bg-gray-100 dark:bg-zinc-700 cursor-pointer text-gray-800 dark:text-gray-100"
                           onClick={() => {
                             const newSet = new Set(openItems);
-                            newSet.has(key)
-                              ? newSet.delete(key)
-                              : newSet.add(key);
+                            if (newSet.has(key)) {
+                              newSet.delete(key);
+                            } else {
+                              newSet.add(key);
+                            }
                             setOpenItems(newSet);
                           }}
                         >

@@ -22,7 +22,7 @@ const GameAliasPage = () => {
   useEffect(() => {
     if (data) {
       const allKeys = Object.keys(data);
-      setOpenItems(new Set(allKeys));
+      setOpenItems(new Set(allKeys)); // eslint-disable-line react-hooks/set-state-in-effect -- 資料載入後初始化展開狀態
     }
   }, [data]);
 
@@ -59,7 +59,11 @@ const GameAliasPage = () => {
 
   const toggleItem = (name) => {
     const newSet = new Set(openItems);
-    newSet.has(name) ? newSet.delete(name) : newSet.add(name);
+    if (newSet.has(name)) {
+      newSet.delete(name);
+    } else {
+      newSet.add(name);
+    }
     setOpenItems(newSet);
   };
 

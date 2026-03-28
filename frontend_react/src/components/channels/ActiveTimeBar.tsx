@@ -24,7 +24,7 @@ const ActiveTimeBar = ({ activeTimeAll }) => {
 
   if (nonZeroSections.length === 0) return null;
 
-  let gradient = "";
+  let gradient;
   let tooltip = "";
 
   if (nonZeroSections.length === 1) {

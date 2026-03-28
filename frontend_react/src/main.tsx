@@ -22,15 +22,11 @@ import MySettingsPage from "./pages/MySettingsPage";
 import ChannelCategoryEditorPage from "./pages/ChannelCategoryEditorPage";
 import QuickCategoryEditorPage from "./pages/QuickCategoryEditorPage";
 import LiveRedirectPage from "./pages/LiveRedirectPage";
-import LiveRedirectMaintenancePage from "@/pages/LiveRedirectMaintenancePage";
 import DonatePage from "@/pages/DonatePage";
 import ReviewPage from "./pages/ReviewPage";
 
 import "flag-icons/css/flag-icons.min.css";
 import "./style.css";
-
-/* --- 條件編譯：是否載入 /settings --- */
-const enableSettings = import.meta.env.VITE_ENABLE_SETTINGS === "true";
 
 /* --- 建立 QueryClient 實例 --- */
 const queryClient = new QueryClient();

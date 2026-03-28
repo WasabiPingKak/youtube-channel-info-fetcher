@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import type { SuggestedKeywordCardState } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryApply } from '@/hooks/useQuickCategoryApply';
 import toast from 'react-hot-toast';
-import { showSuccessToast, showFailureToast, showLoginRequiredToast, showPermissionDeniedToast } from "@/components/common/ToastManager";
 
 interface QuickCategoryEditorStore {
   channelId: string;
@@ -77,7 +76,7 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       }));
 
       try {
-        const result = await applyQuickCategory(state.channelId, keyword, targets);
+        await applyQuickCategory(state.channelId, keyword, targets);
 
         // ➤ 儲存成功
         set({

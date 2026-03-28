@@ -3,7 +3,6 @@ import { FaEyeSlash } from "react-icons/fa6";
 import { formatRelativeTime } from "../../utils/formatRelativeTime";
 import DeveloperBadge from "@/components/badges/DeveloperBadge";
 import CountryFlags from "@/components/badges/CountryFlags";
-import ActiveTimeBar from "./ActiveTimeBar";
 import SmartLink from "@/components/common/SmartLink";
 import CategoryStatsBar from "@/components/channels/CategoryStatsBar"; // ✅ 新元件
 

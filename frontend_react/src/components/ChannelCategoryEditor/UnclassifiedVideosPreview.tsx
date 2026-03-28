@@ -1,5 +1,4 @@
 import React from 'react';
-import { ClassifiedVideoItem } from '../../hooks/useClassifiedVideos';
 
 const UnclassifiedVideosPreview = ({ videos = [] }) => {
   const unclassified = videos.filter((v) =>

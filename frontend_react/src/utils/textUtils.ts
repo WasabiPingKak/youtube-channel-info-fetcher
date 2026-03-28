@@ -8,10 +8,10 @@ export function normalize(text: string, options?: { preserveDot?: boolean }): st
     .replace(/([\p{Script=Han}])([a-zA-Z])/gu, '$1 $2') // 中文+英文 → 中 英
     .replace(/([a-zA-Z])([\p{Script=Han}])/gu, '$1 $2'); // 英文+中文 → 英 中
 
-  const replaced = separated.replace(/[\[\]【】()（）]/g, ' '); // 取代括號字元
+  const replaced = separated.replace(/[[\]【】()（）]/g, ' '); // 取代括號字元
 
   const pattern = options?.preserveDot
-    ? /[^\p{L}\p{N}_\.]+/gu // 保留中英文字母、數字、底線與點號
+    ? /[^\p{L}\p{N}_.]+/gu // 保留中英文字母、數字、底線與點號
     : /[^\p{L}\p{N}_]+/gu;  // 不保留點號
 
   return replaced.replace(pattern, ' ').toLowerCase();
@@ -21,7 +21,7 @@ export function normalize(text: string, options?: { preserveDot?: boolean }): st
  * 擷取括號中的片語，排除僅包住一個中文字的情況
  */
 export function extractBracketPhrases(text: string): string[] {
-  const matches = text.match(/[\[\(【（](.*?)[\]\)】）]/g);
+  const matches = text.match(/[[(【（](.*?)[\])】）]/g);
   if (!matches) return [];
 
   return matches
@@ -75,7 +75,7 @@ export const SERIAL_PREFIXES = [
   'vol', 'vol.',
   'part', 'pt',
   'part.', 'pt.',
-  'ch', 'ch.', 'chapter', 'chapter.', ,
+  'ch', 'ch.', 'chapter', 'chapter.',
   'day', 'week', 'month', 'season',
   '章節', '章', '集', '部', '篇', '期', '話', '卷'
 ];
@@ -118,9 +118,9 @@ export function isSerialPattern(word: string): boolean {
   }
 
   // 2. 命中前綴 + 數字，例如 ep12、vol003
-  const match = normalized.match(/^([a-z\.]+)(\d{1,4})$/);
+  const match = normalized.match(/^([a-z.]+)(\d{1,4})$/);
   if (match) {
-    const [_, prefix] = match;
+    const [, prefix] = match;
     if (SERIAL_PREFIXES.includes(prefix)) {
       return true;
     }
@@ -142,10 +142,10 @@ export function isSerialPattern(word: string): boolean {
       }
     }
 
-    const prefixMatch = normalized.match(new RegExp(`^\\${open}([a-z\\.]+\\d{1,4})\\${close}$`));
+    const prefixMatch = normalized.match(new RegExp(`^\\${open}([a-z.]+\\d{1,4})\\${close}$`));
     if (prefixMatch) {
       const raw = prefixMatch[1].toLowerCase();
-      const subMatch = raw.match(/^([a-z\.]+)(\d{1,4})$/);
+      const subMatch = raw.match(/^([a-z.]+)(\d{1,4})$/);
       if (subMatch && SERIAL_PREFIXES.includes(subMatch[1])) {
         return true;
       }

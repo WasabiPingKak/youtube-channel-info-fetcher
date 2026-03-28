@@ -6,7 +6,7 @@ import { ChannelSelectorCard } from ".";
 /**
  * 預設卡片渲染
  */
-const defaultRenderCard = (channel, onClick) => (
+const defaultRenderCard = (channel, _onClick) => (
   <ChannelSelectorCard
     key={channel.channel_id || channel.channelId}
     channel={channel}

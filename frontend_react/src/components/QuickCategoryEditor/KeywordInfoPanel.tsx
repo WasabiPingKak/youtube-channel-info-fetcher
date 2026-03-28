@@ -5,8 +5,6 @@ import VideoBadge from '@/components/common/VideoBadge';
 import SubcategoryNameEditor from './SubcategoryNameEditor';
 import KeywordMainCategoryControls from './KeywordMainCategoryControls';
 
-const MAIN_CATEGORIES = ['雜談', '遊戲', '節目', '音樂'];
-
 interface Props {
   card: SuggestedKeywordCardState;
   isEditing: boolean;
@@ -22,18 +20,13 @@ const KeywordInfoPanel: React.FC<Props> = ({
   editValue,
   setIsEditing,
   setEditValue,
-  onCardFinished,
+  onCardFinished: _onCardFinished,
 }) => {
   const applyAgree = useQuickCategoryEditorStore((s) => s.applyAgree);
   const removeAppliedKeyword = useQuickCategoryEditorStore((s) => s.removeAppliedKeyword);
   const setKeywordSkipped = useQuickCategoryEditorStore((s) => s.setKeywordSkipped);
   const setSubcategoryName = useQuickCategoryEditorStore((s) => s.setSubcategoryName);
   const toggleMainCategory = useQuickCategoryEditorStore((s) => s.toggleMainCategory);
-
-  const handleEditConfirm = () => {
-    setSubcategoryName(card.keyword, editValue.trim());
-    setIsEditing(false);
-  };
 
   const badges =
     card.mainCategories.length > 0

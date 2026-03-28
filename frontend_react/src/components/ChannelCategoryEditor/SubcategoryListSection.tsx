@@ -3,7 +3,7 @@ import SubcategoryCard from './SubcategoryCard';
 
 const SubcategoryListSection = ({
   subcategories,
-  onNameChange,
+  onNameChange: _onNameChange,
   onKeywordsChange,
   onEdit,
   onDeleteSubcategory,

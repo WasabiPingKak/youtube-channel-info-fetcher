@@ -49,7 +49,7 @@ const AuthLoadingPage = () => {
 
   useEffect(() => {
     if (channelId) initChannel();
-  }, [channelId]);
+  }, [channelId]); // eslint-disable-line react-hooks/exhaustive-deps -- initChannel 不需列為依賴，只在 channelId 變動時觸發
 
   const getReadableError = (code) => {
     switch (code) {

@@ -1,6 +1,4 @@
-import type { ClassifiedVideoItem } from "@/hooks/useAnnualReviewData";
-
-/** 📊 年度統計數據（一般統計） */
+/** 📊 年度統計數據��一般統計） */
 export interface AnnualStatsData {
   videoCounts: {
     shorts: number;

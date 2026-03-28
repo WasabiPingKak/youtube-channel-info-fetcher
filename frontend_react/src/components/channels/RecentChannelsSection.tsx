@@ -2,7 +2,7 @@ import React from "react";
 import ChannelSelectorCard from "./ChannelSelectorCard";
 import { getRecentChannelIds } from "../../utils/recentChannels";
 
-const RecentChannelsSection = ({ channels, onClick }) => {
+const RecentChannelsSection = ({ channels, onClick: _onClick }) => {
   const recentIds = getRecentChannelIds();
 
   // 篩選 channels 中有出現在 recentIds 的那幾筆

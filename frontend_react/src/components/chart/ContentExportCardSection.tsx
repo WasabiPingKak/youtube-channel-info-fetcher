@@ -1,5 +1,4 @@
 import React, { useRef, useState } from "react";
-import { toPng } from "html-to-image";
 import ChannelInfoCard from "../common/ChannelInfoCard";
 import ContentTreemapSection from "./ContentTreemapSection";
 import StyledExportCard from "./StyledExportCard";

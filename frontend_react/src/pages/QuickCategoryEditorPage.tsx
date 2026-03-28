@@ -8,10 +8,7 @@ import KeywordCardList from '@/components/QuickCategoryEditor/KeywordCardList';
 import MainLayout from '../components/layout/MainLayout';
 import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useMyChannelId } from '@/hooks/useMyChannelId';
-import { toast } from 'react-hot-toast';
 import {
-  showSuccessToast,
-  showFailureToast,
   showLoginRequiredToast,
   showPermissionDeniedToast,
 } from "@/components/common/ToastManager";

@@ -30,7 +30,7 @@ function hexToHsl(hex: string): { h: number; s: number; l: number } {
   const b = parseInt(hex.slice(5, 7), 16) / 255;
 
   const max = Math.max(r, g, b), min = Math.min(r, g, b);
-  let h: number = 0, s: number = 0, l: number = (max + min) / 2;
+  let h: number = 0, s: number = 0; const l: number = (max + min) / 2;
 
   if (max !== min) {
     const d = max - min;
@@ -57,7 +57,7 @@ function hslToHex(h: number, s: number, l: number): string {
   const x = c * (1 - Math.abs((h / 60) % 2 - 1));
   const m = l - c / 2;
 
-  let r = 0, g = 0, b = 0;
+  let r, g, b;
   if (h < 60) { r = c; g = x; b = 0; }
   else if (h < 120) { r = x; g = c; b = 0; }
   else if (h < 180) { r = 0; g = c; b = x; }

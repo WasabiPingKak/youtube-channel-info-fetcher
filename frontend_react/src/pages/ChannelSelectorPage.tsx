@@ -55,7 +55,7 @@ const ChannelSelectorPage = () => {
 
   // 決定分組或平鋪顯示內容
   const sortedChannels = [...channels];
-  let sortFn = (a, b) => 0;
+  let sortFn = (_a, _b) => 0;
   if (sortMode === "latest") {
     sortFn = (a, b) =>
       new Date(b.lastUploadAt).getTime() - new Date(a.lastUploadAt).getTime();

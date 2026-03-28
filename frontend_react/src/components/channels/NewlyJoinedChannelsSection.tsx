@@ -78,15 +78,11 @@ const groupByJoinedDate = (channels) => {
 
 const STORAGE_KEY = "newlyJoinedExpanded";
 
-const NewlyJoinedChannelsSection = ({ channels, onClick }) => {
-  const [expanded, setExpanded] = useState(true);
-
-  useEffect(() => {
+const NewlyJoinedChannelsSection = ({ channels, onClick: _onClick }) => {
+  const [expanded, setExpanded] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === "false") {
-      setExpanded(false);
-    }
-  }, []);
+    return stored !== "false";
+  });
 
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, expanded ? "true" : "false");

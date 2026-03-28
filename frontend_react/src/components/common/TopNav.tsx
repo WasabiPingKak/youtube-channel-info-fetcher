@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import { PiCompassRoseBold, PiSunBold, PiMoonBold } from "react-icons/pi";
 import SmartLink from "@/components/common/SmartLink";
 import UserMenu from "@/components/common/UserMenu";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-const TopNav = ({ collapsed, toggleCollapsed }) => {
+const TopNav = ({ collapsed: _collapsed, toggleCollapsed }) => {
   const isMobile = useIsMobile();
   const { data: user } = useMyChannelId();
   const isLoggedIn = !!user?.channelId;
@@ -18,15 +18,15 @@ const TopNav = ({ collapsed, toggleCollapsed }) => {
     }
   };
 
-  const [isDark, setIsDark] = useState(false);
-
-  useEffect(() => {
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false;
     const theme = localStorage.getItem("theme");
     if (theme === "dark") {
       document.documentElement.classList.add("dark");
-      setIsDark(true);
+      return true;
     }
-  }, []);
+    return false;
+  });
 
   const toggleTheme = () => {
     const newTheme = !isDark;

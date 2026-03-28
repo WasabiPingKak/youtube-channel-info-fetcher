@@ -7,7 +7,7 @@ export type { ChannelIndexEntry } from "@/types/channel";
 import type { ChannelIndexEntry } from "@/types/channel";
 
 const normalize = (text: string) =>
-  text.toLowerCase().replace(/\s/g, '').replace(/　/g, ''); // 全形空白也移除
+  text.toLowerCase().replace(/\s/g, '').replace(/\u3000/g, ''); // 全形空白也移除
 
 const ACTIVE_TIME_FIELD_MAP = {
   midnight: '凌',
@@ -47,7 +47,7 @@ export function useSelectableChannelList(
     // gcTime: 1000 * 60 * 3, // 快取 3 分鐘
   });
 
-  const allChannels = allChannelsData?.channels || [];
+  const allChannels = useMemo(() => allChannelsData?.channels || [], [allChannelsData]);
   const newlyJoinedChannels = searchText === "" ? (allChannelsData?.newly_joined_channels || []) : [];
   const totalRegisteredCount = allChannelsData?.total_registered_count ?? 0;
 

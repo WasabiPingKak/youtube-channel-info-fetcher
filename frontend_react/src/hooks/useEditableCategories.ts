@@ -26,7 +26,7 @@ export const useEditableCategories = (
         }
       }
 
-      setEditableData(cleaned);
+      setEditableData(cleaned); // eslint-disable-line react-hooks/set-state-in-effect -- 同步外部 prop 到本地可編輯狀態
     }
   }, [categoryData]);
 
