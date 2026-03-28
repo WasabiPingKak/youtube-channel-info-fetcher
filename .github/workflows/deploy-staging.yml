@@ -137,6 +137,7 @@ jobs:
           gcloud run deploy youtube-api-staging-service \
             --image "${{ env.IMAGE }}" \
             --region "${{ env.GCP_REGION }}" \
+            --max-instances=3 \
             --allow-unauthenticated \
             --update-secrets "\
           JWT_SECRET=youtube-api-jwt-secret:latest,\
