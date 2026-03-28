@@ -1,85 +1,161 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WasabiPingKak/youtube-channel-info-fetcher)
 
-# 🎯 VTMap 頻道旅圖｜Vtuber TrailMap
+# VTMap 頻道旅圖｜Vtuber TrailMap
 
-https://www.vtubertrailmap.com/
+**[www.vtubertrailmap.com](https://www.vtubertrailmap.com/)**
 
-VTMap 是一套針對 Vtuber 頻道經營的分析與導流工具，目的是為了解決 YouTube 後台缺乏「主題分類」與「直播導流」資訊的限制。
+VTMap 是一套針對 Vtuber 頻道經營的分析與導流工具，解決 YouTube 後台缺乏「主題分類」與「直播導流」資訊的限制。透過標題關鍵字比對分類影片主題，協助創作者與觀眾快速掌握頻道內容，並提供自訂規則與隱私設定。
 
-透過標題關鍵字比對來分類影片主題，協助創作者與觀眾快速掌握頻道內容，也提供具彈性的自訂規則與隱私設定。
+## 功能特色
 
-實作上整合了 YouTube Data API、Firebase Firestore 資料庫與 Google Apps Script 提供的 Web API。整體設計支援創作者即時查看頻道內容結構與導流曝光，提供比 Youtube 原生介面更多的參考資訊。
-
----
-
-### 🔍 我能用 VTMap 做什麼？
-
-#### 📊 頻道分析 Channel Analyzer
+### 頻道分析 Channel Analyzer
 
 - 自動掃描所有影片標題，依據關鍵字歸類為四大主題：「雜談」「遊戲」「音樂」「節目」
 - 統計影片數量與總時長，產出主題比例圖與分布趨勢
 - 快速查閱每部影片的標題、時間、主題分類與長度
-- 頻道持有者可自訂頻道的分類關鍵字，協助系統針對頻道的個人風格做更精準的分類
+- 頻道持有者可自訂分類關鍵字，讓分類更貼近頻道風格
 
-#### 🛬 降落轉機塔臺 Live Redirect Helper
+### 降落轉機塔臺 Live Redirect Helper
 
 - 自動替每場直播貼上主題分類標籤
 - 顯示「同時觀看人數」、「開播時間」、「主題」等資訊
 - 可依主題分類與人氣排序篩選導流對象
 - 解決 YouTube 官方導流系統無法顯示分類、時間與同時觀看人數的問題
 
----
+### 頻道擁有者自訂功能
 
-### 🗃️ 給頻道擁有者的自訂功能
+- 透過 Google OAuth 登入，連結 YouTube 頻道使用進階管理功能
+- 開關頻道分析頁與導流頁的觀看權限
+- 設定自訂的主題分類關鍵字
+- 透過 Google Sheets 表單協作擴充遊戲別名清單
 
-VTMap 支援創作者透過 Google OAuth 登入，並連結自己的 YouTube 頻道，使用進階功管理功能：
+### 趨勢分析
 
-- 可以開關頻道分析頁與導流頁的觀看權限
-- 可對頻道設定自訂的主題分類關鍵字，讓分類更貼近頻道風格
+- 每日熱門遊戲排行
+- 頻道活躍時段熱力圖
 
-此外，VTMap 提供開放式資料整合機制，讓創作者或觀眾能在不進入後台的情況下，透過提交 Google Sheets 表單來協作擴充遊戲清單。
+## Tech Stack
 
-經由 Google Apps Script 將 Google Sheets 表單轉換為 JSON API，後端可即時讀取最新的遊戲別名設定。
+| Layer      | Technology                                                                     |
+| ---------- | ------------------------------------------------------------------------------ |
+| Frontend   | React 19, TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query      |
+| Backend    | Python Flask, Gunicorn, Pydantic (request validation), Flask-Limiter (rate limiting) |
+| Database   | Google Cloud Firestore（Production / Staging 雙資料庫隔離）                      |
+| Hosting    | Google Cloud Run (backend), Firebase Hosting (frontend)                        |
+| Async Jobs | Google Cloud Tasks (WebSub 訂閱等非同步作業)                                    |
+| Linting    | Ruff (backend), ESLint (frontend), pre-commit hooks                            |
+| Testing    | pytest (backend)                                                               |
 
----
+## 架構
 
-## 🚀 一鍵部署指南
+```
+Browser --> Firebase Hosting (React SPA)
+                |
+                | TanStack Query (12hr cache + localStorage)
+                v
+           Cloud Run (Flask API, 37 endpoints)
+                |
+                ├──> Firestore
+                ├──> YouTube Data API v3
+                └──> Cloud Tasks ──> WebSub (push notifications)
+```
+
+- Staging / Production 環境透過獨立 Firestore 資料庫完全隔離
+- POST 路由使用 Pydantic schema 驗證，ValidationError 統一回傳 422
+- WebSub 推播通知即時同步新影片資訊
+
+## 快速開始
+
+### 前置需求
+
+- [Node.js](https://nodejs.org/) >= 18
+- [Python](https://www.python.org/) >= 3.11
+- [Google Cloud SDK](https://cloud.google.com/sdk)（存取 Firestore 用）
+- [Firebase CLI](https://firebase.google.com/docs/cli)（前端部署用）
+- 已啟用 Firestore 與 Cloud Tasks 的 GCP 專案
+
+### 安裝
+
+1. **Clone 專案**
+
+   ```bash
+   git clone https://github.com/WasabiPingKak/youtube-channel-info-fetcher.git
+   cd youtube-channel-info-fetcher
+   ```
+
+2. **後端**
+
+   ```bash
+   cd backend
+   python -m venv venv
+   source venv/bin/activate  # Windows: venv\Scripts\activate
+   pip install -r requirements.txt
+   cp .env.example .env.local  # 填入你的環境變數
+   ```
+
+3. **前端**
+
+   ```bash
+   cd frontend_react
+   npm install
+   ```
+
+4. **GCP 認證**
+
+   ```bash
+   gcloud auth application-default login
+   gcloud config set project <your-gcp-project>
+   ```
+
+### 環境變數
+
+完整欄位參考 `backend/.env.example`，主要分組：
+
+| 分組 | 變數 | 說明 |
+|------|------|------|
+| Firestore | `FIRESTORE_DATABASE`, `GOOGLE_CLOUD_PROJECT`, `GOOGLE_APPLICATION_CREDENTIALS`, `FIREBASE_KEY_PATH` | 資料庫連線 |
+| Google OAuth | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `GOOGLE_REDIRECT_URI`, `FRONTEND_BASE_URL` | 登入流程 |
+| YouTube API | `API_KEY` | YouTube Data API v3 |
+| 認證與權限 | `JWT_SECRET`, `ADMIN_CHANNEL_IDS`, `ADMIN_API_KEY` | JWT 簽發、管理員判定、內部 API |
+| WebSub | `WEBSUB_CALLBACK_URL`, `WEBSUB_SECRET` | 推播通知 |
+| Cloud Tasks | `CLOUD_TASKS_LOCATION`, `CLOUD_TASKS_QUEUE`, `CLOUD_RUN_SERVICE_URL` | 非同步作業 |
+| 遊戲別名 | `GAME_ALIAS_ENDPOINT` | 外部遊戲別名 API |
+| 綠界金流 | `ECPAY_MERCHANT_ID`, `ECPAY_HASH_KEY`, `ECPAY_HASH_IV` | 選填，僅贊助功能需要 |
+
+`.env.production` 覆蓋正式部署的網址與導向參數。
+
+### 本地開發
+
+```bash
+# 後端（在 backend/ 目錄下）
+python app.py
+
+# 前端（在 frontend_react/ 目錄下）
+npm run dev
+```
+
+### 測試與 Lint
+
+```bash
+# 後端測試
+cd backend
+pytest
+pytest --cov
+
+# Pre-commit hooks（Ruff + ESLint + .env 保護）
+pre-commit install
+pre-commit run --all-files
+
+# 手動 Lint
+cd backend && ruff check . --config ruff.toml
+cd frontend_react && npm run lint
+```
+
+## 部署
 
 本專案可部署 staging 與 production 雙環境，並具備版本註記與歷史版本清理功能。
 
----
-
-### 🔧 後端部署（Google Cloud Run）
-
-請進入 `backend/` 目錄，建立 `.env.local` 環境變數檔案，並依需求建立 `.env.production` 覆蓋正式部署設定。
-
-可參考 `backend/.env.example` 範例如下：
-
-```env
-export INPUT_CHANNEL=UCxxxxxxxxxxxxxx (API 測試用欄位，非必要)
-export GOOGLE_CLIENT_ID=xxx
-export GOOGLE_REDIRECT_URI=https://xxx
-export FRONTEND_BASE_URL=https://xxx
-export OAUTH_DEBUG_MODE=true
-export ALLOWED_ORIGINS=https://xxxxx
-export WEBSUB_CALLBACK_URL=https://xxxxx/websub-callback
-export FIREBASE_KEY_PATH=xxx
-export GOOGLE_APPLICATION_CREDENTIALS=xxx
-```
-
-`.env.production` 通常會設定正式用網址與導向參數，例如：
-
-```env
-export GOOGLE_REDIRECT_URI=https://xxxxx/oauth/callback
-export FRONTEND_BASE_URL=https://xxxxx
-export ALLOWED_ORIGINS=https://xxxxx
-```
-
----
-
-#### 📦 自動部署後端服務
-
-使用 `deploy_backend.sh` 自動建構映像並部署至 Cloud Run：
+### 後端（Google Cloud Run）
 
 ```bash
 cd backend
@@ -88,26 +164,12 @@ cd backend
 ```
 
 功能包含：
-
 - 載入對應 `.env` 設定檔內容
-- 建立並上傳 Docker 映像至 Google Container Registry（GCR）
+- 建立並上傳 Docker 映像至 Google Container Registry
 - 寫入 Git Commit Hash 至 `version.txt`
-- 若是首次部署自動導流；後續部署自動切換至最新 READY 版本
+- 自動切換流量至最新 READY 版本
 
----
-
-#### 🔁 手動切換流量版本
-
-若不想重新部署，只切換流量到最新版本，可使用：
-
-```bash
-./switch_to_latest_ready_revision.sh --staging
-./switch_to_latest_ready_revision.sh --prod
-```
-
----
-
-#### 🧹 清理舊版本 Revisions
+#### 清理舊版本 Revisions
 
 定期清理 Cloud Run 歷史版本以節省資源（保留最近 10 筆）：
 
@@ -116,20 +178,30 @@ cd backend
 ./cleanup_old_revisions.sh --prod
 ```
 
----
+### 前端（Firebase Hosting）
 
-#### 🗄️ Firestore 資料庫環境隔離
+```bash
+cd frontend_react
+./deploy_frontend.sh --staging   # 部署至 staging target
+./deploy_frontend.sh --prod      # 部署至 production target
+```
+
+功能包含：
+- 取得 Git Commit Hash 並插入至 `<head>` 中註解
+- `staging` 模式會將 `<title>` 改為「VTMap 頻道旅圖 staging」
+- 執行 `npm run build -- --mode` 指令產出正式版
+- 使用 Firebase CLI 部署至對應 Hosting target
+
+### Firestore 資料庫環境隔離
 
 專案使用**雙資料庫**架構，確保 Staging 和 Production 環境完全隔離：
 
 - **Production**: 使用 `(default)` 資料庫
 - **Staging**: 使用 `staging` 資料庫
 
-部署腳本會自動根據 `.env.staging` 或 `.env.production` 設定連線到對應的資料庫。
+環境變數 `FIRESTORE_DATABASE` 控制連線的資料庫，部署腳本會自動根據 `.env.staging` 或 `.env.production` 設定。
 
----
-
-#### 🔄 資料庫遷移工具
+### 資料庫遷移工具
 
 使用 `migrate_prod_to_staging.py` 將 Production 資料複製到 Staging 進行測試：
 
@@ -153,35 +225,38 @@ python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
 ```
 
 **安全機制**：
-- ✅ 自動脫敏：移除 OAuth tokens 等敏感資料
-- ✅ 安全檢查：禁止從 Staging 複製到 Production
-- ✅ 互動確認：執行前需輸入 'yes' 確認
-- ✅ 進度顯示：即時顯示複製進度與統計
+- 自動脫敏：移除 OAuth tokens 等敏感資料
+- 安全檢查：禁止從 Staging 複製到 Production
+- 互動確認：執行前需輸入 'yes' 確認
+- 進度顯示：即時顯示複製進度與統計
 
-**使用時機**：
-- 在 Staging 環境測試新功能前，先同步 Production 資料
-- 驗證資料結構變更對現有資料的影響
-- 建立測試環境的真實資料集
+## 專案結構
 
----
-
-### 🌐 前端部署（Firebase Hosting）
-
-請先安裝 Firebase CLI，並於 `frontend_react/` 目錄中完成初始化（需有 `.firebaserc` 與 `firebase.json` 設定）。
-
-#### 📦 自動部署前端網站
-
-使用 `deploy_frontend.sh` 一鍵打包並部署：
-
-```bash
-cd frontend_react
-./deploy_frontend.sh --staging   # 部署至 staging target
-./deploy_frontend.sh --prod      # 部署至 production target
 ```
-
-功能包含：
-
-- 取得 Git Commit Hash 並插入至 `<head>` 中註解
-- `staging` 模式會將 `<title>` 改為「VTMap 頻道旅圖 staging」
-- 執行 `npm run build -- --mode` 指令產出正式版
-- 使用 Firebase CLI 部署至對應 Hosting target
+youtube-channel-info-fetcher/
+├── backend/
+│   ├── app.py                 # Flask 入口（Application Factory）
+│   ├── schemas/               # Pydantic request/response schemas
+│   ├── routes/                # API 路由模組（37 endpoints）
+│   ├── services/              # 商業邏輯層
+│   │   ├── youtube/           # YouTube API 串接
+│   │   ├── firestore/         # 資料庫操作
+│   │   ├── video_analyzer/    # 影片標題關鍵字分類
+│   │   ├── trending/          # 熱門頻道 / 遊戲分析
+│   │   ├── live_redirect/     # 直播快取與導流
+│   │   └── heatmap/           # 活躍時段熱力圖
+│   ├── utils/                 # 共用工具（rate limiter、JWT 等）
+│   └── tools/                 # 維運腳本（資料庫遷移等）
+│
+├── frontend_react/
+│   ├── src/
+│   │   ├── pages/             # 頁面元件
+│   │   ├── components/        # 依功能分群的 UI 元件
+│   │   ├── hooks/             # Custom React hooks
+│   │   ├── stores/            # Zustand state stores
+│   │   ├── types/             # TypeScript 型別定義
+│   │   └── utils/             # 工具函式
+│   └── public/                # 靜態資源
+│
+└── README.md
+```
