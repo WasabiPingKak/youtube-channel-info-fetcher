@@ -3,8 +3,8 @@ from datetime import UTC, datetime, timedelta
 
 from flask import Blueprint, jsonify, request
 from pydantic import ValidationError
-from schemas.video_schemas import ClassifiedVideoRequest
 
+from schemas.video_schemas import ClassifiedVideoRequest
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 from utils.channel_validator import is_valid_channel_id
 
