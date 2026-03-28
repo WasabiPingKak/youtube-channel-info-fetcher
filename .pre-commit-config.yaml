@@ -16,6 +16,16 @@ repos:
         files: ^backend/
         exclude: ^backend/tools/
 
+  # pytest — Backend 單元測試
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: bash -c 'cd backend && python -m pytest tests/ -q'
+        language: system
+        files: ^backend/
+        pass_filenames: false
+
   # ESLint — TypeScript/React linter
   - repo: local
     hooks:
