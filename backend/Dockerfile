@@ -1,6 +1,6 @@
 FROM python:3.11-slim
 
-RUN adduser --system --no-create-home appuser
+RUN adduser --system --no-create-home --group appuser
 
 WORKDIR /app
 
