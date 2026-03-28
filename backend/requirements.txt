@@ -8,7 +8,7 @@ google-api-python-client==2.193.0
 requests==2.33.0
 firebase-admin==6.6.0
 google-cloud-firestore==2.26.0
-google-cloud-tasks==2.21.0
+google-cloud-tasks==2.22.0
 pytest==8.4.2
 pytest-cov==7.1.0
 python-dateutil==2.9.0.post0
