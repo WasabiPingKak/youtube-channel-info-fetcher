@@ -110,16 +110,10 @@ jobs:
       - name: Write version.txt
         run: echo "$(git rev-parse --short=6 HEAD)" > version.txt
 
-      - name: Build container image
-        run: |
-          gcloud builds submit \
-            --tag "gcr.io/${{ env.GCP_PROJECT_ID }}/youtube-api-staging-service:latest" \
-            --quiet .
-
-      - name: Deploy to Cloud Run
+      - name: Build & Deploy to Cloud Run
         run: |
           gcloud run deploy youtube-api-staging-service \
-            --image "gcr.io/${{ env.GCP_PROJECT_ID }}/youtube-api-staging-service:latest" \
+            --source . \
             --region "${{ env.GCP_REGION }}" \
             --allow-unauthenticated \
             --update-secrets "\
@@ -146,13 +140,6 @@ jobs:
           CLOUD_RUN_SERVICE_URL=${{ vars.STAGING_CLOUD_RUN_SERVICE_URL }}" \
             --quiet
 
-      - name: Route traffic to latest
-        run: |
-          gcloud run services update-traffic youtube-api-staging-service \
-            --to-latest \
-            --region "${{ env.GCP_REGION }}" \
-            --quiet
-
   # ── 部署 Frontend ─────────────────────────────────
   deploy-frontend:
     name: Deploy Frontend (Staging)
@@ -169,11 +156,10 @@ jobs:
           name: frontend-staging-dist
           path: frontend_react/dist
 
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
       - name: Deploy to Firebase Hosting
-        uses: FirebaseExtended/action-hosting-deploy@v0
-        with:
-          repoToken: ${{ secrets.GITHUB_TOKEN }}
-          firebaseServiceAccount: ${{ secrets.GCP_SA_KEY }}
-          projectId: ${{ env.GCP_PROJECT_ID }}
-          target: staging
-          entryPoint: frontend_react
+        run: firebase deploy --only hosting:staging --project "${{ env.GCP_PROJECT_ID }}"
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
