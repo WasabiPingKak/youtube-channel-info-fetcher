@@ -3,21 +3,14 @@
 # CLI 工具：找出 channel_data/*/videos_batch 中重複的影片 ID
 # --------------------------------------------------
 
-import argparse
-import logging
 import os
 import sys
-from collections import defaultdict
 from pathlib import Path
 
-from google.api_core.exceptions import GoogleAPIError
-from google.cloud import firestore
-
-# ✅ 載入 Firestore 初始化設定
+# 載入 .env.local 並將專案根目錄加入 sys.path（必須在其他 backend 模組 import 前完成）
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-from dotenv import load_dotenv
 
-from backend.services.firebase_init_service import init_firestore
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 project_root = Path(__file__).resolve().parents[2]
@@ -25,7 +18,15 @@ firebase_key_path = (project_root / os.getenv("FIREBASE_KEY_PATH", "")).resolve(
 os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
-# ✅ logging 設定
+import argparse  # noqa: E402
+import logging  # noqa: E402
+from collections import defaultdict  # noqa: E402
+
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
+from google.api_core.exceptions import GoogleAPIError  # noqa: E402
+from google.cloud import firestore  # noqa: E402
+
+# logging 設定
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 

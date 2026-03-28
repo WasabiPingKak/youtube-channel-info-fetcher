@@ -3,21 +3,14 @@
 # CLI 工具：比對 channel_index_batch 與 channel_index/{channelId} 資料是否一致
 # --------------------------------------------------
 
-import argparse
-import json
-import logging
 import os
 import sys
 from pathlib import Path
 
-from google.api_core.exceptions import GoogleAPIError
-from google.cloud import firestore
-
-# ✅ 載入 .env.local 並設定 FIREBASE_KEY_PATH
+# 載入 .env.local 並將專案根目錄加入 sys.path（必須在其他 backend 模組 import 前完成）
 sys.path.append(str(Path(__file__).resolve().parents[2]))
-from dotenv import load_dotenv
 
-from backend.services.firebase_init_service import init_firestore
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 project_root = Path(__file__).resolve().parents[2]
@@ -26,7 +19,15 @@ firebase_key_path = (project_root / os.getenv("FIREBASE_KEY_PATH", "")).resolve(
 os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
-# ✅ 初始化 logging
+import argparse  # noqa: E402
+import json  # noqa: E402
+import logging  # noqa: E402
+
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
+from google.api_core.exceptions import GoogleAPIError  # noqa: E402
+from google.cloud import firestore  # noqa: E402
+
+# 初始化 logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
 BATCH_COLLECTION = "channel_index_batch"
@@ -66,18 +67,24 @@ def compare_documents(expected: dict, actual: dict) -> list[str]:
     for key in expected_keys & actual_keys:
         if expected_filtered[key] != actual_filtered[key]:
             differences.append(
-                f"  - {key} 欄位不同：\n      🔸 預期：{expected_filtered[key]}\n      🔹 實際：{actual_filtered[key]}"
+                f"  - {key} 欄位不同："
+                f"\n      🔸 預期：{expected_filtered[key]}"
+                f"\n      🔹 實際：{actual_filtered[key]}"
             )
 
     # 遺漏欄位
     missing_keys = list(expected_keys - actual_keys)
     if missing_keys:
-        differences.append(f"  - 遺漏欄位：\n      🔸 expected 包含但 actual 缺少 {missing_keys}")
+        differences.append(
+            f"  - 遺漏欄位：\n      🔸 expected 包含但 actual 缺少 {missing_keys}"
+        )
 
     # 多餘欄位
     extra_keys = list(actual_keys - expected_keys)
     if extra_keys:
-        differences.append(f"  - 多出欄位：\n      🔹 actual 包含多餘欄位 {extra_keys}")
+        differences.append(
+            f"  - 多出欄位：\n      🔹 actual 包含多餘欄位 {extra_keys}"
+        )
 
     return differences
 
@@ -132,7 +139,7 @@ def check_consistency(
             for diff in m["differences"]:
                 print(diff)
 
-    # 🛠 處理 missing + mismatched
+    # 處理 missing + mismatched
     to_update = missing + [m["replacement"] for m in mismatched]
 
     if dry_run:

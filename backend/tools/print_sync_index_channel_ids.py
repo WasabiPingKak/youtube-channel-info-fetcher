@@ -19,9 +19,8 @@ os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
-from google.api_core.exceptions import GoogleAPIError
-
-from backend.services.firebase_init_service import init_firestore
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
+from google.api_core.exceptions import GoogleAPIError  # noqa: E402
 
 DOC_PATH = "channel_sync_index/index_list"
 DEFAULT_EXPORT_FILENAME = "channel_index_list.txt"

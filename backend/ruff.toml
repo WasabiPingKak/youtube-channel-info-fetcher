@@ -3,8 +3,6 @@
 
 target-version = "py312"
 line-length = 100
-extend-exclude = ["tools/"]
-
 [lint]
 # 啟用的規則集
 select = [
