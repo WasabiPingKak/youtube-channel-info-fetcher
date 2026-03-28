@@ -2,10 +2,8 @@
 Video classifier 測試：直播/預約/過期/非直播的分類邏輯
 """
 
-from datetime import datetime, timedelta
+from datetime import datetime
 from unittest.mock import MagicMock
-
-import pytest
 
 
 def _make_item(

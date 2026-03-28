@@ -2,7 +2,7 @@
 Batch writer 測試：影片批次寫入、合併、去重邏輯
 """
 
-from unittest.mock import MagicMock, call, patch
+from unittest.mock import MagicMock, patch
 
 import pytest
 

@@ -2,9 +2,7 @@
 Trending service 測試：驗證主協調器的資料流與錯誤處理
 """
 
-from unittest.mock import MagicMock, patch
-
-import pytest
+from unittest.mock import patch
 
 
 class TestGetTrendingGamesSummary:

@@ -4,8 +4,6 @@ Cloud Tasks client 測試：任務派發與錯誤處理
 
 from unittest.mock import MagicMock, patch
 
-import pytest
-
 
 class TestDispatchTask:
     """dispatch_task 單一任務派發"""
