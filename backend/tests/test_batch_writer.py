@@ -53,9 +53,7 @@ class TestWriteBatchesToFirestore:
         from services.firestore.batch_writer import write_batches_to_firestore
 
         # 沒有既有 batch
-        mock_db.collection.return_value.document.return_value.collection.return_value.stream.return_value = (
-            []
-        )
+        mock_db.collection.return_value.document.return_value.collection.return_value.stream.return_value = []
 
         raw_videos = [_make_raw_video("v1"), _make_raw_video("v2")]
         result = write_batches_to_firestore(mock_db, "UC001", raw_videos)
@@ -65,9 +63,7 @@ class TestWriteBatchesToFirestore:
     def test_deduplicates_by_video_id(self, mock_db, mock_normalize):
         from services.firestore.batch_writer import write_batches_to_firestore
 
-        mock_db.collection.return_value.document.return_value.collection.return_value.stream.return_value = (
-            []
-        )
+        mock_db.collection.return_value.document.return_value.collection.return_value.stream.return_value = []
 
         # 同 videoId 出現兩次
         raw_videos = [_make_raw_video("v1", title="First"), _make_raw_video("v1", title="Second")]

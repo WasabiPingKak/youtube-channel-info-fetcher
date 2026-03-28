@@ -103,9 +103,7 @@ class TestCheckUpdate:
         shared_mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
         shared_mock_db.document.return_value.set.return_value = None
 
-        resp = video_client.get(
-            "/api/videos/check-update?channelId=UCxxxxxxxxxxxxxxxxxxxxxx"
-        )
+        resp = video_client.get("/api/videos/check-update?channelId=UCxxxxxxxxxxxxxxxxxxxxxx")
         assert resp.status_code == 200
         data = resp.get_json()
         assert data["shouldUpdate"] is True
