@@ -21,9 +21,9 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
           cache: pip
@@ -53,9 +53,9 @@ jobs:
       run:
         working-directory: frontend_react
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "20"
           cache: npm
@@ -83,7 +83,7 @@ jobs:
           VITE_ADMIN_CHANNEL_ID: ${{ vars.PROD_INPUT_CHANNEL }}
           VITE_GA_MEASUREMENT_ID: G-Q2S0XSEW74
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: frontend-prod-dist
           path: frontend_react/dist
@@ -98,15 +98,15 @@ jobs:
       run:
         working-directory: backend
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Authenticate to GCP
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.GCP_SA_KEY }}
 
       - name: Set up Cloud SDK
-        uses: google-github-actions/setup-gcloud@v2
+        uses: google-github-actions/setup-gcloud@v3
 
       - name: Write version.txt
         run: echo "$(git rev-parse --short=6 HEAD)" > version.txt
@@ -167,9 +167,9 @@ jobs:
       run:
         working-directory: frontend_react
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: frontend-prod-dist
           path: frontend_react/dist
