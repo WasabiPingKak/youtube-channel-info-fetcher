@@ -62,11 +62,13 @@ def check_and_update_channel_info(db: Client, channel_id: str, batch_id: str) ->
                 batch_entry["thumbnail"] = new_thumbnail
             info_doc["thumbnail"] = new_thumbnail
 
-        # ✅ 寫入三處（不存在也會自動建立）
-        index_ref.set(index_doc)
-        info_ref.set(info_doc)
+        # ✅ 用 batched write 一次原子寫入三處
+        batch = db.batch()
+        batch.set(index_ref, index_doc)
+        batch.set(info_ref, info_doc)
         if batch_entry is not None:
-            batch_ref.update({"channels": batch_channels})  # 整體回寫陣列
+            batch.update(batch_ref, {"channels": batch_channels})
+        batch.commit()
 
         # 🖨️ Log 更新結果
         logger.info(

@@ -1,6 +1,7 @@
 import logging
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 from google.cloud.firestore import Client
 
 from utils.youtube_utils import normalize_video_item
@@ -71,36 +72,42 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dic
 
         if last_index >= 0:
             last_doc_ref = get_batch_doc_ref(db, channel_id, last_index)
-            last_doc = last_doc_ref.get()
-            if last_doc.exists:
+
+            @firestore.transactional
+            def _merge_in_transaction(transaction):
+                last_doc = last_doc_ref.get(transaction=transaction)
+                if not last_doc.exists:
+                    return 0, normalized_videos
+
                 data = last_doc.to_dict()
                 videos = data.get("videos", [])
                 space_left = BATCH_SIZE - len(videos)
 
-                # 建立 videoId 索引加速比對
                 existing_map = {v["videoId"]: v for v in videos}
                 updated_map = existing_map.copy()
 
-                to_merge = []
+                count = 0
                 for video in normalized_videos:
                     vid = video["videoId"]
                     if vid in existing_map:
-                        updated_map[vid] = video  # ✅ 覆蓋原有資料
-                        merged_count += 1
+                        updated_map[vid] = video
+                        count += 1
                     elif space_left > 0:
                         updated_map[vid] = video
-                        to_merge.append(vid)
-                        merged_count += 1
+                        count += 1
                         space_left -= 1
 
-                if merged_count > 0:
-                    merged_videos = list(updated_map.values())
-                    last_doc_ref.set({"videos": merged_videos})
-                    logger.info(f"🧩 合併/覆蓋 {merged_count} 筆到 batch_{last_index}")
+                if count > 0:
+                    transaction.set(last_doc_ref, {"videos": list(updated_map.values())})
 
-                # 篩掉已經寫入/合併的影片
                 written_ids = set(updated_map.keys())
-                remaining = [v for v in normalized_videos if v["videoId"] not in written_ids]
+                leftover = [v for v in normalized_videos if v["videoId"] not in written_ids]
+                return count, leftover
+
+            transaction = db.transaction()
+            merged_count, remaining = _merge_in_transaction(transaction)
+            if merged_count > 0:
+                logger.info(f"🧩 合併/覆蓋 {merged_count} 筆到 batch_{last_index}")
 
         # 剩下的資料分批寫入
         new_batches = [remaining[i : i + BATCH_SIZE] for i in range(0, len(remaining), BATCH_SIZE)]

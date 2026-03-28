@@ -2,6 +2,7 @@ import logging
 
 from dateutil.parser import parse
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 from google.cloud.firestore import Client
 
 logger = logging.getLogger(__name__)
@@ -39,28 +40,36 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: list[dict]) -
         latest = max(v["snippet"]["publishedAt"] for v in new_videos)
 
         index_ref = db.collection("channel_sync_index").document("index_list")
-        doc = index_ref.get()
 
-        if not doc.exists:
-            # 文件不存在，初始化新清單
-            index_ref.set({"channels": [{"channel_id": channel_id, "lastVideoSyncAt": latest}]})
-            logger.info(f"🕒 [init] 建立 index_list 並加入 {channel_id}")
-        else:
-            data = doc.to_dict()
-            channels = data.get("channels", [])
+        @firestore.transactional
+        def _update_in_transaction(transaction):
+            doc = index_ref.get(transaction=transaction)
 
-            found = False
-            for c in channels:
-                if c.get("channel_id") == channel_id:
-                    c["lastVideoSyncAt"] = latest
-                    found = True
-                    break
+            if not doc.exists:
+                transaction.set(
+                    index_ref,
+                    {"channels": [{"channel_id": channel_id, "lastVideoSyncAt": latest}]},
+                )
+                logger.info(f"🕒 [init] 建立 index_list 並加入 {channel_id}")
+            else:
+                data = doc.to_dict()
+                channels = data.get("channels", [])
 
-            if not found:
-                channels.append({"channel_id": channel_id, "lastVideoSyncAt": latest})
-                logger.info(f"➕ [append] 新增頻道 {channel_id} 至 index_list")
+                found = False
+                for c in channels:
+                    if c.get("channel_id") == channel_id:
+                        c["lastVideoSyncAt"] = latest
+                        found = True
+                        break
 
-            index_ref.set({"channels": channels})
+                if not found:
+                    channels.append({"channel_id": channel_id, "lastVideoSyncAt": latest})
+                    logger.info(f"➕ [append] 新增頻道 {channel_id} 至 index_list")
+
+                transaction.set(index_ref, {"channels": channels})
+
+        transaction = db.transaction()
+        _update_in_transaction(transaction)
 
         logger.info(f"🕒 更新 lastVideoSyncAt 為 {latest}")
         return latest
