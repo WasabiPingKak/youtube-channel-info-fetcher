@@ -6,7 +6,7 @@ isodate==0.7.2
 pytz==2025.2
 google-api-python-client==2.193.0
 requests==2.33.0
-firebase-admin==6.6.0
+firebase-admin==7.3.0
 google-cloud-firestore==2.26.0
 google-cloud-tasks==2.21.0
 pytest==8.4.2
