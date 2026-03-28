@@ -58,7 +58,9 @@ class TestVerifyJwt:
     def test_wrong_secret_returns_none(self):
         """用不同 secret 簽的 token 不能通過"""
         payload = {"channelId": "UC_WRONG"}
-        token = pyjwt.encode(payload, "wrong-secret", algorithm=JWT_ALGORITHM)
+        token = pyjwt.encode(
+            payload, "wrong-secret-minimum-32-bytes-long!", algorithm=JWT_ALGORITHM
+        )
         assert verify_jwt(token) is None
 
 

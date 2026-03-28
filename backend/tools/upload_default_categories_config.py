@@ -10,20 +10,20 @@ import os
 import sys
 from pathlib import Path
 
-# ✅ 加入專案根目錄，允許匯入 backend.services
+# 加入專案根目錄，允許匯入 backend.services
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
-from backend.services.firebase_init_service import init_firestore
-
-# ✅ 載入 .env.local，並解析 Firebase 金鑰路徑
+# 載入 .env.local，並解析 Firebase 金鑰路徑
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 project_root = Path(__file__).resolve().parents[2]
 firebase_key_path = (project_root / os.getenv("FIREBASE_KEY_PATH", "")).resolve()
 
 os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
+
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
 
 # ✅ Firestore 寫入目標
 COLLECTION = "global_settings"

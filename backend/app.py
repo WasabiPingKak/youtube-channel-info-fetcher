@@ -111,7 +111,7 @@ def create_app(config=None):
         raise
 
     # ── 註冊路由 ──
-    init_base_routes(app)
+    init_base_routes(app, db)
     init_firestore_settings_routes(app, db)
     init_category_save_apply_routes(app, db)
     init_category_editor_routes(app, db)

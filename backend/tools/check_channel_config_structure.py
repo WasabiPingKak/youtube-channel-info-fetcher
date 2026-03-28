@@ -1,14 +1,13 @@
 # /backend/tools/check_channel_config_structure.py
 
-import argparse
-import logging
 import os
 import sys
 from pathlib import Path
 
+# 載入 .env.local 並將專案根目錄加入 sys.path（必須在其他 backend 模組 import 前完成）
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 
@@ -17,11 +16,13 @@ firebase_key_path = (project_root / os.getenv("FIREBASE_KEY_PATH", "")).resolve(
 os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
+import argparse  # noqa: E402
+import logging  # noqa: E402
+
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
+from google.api_core.exceptions import GoogleAPIError  # noqa: E402
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
-
-from google.api_core.exceptions import GoogleAPIError
-
-from backend.services.firebase_init_service import init_firestore
 
 CHANNEL_LIST_PATH = "channel_index_list.txt"
 TARGET_KEYS = {"live", "shorts", "videos"}

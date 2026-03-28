@@ -1,8 +1,6 @@
 # /backend/tools/migrate_channel_index_to_batch_0.py
 # ---------------------------------------------------
-# 此腳本為一次性 CLI 工具，用於將現有 channel_index 文件整理為 batch_0
-# ✅ 本地開發時 Firestore 憑證路徑由 .env.local 載入
-# ✅ 為確保從任意資料夾執行都能找到正確檔案，以下處理過程務必留意：
+# 一次性 CLI 工具：將現有 channel_index 文件整理為 batch_0
 #
 # 📁 目錄結構假設：
 #   /backend/tools/migrate_channel_index_to_batch_0.py  ← 目前檔案位置
@@ -20,9 +18,10 @@ import os
 import sys
 from pathlib import Path
 
+# 載入 .env.local 並將專案根目錄加入 sys.path（必須在其他 backend 模組 import 前完成）
 sys.path.append(str(Path(__file__).resolve().parents[2]))
 
-from dotenv import load_dotenv
+from dotenv import load_dotenv  # noqa: E402
 
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
 
@@ -33,24 +32,20 @@ os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
 print("🔧 絕對 FIREBASE_KEY_PATH =", os.environ["FIREBASE_KEY_PATH"])
-
-import os
-
 print("🔧 GOOGLE_APPLICATION_CREDENTIALS =", os.getenv("GOOGLE_APPLICATION_CREDENTIALS"))
 print("🔧 FIREBASE_KEY_PATH =", os.getenv("FIREBASE_KEY_PATH"))
 
-import argparse
-import logging
+import argparse  # noqa: E402
+import logging  # noqa: E402
 
-from google.api_core.exceptions import GoogleAPIError
-from google.cloud import firestore
+from backend.services.firebase_init_service import init_firestore  # noqa: E402
+from google.api_core.exceptions import GoogleAPIError  # noqa: E402
+from google.cloud import firestore  # noqa: E402
 
-from backend.services.firebase_init_service import init_firestore
-
-# ✅ 初始化 logging
+# 初始化 logging
 logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s: %(message)s")
 
-# ✅ collection 設定
+# collection 設定
 INDEX_COLLECTION = "channel_index"
 BATCH_DOC_PATH = "channel_index_batch/batch_0"
 MAX_BATCH_SIZE = 1000
@@ -91,7 +86,7 @@ def write_to_batch_0(db, channels: list[dict], dry_run: bool = False):
         batch_doc.set(
             {
                 "channels": channels,
-                "updatedAt": firestore.SERVER_TIMESTAMP,  # 雖然建議用 firestore.SERVER_TIMESTAMP，也可用這種方式
+                "updatedAt": firestore.SERVER_TIMESTAMP,
             }
         )
         logging.info(f"✅ 寫入 batch_0 成功，共 {len(channels)} 筆")
