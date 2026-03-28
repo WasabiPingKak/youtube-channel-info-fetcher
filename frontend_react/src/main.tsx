@@ -9,7 +9,10 @@ import { Toaster } from "react-hot-toast";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import ReactGA from "react-ga4";
 
-ReactGA.initialize(import.meta.env.VITE_GA_MEASUREMENT_ID);
+const gaId = import.meta.env.VITE_GA_MEASUREMENT_ID;
+if (gaId) {
+  ReactGA.initialize(gaId);
+}
 
 import VideoExplorerPage from "./pages/VideoExplorerPage";
 import ThanksPage from "./pages/ThanksPage";
@@ -60,7 +63,9 @@ if (import.meta.env.DEV) {
 function usePageTracking() {
   const location = useLocation();
   useEffect(() => {
-    ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    if (gaId) {
+      ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    }
   }, [location]);
 }
 
