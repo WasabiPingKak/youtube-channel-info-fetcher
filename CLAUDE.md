@@ -71,8 +71,8 @@ cd frontend_react
 ```
 ├── backend/
 │   ├── app.py                 # Flask app entry point (create_app factory)
-│   ├── schemas/               # Pydantic request/response schemas
-│   ├── routes/                # API route modules (28+ endpoints)
+│   ├── schemas/               # Pydantic request/response schemas (common, video, settings, category_editor, admin)
+│   ├── routes/                # API route modules (29 endpoints)
 │   ├── services/              # Business logic layer
 │   │   ├── youtube/           # YouTube API integration
 │   │   ├── firestore/         # Database operations
@@ -98,6 +98,8 @@ cd frontend_react
 - **Frontend uses `@/` alias** for imports (maps to `src/`)
 - **React Query persistence**: 12-hour cache with localStorage
 - **Dual environments**: staging and production with separate `.env` files and **separate Firestore databases**
+- **Pydantic validation**: POST routes use `schemas/` 定義的 Pydantic model 驗證請求，ValidationError 由 `schemas/__init__.py` 的全域 errorhandler 統一回傳 422
+- **Health check**: `/healthz` 端點檢查 Firestore 連線狀態，`/` 僅回傳服務存活訊息
 
 ### Data Flow
 ```
