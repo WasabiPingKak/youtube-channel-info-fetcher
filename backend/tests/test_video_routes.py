@@ -38,21 +38,22 @@ def video_client(video_app):
 class TestGetClassified:
     """POST /api/videos/classified"""
 
-    def test_missing_channel_id_returns_400(self, video_client):
+    def test_missing_channel_id_returns_422(self, video_client):
         resp = video_client.post(
             "/api/videos/classified",
             json={"only_settings": False},
         )
-        assert resp.status_code == 400
-        assert "channel_id" in resp.get_json()["error"]
+        assert resp.status_code == 422
+        data = resp.get_json()
+        assert data["details"][0]["field"] == "channel_id"
 
-    def test_invalid_channel_id_returns_400(self, video_client):
+    def test_invalid_channel_id_returns_422(self, video_client):
         resp = video_client.post(
             "/api/videos/classified",
             json={"channel_id": "invalid"},
         )
-        assert resp.status_code == 400
-        assert "格式不合法" in resp.get_json()["error"]
+        assert resp.status_code == 422
+        assert any("格式不合法" in d["message"] for d in resp.get_json()["details"])
 
     @patch("routes.video_routes.get_merged_settings")
     def test_only_settings_returns_settings(self, mock_settings, video_client):
@@ -74,7 +75,7 @@ class TestGetClassified:
         assert resp.status_code == 200
         assert len(resp.get_json()["videos"]) == 1
 
-    def test_invalid_time_format_returns_400(self, video_client):
+    def test_invalid_time_format_returns_422(self, video_client):
         resp = video_client.post(
             "/api/videos/classified",
             json={
@@ -82,8 +83,8 @@ class TestGetClassified:
                 "start": "not-a-date",
             },
         )
-        assert resp.status_code == 400
-        assert "時間格式錯誤" in resp.get_json()["error"]
+        assert resp.status_code == 422
+        assert resp.get_json()["details"][0]["field"] == "start"
 
 
 class TestCheckUpdate:
