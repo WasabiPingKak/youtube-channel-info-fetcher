@@ -2,6 +2,8 @@ import logging
 from datetime import UTC, datetime, timedelta
 
 from flask import Blueprint, jsonify, request
+from pydantic import ValidationError
+from schemas.video_schemas import ClassifiedVideoRequest
 
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 from utils.channel_validator import is_valid_channel_id
@@ -17,44 +19,30 @@ def init_video_routes(app, db):
             data = request.get_json()
             if data is None:
                 logger.warning("⚠️ 無法解析 JSON，可能缺少 Content-Type: application/json")
+                return jsonify({"error": "無法解析 JSON，請確認 Content-Type"}), 400
 
             logger.info(f"📥 請求內容：{data}")
 
-            channel_id = data.get("channel_id")
-            only_settings = data.get("only_settings", False)
-            start_str = data.get("start")  # 🔧 新增
-            end_str = data.get("end")  # 🔧 新增
+            # Pydantic schema 驗證
+            try:
+                body = ClassifiedVideoRequest(**data)
+            except ValidationError as e:
+                details = [
+                    {"field": ".".join(str(x) for x in err["loc"]), "message": err["msg"]}
+                    for err in e.errors()
+                ]
+                logger.warning(f"⚠️ 請求驗證失敗：{details}")
+                return jsonify({"error": "請求參數驗證失敗", "details": details}), 422
 
-            if not channel_id:
-                logger.warning("⚠️ 缺少 channel_id")
-                return jsonify({"error": "channel_id 為必填"}), 400
-            if not is_valid_channel_id(channel_id):
-                logger.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
-                return jsonify({"error": "channel_id 格式不合法"}), 400
+            logger.info(
+                f"🔍 取得分類影片清單：{body.channel_id}（only_settings={body.only_settings}）"
+            )
 
-            logger.info(f"🔍 取得分類影片清單：{channel_id}（only_settings={only_settings}）")
-
-            if only_settings:
-                settings = get_merged_settings(db, channel_id)
+            if body.only_settings:
+                settings = get_merged_settings(db, body.channel_id)
                 return jsonify({"settings": settings})
 
-            # 🔧 解析時間範圍（若有給）
-            start = None
-            end = None
-            try:
-                if start_str:
-                    start = datetime.fromisoformat(start_str)
-                if end_str:
-                    end = datetime.fromisoformat(end_str)
-            except ValueError:
-                logger.warning(f"⚠️ 時間格式錯誤：start={start_str}, end={end_str}")
-                return (
-                    jsonify({"error": "start/end 時間格式錯誤，請使用 ISO 格式"}),
-                    400,
-                )
-
-            # 🔧 傳入擴充參數給 service
-            result = get_classified_videos(db, channel_id, start=start, end=end)
+            result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
             return jsonify({"videos": result})
 
         except Exception:
