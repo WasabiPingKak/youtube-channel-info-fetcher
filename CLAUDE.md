@@ -64,14 +64,15 @@ cd frontend_react
 
 ### Tech Stack
 - **Frontend**: React 19 + TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query (data fetching), shadcn/ui components
-- **Backend**: Flask + Python, Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting)
+- **Backend**: Flask + Python (Application Factory pattern), Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting), Pydantic (request validation)
 - **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch)
 
 ### Project Structure
 ```
 ├── backend/
-│   ├── app.py                 # Flask app entry point
-│   ├── routes/                # API route modules (25+ endpoints)
+│   ├── app.py                 # Flask app entry point (create_app factory)
+│   ├── schemas/               # Pydantic request/response schemas
+│   ├── routes/                # API route modules (28+ endpoints)
 │   ├── services/              # Business logic layer
 │   │   ├── youtube/           # YouTube API integration
 │   │   ├── firestore/         # Database operations
