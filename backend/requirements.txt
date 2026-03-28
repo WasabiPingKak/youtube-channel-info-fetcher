@@ -3,7 +3,7 @@ flask-cors==6.0.0
 Flask-Limiter==3.5.1
 gunicorn==23.0.0
 isodate==0.7.2
-pytz==2025.2
+pytz==2026.1.post1
 google-api-python-client==2.193.0
 requests==2.33.0
 firebase-admin==6.6.0
