@@ -82,7 +82,7 @@ jobs:
           VITE_ENABLE_SETTINGS: "true"
           VITE_DEFAULT_CHANNEL_ID: ${{ vars.STAGING_INPUT_CHANNEL }}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: frontend-staging-dist
           path: frontend_react/dist

@@ -83,7 +83,7 @@ jobs:
           VITE_ADMIN_CHANNEL_ID: ${{ vars.PROD_INPUT_CHANNEL }}
           VITE_GA_MEASUREMENT_ID: G-Q2S0XSEW74
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: frontend-prod-dist
           path: frontend_react/dist
