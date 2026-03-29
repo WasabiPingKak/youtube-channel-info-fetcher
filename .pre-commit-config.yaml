@@ -21,7 +21,7 @@ repos:
     hooks:
       - id: pytest
         name: pytest
-        entry: bash -c 'cd backend && python -m pytest tests/ -q'
+        entry: bash -c 'cd backend && python -m pytest tests/ -q --cov --cov-fail-under=80'
         language: system
         files: ^backend/
         pass_filenames: false
