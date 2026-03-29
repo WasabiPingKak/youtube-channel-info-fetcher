@@ -39,34 +39,7 @@ def create_app(config=None):
     config : dict | None
         額外的 Flask config，測試時可傳入 {"TESTING": True} 等設定。
     """
-    from routes.admin_init_channel_route import init_admin_init_channel_route
-    from routes.api_heatmap_route import init_api_heatmap_route
-    from routes.base_routes import init_base_routes
-    from routes.category_editor_routes import init_category_editor_routes
-    from routes.category_save_apply_routes import init_category_save_apply_routes
-    from routes.channel_index_route import init_channel_index_route
-    from routes.donation_route import init_donation_route
-    from routes.ecpay_return_route import init_ecpay_return_route
-    from routes.firestore_settings_routes import init_firestore_settings_routes
-    from routes.init_channel_route import init_channel_route
-    from routes.internal_trending_route import init_internal_trending_route
-    from routes.live_redirect_route import init_live_redirect_route
-    from routes.logout_route import init_logout_route
-    from routes.maintenance_route import init_maintenance_route
-    from routes.me_route import init_me_route
-    from routes.my_settings_route import init_my_settings_route
-    from routes.oauth_callback_route import init_oauth_callback_route
-    from routes.oauth_state_route import init_oauth_state_route
-    from routes.public_trending_route import init_public_trending_route
-    from routes.quick_category_apply_route import init_quick_category_apply_route
-    from routes.quick_category_remove_route import init_quick_category_remove_route
-    from routes.skip_keyword_routes import init_skip_keyword_routes
-    from routes.sync_heatmap import init_sync_heatmap_route
-    from routes.video_routes import init_video_routes
-    from routes.video_update_route import init_video_update_route
-    from routes.websub_notify_route import init_websub_notify_route
-    from routes.websub_subscribe_route import init_websub_subscribe_route
-    from routes.weekly_heatmap_cache_route import init_weekly_heatmap_cache_route
+    from utils.route_loader import register_all_routes
 
     app = APIFlask(
         __name__,
@@ -123,34 +96,7 @@ def create_app(config=None):
         raise
 
     # ── 註冊路由 ──
-    init_base_routes(app, db)
-    init_firestore_settings_routes(app, db)
-    init_category_save_apply_routes(app, db)
-    init_category_editor_routes(app, db)
-    init_video_routes(app, db)
-    init_video_update_route(app, db)
-    init_oauth_callback_route(app, db)
-    init_oauth_state_route(app, db)
-    init_channel_route(app, db)
-    init_channel_index_route(app, db)
-    init_internal_trending_route(app, db)
-    init_public_trending_route(app, db)
-    init_me_route(app, db)
-    init_logout_route(app)
-    init_my_settings_route(app, db)
-    init_skip_keyword_routes(app, db)
-    init_quick_category_apply_route(app, db)
-    init_quick_category_remove_route(app, db)
-    init_sync_heatmap_route(app, db)
-    init_api_heatmap_route(app, db)
-    init_admin_init_channel_route(app, db)
-    init_weekly_heatmap_cache_route(app, db)
-    init_websub_notify_route(app, db)
-    init_websub_subscribe_route(app, db)
-    init_live_redirect_route(app, db)
-    init_ecpay_return_route(app, db)
-    init_donation_route(app, db)
-    init_maintenance_route(app, db)
+    register_all_routes(app, db)
 
     return app
 
