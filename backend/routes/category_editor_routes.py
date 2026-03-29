@@ -14,12 +14,15 @@ GET /api/categories/editor-data?channel_id={ID}
 import logging
 from typing import Any
 
+from apiflask import APIBlueprint
 from flask import jsonify, request
 
 # 服務層：讀取分類設定
 from services.firestore_settings_service import load_category_settings
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
+
+category_editor_bp = APIBlueprint("category_editor", __name__, tag="Category Editor")
 
 
 def _serialize_timestamp(ts: Any) -> str:
@@ -46,10 +49,14 @@ def _normalize_type(raw: Any) -> str:
 def init_category_editor_routes(app, db):
     """註冊 category editor 相關 API 路由到 app。"""
 
-    @app.route("/api/categories/editor-data", methods=["GET"])
+    @category_editor_bp.route("/api/categories/editor-data", methods=["GET"])
+    @category_editor_bp.doc(
+        summary="取得分類編輯器資料",
+        description="一次取得 settings/config 與所有影片文件",
+        security="CookieAuth",
+    )
     @require_auth(db)
     def get_editor_data(auth_channel_id=None):
-        """一次取得 settings/config 與所有影片文件。"""
         channel_id = request.args.get("channel_id")
         if not channel_id:
             logging.warning("⚠️ 缺少 channel_id 參數")
@@ -124,3 +131,5 @@ def init_category_editor_routes(app, db):
                 ),
                 500,
             )
+
+    app.register_blueprint(category_editor_bp)

@@ -2,8 +2,8 @@
 
 import logging
 
-from flask import Blueprint, jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from schemas.settings_schemas import SaveAndApplyRequest
 from services.firestore_settings_service import (
@@ -12,17 +12,20 @@ from services.firestore_settings_service import (
 )
 from utils.auth_decorator import require_auth
 
-category_save_apply_bp = Blueprint("category_save_apply", __name__)
+category_save_apply_bp = APIBlueprint("category_save_apply", __name__, tag="Category Editor")
 
 
 def init_category_save_apply_routes(app, db):
     @category_save_apply_bp.route("/api/categories/save-and-apply", methods=["POST"])
+    @category_save_apply_bp.doc(
+        summary="儲存並套用分類設定",
+        description="儲存分類設定並套用至頻道影片",
+        security="CookieAuth",
+    )
     @require_auth(db)
-    def save_and_apply(auth_channel_id=None):
+    @category_save_apply_bp.input(SaveAndApplyRequest, arg_name="body")
+    def save_and_apply(body, auth_channel_id=None):
         try:
-            data = request.get_json()
-            body = SaveAndApplyRequest(**data)
-
             if body.channel_id != auth_channel_id:
                 logging.warning(
                     f"⛔ 嘗試儲存他人頻道分類：JWT={auth_channel_id}, 請求={body.channel_id}"
@@ -50,8 +53,6 @@ def init_category_save_apply_routes(app, db):
                 {"success": True, "message": "設定已儲存並成功套用分類", "updated_count": -1}
             )
 
-        except ValidationError:
-            raise
         except Exception:
             logging.exception("🔥 /api/categories/save-and-apply 發生例外錯誤")
             return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500

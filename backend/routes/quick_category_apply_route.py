@@ -1,20 +1,25 @@
 import logging
 
-from flask import jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from schemas.category_editor_schemas import QuickApplyRequest
 from utils.auth_decorator import require_auth
 
+quick_apply_bp = APIBlueprint("quick_category_apply", __name__, tag="Category Editor")
+
 
 def init_quick_category_apply_route(app, db):
-    @app.route("/api/quick-editor/channel-config-apply", methods=["POST"])
+    @quick_apply_bp.route("/api/quick-editor/channel-config-apply", methods=["POST"])
+    @quick_apply_bp.doc(
+        summary="快速套用分類關鍵字",
+        description="將關鍵字加入指定的分類與子分類",
+        security="CookieAuth",
+    )
     @require_auth(db)
-    def apply_quick_category(auth_channel_id=None):
+    @quick_apply_bp.input(QuickApplyRequest, arg_name="body")
+    def apply_quick_category(body, auth_channel_id=None):
         try:
-            data = request.get_json()
-            body = QuickApplyRequest(**data)
-
             # 🔐 channelId 與使用者 JWT 是否一致
             if body.channelId != auth_channel_id:
                 logging.warning(
@@ -60,8 +65,8 @@ def init_quick_category_apply_route(app, db):
 
             return jsonify({"success": True, "message": "已儲存分類設定"})
 
-        except ValidationError:
-            raise
         except Exception:
             logging.error("🔥 快速分類 API 發生錯誤", exc_info=True)
             return jsonify({"success": False, "message": "內部錯誤，請稍後再試"}), 500
+
+    app.register_blueprint(quick_apply_bp)

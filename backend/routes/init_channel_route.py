@@ -1,6 +1,7 @@
 import logging
 
-from flask import Blueprint, jsonify, request
+from apiflask import APIBlueprint
+from flask import jsonify, request
 from google.api_core.exceptions import GoogleAPIError
 
 from routes.websub_subscribe_route import subscribe_channel_by_id
@@ -11,9 +12,10 @@ from utils.rate_limiter import limiter
 
 
 def init_channel_route(app, db):
-    bp = Blueprint("init_channel", __name__)
+    bp = APIBlueprint("init_channel", __name__, tag="Channel")
 
     @bp.route("/api/init-channel", methods=["GET"])
+    @bp.doc(summary="初始化頻道", description="執行頻道初始化流程，包含影片同步與 WebSub 訂閱")
     @limiter.limit("5 per minute")
     def init_channel():
         channel_id = request.args.get("channel")

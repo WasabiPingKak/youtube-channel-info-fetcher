@@ -1,7 +1,7 @@
 import logging
 
-from flask import Blueprint, jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify, request
 
 from schemas.settings_schemas import UpdateSettingsRequest
 from utils.auth_decorator import require_auth
@@ -11,9 +11,12 @@ logger = logging.getLogger(__name__)
 
 
 def init_my_settings_route(app, db):
-    bp = Blueprint("my_settings", __name__, url_prefix="/api/my-settings")
+    bp = APIBlueprint("my_settings", __name__, url_prefix="/api/my-settings", tag="Settings")
 
     @bp.route("/get", methods=["GET"])
+    @bp.doc(
+        summary="取得個人設定", description="取得目前登入使用者的頻道設定", security="CookieAuth"
+    )
     @require_auth(db)
     def get_my_settings(auth_channel_id=None):
         logger.info(f"✅ /my-settings/get 驗證成功，channel_id = {auth_channel_id}")
@@ -56,14 +59,15 @@ def init_my_settings_route(app, db):
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/update", methods=["POST"])
+    @bp.doc(
+        summary="更新個人設定", description="更新頻道的顯示、國家代碼等設定", security="CookieAuth"
+    )
     @require_auth(db)
-    def update_my_settings(auth_channel_id=None):
+    @bp.input(UpdateSettingsRequest, arg_name="body")
+    def update_my_settings(body, auth_channel_id=None):
         logger.info(f"✅ /my-settings/update 驗證成功，channel_id = {auth_channel_id}")
 
         try:
-            data = request.get_json()
-            body = UpdateSettingsRequest(**data)
-
             if body.channelId != auth_channel_id:
                 logger.warning(
                     f"⛔ update_my_settings 嘗試修改他人頻道資料：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
@@ -105,8 +109,6 @@ def init_my_settings_route(app, db):
 
             return jsonify({"success": True}), 200
 
-        except ValidationError:
-            raise
         except Exception:
             logger.exception("❌ update_my_settings 發生例外錯誤")
             return jsonify({"error": "內部伺服器錯誤"}), 500

@@ -1,9 +1,9 @@
 import logging
 from datetime import datetime, timedelta
 
-from flask import Blueprint, jsonify, request
+from apiflask import APIBlueprint
+from flask import jsonify
 from google.cloud.firestore import Client
-from pydantic import ValidationError
 from pytz import timezone
 
 from schemas.admin_schemas import BuildTrendingRequest, RefreshCacheRequest
@@ -18,15 +18,18 @@ logger = logging.getLogger(__name__)
 
 
 def init_internal_trending_route(app, db: Client):
-    bp = Blueprint("internal_trending", __name__, url_prefix="/api/internal")
+    bp = APIBlueprint("internal_trending", __name__, url_prefix="/api/internal", tag="Admin")
 
     @bp.route("/build-daily-trending", methods=["POST"])
+    @bp.doc(
+        summary="建立每日趨勢資料",
+        description="依指定日期區間產生每日遊戲趨勢統計",
+        security="BearerAuth",
+    )
     @require_admin_key
-    def build_daily_trending_api():
+    @bp.input(BuildTrendingRequest, arg_name="body")
+    def build_daily_trending_api(body):
         try:
-            data = request.get_json(force=True) or {}
-            body = BuildTrendingRequest(**data)
-
             # 預設為台灣時間的昨天
             start_date = body.startDate
             if not start_date:
@@ -40,19 +43,20 @@ def init_internal_trending_route(app, db: Client):
             result = build_trending_for_date_range(start_date, body.days, db, force=body.force)
             return jsonify(result)
 
-        except ValidationError:
-            raise
         except Exception:
             logger.error("❌ /build-daily-trending 發生未預期錯誤", exc_info=True)
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @bp.route("/refresh-daily-cache", methods=["POST"])
+    @bp.doc(
+        summary="刷新每日快取",
+        description="執行每日頻道快取刷新任務",
+        security="BearerAuth",
+    )
     @require_admin_key
-    def refresh_daily_cache_api():
+    @bp.input(RefreshCacheRequest, arg_name="body")
+    def refresh_daily_cache_api(body):
         try:
-            data = request.get_json(force=True) or {}
-            body = RefreshCacheRequest(**data)
-
             limit = body.limit if body.limit is not None else DEFAULT_REFRESH_LIMIT
 
             logger.info(
@@ -72,8 +76,6 @@ def init_internal_trending_route(app, db: Client):
             )
             return jsonify(result)
 
-        except ValidationError:
-            raise
         except Exception:
             logger.error("❌ /refresh-daily-cache 發生未預期錯誤", exc_info=True)
             return jsonify({"error": "伺服器內部錯誤"}), 500

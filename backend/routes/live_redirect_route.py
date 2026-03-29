@@ -1,18 +1,23 @@
 import logging
 from datetime import UTC, datetime, timedelta
 
-from flask import Blueprint, jsonify, request
+from apiflask import APIBlueprint
+from flask import jsonify, request
 from google.cloud.firestore import Client
 
 from services.live_redirect.cache_updater import process_video_ids
 from services.live_redirect.notify_queue_reader import get_pending_video_ids
 from utils.rate_limiter import limiter
 
-live_redirect_bp = Blueprint("live_redirect", __name__)
+live_redirect_bp = APIBlueprint("live_redirect", __name__, tag="Live Redirect")
 
 
 def init_live_redirect_route(app, db: Client):
     @live_redirect_bp.route("/api/live-redirect/cache", methods=["GET"])
+    @live_redirect_bp.doc(
+        summary="取得直播導向快取",
+        description="回傳目前直播中的頻道快取資料，可強制刷新或跳過快取",
+    )
     @limiter.limit("30 per minute")
     def get_live_redirect_cache():
         try:

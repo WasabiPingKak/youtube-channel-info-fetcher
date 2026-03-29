@@ -1,14 +1,16 @@
 import logging
 
-from flask import Blueprint, abort, jsonify
+from apiflask import APIBlueprint
+from flask import abort, jsonify
 
 from utils.channel_validator import is_valid_channel_id
 
 
 def init_api_heatmap_route(app, db):
-    bp = Blueprint("api_heatmap", __name__)
+    bp = APIBlueprint("api_heatmap", __name__, tag="Heatmap")
 
     @bp.route("/api/heatmap/<channel_id>", methods=["GET"])
+    @bp.doc(summary="取得頻道活躍熱力圖", description="回傳指定頻道的影片活躍時段統計矩陣")
     def get_video_heatmap(channel_id):
         if not is_valid_channel_id(channel_id):
             return jsonify({"error": "channel_id 格式不合法"}), 400

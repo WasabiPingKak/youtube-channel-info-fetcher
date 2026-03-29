@@ -1,6 +1,7 @@
 import logging
 
-from flask import Blueprint, jsonify, make_response, request
+from apiflask import APIBlueprint
+from flask import jsonify, make_response, request
 
 from utils.jwt_util import (
     JWT_EXP_HOURS,
@@ -13,9 +14,10 @@ from utils.rate_limiter import limiter
 
 
 def init_me_route(app, db):
-    me_bp = Blueprint("me", __name__, url_prefix="/api")
+    me_bp = APIBlueprint("me", __name__, url_prefix="/api", tag="Auth")
 
     @me_bp.route("/me", methods=["GET"])
+    @me_bp.doc(summary="取得目前登入資訊", description="回傳目前登入使用者的頻道 ID、名稱、頭像")
     @limiter.limit("30 per minute")
     def get_me():
         token = request.cookies.get("__session")

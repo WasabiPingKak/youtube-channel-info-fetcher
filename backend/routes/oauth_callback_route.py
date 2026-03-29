@@ -1,7 +1,8 @@
 import logging
 from datetime import UTC, datetime, timedelta
 
-from flask import Blueprint, current_app, jsonify, make_response, redirect, request
+from apiflask import APIBlueprint
+from flask import current_app, jsonify, make_response, redirect, request
 
 from services.firestore.auth_service import save_channel_auth
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
@@ -12,9 +13,10 @@ OAUTH_STATE_TTL_SECONDS = 600  # 10 分鐘
 
 
 def init_oauth_callback_route(app, db):
-    oauth_bp = Blueprint("oauth", __name__)
+    oauth_bp = APIBlueprint("oauth", __name__, tag="Auth")
 
     @oauth_bp.route("/oauth/callback")
+    @oauth_bp.doc(summary="OAuth 回調", description="處理 Google OAuth 授權回調", hide=True)
     @limiter.limit("10 per minute")
     def oauth_callback():
         # ✅ 測試模式：僅記錄收到 callback，不回傳敏感參數

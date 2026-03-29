@@ -2,13 +2,15 @@
 import logging
 from datetime import datetime
 
-from flask import Blueprint, jsonify
+from apiflask import APIBlueprint
+from flask import jsonify
 
 
 def init_donation_route(app, db):
-    blueprint = Blueprint("donation", __name__)
+    blueprint = APIBlueprint("donation", __name__, tag="Donation")
 
     @blueprint.route("/donations", methods=["GET"])
+    @blueprint.doc(summary="取得贊助清單", description="回傳所有包含 vtmap 關鍵字的贊助紀錄")
     def get_donations():
         try:
             collection_ref = db.collection("donations_by_amount")

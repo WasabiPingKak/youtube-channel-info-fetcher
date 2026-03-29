@@ -1,15 +1,21 @@
 import logging
 
-from flask import Blueprint, jsonify
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from services.heatmap_analyzer import analyze_and_update_all_channels
 from utils.admin_auth import require_admin_key
 
 
 def init_sync_heatmap_route(app, db):
-    bp = Blueprint("sync_heatmap_route", __name__)
+    bp = APIBlueprint("sync_heatmap_route", __name__, tag="Admin")
 
     @bp.route("/api/sync/channel_video_heatmap", methods=["GET"])
+    @bp.doc(
+        summary="同步熱力圖資料",
+        description="全量重算所有頻道的影片活躍統計",
+        security="BearerAuth",
+    )
     @require_admin_key
     def sync_channel_video_heatmap():
         try:
