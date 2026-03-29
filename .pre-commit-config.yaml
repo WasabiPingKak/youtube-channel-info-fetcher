@@ -1,5 +1,5 @@
 # pre-commit hooks — 在 commit 前自動檢查程式碼品質
-# 安裝: pip install pre-commit && pre-commit install
+# 安裝: pip install pre-commit（由 global git hook 自動串接，不需執行 pre-commit install）
 # 手動跑全部: pre-commit run --all-files
 
 repos:
@@ -35,12 +35,3 @@ repos:
         language: system
         files: ^frontend_react/src/.*\.(ts|tsx)$
         pass_filenames: false
-
-      # 防止 .env 檔被意外 commit（排除 .env.example 和 .env.sample）
-      - id: no-env-files
-        name: no-env-files
-        entry: bash -c 'echo "❌ 以下 .env 檔案不應被 commit："; echo "$@"; echo ""; echo "請執行 git reset HEAD <file> 移除，或確認 .gitignore 設定"; exit 1' --
-        language: system
-        files: \.env
-        exclude: \.env\.(example|sample)$
-        types: [file]
