@@ -13,19 +13,21 @@ if os.getenv("ENV") != "production":
     env_path = Path(__file__).resolve().parent.parent / ".env.local"
     load_dotenv(dotenv_path=env_path)
 
-JWT_SECRET = os.getenv("JWT_SECRET")
+from utils.admin_ids import get_admin_channel_ids
+
 JWT_ALGORITHM = "HS256"
 JWT_EXP_HOURS = 2
 JWT_RENEW_THRESHOLD_SECONDS = 30 * 60  # 剩不到 30 分鐘就續期
 
-# ✅ Admin allowlist（逗號分隔 channelId）
-_ADMIN_CHANNEL_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
-ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_CHANNEL_IDS_RAW.split(",") if cid.strip()}
 
-if not JWT_SECRET:
-    raise ValueError(
-        "❌ JWT_SECRET 未正確載入，請確認 `.env.local` 存在或已設定 Cloud Run 環境變數"
-    )
+def get_jwt_secret() -> str:
+    """從環境變數取得 JWT_SECRET，未設定時拋出 ValueError"""
+    secret = os.getenv("JWT_SECRET")
+    if not secret:
+        raise ValueError(
+            "❌ JWT_SECRET 未正確載入，請確認 `.env.local` 存在或已設定 Cloud Run 環境變數"
+        )
+    return secret
 
 
 def is_admin_channel_id(channel_id: str) -> bool:
@@ -34,7 +36,7 @@ def is_admin_channel_id(channel_id: str) -> bool:
     """
     if not channel_id:
         return False
-    return channel_id in ADMIN_CHANNEL_IDS
+    return channel_id in get_admin_channel_ids()
 
 
 def generate_jwt(channel_id: str) -> str:
@@ -44,7 +46,7 @@ def generate_jwt(channel_id: str) -> str:
         "iat": now,
         "exp": now + timedelta(hours=JWT_EXP_HOURS),
     }
-    token = jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+    token = jwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
     if isinstance(token, bytes):
         token = token.decode("utf-8")
 
@@ -61,7 +63,7 @@ def should_renew(decoded: dict) -> bool:
 
 def verify_jwt(token: str) -> dict | None:
     try:
-        return jwt.decode(token, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        return jwt.decode(token, get_jwt_secret(), algorithms=[JWT_ALGORITHM])
     except jwt.ExpiredSignatureError:
         logging.warning("❌ JWT token 已過期")
     except jwt.InvalidTokenError as e:
