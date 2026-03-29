@@ -66,6 +66,9 @@ jobs:
       - name: ESLint
         run: npm run lint
 
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+
       - name: Build (staging)
         run: npm run build -- --mode staging
         env:

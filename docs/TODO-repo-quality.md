@@ -32,9 +32,9 @@
 
 - **問題**：三個 CI workflow 都只有 ESLint + build，沒有 `tsc --noEmit`
 - **影響**：型別錯誤無法被 CI 攔截，品質閘門不完整
-- [ ] 在 `ci.yml` 的 `frontend-lint` job 加入 `npx tsc --noEmit`
-- [ ] 在 `deploy-staging.yml` 的 `frontend-check` job 加入 `npx tsc --noEmit`
-- [ ] 在 `deploy-production.yml` 的 `frontend-check` job 加入 `npx tsc --noEmit`
+- [x] 在 `ci.yml` 的 `frontend-lint` job 加入 `npx tsc --noEmit` ✅ 2026-03-30
+- [x] 在 `deploy-staging.yml` 的 `frontend-check` job 加入 `npx tsc --noEmit` ✅ 2026-03-30
+- [x] 在 `deploy-production.yml` 的 `frontend-check` job 加入 `npx tsc --noEmit` ✅ 2026-03-30
 
 ## 3. 後端模組層級環境變數讀取重構（低優先）
 
