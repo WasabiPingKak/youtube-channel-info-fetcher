@@ -3,9 +3,17 @@
 # 手動跑全部: pre-commit run --all-files
 
 repos:
+  # detect-secrets — 機密資訊掃描
+  - repo: https://github.com/Yelp/detect-secrets
+    rev: v1.5.0
+    hooks:
+      - id: detect-secrets
+        args: ['--baseline', '.secrets.baseline']
+        exclude: 'node_modules/|frontend_react/dist/'
+
   # Ruff — Python linter & formatter
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.11.4
+    rev: v0.11.6
     hooks:
       - id: ruff
         args: [--fix, --config, backend/ruff.toml]
