@@ -94,7 +94,7 @@ cd frontend_react
 ```
 
 ### Key Patterns
-- **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`，使用 `APIBlueprint` 並帶有 `@bp.doc()` OpenAPI 標記
+- **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`，使用 `APIBlueprint` 並帶有 `@bp.doc()` OpenAPI 標記。路由透過 `utils/route_loader.py` 自動掃描註冊，新增 route 只需建檔不用改 `app.py`
 - **OpenAPI 文件**: APIFlask 自動產生 OpenAPI 3.1 spec，`/docs` 提供 Swagger UI，`/openapi.json` 提供 spec
 - **Frontend uses `@/` alias** for imports (maps to `src/`)
 - **React Query persistence**: 12-hour cache with localStorage
@@ -144,6 +144,13 @@ python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
 - 自動脫敏：移除 OAuth refresh_token 和 access_token
 - 安全檢查：禁止從 Staging 複製到 Production
 - 互動確認：執行前需輸入 'yes' 確認
+
+### Refresh Token 加密
+
+OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/kms_crypto.py`）：
+- **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1）
+- **環境變數**: `KMS_KEY_RING`、`KMS_KEY_ID`（已設定於 Cloud Run prod + staging）
+- **向下相容**: KMS 未設定時 fallback 明文（開發環境）；讀取時自動辨識未加密的舊資料
 
 ## Code Style
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments
