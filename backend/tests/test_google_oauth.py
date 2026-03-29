@@ -68,6 +68,18 @@ class TestExchangeCodeForTokens:
         assert actual_data["code"] == "my_code"
         assert actual_data["grant_type"] == "authorization_code"
 
+    @patch("services.google_oauth.requests.post")
+    def test_post_has_timeout(self, mock_post):
+        """確認 token exchange 請求帶有 timeout，避免無限等待"""
+        mock_resp = MagicMock()
+        mock_resp.status_code = 200
+        mock_resp.json.return_value = {"access_token": "at"}
+        mock_post.return_value = mock_resp
+
+        exchange_code_for_tokens("code")
+
+        assert mock_post.call_args[1]["timeout"] == 10
+
 
 class TestGetChannelId:
     """get_channel_id：YouTube API channel 查詢"""
@@ -122,3 +134,15 @@ class TestGetChannelId:
 
         headers = mock_get.call_args[1]["headers"]
         assert headers["Authorization"] == "Bearer my_token"
+
+    @patch("services.google_oauth.requests.get")
+    def test_get_has_timeout(self, mock_get):
+        """確認 channel ID 查詢請求帶有 timeout，避免無限等待"""
+        mock_resp = MagicMock()
+        mock_resp.json.return_value = {"items": [{"id": "UC123"}]}
+        mock_resp.raise_for_status = MagicMock()
+        mock_get.return_value = mock_resp
+
+        get_channel_id("token")
+
+        assert mock_get.call_args[1]["timeout"] == 10
