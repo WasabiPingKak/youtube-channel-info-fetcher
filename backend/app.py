@@ -42,11 +42,15 @@ def create_app(config=None):
     """
     from utils.route_loader import register_all_routes
 
+    # Swagger UI 僅在 staging 環境啟用
+    is_staging = os.getenv("FIRESTORE_DATABASE") == "staging"
+
     app = APIFlask(
         __name__,
         title="VTMap API",
         version="1.0.0",
         docs_ui="elements",
+        enable_openapi=is_staging,
     )
     app.config["DESCRIPTION"] = "VTMap (Vtuber TrailMap) — YouTube 頻道分析與直播管理工具 API"
 
