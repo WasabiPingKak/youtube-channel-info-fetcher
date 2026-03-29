@@ -10,7 +10,6 @@ from flask import Response, request
 
 websub_notify_bp = APIBlueprint("websub_notify", __name__, tag="WebSub")
 COLLECTION_NAME = "live_redirect_notify_queue"
-WEBSUB_SECRET = os.getenv("WEBSUB_SECRET", "")
 
 
 def init_websub_notify_route(app, db):
@@ -36,11 +35,12 @@ def init_websub_notify_route(app, db):
                 xml_data = request.data
 
                 # 驗證 Hub 簽名（若有設定 WEBSUB_SECRET）
-                if WEBSUB_SECRET:
+                websub_secret = os.getenv("WEBSUB_SECRET", "")
+                if websub_secret:
                     signature = request.headers.get("X-Hub-Signature", "")
                     expected = (
                         "sha1="
-                        + hmac.new(WEBSUB_SECRET.encode(), xml_data, hashlib.sha1).hexdigest()
+                        + hmac.new(websub_secret.encode(), xml_data, hashlib.sha1).hexdigest()
                     )
                     if not hmac.compare_digest(signature, expected):
                         logging.warning("⚠️ WebSub 簽名驗證失敗")

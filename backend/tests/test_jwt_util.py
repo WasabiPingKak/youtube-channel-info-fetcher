@@ -8,8 +8,8 @@ import jwt as pyjwt
 
 from utils.jwt_util import (
     JWT_ALGORITHM,
-    JWT_SECRET,
     generate_jwt,
+    get_jwt_secret,
     is_admin_channel_id,
     should_renew,
     verify_jwt,
@@ -45,7 +45,7 @@ class TestVerifyJwt:
             "iat": 1000000000,
             "exp": 1000000001,  # 2001 年就過期了
         }
-        token = pyjwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
+        token = pyjwt.encode(payload, get_jwt_secret(), algorithm=JWT_ALGORITHM)
         assert verify_jwt(token) is None
 
     def test_garbage_string_returns_none(self):
