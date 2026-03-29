@@ -51,4 +51,5 @@
   - `services/firestore/index_service.py` — ADMIN_CHANNEL_IDS
   - `services/live_redirect/youtube_api.py` — API_KEY
   - `utils/rate_limiter.py` — RATE_LIMIT_STORAGE_URL
-- [ ] 改為函式內讀取或透過 app config 注入（需同步調整測試）
+- [x] 低風險 7 檔改為函式內讀取 + ADMIN_CHANNEL_IDS 去重 ✅ 2026-03-30
+- [ ] 高風險 3 檔暫緩（cloud_tasks_client、ecpay_service、live_redirect/youtube_api）
