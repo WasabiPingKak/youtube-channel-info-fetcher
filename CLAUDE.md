@@ -64,7 +64,7 @@ cd frontend_react
 
 ### Tech Stack
 - **Frontend**: React 19 + TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query (data fetching), shadcn/ui components
-- **Backend**: Flask + Python (Application Factory pattern), Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting), Pydantic (request validation)
+- **Backend**: APIFlask + Python (Application Factory pattern), Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting), Pydantic (request validation), OpenAPI 3.1 (auto-generated via APIFlask)
 - **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch)
 
 ### Project Structure
@@ -94,11 +94,12 @@ cd frontend_react
 ```
 
 ### Key Patterns
-- **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`
+- **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`，使用 `APIBlueprint` 並帶有 `@bp.doc()` OpenAPI 標記
+- **OpenAPI 文件**: APIFlask 自動產生 OpenAPI 3.1 spec，`/docs` 提供 Swagger UI，`/openapi.json` 提供 spec
 - **Frontend uses `@/` alias** for imports (maps to `src/`)
 - **React Query persistence**: 12-hour cache with localStorage
 - **Dual environments**: staging and production with separate `.env` files and **separate Firestore databases**
-- **Pydantic validation**: POST routes use `schemas/` 定義的 Pydantic model 驗證請求，ValidationError 由 `schemas/__init__.py` 的全域 errorhandler 統一回傳 422
+- **Pydantic validation**: POST routes 透過 `@bp.input(Schema)` 驗證請求（APIFlask 原生整合），ValidationError 由 `schemas/__init__.py` 的 `error_processor` 統一回傳 422
 - **Health check**: `/healthz` 端點檢查 Firestore 連線狀態，`/` 僅回傳服務存活訊息
 
 ### Data Flow
