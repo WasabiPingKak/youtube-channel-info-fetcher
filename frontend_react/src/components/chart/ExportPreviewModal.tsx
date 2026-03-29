@@ -1,6 +1,12 @@
 import React from "react";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const ExportPreviewModal = ({ videos: _videos, onClose }) => {
+interface ExportPreviewModalProps {
+  videos: ClassifiedVideoItem[];
+  onClose: () => void;
+}
+
+const ExportPreviewModal = ({ videos: _videos, onClose }: ExportPreviewModalProps) => {
   return (
     <div className="fixed inset-0 bg-black/50 z-50 flex justify-center items-center">
       <div className="bg-white rounded-lg p-4 shadow-lg w-[90vw] max-w-[1200px] max-h-[90vh] flex flex-col">

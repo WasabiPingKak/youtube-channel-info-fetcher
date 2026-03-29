@@ -1,5 +1,6 @@
 import React from 'react';
 import type { SuggestedKeywordCardState } from '@/utils/keywordCardBuilder';
+import type { Badge } from '@/types/video';
 import { useQuickCategoryEditorStore } from '@/stores/useQuickCategoryEditorStore';
 import VideoBadge from '@/components/common/VideoBadge';
 import SubcategoryNameEditor from './SubcategoryNameEditor';
@@ -31,7 +32,7 @@ const KeywordInfoPanel: React.FC<Props> = ({
   const badges =
     card.mainCategories.length > 0
       ? card.mainCategories.map((cat) => ({
-        main: cat,
+        main: cat as Badge["main"],
         keyword: card.subcategoryName,
       }))
       : [{ main: '未分類' as const }];

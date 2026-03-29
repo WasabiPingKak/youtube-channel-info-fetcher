@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function TopicHelpModal({ open, onClose }) {
+interface TopicHelpModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function TopicHelpModal({ open, onClose }: TopicHelpModalProps) {
   if (!open) return null;
 
   return (

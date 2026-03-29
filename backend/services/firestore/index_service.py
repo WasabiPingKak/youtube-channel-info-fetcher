@@ -1,11 +1,10 @@
 import logging
-import os
 
 from google.api_core.exceptions import GoogleAPIError
 
+from utils.admin_ids import get_admin_channel_ids
+
 FIRESTORE_INDEX_COLLECTION = "channel_index"
-_ADMIN_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
-ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_IDS_RAW.split(",") if cid.strip()}
 
 
 def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
@@ -19,7 +18,7 @@ def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
         "thumbnail": thumbnail,
         "url": f"https://www.youtube.com/channel/{channel_id}",
         "enabled": True,
-        "priority": 1 if channel_id in ADMIN_CHANNEL_IDS else 100,
+        "priority": 1 if channel_id in get_admin_channel_ids() else 100,
     }
 
     try:

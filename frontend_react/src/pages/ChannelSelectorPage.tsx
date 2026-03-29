@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelectableChannelList } from "../hooks/useSelectableChannelList";
+import type { ChannelIndexEntry } from "@/types/channel";
 import MainLayout from "../components/layout/MainLayout";
 import { addRecentChannel } from "../utils/recentChannels";
 import {
@@ -11,6 +12,17 @@ import ActiveTimeTabSection from "../components/channels/ActiveTimeTabSection";
 import FlagGroupingToggle from "../components/channels/FlagGroupingToggle";
 import GroupedChannelList from "../components/channels/GroupedChannelList";
 import { groupChannelsByCountry } from "../utils/groupChannelsByCountry";
+
+type ChannelWithCounts = ChannelIndexEntry & {
+  lastUploadAt?: string;
+  category_counts?: {
+    all?: number;
+    talk?: number;
+    game?: number;
+    music?: number;
+    show?: number;
+  };
+};
 
 const MAIN_COLOR_CLASS = {
   talkRatio: "bg-emerald-500 text-white",
@@ -46,7 +58,8 @@ const ChannelSelectorPage = () => {
     error,
   } = useSelectableChannelList(searchText, hookSortMode);
 
-  const handleClick = (channelId) => {
+  const handleClick = (...args: unknown[]) => {
+    const channelId = args[0] as string;
     addRecentChannel(channelId);
     navigate(`/videos?channel=${channelId}`);
   };
@@ -54,40 +67,40 @@ const ChannelSelectorPage = () => {
   const isActivityTab = sortMode === "activeTime";
 
   // 決定分組或平鋪顯示內容
-  const sortedChannels = [...channels];
-  let sortFn = (_a, _b) => 0;
+  const sortedChannels = [...channels] as ChannelWithCounts[];
+  let sortFn = (_a: ChannelWithCounts, _b: ChannelWithCounts) => 0;
   if (sortMode === "latest") {
-    sortFn = (a, b) =>
-      new Date(b.lastUploadAt).getTime() - new Date(a.lastUploadAt).getTime();
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) =>
+      new Date(b.lastUploadAt ?? "").getTime() - new Date(a.lastUploadAt ?? "").getTime();
   } else if (sortMode === "alphabetical") {
-    sortFn = (a, b) => a.name.localeCompare(b.name);
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) => a.name.localeCompare(b.name);
   } else if (sortMode === "talkRatio") {
-    sortFn = (a, b) => {
-      const getRatio = (c) =>
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) => {
+      const getRatio = (c: ChannelWithCounts) =>
         c.category_counts?.all
           ? (c.category_counts.talk || 0) / c.category_counts.all
           : 0;
       return getRatio(b) - getRatio(a);
     };
   } else if (sortMode === "gameRatio") {
-    sortFn = (a, b) => {
-      const getRatio = (c) =>
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) => {
+      const getRatio = (c: ChannelWithCounts) =>
         c.category_counts?.all
           ? (c.category_counts.game || 0) / c.category_counts.all
           : 0;
       return getRatio(b) - getRatio(a);
     };
   } else if (sortMode === "musicRatio") {
-    sortFn = (a, b) => {
-      const getRatio = (c) =>
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) => {
+      const getRatio = (c: ChannelWithCounts) =>
         c.category_counts?.all
           ? (c.category_counts.music || 0) / c.category_counts.all
           : 0;
       return getRatio(b) - getRatio(a);
     };
   } else if (sortMode === "showRatio") {
-    sortFn = (a, b) => {
-      const getRatio = (c) =>
+    sortFn = (a: ChannelWithCounts, b: ChannelWithCounts) => {
+      const getRatio = (c: ChannelWithCounts) =>
         c.category_counts?.all
           ? (c.category_counts.show || 0) / c.category_counts.all
           : 0;
@@ -129,7 +142,7 @@ const ChannelSelectorPage = () => {
         {/* 國旗分組開關 */}
         <FlagGroupingToggle
           isEnabled={isFlagGrouping}
-          onToggle={(val) => {
+          onToggle={(val: boolean) => {
             setIsFlagGrouping(val);
             localStorage.setItem("useFlagGrouping", String(val));
           }}

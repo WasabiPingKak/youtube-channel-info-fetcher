@@ -9,13 +9,12 @@ from google.cloud import firestore
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from utils.admin_ids import get_admin_channel_ids
+
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "config" / "default_config.json"
-_ADMIN_IDS_RAW = os.getenv("ADMIN_CHANNEL_IDS", "")
-ADMIN_CHANNEL_IDS = {cid.strip() for cid in _ADMIN_IDS_RAW.split(",") if cid.strip()}
-YOUTUBE_API_KEY = os.getenv("API_KEY")
 
 
 def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
@@ -51,11 +50,12 @@ def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
 def run_channel_initialization(db, channel_id: str):
     logging.info(f"[Init] 🔄 開始初始化頻道：{channel_id}")
 
-    if not YOUTUBE_API_KEY:
+    api_key = os.getenv("API_KEY")
+    if not api_key:
         raise Exception("未設定 YOUTUBE_API_KEY")
 
     try:
-        youtube = build("youtube", "v3", developerKey=YOUTUBE_API_KEY)
+        youtube = build("youtube", "v3", developerKey=api_key)
 
         response = youtube.channels().list(part="snippet,statistics", id=channel_id).execute()
 
@@ -143,7 +143,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
                 "thumbnail": info_data["thumbnail"],
                 "url": info_data["url"],
                 "enabled": False,
-                "priority": 1 if channel_id in ADMIN_CHANNEL_IDS else 100,
+                "priority": 1 if channel_id in get_admin_channel_ids() else 100,
                 "joinedAt": now_iso,
             }
 

@@ -2,26 +2,39 @@ import React from "react";
 import LiveChannelCard from "./LiveChannelCard";
 import { groupChannelsByCountry } from "@/utils/groupChannelsByCountry";
 import GroupedChannelList from "@/components/channels/GroupedChannelList";
+import type { LiveChannelData, LiveInfo } from "@/types/live";
+
+interface LiveRedirectSectionProps {
+  title: string;
+  type: "upcoming" | "live" | "ended";
+  channels: LiveChannelData[];
+  groupByCountry?: boolean;
+  sortMode: "time" | "viewers";
+  sortAsc: boolean;
+  collapsible?: boolean;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
+}
 
 export default function LiveRedirectSection({
   title,
-  type,                // "upcoming" | "live" | "ended"
+  type,
   channels,
   groupByCountry = false,
-  sortMode,            // "time" | "viewers"
-  sortAsc,             // boolean
+  sortMode,
+  sortAsc,
   collapsible = false,
   collapsed = false,
   onToggleCollapse,
-}) {
+}: LiveRedirectSectionProps) {
   // eslint-disable-next-line react-hooks/purity -- now 用於排序計算，不影響 UI 純度
   const now = Date.now();
 
-  const sortFn = (a, b) => {
+  const sortFn = (a: LiveChannelData, b: LiveChannelData) => {
     const lA = a.live;
     const lB = b.live;
 
-    const timeDiff = (live) => {
+    const timeDiff = (live: LiveInfo) => {
       const raw = type === "ended" ? live.endTime : live.startTime;
       const parsed = Date.parse(raw ?? "");
       if (isNaN(parsed)) return Infinity;
@@ -35,9 +48,9 @@ export default function LiveRedirectSection({
 
   const sortedChannels = [...channels].sort(sortFn);
 
-  const renderCards = (list) => (
+  const renderCards = (list: LiveChannelData[]) => (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-      {list.map((channel) => (
+      {list.map((channel: LiveChannelData) => (
         <LiveChannelCard key={channel.live.videoId} channel={channel} />
       ))}
     </div>
@@ -67,7 +80,7 @@ export default function LiveRedirectSection({
             groupedChannels={groupChannelsByCountry(sortedChannels, sortFn)}
             onClick={() => {}}
             renderCard={(channel) => (
-              <LiveChannelCard key={channel.live.videoId} channel={channel} />
+              <LiveChannelCard key={(channel as LiveChannelData).live.videoId} channel={channel as LiveChannelData} />
             )}
           />
         ) : (

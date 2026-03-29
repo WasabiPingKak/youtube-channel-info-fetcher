@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useLiveRedirectData } from "@/hooks/useLiveRedirectData";
+import type { LiveChannelData } from "@/types/live";
 import FilterPanel from "@/components/live_redirect/FilterPanel";
 import LiveRedirectSection from "@/components/live_redirect/LiveRedirectSection";
 import MainLayout from "../components/layout/MainLayout";
@@ -10,6 +11,7 @@ import { FaInfoCircle } from "react-icons/fa";
 import LiveTopicFilterPanel from "@/components/live_redirect/LiveTopicFilterPanel";
 import { getLiveTopicStats } from "@/utils/topicStats";
 import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
+import type { Badge } from "@/types/video";
 
 export default function LiveRedirectPage() {
   const { data, isLoading, isError } = useLiveRedirectData();
@@ -18,21 +20,21 @@ export default function LiveRedirectPage() {
   const [showEnded, setShowEnded] = useState(false);
   const [showHelp, setShowHelp] = useState(false);
 
-  const [sortMode, setSortMode] = useState("time"); // "time" | "viewers"
+  const [sortMode, setSortMode] = useState<"time" | "viewers">("time");
   const [sortAsc, setSortAsc] = useState(true); // true = 遞增
 
-  const [selectedTopics, setSelectedTopics] = useState([]); // 主題過濾選項
+  const [selectedTopics, setSelectedTopics] = useState<string[]>([]); // 主題過濾選項
   const [collapseUpcoming, setCollapseUpcoming] = useState(false);
 
 
   const topicStats = data ? getLiveTopicStats([...data.live, ...data.upcoming]) : {};
 
-  const filterByTopic = (channels) => {
+  const filterByTopic = (channels: LiveChannelData[]) => {
     if (selectedTopics.length === 0) return channels;
 
-    return channels.filter((ch) => {
+    return channels.filter((ch: LiveChannelData) => {
       try {
-        const channelId = ch.channelId || ch.channel_id;
+        const channelId = ch.channel_id;
         if (!ch?.live || !channelId) {
           console.warn("[filterByTopic] ⛔ 缺少 live 或 channelId", ch);
           return false;
@@ -40,7 +42,7 @@ export default function LiveRedirectPage() {
 
         const badges = getBadgesFromLiveChannel(ch);
         const topics = new Set(badges.map((b) => b.main));
-        return selectedTopics.some((topic) => topics.has(topic));
+        return selectedTopics.some((topic) => topics.has(topic as Badge["main"]));
       } catch (error) {
         console.error("[filterByTopic] ❌ 錯誤:", error, ch);
         return false;

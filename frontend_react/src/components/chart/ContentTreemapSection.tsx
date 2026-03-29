@@ -2,12 +2,17 @@ import React, { useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { transformVideosToTreemapData } from "./transformVideosToTreemapData";
 import { getTreemapOption } from "./getTreemapOption";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const ContentTreemapSection = ({ videos }) => {
-  const [selectedCategory, setSelectedCategory] = useState(null);
+interface ContentTreemapSectionProps {
+  videos: ClassifiedVideoItem[];
+}
+
+const ContentTreemapSection = ({ videos }: ContentTreemapSectionProps) => {
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
 
   const fullTreemapData = useMemo(() => {
-    const transformed = transformVideosToTreemapData(videos).filter(
+    const transformed = transformVideosToTreemapData(videos as Parameters<typeof transformVideosToTreemapData>[0]).filter(
       (node) => node.name !== "undefined"
     );
     return transformed;
@@ -26,9 +31,9 @@ const ContentTreemapSection = ({ videos }) => {
     selectedCategory,
   });
 
-  const handleChartClick = (e) => {
+  const handleChartClick = (e: { data?: { children?: unknown[]; name?: string } }) => {
     if (!selectedCategory && e?.data?.children) {
-      setSelectedCategory(e.data.name);
+      setSelectedCategory(e.data.name ?? null);
     }
   };
 

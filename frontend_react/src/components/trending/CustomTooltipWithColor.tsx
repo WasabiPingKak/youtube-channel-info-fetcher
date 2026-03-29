@@ -1,6 +1,25 @@
 import React from "react";
 
-const CustomTooltipWithColor = ({ active, payload, label }) => {
+interface ChannelContributor {
+  channelName: string;
+  count: number;
+}
+
+interface TooltipPayloadEntry {
+  dataKey: string;
+  color: string;
+  payload: {
+    tooltipData: Record<string, ChannelContributor[]>;
+  };
+}
+
+interface Props {
+  active?: boolean;
+  payload?: TooltipPayloadEntry[];
+  label?: string;
+}
+
+const CustomTooltipWithColor = ({ active, payload, label }: Props) => {
   if (!active || !payload || payload.length === 0) return null;
 
   const tooltipData = payload[0]?.payload?.tooltipData;

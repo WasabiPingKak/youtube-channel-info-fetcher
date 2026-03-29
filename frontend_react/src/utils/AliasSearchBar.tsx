@@ -1,6 +1,8 @@
 import React from "react";
 
-const DEFAULT_OPTIONS = {
+type AliasMode = "game" | "category";
+
+const DEFAULT_OPTIONS: Record<AliasMode, { value: string; label: string }[]> = {
   game: [
     { value: "name-asc", label: "主名稱 A→Z" },
     { value: "name-desc", label: "主名稱 Z→A" },
@@ -15,18 +17,26 @@ const DEFAULT_OPTIONS = {
   ],
 };
 
-const PLACEHOLDER_TEXT = {
+const PLACEHOLDER_TEXT: Record<AliasMode, string> = {
   game: "搜尋主名稱或別名...",
   category: "搜尋子分類或別名...",
 };
+
+interface AliasSearchBarProps {
+  searchText: string;
+  setSearchText: (text: string) => void;
+  sortOption: string;
+  setSortOption: (option: string) => void;
+  mode?: AliasMode;
+}
 
 const AliasSearchBar = ({
   searchText,
   setSearchText,
   sortOption,
   setSortOption,
-  mode = "game", // "game" | "category"
-}) => {
+  mode = "game",
+}: AliasSearchBarProps) => {
   const options = DEFAULT_OPTIONS[mode] ?? DEFAULT_OPTIONS.game;
   const placeholder = PLACEHOLDER_TEXT[mode] ?? PLACEHOLDER_TEXT.game;
 

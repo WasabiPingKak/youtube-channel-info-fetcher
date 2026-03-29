@@ -2,7 +2,9 @@ import React, { useState } from "react";
 import TopicHelpModal from "./TopicHelpModal";
 import { FaInfoCircle } from "react-icons/fa";
 
-const MAIN_COLOR_CLASS = {
+type TopicKey = "遊戲" | "雜談" | "節目" | "音樂" | "其他" | "未分類";
+
+const MAIN_COLOR_CLASS: Record<TopicKey, string> = {
   遊戲: "bg-indigo-500 text-white",
   雜談: "bg-emerald-500 text-white",
   節目: "bg-yellow-400 text-yellow-900",
@@ -11,7 +13,7 @@ const MAIN_COLOR_CLASS = {
   未分類: "bg-gray-300 text-gray-700",
 };
 
-const MAIN_PALE_CLASS = {
+const MAIN_PALE_CLASS: Record<TopicKey, string> = {
   遊戲: "bg-indigo-100 text-indigo-800",
   雜談: "bg-emerald-100 text-emerald-800",
   節目: "bg-yellow-100 text-yellow-800",
@@ -28,16 +30,22 @@ const TOPICS = [
   { label: "無法分類", key: "未分類" },
 ];
 
+interface LiveTopicFilterPanelProps {
+  selectedTopics: string[];
+  setSelectedTopics: React.Dispatch<React.SetStateAction<string[]>>;
+  topicStats: Record<string, number>;
+}
+
 export default function LiveTopicFilterPanel({
   selectedTopics,
   setSelectedTopics,
   topicStats,
-}) {
+}: LiveTopicFilterPanelProps) {
   const [showHelp, setShowHelp] = useState(false); // ✅ state for modal
 
-  const toggle = (key) => {
-    setSelectedTopics((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+  const toggle = (key: string) => {
+    setSelectedTopics((prev: string[]) =>
+      prev.includes(key) ? prev.filter((k: string) => k !== key) : [...prev, key]
     );
   };
 
@@ -50,8 +58,8 @@ export default function LiveTopicFilterPanel({
           const active = selectedTopics.includes(key);
           const count = topicStats[key] || 0;
           const colorClass = active
-            ? MAIN_COLOR_CLASS[key] || "bg-gray-300 text-gray-700"
-            : MAIN_PALE_CLASS[key] || "bg-gray-100 text-gray-800";
+            ? MAIN_COLOR_CLASS[key as TopicKey] || "bg-gray-300 text-gray-700"
+            : MAIN_PALE_CLASS[key as TopicKey] || "bg-gray-100 text-gray-800";
 
           return (
             <button

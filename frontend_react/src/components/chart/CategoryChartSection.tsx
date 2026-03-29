@@ -1,6 +1,17 @@
 import React, { useMemo, useState } from "react";
 import CategoryChart from "./CategoryChart";
 import ChartSwitcher from "./ChartSwitcher";
+import type { ClassifiedVideoItem } from "@/types/category";
+
+interface CategoryChartSectionProps {
+  videos: ClassifiedVideoItem[];
+  videoType: "live" | "videos" | "shorts";
+  chartType: "pie" | "bar";
+  setChartType: (type: "pie" | "bar") => void;
+  durationUnit: "minutes" | "hours";
+  setDurationUnit: (unit: "minutes" | "hours") => void;
+  activeCategory: string;
+}
 
 const CategoryChartSection = ({
   videos,
@@ -10,9 +21,9 @@ const CategoryChartSection = ({
   durationUnit,
   setDurationUnit,
   activeCategory,
-}) => {
+}: CategoryChartSectionProps) => {
   const [showAllKeywords, setShowAllKeywords] = useState(false);
-  const VIDEO_TYPE_MAP = { live: "直播檔", videos: "影片", shorts: "Shorts" };
+  const VIDEO_TYPE_MAP: Record<string, string> = { live: "直播檔", videos: "影片", shorts: "Shorts" };
   const typeLabel = VIDEO_TYPE_MAP[videoType];
 
   const filteredVideos = useMemo(() => {
@@ -26,7 +37,7 @@ const CategoryChartSection = ({
 
   const { countData, durationData } = useMemo(() => {
     const counts: Record<string, { category: string; count: number; duration: number }> = {};
-    videos.forEach((video) => {
+    videos.forEach((video: ClassifiedVideoItem) => {
       if (video.type !== typeLabel) return;
 
       const isGame = activeCategory === "遊戲";
@@ -40,7 +51,7 @@ const CategoryChartSection = ({
         counts[key].duration += video.duration || 0;
       } else if (isSpecific && Array.isArray(video.matchedPairs)) {
         const seen = new Set();
-        video.matchedPairs.forEach(({ keyword, main }) => {
+        video.matchedPairs.forEach(({ keyword, main }: { keyword: string; main: string; hitKeywords: string[] }) => {
           if (main !== activeCategory) return;
           if (!showAllKeywords && seen.has(keyword)) return;
           seen.add(keyword);
@@ -49,7 +60,7 @@ const CategoryChartSection = ({
           counts[keyword].duration += video.duration || 0;
         });
       } else if (isAll && Array.isArray(video.matchedCategories)) {
-        video.matchedCategories.forEach((cat) => {
+        video.matchedCategories.forEach((cat: string) => {
           if (!counts[cat]) counts[cat] = { category: cat, count: 0, duration: 0 };
           counts[cat].count += 1;
           counts[cat].duration += video.duration || 0;

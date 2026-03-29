@@ -1,16 +1,19 @@
 import React, { useMemo } from "react";
 import ChartWithLegend from "./ChartWithLegend";
 import ChartTypeBar from "./ChartTypeBar";
+import type { ClassifiedVideoItem } from "@/types/category";
+
+interface CategoryChartProps {
+  countData: { category: string; count: number }[];
+  durationData: { category: string; duration: number }[];
+  chartType: "pie" | "bar";
+  durationUnit: "minutes" | "hours";
+  videos?: ClassifiedVideoItem[];
+}
 
 /**
  * CategoryChart
  * 根據 chartType 與 durationUnit 切換 Pie/Bar 圖表組合
- *
- * @param {Array} countData      - 各分類影片數量
- * @param {Array} durationData   - 各分類影片秒數
- * @param {"pie"|"bar"} chartType
- * @param {"minutes"|"hours"} durationUnit
- * @param {Array} videos         - 原始影片清單（提供圓心加總時用來去重複）
  */
 const CategoryChart = ({
   countData,
@@ -18,9 +21,9 @@ const CategoryChart = ({
   chartType,
   durationUnit,
   videos = [],
-}) => {
+}: CategoryChartProps) => {
   const convertedDurationData = useMemo(() => {
-    return durationData.map((d) => {
+    return durationData.map((d: { category: string; duration: number }) => {
       const secs = d.duration || 0;
       const value =
         durationUnit === "hours"

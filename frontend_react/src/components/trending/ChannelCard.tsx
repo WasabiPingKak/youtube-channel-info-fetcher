@@ -1,13 +1,27 @@
 import React, { useState } from "react";
 import VideoCardSimple from "./VideoCardSimple";
 
-/**
- * @param {Object} props
- * @param {string} props.channelId
- * @param {Object} props.channelInfo
- * @param {Array} props.videos
- */
-const ChannelCard = ({ channelId, channelInfo, videos }) => {
+interface VideoInfo {
+  id: string;
+  title: string;
+  publishedAt: string;
+  thumbnail: string;
+  url: string;
+}
+
+interface ChannelInfoItem {
+  name: string;
+  thumbnail: string;
+  url: string;
+}
+
+interface Props {
+  channelId: string;
+  channelInfo: ChannelInfoItem;
+  videos: VideoInfo[];
+}
+
+const ChannelCard = ({ channelId, channelInfo, videos }: Props) => {
   const [expanded, setExpanded] = useState(false);
 
   if (!videos || videos.length === 0) return null;

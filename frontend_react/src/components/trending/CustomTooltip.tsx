@@ -1,7 +1,19 @@
 import React from "react";
 
+interface PayloadEntry {
+  name: string;
+  value: number;
+  color: string;
+}
+
+interface Props {
+  active?: boolean;
+  payload?: PayloadEntry[];
+  label?: string;
+}
+
 // Recharts 傳進來的 payload 為 [{ name, value, color }, ...]
-const CustomTooltip = ({ active, payload, label }) => {
+const CustomTooltip = ({ active, payload, label }: Props) => {
   if (!active || !payload || payload.length === 0) return null;
 
   // 過濾掉數值為 0 的條目（可選）

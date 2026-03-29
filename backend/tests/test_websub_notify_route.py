@@ -75,20 +75,10 @@ class TestWebSubPostNotification:
         assert resp.status_code == 204
         shared_mock_db.collection.return_value.document.return_value.set.assert_called()
 
-    def test_invalid_signature_returns_403(self):
-        """重新建立 app 以套用 WEBSUB_SECRET"""
+    def test_invalid_signature_returns_403(self, websub_client):
+        """設定 WEBSUB_SECRET 後，錯誤簽名應被拒絕"""
         with patch.dict("os.environ", {"WEBSUB_SECRET": "my-secret"}):
-            import routes.websub_notify_route as mod
-
-            importlib.reload(mod)
-
-            app = Flask(__name__)
-            app.config["TESTING"] = True
-            db = MagicMock()
-            mod.init_websub_notify_route(app, db)
-            client = app.test_client()
-
-            resp = client.post(
+            resp = websub_client.post(
                 "/websub-callback",
                 data=SAMPLE_XML,
                 content_type="application/atom+xml",
@@ -96,26 +86,16 @@ class TestWebSubPostNotification:
             )
             assert resp.status_code == 403
 
-    def test_valid_signature_passes(self):
+    def test_valid_signature_passes(self, websub_client, shared_mock_db):
         with patch.dict("os.environ", {"WEBSUB_SECRET": "my-secret"}):
-            import routes.websub_notify_route as mod
-
-            importlib.reload(mod)
-
-            app = Flask(__name__)
-            app.config["TESTING"] = True
-            db = MagicMock()
-            mod.init_websub_notify_route(app, db)
-            client = app.test_client()
-
             xml_bytes = SAMPLE_XML.encode()
             sig = "sha1=" + hmac.new(b"my-secret", xml_bytes, hashlib.sha1).hexdigest()
 
             mock_doc = MagicMock()
             mock_doc.to_dict.return_value = None
-            db.collection.return_value.document.return_value.get.return_value = mock_doc
+            shared_mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
 
-            resp = client.post(
+            resp = websub_client.post(
                 "/websub-callback",
                 data=xml_bytes,
                 content_type="application/atom+xml",

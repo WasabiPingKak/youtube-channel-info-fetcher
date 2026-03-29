@@ -82,7 +82,7 @@ export function useFilteredActiveChannels(
       for (const day of WEEKDAYS) {
         const hours = ch.activeTime?.[day] || {};
         for (const [periodKey, hourList] of Object.entries(TIME_PERIODS)) {
-          const scoreSum = hourList.reduce((sum, h) => {
+          const scoreSum = (hourList as readonly number[]).reduce((sum, h) => {
             const count = hours?.[h.toString()] || 0;
             return sum + getHeatScore(count, maxCount);
           }, 0);

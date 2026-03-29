@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react';
 import MatchedVideosPreview from './MatchedVideosPreview';
+import { ClassifiedVideoItem } from '@/types/category';
 
-const highlightMatchedText = (text, keywords) => {
+const highlightMatchedText = (text: string, keywords: string[]) => {
   if (!keywords.length) return text;
 
   const escaped = keywords.map(k => k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'));
@@ -21,6 +22,15 @@ const highlightMatchedText = (text, keywords) => {
   );
 };
 
+interface Props {
+  name: string;
+  keywords: string[];
+  onKeywordsChange: (keywords: string[]) => void;
+  onDelete: () => void;
+  onEdit?: (name: string) => void;
+  videos?: ClassifiedVideoItem[];
+}
+
 const SubcategoryCard = ({
   name,
   keywords,
@@ -28,7 +38,7 @@ const SubcategoryCard = ({
   onDelete,
   onEdit,
   videos = [],
-}) => {
+}: Props) => {
   const [newKeyword, setNewKeyword] = useState('');
   const [confirmingDelete, setConfirmingDelete] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -41,18 +51,18 @@ const SubcategoryCard = ({
     setNewKeyword('');
   };
 
-  const handleRemoveKeyword = (kw) => {
+  const handleRemoveKeyword = (kw: string) => {
     onKeywordsChange(keywords.filter((k) => k !== kw));
   };
 
-  const handleKeyDown = (e) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter') {
       handleAddKeyword();
     }
   };
 
   const { matchedVideos, count } = useMemo(() => {
-    const result = [];
+    const result: ClassifiedVideoItem[] = [];
     const baseKeywords = [name, ...keywords].map(k => k.toLowerCase());
 
     for (const video of videos) {

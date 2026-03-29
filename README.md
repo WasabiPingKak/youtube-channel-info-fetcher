@@ -39,7 +39,7 @@ VTMap 是一套針對 Vtuber 頻道經營的分析與導流工具，解決 YouTu
 | Layer      | Technology                                                                     |
 | ---------- | ------------------------------------------------------------------------------ |
 | Frontend   | React 19, TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query      |
-| Backend    | Python Flask, Gunicorn, Pydantic (request validation), Flask-Limiter (rate limiting) |
+| Backend    | APIFlask + Python, Gunicorn, Pydantic (request validation), Flask-Limiter (rate limiting) |
 | Database   | Google Cloud Firestore（Production / Staging 雙資料庫隔離）                      |
 | Hosting    | Google Cloud Run (backend), Firebase Hosting (frontend)                        |
 | Async Jobs | Google Cloud Tasks (WebSub 訂閱等非同步作業)                                    |
@@ -235,7 +235,7 @@ python tools/migrate_prod_to_staging.py --full --days 90 --no-sanitize
 ```
 youtube-channel-info-fetcher/
 ├── backend/
-│   ├── app.py                 # Flask 入口（Application Factory）
+│   ├── app.py                 # APIFlask 入口（Application Factory）
 │   ├── schemas/               # Pydantic request/response schemas
 │   ├── routes/                # API 路由模組（37 endpoints）
 │   ├── services/              # 商業邏輯層

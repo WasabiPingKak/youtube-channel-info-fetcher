@@ -5,15 +5,31 @@ import ActiveTimeFilterPanel from "../activeTime/ActiveTimeFilterPanel";
 import ChannelHeatmapCard from "../activeTime/ChannelHeatmapCard";
 import GroupedChannelList from "../channels/GroupedChannelList";
 import { groupChannelsByCountry } from "../../utils/groupChannelsByCountry";
+interface BaseChannel {
+  channel_id?: string;
+  channelId?: string;
+  name?: string;
+  thumbnail?: string;
+  countryCode?: string[];
+  enabled?: boolean;
+  lastVideoUploadedAt?: string;
+  [key: string]: unknown;
+}
+
+interface Props {
+  baseChannels: BaseChannel[];
+  isFlagGrouping?: boolean;
+  onClick?: (...args: unknown[]) => void;
+}
 
 export default function ActiveTimeTabSection({
   baseChannels,
   isFlagGrouping = false,
   onClick,
-}) {
+}: Props) {
   const { data, isLoading, isError } = useActiveTimeChannels();
-  const [selectedWeekdays, setSelectedWeekdays] = useState([]);
-  const [selectedPeriods, setSelectedPeriods] = useState([]);
+  const [selectedWeekdays, setSelectedWeekdays] = useState<string[]>([]);
+  const [selectedPeriods, setSelectedPeriods] = useState<string[]>([]);
 
   const enrichedChannels = useMemo(() => {
     if (!data?.channels) return [];
@@ -86,8 +102,8 @@ export default function ActiveTimeTabSection({
           onClick={onClick}
           renderCard={(channel) => (
             <ChannelHeatmapCard
-              key={channel.channelId}
-              channel={channel}
+              key={channel.channelId as string}
+              channel={channel as unknown as { channelId: string; name: string; thumbnail: string; countryCode?: string[]; activeTime: Record<string, Record<string, number>>; matchRatio?: number }}
               filterApplied={filterApplied}
               highlightWeekdays={selectedWeekdays}
               highlightPeriods={selectedPeriods}

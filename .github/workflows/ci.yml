@@ -73,6 +73,9 @@ jobs:
       - name: ESLint
         run: npm run lint
 
+      - name: TypeScript typecheck
+        run: npx tsc --noEmit
+
   frontend-build:
     name: Frontend Build Check
     runs-on: ubuntu-latest

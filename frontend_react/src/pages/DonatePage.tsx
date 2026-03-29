@@ -1,18 +1,19 @@
-// pages/DonatePage.jsx
+// pages/DonatePage.tsx
 import React, { useEffect, useState } from "react";
 import MainLayout from "@/components/layout/MainLayout";
 import DonationList from "@/components/donations/DonationList";
+import type { DonationItem } from "@/types/donations";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export default function DonatePage() {
-  const [donations, setDonations] = useState([]);
+  const [donations, setDonations] = useState<DonationItem[]>([]);
 
   useEffect(() => {
     fetch(`${API_BASE}/api/donations`)
       .then((res) => res.json())
       .then((data) => {
-        const filtered = data.filter((d) =>
+        const filtered = data.filter((d: DonationItem) =>
           d.patronNote?.toLowerCase().includes("vtmap")
         );
         setDonations(filtered);

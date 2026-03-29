@@ -5,7 +5,12 @@ import UserMenu from "@/components/common/UserMenu";
 import { useIsMobile } from "@/hooks/useIsMobile";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-const TopNav = ({ collapsed: _collapsed, toggleCollapsed }) => {
+interface Props {
+  collapsed: boolean;
+  toggleCollapsed: () => void;
+}
+
+const TopNav = ({ collapsed: _collapsed, toggleCollapsed }: Props) => {
   const isMobile = useIsMobile();
   const { data: user } = useMyChannelId();
   const isLoggedIn = !!user?.channelId;

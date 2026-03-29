@@ -6,12 +6,6 @@ import requests
 
 logger = logging.getLogger(__name__)
 
-# ✅ API Endpoint
-ALIAS_API_URL = os.getenv("GAME_ALIAS_ENDPOINT")
-if not ALIAS_API_URL:
-    logger.error("❌ GAME_ALIAS_ENDPOINT 尚未設定，請檢查 .env.game_alias")
-    raise OSError("❌ GAME_ALIAS_ENDPOINT 尚未設定")
-
 # ✅ 快取區
 _cache: dict[str, list[str]] = {}
 _last_fetch_time: float = 0
@@ -29,9 +23,13 @@ def fetch_global_alias_map(force_refresh: bool = False) -> dict[str, list[str]]:
         logger.debug("♻️ 使用快取遊戲別名，共 %d 筆", len(_cache))
         return _cache
 
-    logger.debug("🌐 向 Google Sheet API 發送請求：%s", ALIAS_API_URL)
+    alias_api_url = os.getenv("GAME_ALIAS_ENDPOINT")
+    if not alias_api_url:
+        raise OSError("❌ GAME_ALIAS_ENDPOINT 尚未設定，請檢查環境變數")
+
+    logger.debug("🌐 向 Google Sheet API 發送請求：%s", alias_api_url)
     try:
-        res = requests.get(ALIAS_API_URL, timeout=30)
+        res = requests.get(alias_api_url, timeout=30)
         res.raise_for_status()
         data = res.json()
 

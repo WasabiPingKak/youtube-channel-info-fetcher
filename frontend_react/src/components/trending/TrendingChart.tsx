@@ -1,14 +1,21 @@
 import React, { useState, useEffect } from "react";
 import TrendingChartCumulative from "./TrendingChartCumulative";
 import TrendingChartDaily from "./TrendingChartBar";
+import type { TrendingGamesResponse } from "@/types/trending";
+
+interface Props {
+  gameList: TrendingGamesResponse["gameList"];
+  videoCountByGameAndDate: TrendingGamesResponse["videoCountByGameAndDate"];
+  contributorsByDateAndGame: TrendingGamesResponse["contributorsByDateAndGame"];
+}
 
 const TrendingChart = ({
   gameList,
   videoCountByGameAndDate,
   contributorsByDateAndGame,
-}) => {
+}: Props) => {
   const [mode, setMode] = useState("cumulative");
-  const [hiddenGames, setHiddenGames] = useState([]);
+  const [hiddenGames, setHiddenGames] = useState<string[]>([]);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -20,7 +27,7 @@ const TrendingChart = ({
     return () => window.removeEventListener("resize", handleResize);
   }, []);
 
-  const toggleLine = (game) => {
+  const toggleLine = (game: string) => {
     setHiddenGames((prev) =>
       prev.includes(game)
         ? prev.filter((g) => g !== game)

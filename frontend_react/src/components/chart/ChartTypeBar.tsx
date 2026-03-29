@@ -1,7 +1,12 @@
 import React from "react";
 import { BarChart, Bar, XAxis, YAxis, Tooltip, Legend, ResponsiveContainer } from "recharts";
 
-const ChartTypeBar = ({ data, dataKey }) => {
+interface ChartTypeBarProps {
+  data: Record<string, unknown>[];
+  dataKey: string;
+}
+
+const ChartTypeBar = ({ data, dataKey }: ChartTypeBarProps) => {
   return (
     <ResponsiveContainer width="100%" height={250}>
       <BarChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>

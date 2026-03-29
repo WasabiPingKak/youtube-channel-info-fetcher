@@ -97,7 +97,7 @@ export default function ActiveTimeHeatmapMini({
   const highlightEnabled = highlightWeekdays.length > 0 || highlightPeriods.length > 0;
 
   // 模擬一些測試數據
-  const testData = {
+  const testData: Record<string, Record<string, number>> = {
     Mon: { "0": 5, "8": 15, "14": 8, "20": 12 },
     Tue: { "9": 20, "13": 10, "19": 7 },
     Wed: { "10": 25, "15": 18, "21": 9 },
