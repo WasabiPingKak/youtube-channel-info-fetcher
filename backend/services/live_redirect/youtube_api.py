@@ -27,7 +27,7 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
 
         try:
             logging.info(f"🌐 查詢 YouTube API：{batch}")
-            resp = requests.get(YOUTUBE_API_URL, params=params)
+            resp = requests.get(YOUTUBE_API_URL, params=params, timeout=10)
             resp.raise_for_status()
             items = resp.json().get("items", [])
             results.extend(items)
