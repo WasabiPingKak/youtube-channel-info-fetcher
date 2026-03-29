@@ -9,15 +9,22 @@ import {
   Label,
 } from "recharts";
 
+interface ChartDataItem {
+  category: string;
+  [key: string]: unknown;
+}
+
+interface ChartTypePieProps {
+  data: ChartDataItem[];
+  dataKey: string;
+  unit?: string;
+  hideLegend?: boolean;
+  videos?: { videoId: string; duration?: number }[];
+}
+
 /**
  * ChartTypePie
  * 甜甜圈圖 + 圓心總數文字 + Hover Tooltip
- *
- * @param {Array<{ category: string; [key: string]: number }>} data
- * @param {string} dataKey  - 欄位名稱："count" | "duration"
- * @param {"部" | "分鐘" | "小時"} unit - 單位文字
- * @param {boolean} hideLegend - 是否隱藏內建 Legend（交由外層處理）
- * @param {Array<Object>} videos - 原始影片資料，用來對 videoId 去重複後計算圓心總和
  */
 const ChartTypePie = ({
   data,
@@ -25,7 +32,7 @@ const ChartTypePie = ({
   unit = "部",
   hideLegend = false,
   videos = [],
-}) => {
+}: ChartTypePieProps) => {
   const COLORS = [
     "#8884d8",
     "#82ca9d",
@@ -40,22 +47,22 @@ const ChartTypePie = ({
   const isDarkMode = document.documentElement.classList.contains("dark");
 
   // ✅ 根據 videoId 去重複後加總
-  const deduplicated = Array.from(new Map(videos.map((v) => [v.videoId, v])).values());
+  const deduplicated = Array.from(new Map(videos.map((v: { videoId: string; duration?: number }) => [v.videoId, v])).values());
 
   const total =
     dataKey === "count"
       ? deduplicated.length
-      : deduplicated.reduce((sum, v) => sum + (v.duration || 0), 0);
+      : deduplicated.reduce((sum: number, v: { videoId: string; duration?: number }) => sum + (v.duration || 0), 0);
 
-  const isEmpty = data.length === 0 || data.every((d) => (d[dataKey] || 0) === 0);
+  const isEmpty = data.length === 0 || data.every((d: ChartDataItem) => ((d[dataKey] as number) || 0) === 0);
 
   /* ---------- 自訂 Legend（表格式三欄） ---------- */
-  const renderLegend = ({ payload }) => (
+  const renderLegend = ({ payload }: { payload?: Array<{ payload: ChartDataItem; color: string }> }) => (
     <table className="text-sm">
       <tbody>
-        {payload.map((entry, idx) => {
+        {(payload ?? []).map((entry: { payload: ChartDataItem; color: string }, idx: number) => {
           const { payload: item, color } = entry;
-          const value = item[dataKey] || 0;
+          const value = (item[dataKey] as number) || 0;
           const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
           const displayValue = unit === "小時" ? value.toFixed(1) : value;
           return (
@@ -80,7 +87,7 @@ const ChartTypePie = ({
   );
 
   /* ---------- 自訂 Tooltip ---------- */
-  const renderTooltip = ({ active, payload }) => {
+  const renderTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: ChartDataItem; value: number }> }) => {
     if (active && payload && payload.length) {
       const { category } = payload[0].payload;
       const value = payload[0].value;
@@ -118,7 +125,7 @@ const ChartTypePie = ({
           paddingAngle={2}
           label={false}
         >
-          {data.map((_, index) => (
+          {data.map((_: ChartDataItem, index: number) => (
             <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
           ))}
 
@@ -140,7 +147,7 @@ const ChartTypePie = ({
         </Pie>
 
         {/* —— Hover Tooltip —— */}
-        <Tooltip content={renderTooltip} wrapperStyle={{ outline: "none" }} />
+        <Tooltip content={renderTooltip as never} wrapperStyle={{ outline: "none" }} />
 
         {/* —— 自訂圖例 —— */}
         {!hideLegend && (
@@ -148,7 +155,7 @@ const ChartTypePie = ({
             layout="vertical"
             align="right"
             verticalAlign="middle"
-            content={renderLegend}
+            content={renderLegend as never}
           />
         )}
       </PieChart>

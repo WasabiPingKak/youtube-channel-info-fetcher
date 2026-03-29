@@ -129,16 +129,25 @@ export function computeSpecialStats(
   }
   commitIfBetter();
 
+  // TypeScript 無法追蹤 commitIfBetter() 對 best 的賦值，需重新綁定
+  const finalBest = best as {
+    days: number;
+    startDate: string;
+    endDate: string;
+    totalDuration: number;
+    items: ClassifiedVideoItem[];
+  } | null;
+
   const longestLiveStreak =
-    best && best.days > 0
+    finalBest && finalBest.days > 0
       ? {
-        days: best.days,
-        startDate: best.startDate,
-        endDate: best.endDate,
-        totalDuration: best.totalDuration,
-        items: best.items
+        days: finalBest.days,
+        startDate: finalBest.startDate,
+        endDate: finalBest.endDate,
+        totalDuration: finalBest.totalDuration,
+        items: finalBest.items
           .slice()
-          .sort((a, b) => {
+          .sort((a: ClassifiedVideoItem, b: ClassifiedVideoItem) => {
             const ad = toGmt8DateKey(a.publishDate);
             const bd = toGmt8DateKey(b.publishDate);
             if (ad !== bd) return ad < bd ? -1 : 1;
@@ -146,7 +155,7 @@ export function computeSpecialStats(
             const bt = new Date(b.publishDate).getTime();
             return at - bt;
           })
-          .map((v) => ({
+          .map((v: ClassifiedVideoItem) => ({
             videoId: v.videoId,
             title: v.title,
             duration: v.duration ?? 0,

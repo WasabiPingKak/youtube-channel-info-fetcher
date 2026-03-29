@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { FaExternalLinkAlt } from "react-icons/fa";
 
-const GameAliasContributorsSection = ({ defaultOpen = false, className = "" }) => {
-  const [contributors, setContributors] = useState([]);
-  const [contribError, setContribError] = useState(null);
+interface Contributor {
+  name: string;
+  url?: string;
+}
+
+interface GameAliasContributorsSectionProps {
+  defaultOpen?: boolean;
+  className?: string;
+}
+
+const GameAliasContributorsSection = ({ defaultOpen = false, className = "" }: GameAliasContributorsSectionProps) => {
+  const [contributors, setContributors] = useState<Contributor[]>([]);
+  const [contribError, setContribError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(defaultOpen);
 
   useEffect(() => {

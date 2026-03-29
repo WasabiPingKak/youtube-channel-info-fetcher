@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import HeatmapTooltip from "./heatmap/HeatmapTooltip";
 import SlotVideoModal from "./heatmap/SlotVideoModal";
+import type { ClassifiedVideoItem } from "@/types/category";
 
 const WEEKDAYS = ["日", "一", "二", "三", "四", "五", "六"];
 const DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const HOUR_MARKS = [0, 6, 12, 18];
 
-const formatHourLabel = (hour) => {
+const formatHourLabel = (hour: number) => {
   const ampm = hour < 12 ? "AM" : "PM";
   let h = hour % 12;
   if (h === 0) h = 12;
@@ -14,7 +15,7 @@ const formatHourLabel = (hour) => {
   return `${hh}:00 ${ampm}`;
 };
 
-const getHeatLevelClass = (count, max) => {
+const getHeatLevelClass = (count: number, max: number) => {
   const ratio = count / max;
   if (ratio === 0) return "bg-gray-100";
   if (ratio <= 0.2) return "bg-purple-100";
@@ -23,8 +24,33 @@ const getHeatLevelClass = (count, max) => {
   return "bg-purple-700";
 };
 
-const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }) => {
-  const [selectedSlot, setSelectedSlot] = useState(null); // ← Modal 狀態
+interface HoverInfo {
+  label: string;
+  hour: number;
+  videoIds: string[];
+  count: number;
+}
+
+interface SelectedSlot {
+  label: string;
+  hour: number;
+  videoIds: string[];
+}
+
+interface HeatmapData {
+  matrix?: Record<string, Record<string, string[]>>;
+}
+
+interface HeatmapContainerProps {
+  data: HeatmapData;
+  maxCount: number;
+  hoverInfo: HoverInfo | null;
+  setHoverInfo: (info: HoverInfo | null) => void;
+  videos: ClassifiedVideoItem[];
+}
+
+const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: HeatmapContainerProps) => {
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null); // ← Modal 狀態
 
   return (
     <div

@@ -1,20 +1,21 @@
 import React, { useState, useEffect } from "react";
 import ChannelSelectorCard from "./ChannelSelectorCard";
+import type { ChannelIndexEntry } from "@/types/channel";
 
 /**
  * 解析 Firestore Timestamp 或 ISO 字串為 Date 物件
  */
-const toDateObj = (raw) => {
+const toDateObj = (raw: unknown): Date | null => {
   if (!raw) return null;
   if (typeof raw === "string") {
     const parsed = new Date(raw);
     return isNaN(parsed.getTime()) ? null : parsed;
   }
-  if (typeof raw.toDate === "function") {
-    return raw.toDate();
+  if (typeof raw === "object" && raw !== null && "toDate" in raw && typeof (raw as { toDate: () => Date }).toDate === "function") {
+    return (raw as { toDate: () => Date }).toDate();
   }
   try {
-    return new Date(raw);
+    return new Date(raw as string | number);
   } catch {
     return null;
   }
@@ -23,7 +24,7 @@ const toDateObj = (raw) => {
 /**
  * 使用當地時間格式化為 yyyy-MM-dd（供排序使用）
  */
-const formatDateKey = (dateObj) => {
+const formatDateKey = (dateObj: Date): string => {
   const yyyy = dateObj.getFullYear();
   const mm = String(dateObj.getMonth() + 1).padStart(2, "0");
   const dd = String(dateObj.getDate()).padStart(2, "0");
@@ -33,7 +34,7 @@ const formatDateKey = (dateObj) => {
 /**
  * 顯示文字：今天 / 昨天 / yyyy-MM-dd（以當地時間計算）
  */
-const getDisplayDateLabel = (dateObj) => {
+const getDisplayDateLabel = (dateObj: Date): string => {
   const today = new Date();
   const yesterday = new Date();
   today.setHours(0, 0, 0, 0);
@@ -52,8 +53,8 @@ const getDisplayDateLabel = (dateObj) => {
 /**
  * 將頻道依據 joinedAt 日期分組
  */
-const groupByJoinedDate = (channels) => {
-  const groups: Record<string, { label: string; list: typeof channels }> = {};
+const groupByJoinedDate = (channels: ChannelIndexEntry[]) => {
+  const groups: Record<string, { label: string; list: ChannelIndexEntry[] }> = {};
   channels.forEach((channel) => {
     const dateObj = toDateObj(channel.joinedAt);
     if (!dateObj) return;
@@ -78,7 +79,12 @@ const groupByJoinedDate = (channels) => {
 
 const STORAGE_KEY = "newlyJoinedExpanded";
 
-const NewlyJoinedChannelsSection = ({ channels, onClick: _onClick }) => {
+interface Props {
+  channels: ChannelIndexEntry[];
+  onClick?: (...args: unknown[]) => void;
+}
+
+const NewlyJoinedChannelsSection = ({ channels, onClick: _onClick }: Props) => {
   const [expanded, setExpanded] = useState(() => {
     const stored = localStorage.getItem(STORAGE_KEY);
     return stored !== "false";

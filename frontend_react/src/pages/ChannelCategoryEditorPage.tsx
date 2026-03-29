@@ -9,8 +9,11 @@ import { useMyChannelId } from '@/hooks/useMyChannelId';
 import { useCategoryConfig } from '../hooks/useCategoryConfig';
 import { useEditableCategories } from '../hooks/useEditableCategories';
 import { useClassifiedVideos } from '../hooks/useClassifiedVideos';
+import type { ClassifiedVideoItem } from '@/types/category';
 import MainLayout from "../components/layout/MainLayout";
 import { showFailureToast, showLoginRequiredToast } from "@/components/common/ToastManager";
+
+type CategoryConfig = Record<string, Record<string, string[]>>;
 
 import UnclassifiedVideosPreview from '../components/ChannelCategoryEditor/UnclassifiedVideosPreview';
 import SubcategoryListSection from '../components/ChannelCategoryEditor/SubcategoryListSection';
@@ -24,9 +27,9 @@ const ChannelCategoryEditorPage = () => {
 
   // 1. hooks 只能寫在最上層
   const { data: me, isLoading: meLoading } = useMyChannelId();
-  const { data: categoryData, isLoading, isError, refetch } = useCategoryConfig(me?.channelId);
+  const { data: categoryData, isLoading, isError, refetch } = useCategoryConfig(me?.channelId ?? '');
   const [activeTab, setActiveTab] = useState('雜談');
-  const [pendingTab, setPendingTab] = useState(null);
+  const [pendingTab, setPendingTab] = useState<string | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
@@ -40,19 +43,19 @@ const ChannelCategoryEditorPage = () => {
     onNameChange,
     onKeywordsChange,
     onDeleteSubcategory,
-  } = useEditableCategories(categoryData, activeTab);
+  } = useEditableCategories(categoryData as CategoryConfig | null, activeTab);
 
   const {
     videos,
     loading: videoLoading,
     error: videoError,
     refetch: refetchVideos,
-  } = useClassifiedVideos(me?.channelId);
+  } = useClassifiedVideos(me?.channelId ?? '');
 
   const existingNames = Object.keys(editableData?.[activeTab] || {});
 
   const isCurrentTabDirty = () => {
-    return !isEqual(editableData?.[activeTab], categoryData?.[activeTab]);
+    return !isEqual(editableData?.[activeTab], (categoryData as CategoryConfig)?.[activeTab]);
   };
 
   // 2. early return，只負責顯示狀態，不影響 hooks 排序
@@ -64,7 +67,7 @@ const ChannelCategoryEditorPage = () => {
   }, [meLoading, me, navigate]);
 
   useEffect(() => {
-    const handleBeforeUnload = (e) => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
       if (isCurrentTabDirty()) {
         e.preventDefault();
         e.returnValue = '';
@@ -89,7 +92,7 @@ const ChannelCategoryEditorPage = () => {
   if (isError || !categoryData) return <div>❌ 無法載入分類資料。</div>;
 
   // 3. 正常 render
-  const handleAddSubcategory = (newName) => {
+  const handleAddSubcategory = (newName: string) => {
     const updated = {
       ...editableData[activeTab],
       [newName]: [],
@@ -100,7 +103,7 @@ const ChannelCategoryEditorPage = () => {
     });
   };
 
-  const handleRenameSubcategory = (oldName, newName) => {
+  const handleRenameSubcategory = (oldName: string, newName: string) => {
     if (oldName === newName) return;
 
     const current = { ...editableData[activeTab] };
@@ -119,7 +122,7 @@ const ChannelCategoryEditorPage = () => {
       const configRef = doc(
         db,
         'channel_data',
-        me.channelId,
+        me.channelId!,
         'settings',
         'config'
       );
@@ -138,7 +141,7 @@ const ChannelCategoryEditorPage = () => {
     }
   };
 
-  const onTabChange = (newTab) => {
+  const onTabChange = (newTab: string) => {
     if (newTab === activeTab) return;
     if (isCurrentTabDirty()) {
       setPendingTab(newTab);
@@ -151,9 +154,9 @@ const ChannelCategoryEditorPage = () => {
   const handleConfirmDiscard = () => {
     setEditableData({
       ...editableData,
-      [activeTab]: categoryData[activeTab],
+      [activeTab]: (categoryData as CategoryConfig)[activeTab],
     });
-    setActiveTab(pendingTab);
+    setActiveTab(pendingTab!);
     setPendingTab(null);
     setIsDialogOpen(false);
   };
@@ -211,7 +214,7 @@ const ChannelCategoryEditorPage = () => {
           onKeywordsChange={onKeywordsChange}
           onDeleteSubcategory={onDeleteSubcategory}
           videos={videos}
-          onEdit={(name) => {
+          onEdit={(name: string) => {
             setEditingName(name);
             setIsEditModalOpen(true);
           }}
@@ -254,7 +257,7 @@ const ChannelCategoryEditorPage = () => {
           title="新增子分類"
           isOpen={isAddModalOpen}
           onClose={() => setIsAddModalOpen(false)}
-          onRename={(_, newName) => handleAddSubcategory(newName)}
+          onRename={(_: string, newName: string) => handleAddSubcategory(newName)}
           originalName=""
           existingNames={existingNames}
           videos={videos}
@@ -275,7 +278,7 @@ const ChannelCategoryEditorPage = () => {
         <DiscardChangesDialog
           isOpen={isDialogOpen}
           currentTab={activeTab}
-          targetTab={pendingTab}
+          targetTab={pendingTab ?? ''}
           onCancel={handleCancelDiscard}
           onConfirm={handleConfirmDiscard}
         />

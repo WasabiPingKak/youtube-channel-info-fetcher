@@ -1,12 +1,19 @@
 import React from "react";
 
+interface FilterPanelProps {
+  showUpcoming: boolean;
+  setShowUpcoming: (value: boolean) => void;
+  showEnded: boolean;
+  setShowEnded: (value: boolean) => void;
+}
+
 export default function FilterPanel({
   showUpcoming: _showUpcoming,
   setShowUpcoming: _setShowUpcoming,
   showEnded,
   setShowEnded,
-}) {
-  const renderToggleButton = (label, checked, onToggle) => {
+}: FilterPanelProps) {
+  const renderToggleButton = (label: string, checked: boolean, onToggle: (value: boolean) => void) => {
     return (
       <button
         type="button"

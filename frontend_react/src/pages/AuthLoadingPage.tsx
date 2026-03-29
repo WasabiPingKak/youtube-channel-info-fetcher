@@ -6,8 +6,8 @@ const AuthLoadingPage = () => {
   const [params] = useSearchParams();
   const channelId = params.get("channel");
   const navigate = useNavigate();
-  const [error, setError] = useState(null);
-  const [errorCode, setErrorCode] = useState(null);
+  const [error, setError] = useState<string | null>(null);
+  const [errorCode, setErrorCode] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [initSuccess, setInitSuccess] = useState(false);
   const [countdown, setCountdown] = useState(5);
@@ -41,8 +41,8 @@ const AuthLoadingPage = () => {
         }
       }, 1000);
     } catch (err) {
-      setError(err.message);
-      setErrorCode(err?.code || null);
+      setError(err instanceof Error ? err.message : String(err));
+      setErrorCode(null);
       setLoading(false);
     }
   };
@@ -51,7 +51,7 @@ const AuthLoadingPage = () => {
     if (channelId) initChannel();
   }, [channelId]); // eslint-disable-line react-hooks/exhaustive-deps -- initChannel 不需列為依賴，只在 channelId 變動時觸發
 
-  const getReadableError = (code) => {
+  const getReadableError = (code: string) => {
     switch (code) {
       case "MISSING_CHANNEL_ID":
         return "未提供頻道 ID，請重新授權。";

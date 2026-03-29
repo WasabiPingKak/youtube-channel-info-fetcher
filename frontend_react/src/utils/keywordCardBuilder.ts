@@ -1,4 +1,4 @@
-import type { ClassifiedVideoItem } from '@/types/category';
+import type { ClassifiedVideoItem, SuggestedKeywordCardState } from '@/types/category';
 import { normalize } from '@/utils/textUtils';
 
 export type { SuggestedKeywordCardState } from '@/types/category';

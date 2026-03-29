@@ -90,7 +90,7 @@ const CategoryAliasPage = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           sortOption={sortOption}
-          setSortOption={setSortOption}
+          setSortOption={(v: string) => setSortOption(v as typeof sortOption)}
           mode="category"
         />
 

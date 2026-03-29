@@ -9,7 +9,14 @@ import clsx from "clsx";
 import SmartLink from "@/components/common/SmartLink";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 
-const SidebarMenu = ({ collapsed, setCollapsed: _setCollapsed, isMobile = false, onItemClick = undefined }) => {
+interface Props {
+  collapsed: boolean;
+  setCollapsed: (value: boolean) => void;
+  isMobile?: boolean;
+  onItemClick?: () => void;
+}
+
+const SidebarMenu = ({ collapsed, setCollapsed: _setCollapsed, isMobile = false, onItemClick = undefined }: Props) => {
   const { data: user } = useMyChannelId();
   const isLoggedIn = !!user?.channelId;
 

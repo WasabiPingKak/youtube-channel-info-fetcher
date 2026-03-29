@@ -6,7 +6,12 @@ import React from "react";
  * @param {boolean} isEnabled
  * @param {Function} onToggle
  */
-const FlagGroupingToggle = ({ isEnabled, onToggle }) => {
+interface Props {
+  isEnabled: boolean;
+  onToggle: (value: boolean) => void;
+}
+
+const FlagGroupingToggle = ({ isEnabled, onToggle }: Props) => {
   return (
     <div className="mb-4">
       <div className="flex items-center">

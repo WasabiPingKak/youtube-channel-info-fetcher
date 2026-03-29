@@ -2,10 +2,15 @@ import React, { useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import HeatmapContainer from "./HeatmapContainer";
+import type { ClassifiedVideoItem } from "@/types/category";
 
 const API_BASE = import.meta.env.VITE_API_BASE || "";
 
-const fetchHeatmapData = async (channelId) => {
+interface HeatmapResponse {
+  matrix?: Record<string, Record<string, string[]>>;
+}
+
+const fetchHeatmapData = async (channelId: string | null): Promise<HeatmapResponse> => {
   const url = `${API_BASE}/api/heatmap/${channelId}`;
 
   const res = await fetch(url, {
@@ -20,11 +25,15 @@ const fetchHeatmapData = async (channelId) => {
   return res.json();
 };
 
-const VideoUploadHeatmap = ({ videos }) => {
+interface VideoUploadHeatmapProps {
+  videos: ClassifiedVideoItem[];
+}
+
+const VideoUploadHeatmap = ({ videos }: VideoUploadHeatmapProps) => {
   const [searchParams] = useSearchParams();
   const channelId = searchParams.get("channel");
 
-  const [hoverInfo, setHoverInfo] = useState(null);
+  const [hoverInfo, setHoverInfo] = useState<{ label: string; hour: number; videoIds: string[]; count: number } | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["upload-heatmap", channelId],
@@ -35,8 +44,8 @@ const VideoUploadHeatmap = ({ videos }) => {
   const maxCount = useMemo(() => {
     if (!data?.matrix) return 1;
     return Math.max(
-      ...Object.values(data.matrix).flatMap((hourMap) =>
-        Object.values(hourMap).map((arr) => arr.length)
+      ...Object.values(data.matrix).flatMap((hourMap: Record<string, string[]>) =>
+        Object.values(hourMap).map((arr: string[]) => arr.length)
       )
     );
   }, [data]);
@@ -73,7 +82,7 @@ const VideoUploadHeatmap = ({ videos }) => {
   return (
     <div className="py-4">
       <HeatmapContainer
-        data={data}
+        data={data!}
         maxCount={maxCount}
         hoverInfo={hoverInfo}
         setHoverInfo={setHoverInfo}

@@ -1,8 +1,13 @@
 import React from "react";
 import ChannelInfoCard from "../common/ChannelInfoCard";
 import ContentTreemapSection from "./ContentTreemapSection";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const StyledExportCard = ({ videos }) => {
+interface StyledExportCardProps {
+  videos: ClassifiedVideoItem[];
+}
+
+const StyledExportCard = ({ videos }: StyledExportCardProps) => {
   return (
     <div className="bg-[#f9fafb] rounded-xl shadow-xl w-[1200px] mx-auto overflow-hidden">
       <div className="flex flex-col">

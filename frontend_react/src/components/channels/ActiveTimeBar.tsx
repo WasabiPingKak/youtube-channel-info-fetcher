@@ -8,17 +8,32 @@ const vividColors = {
   晚: "#6366f1",
 };
 
-const ActiveTimeBar = ({ activeTimeAll }) => {
+type TimePeriodKey = "凌" | "早" | "午" | "晚";
+
+interface ActiveTimeAllData {
+  凌: number;
+  早: number;
+  午: number;
+  晚: number;
+  totalCount: number;
+  updatedAt?: string;
+}
+
+interface Props {
+  activeTimeAll: ActiveTimeAllData | null | undefined;
+}
+
+const ActiveTimeBar = ({ activeTimeAll }: Props) => {
   if (!activeTimeAll || !activeTimeAll.totalCount) return null;
 
-  const sections = ["凌", "早", "午", "晚"];
+  const sections: TimePeriodKey[] = ["凌", "早", "午", "晚"];
   const total = activeTimeAll.totalCount;
 
   const nonZeroSections = sections
     .map((key) => ({
       key,
       percent: ((activeTimeAll[key] || 0) / total) * 100,
-      color: vividColors[key],
+      color: vividColors[key as TimePeriodKey],
     }))
     .filter((section) => section.percent > 0);
 
@@ -31,7 +46,7 @@ const ActiveTimeBar = ({ activeTimeAll }) => {
     gradient = nonZeroSections[0].color;
     tooltip = `${nonZeroSections[0].key}: 100%`;
   } else {
-    const gradientStops = [];
+    const gradientStops: string[] = [];
     let acc = 0;
 
     nonZeroSections.forEach((section, index) => {

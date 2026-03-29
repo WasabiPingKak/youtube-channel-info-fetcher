@@ -1,6 +1,13 @@
 import React from "react";
 
-const ChartSwitcher = ({ chartType, setChartType, durationUnit, setDurationUnit }) => {
+interface ChartSwitcherProps {
+  chartType: "pie" | "bar";
+  setChartType: (type: "pie" | "bar") => void;
+  durationUnit: "minutes" | "hours";
+  setDurationUnit: (unit: "minutes" | "hours") => void;
+}
+
+const ChartSwitcher = ({ chartType, setChartType, durationUnit, setDurationUnit }: ChartSwitcherProps) => {
   return (
     <div className="mb-4 flex flex-wrap gap-2">
       {/* 圖表類型切換 */}

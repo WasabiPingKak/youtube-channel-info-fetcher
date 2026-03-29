@@ -96,7 +96,7 @@ export default function MySettingsPage() {
 
         {channelInfo && (
           <div className="mb-6">
-            <ChannelSelectorCard channel={channelInfo} />
+            <ChannelSelectorCard channel={channelInfo as Record<string, unknown> & typeof channelInfo} />
           </div>
         )}
 

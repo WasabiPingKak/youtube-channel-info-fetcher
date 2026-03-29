@@ -2,8 +2,14 @@
 import React from "react";
 import VideoBadge from "../common/VideoBadge";
 import { getBadgesFromClassifiedVideo } from "@/utils/badgeUtils";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const VideoCardMobile = ({ video, durationUnit }) => {
+interface Props {
+  video: ClassifiedVideoItem;
+  durationUnit: "hours" | "minutes";
+}
+
+const VideoCardMobile = ({ video, durationUnit }: Props) => {
   const {
     videoId,
     title,

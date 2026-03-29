@@ -3,8 +3,9 @@ import { PiCopySimple } from "react-icons/pi";
 import CountryFlags from "@/components/badges/CountryFlags";
 import VideoBadge from "@/components/common/VideoBadge";
 import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
+import type { LiveChannelData } from "@/types/live";
 
-function formatStartTimeLabel(startTime, endTime) {
+function formatStartTimeLabel(startTime: string, endTime: string | null): string {
   const now = new Date();
   const t = new Date(endTime || startTime);
   const diffMs = now.getTime() - t.getTime();
@@ -36,7 +37,7 @@ function formatStartTimeLabel(startTime, endTime) {
   return "剛剛開播";
 }
 
-function getStatusLabelAndStyle(channel) {
+function getStatusLabelAndStyle(channel: LiveChannelData): { label: string; className: string } {
   const live = channel.live;
   if (live.endTime) {
     return { label: "已收播", className: "bg-black bg-opacity-60" };
@@ -47,7 +48,11 @@ function getStatusLabelAndStyle(channel) {
   return { label: "直播中", className: "bg-red-600" };
 }
 
-export default function LiveChannelCard({ channel }) {
+interface LiveChannelCardProps {
+  channel: LiveChannelData;
+}
+
+export default function LiveChannelCard({ channel }: LiveChannelCardProps) {
   const live = channel.live;
   const videoId = live?.videoId;
   const [copiedChannel, setCopiedChannel] = useState(false);
@@ -55,7 +60,7 @@ export default function LiveChannelCard({ channel }) {
 
   if (!live || !videoId) return null;
 
-  function handleCopy(text, setCopied, e) {
+  function handleCopy(text: string, setCopied: (v: boolean) => void, e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
     navigator.clipboard.writeText(text);

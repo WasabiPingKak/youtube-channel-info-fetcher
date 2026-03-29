@@ -21,13 +21,13 @@ const QuickCategoryEditorPage = () => {
   const { data: me, isLoading: meLoading } = useMyChannelId();
 
   // hooks 不能包在 if 裡，需先呼叫
-  const { videos, loading: loadingVideos } = useClassifiedVideos(channelId);
+  const { videos, loading: loadingVideos } = useClassifiedVideos(channelId ?? '');
   const { suggestions } = useFrequentKeywordSuggestions(videos);
   const cards = useQuickCategoryEditorStore((s) => s.cards);
   const hasInitializedRef = useRef(false);
 
-  const [skipKeywords, setSkipKeywords] = useState([]);
-  const [configMap, setConfigMap] = useState(new Map());
+  const [skipKeywords, setSkipKeywords] = useState<string[]>([]);
+  const [configMap, setConfigMap] = useState<Map<string, Array<{ mainCategory: string; subcategoryName: string }>>>(new Map());
   const [loadingSkips, setLoadingSkips] = useState(true);
   const [loadingConfig, setLoadingConfig] = useState(true);
 
@@ -152,7 +152,7 @@ const QuickCategoryEditorPage = () => {
         skipKeywords,
         configMap
       );
-      useQuickCategoryEditorStore.getState().setChannelId(channelId);
+      useQuickCategoryEditorStore.getState().setChannelId(channelId!);
       useQuickCategoryEditorStore.getState().initializeCards(initialCards);
       hasInitializedRef.current = true;
     }

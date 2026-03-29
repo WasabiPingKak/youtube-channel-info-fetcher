@@ -12,6 +12,16 @@ import {
 import ChartLegend from "./ChartLegend";
 import { COLOR_LIST } from "./chartColors";
 import CustomTooltipWithColor from "./CustomTooltipWithColor";
+import type { TrendingGamesResponse } from "@/types/trending";
+
+interface Props {
+  gameList: TrendingGamesResponse["gameList"];
+  contributorsByDateAndGame: TrendingGamesResponse["contributorsByDateAndGame"];
+  hiddenGames: string[];
+  toggleLine: (game: string) => void;
+  isMobile: boolean;
+  setHiddenGames: (games: string[]) => void;
+}
 
 const TrendingChartDaily = ({
   gameList,
@@ -20,22 +30,22 @@ const TrendingChartDaily = ({
   toggleLine,
   isMobile,
   setHiddenGames,
-}) => {
+}: Props) => {
   const chartData = useMemo(() => {
     return Object.entries(contributorsByDateAndGame).map(([date, gameMap]) => {
-      const entry = { date, tooltipData: {} };
-      gameList.forEach((game) => {
+      const entry: Record<string, unknown> = { date, tooltipData: {} as Record<string, unknown[]> };
+      gameList.forEach((game: string) => {
         const channels = gameMap[game];
         if (channels) {
           const count = Object.values(channels).reduce(
-            (sum: number, item: { count: number }) => sum + item.count,
+            (sum, item) => sum + item.count,
             0
           );
           entry[game] = count;
-          entry.tooltipData[game] = Object.values(channels);
+          (entry.tooltipData as Record<string, unknown[]>)[game] = Object.values(channels);
         } else {
           entry[game] = 0;
-          entry.tooltipData[game] = [];
+          (entry.tooltipData as Record<string, unknown[]>)[game] = [];
         }
       });
       return entry;
@@ -71,9 +81,9 @@ const TrendingChartDaily = ({
             tickFormatter={(_, index) =>
               isMobile
                 ? index % 4 === 0
-                  ? chartData[index].date.slice(5)
+                  ? (chartData[index].date as string).slice(5)
                   : ""
-                : chartData[index].date.slice(5)
+                : (chartData[index].date as string).slice(5)
             }
           />
           <YAxis
@@ -91,7 +101,7 @@ const TrendingChartDaily = ({
               />
             }
           />
-          {gameList.map((game, index) =>
+          {gameList.map((game: string, index: number) =>
             hiddenGames.includes(game) ? null : (
               <Bar
                 key={game}

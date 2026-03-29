@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function ActiveHeatScoreModal({ open, onClose }) {
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function ActiveHeatScoreModal({ open, onClose }: Props) {
   if (!open) return null;
 
   return (

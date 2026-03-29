@@ -1,13 +1,21 @@
 import React from "react";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const getVideosByIds = (videoIds, videos) =>
-  videoIds.map((id) => videos.find((v) => v.videoId === id)).filter(Boolean);
+const getVideosByIds = (videoIds: string[], videos: ClassifiedVideoItem[]): ClassifiedVideoItem[] =>
+  videoIds.map((id: string) => videos.find((v: ClassifiedVideoItem) => v.videoId === id)).filter((v): v is ClassifiedVideoItem => Boolean(v));
 
-const HeatmapTooltip = ({ label, hour, videoIds, videos }) => {
+interface HeatmapTooltipProps {
+  label: string;
+  hour: number;
+  videoIds: string[];
+  videos: ClassifiedVideoItem[];
+}
+
+const HeatmapTooltip = ({ label, hour, videoIds, videos }: HeatmapTooltipProps) => {
   const displayedVideos = getVideosByIds(videoIds.slice(0, 3), videos);
   const remainingCount = videoIds.length - displayedVideos.length;
 
-  const formatHourLabel = (hour) => {
+  const formatHourLabel = (hour: number) => {
     const ampm = hour < 12 ? "上午" : "下午";
     let h = hour % 12;
     if (h === 0) h = 12;

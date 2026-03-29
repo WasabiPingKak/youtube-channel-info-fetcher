@@ -8,7 +8,28 @@ import CategoryStatsBar from "@/components/channels/CategoryStatsBar"; // ✅ �
 
 const ADMIN_CHANNEL_ID = import.meta.env.VITE_ADMIN_CHANNEL_ID;
 
-const ChannelSelectorCard = ({ channel }) => {
+interface ChannelCardData {
+  channel_id: string;
+  name: string;
+  thumbnail: string;
+  enabled?: boolean;
+  countryCode?: string[];
+  lastVideoUploadedAt?: string;
+  category_counts?: {
+    talk?: number;
+    game?: number;
+    music?: number;
+    show?: number;
+    all?: number;
+  };
+  [key: string]: unknown;
+}
+
+interface Props {
+  channel: ChannelCardData;
+}
+
+const ChannelSelectorCard = ({ channel }: Props) => {
   const isAuthor = channel.channel_id === ADMIN_CHANNEL_ID;
 
   return (
@@ -39,7 +60,7 @@ const ChannelSelectorCard = ({ channel }) => {
           </div>
 
           {/* 國旗徽章 */}
-          <CountryFlags countryCode={channel.countryCode} />
+          <CountryFlags countryCode={channel.countryCode ?? []} />
 
           {/* 最近上片 */}
           {channel.lastVideoUploadedAt && (

@@ -1,12 +1,20 @@
 import React from 'react';
 import MatchedVideosPreview from './MatchedVideosPreview';
+import { ClassifiedVideoItem } from '@/types/category';
+
+interface Props {
+  newSubcatName: string;
+  setNewSubcatName: (name: string) => void;
+  onAddSubcategory: () => void;
+  videos?: ClassifiedVideoItem[];
+}
 
 const AddSubcategoryInput = ({
   newSubcatName,
   setNewSubcatName,
   onAddSubcategory,
   videos = [],
-}) => {
+}: Props) => {
   return (
     <div className="mb-8">
       <div className="flex gap-2">

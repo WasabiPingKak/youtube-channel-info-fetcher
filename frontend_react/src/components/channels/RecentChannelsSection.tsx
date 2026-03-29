@@ -1,14 +1,20 @@
 import React from "react";
 import ChannelSelectorCard from "./ChannelSelectorCard";
 import { getRecentChannelIds } from "../../utils/recentChannels";
+import type { ChannelIndexEntry } from "@/types/channel";
 
-const RecentChannelsSection = ({ channels, onClick: _onClick }) => {
+interface Props {
+  channels: ChannelIndexEntry[];
+  onClick?: (...args: unknown[]) => void;
+}
+
+const RecentChannelsSection = ({ channels, onClick: _onClick }: Props) => {
   const recentIds = getRecentChannelIds();
 
   // 篩選 channels 中有出現在 recentIds 的那幾筆
   const recentChannels = recentIds
-    .map((id) => channels.find((c) => c.channel_id === id))
-    .filter(Boolean); // 避免找不到對應時為 undefined
+    .map((id: string) => channels.find((c) => c.channel_id === id))
+    .filter((ch): ch is ChannelIndexEntry => Boolean(ch)); // 避免找不到對應時為 undefined
 
   if (recentChannels.length === 0) return null;
 

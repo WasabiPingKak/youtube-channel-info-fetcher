@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function TopLevelTabs({ activeType, onTypeChange }) {
+interface Props {
+  activeType: string;
+  onTypeChange: (type: string) => void;
+}
+
+export default function TopLevelTabs({ activeType, onTypeChange }: Props) {
   if (typeof onTypeChange !== "function") {
     console.warn("[TopLevelTabs] 缺少 onTypeChange props，按鈕將無作用。");
   }

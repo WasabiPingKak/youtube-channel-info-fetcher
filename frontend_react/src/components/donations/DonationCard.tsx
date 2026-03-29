@@ -1,7 +1,10 @@
 // components/donations/DonationCard.jsx
 import React from "react";
+import type { DonationItem } from "@/types/donations";
 
-const bucketStyles = {
+type BucketKey = "30" | "75" | "150" | "300" | "750" | "1500";
+
+const bucketStyles: Record<BucketKey, { bg: string; text: string; noteBg: string }> = {
   "30": { bg: "bg-teal-500", text: "text-white", noteBg: "bg-white/20" },
   "75": { bg: "bg-yellow-400", text: "text-black", noteBg: "bg-black/20" },
   "150": { bg: "bg-orange-500", text: "text-white", noteBg: "bg-white/20" },
@@ -10,8 +13,13 @@ const bucketStyles = {
   "1500": { bg: "bg-red-600", text: "text-white", noteBg: "bg-white/20" },
 };
 
-export default function DonationCard({ donation, bucket }) {
-  const { bg, text, noteBg } = bucketStyles[bucket] || {
+interface DonationCardProps {
+  donation: DonationItem;
+  bucket: string;
+}
+
+export default function DonationCard({ donation, bucket }: DonationCardProps) {
+  const { bg, text, noteBg } = bucketStyles[bucket as BucketKey] || {
     bg: "bg-gray-400",
     text: "text-white",
     noteBg: "bg-white/20",

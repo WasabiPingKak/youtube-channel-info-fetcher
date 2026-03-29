@@ -1,12 +1,20 @@
 import React from 'react';
 
+interface Props {
+  isOpen: boolean;
+  currentTab: string;
+  targetTab: string;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
 const DiscardChangesDialog = ({
   isOpen,
   currentTab,
   targetTab,
   onCancel,
   onConfirm,
-}) => {
+}: Props) => {
   if (!isOpen) return null;
 
   return (
