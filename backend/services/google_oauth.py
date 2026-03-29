@@ -26,7 +26,7 @@ def exchange_code_for_tokens(code: str) -> dict:
     safe_payload["client_secret"] = "*****"
     logging.info(safe_payload)
 
-    response = requests.post(url, data=payload)
+    response = requests.post(url, data=payload, timeout=10)
 
     if response.status_code != 200:
         try:
@@ -49,7 +49,7 @@ def get_channel_id(access_token: str) -> str:
         "mine": "true",
     }
     url = "https://www.googleapis.com/youtube/v3/channels"
-    response = requests.get(url, headers=headers, params=params)
+    response = requests.get(url, headers=headers, params=params, timeout=10)
     response.raise_for_status()
 
     items = response.json().get("items", [])

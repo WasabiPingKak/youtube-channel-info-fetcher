@@ -43,8 +43,8 @@ jobs:
 
       - run: pip install -r requirements.txt
 
-      - name: Run pytest
-        run: pytest --tb=short -q
+      - name: Run pytest with coverage
+        run: pytest --tb=short -q --cov --cov-fail-under=80
         env:
           JWT_SECRET: ci-test-secret
           ADMIN_API_KEY: ci-test-admin-key

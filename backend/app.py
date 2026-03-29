@@ -5,6 +5,7 @@ import uuid
 from apiflask import APIFlask
 from flask import g, request
 from flask_cors import CORS
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from services.firebase_init_service import init_firestore
 from utils.rate_limiter import limiter
@@ -52,6 +53,10 @@ def create_app(config=None):
     # 套用外部 config（測試用）
     if config:
         app.config.update(config)
+
+    # ── Proxy Fix（Cloud Run 位於 Load Balancer 後方）──
+    # 信任 1 層 proxy 的 X-Forwarded-For / X-Forwarded-Proto
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     # ── Rate Limiter ──
     limiter.init_app(app)
