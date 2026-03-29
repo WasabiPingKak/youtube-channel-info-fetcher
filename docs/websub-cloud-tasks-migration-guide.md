@@ -1,5 +1,7 @@
 # WebSub 訂閱機制改用 Cloud Tasks 遷移指南
 
+> **狀態**: 已實作完成 — `utils/cloud_tasks_client.py` 與 `routes/websub_subscribe_route.py` 已上線運作
+
 ## 問題背景
 
 `websub-subscribe-all` Cloud Scheduler job 長期失敗，原因：

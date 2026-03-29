@@ -23,7 +23,7 @@ npm run preview      # Preview production build
 ```bash
 cd backend
 pip install -r requirements.txt    # Install dependencies
-python app.py                      # Run Flask server locally
+python app.py                      # Run APIFlask server locally
 pytest                             # Run tests
 pytest --cov                       # Run tests with coverage
 ```
@@ -70,9 +70,9 @@ cd frontend_react
 ### Project Structure
 ```
 ├── backend/
-│   ├── app.py                 # Flask app entry point (create_app factory)
+│   ├── app.py                 # APIFlask app entry point (create_app factory)
 │   ├── schemas/               # Pydantic request/response schemas (common, video, settings, category_editor, admin)
-│   ├── routes/                # API route modules (29 endpoints)
+│   ├── routes/                # API route modules (37 endpoints)
 │   ├── services/              # Business logic layer
 │   │   ├── youtube/           # YouTube API integration
 │   │   ├── firestore/         # Database operations
