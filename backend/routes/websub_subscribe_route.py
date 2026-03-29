@@ -4,14 +4,15 @@ import time
 from datetime import UTC, datetime
 
 import requests
-from flask import Blueprint, jsonify, request
+from apiflask import APIBlueprint
+from flask import jsonify, request
 from google.cloud.firestore import Client
 
 from utils.admin_auth import require_admin_key
 from utils.channel_validator import is_valid_channel_id
 from utils.cloud_tasks_client import dispatch_tasks_batch
 
-websub_subscribe_bp = Blueprint("websub_subscribe", __name__)
+websub_subscribe_bp = APIBlueprint("websub_subscribe", __name__, tag="WebSub")
 HUB_URL = "https://pubsubhubbub.appspot.com/subscribe"
 
 
@@ -83,6 +84,11 @@ def _log_job_result(db: Client, job_name: str, result: dict):
 
 def init_websub_subscribe_route(app, db: Client):
     @websub_subscribe_bp.route("/api/websub/subscribe-all", methods=["POST"])
+    @websub_subscribe_bp.doc(
+        summary="批次訂閱所有頻道",
+        description="透過 Cloud Tasks 非同步派發所有頻道的 WebSub 訂閱",
+        security="BearerAuth",
+    )
     @require_admin_key
     def subscribe_all_channels():
         """
@@ -158,6 +164,11 @@ def init_websub_subscribe_route(app, db: Client):
             return jsonify(result), 500
 
     @websub_subscribe_bp.route("/api/websub/subscribe-one", methods=["POST"])
+    @websub_subscribe_bp.doc(
+        summary="訂閱單一頻道",
+        description="訂閱單一頻道的 WebSub 推播，由 Cloud Tasks 呼叫",
+        security="BearerAuth",
+    )
     @require_admin_key
     def subscribe_single_channel():
         """

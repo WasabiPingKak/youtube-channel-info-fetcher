@@ -24,15 +24,15 @@ def mock_db():
 
 @pytest.fixture
 def app(mock_db):
-    """建立最小化的 Flask test app，只掛需要測的路由"""
-    from flask import Flask
+    """建立最小化的 APIFlask test app，只掛需要測的路由"""
+    from apiflask import APIFlask
 
     from routes.me_route import init_me_route
     from routes.oauth_callback_route import init_oauth_callback_route
     from routes.oauth_state_route import init_oauth_state_route
     from utils.rate_limiter import limiter
 
-    app = Flask(__name__)
+    app = APIFlask(__name__)
     app.config["TESTING"] = True
     app.config["RATELIMIT_ENABLED"] = False
     app.config["FRONTEND_BASE_URL"] = "http://localhost:5173"

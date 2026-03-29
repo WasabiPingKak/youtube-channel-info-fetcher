@@ -4,16 +4,22 @@ import logging
 import os
 from datetime import UTC, datetime
 
+from apiflask import APIBlueprint
 from defusedxml.ElementTree import fromstring as safe_xml_fromstring
-from flask import Blueprint, Response, request
+from flask import Response, request
 
-websub_notify_bp = Blueprint("websub_notify", __name__)
+websub_notify_bp = APIBlueprint("websub_notify", __name__, tag="WebSub")
 COLLECTION_NAME = "live_redirect_notify_queue"
 WEBSUB_SECRET = os.getenv("WEBSUB_SECRET", "")
 
 
 def init_websub_notify_route(app, db):
     @websub_notify_bp.route("/websub-callback", methods=["GET", "POST"])
+    @websub_notify_bp.doc(
+        summary="WebSub 回調",
+        description="接收 YouTube WebSub 推播通知（新影片上傳）",
+        hide=True,
+    )
     def websub_callback():
         if request.method == "GET":
             # 驗證訂閱請求，回傳 hub.challenge

@@ -1,16 +1,18 @@
 # routes/ecpay_return_route.py
 import logging
 
-from flask import Blueprint, request
+from apiflask import APIBlueprint
+from flask import request
 
 from services.ecpay_service import handle_ecpay_return
 from utils.rate_limiter import limiter
 
 
 def init_ecpay_return_route(app, db):
-    blueprint = Blueprint("ecpay_return", __name__)
+    blueprint = APIBlueprint("ecpay_return", __name__, tag="Payment")
 
     @blueprint.route("/ecpay/return", methods=["POST"])
+    @blueprint.doc(summary="綠界付款回調", description="接收綠界 ECPay 付款結果通知", hide=True)
     @limiter.limit("20 per minute")
     def ecpay_return():
         try:

@@ -1,15 +1,21 @@
 import logging
 
-from flask import Blueprint, jsonify
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
 from utils.admin_auth import require_admin_key
 
 
 def init_weekly_heatmap_cache_route(app, db):
-    bp = Blueprint("weekly_heatmap_cache_route", __name__)
+    bp = APIBlueprint("weekly_heatmap_cache_route", __name__, tag="Heatmap")
 
     @bp.route("/admin/update_weekly_heatmap_cache", methods=["GET"])
+    @bp.doc(
+        summary="更新週間熱力圖快取",
+        description="重新建構 weekly heatmap 快取資料",
+        security="BearerAuth",
+    )
     @require_admin_key
     def update_weekly_heatmap_cache():
         try:
@@ -24,6 +30,7 @@ def init_weekly_heatmap_cache_route(app, db):
             return jsonify({"error": "快取更新失敗"}), 500
 
     @bp.route("/api/heatmap/weekly", methods=["GET"])
+    @bp.doc(summary="取得週間熱力圖快取", description="回傳合併 weekly + pending 的熱力圖資料")
     def get_weekly_heatmap_cache():
         try:
             weekly_doc = db.document("stats_cache/active_time_weekly").get()

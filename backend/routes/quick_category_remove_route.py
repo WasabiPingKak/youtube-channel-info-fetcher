@@ -1,22 +1,25 @@
 import logging
 
-from flask import jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from schemas.category_editor_schemas import QuickRemoveRequest
 from utils.auth_decorator import require_auth
 
+quick_remove_bp = APIBlueprint("quick_category_remove", __name__, tag="Category Editor")
+
 
 def init_quick_category_remove_route(app, db):
-    @app.route("/api/quick-editor/channel-config-remove", methods=["POST"])
+    @quick_remove_bp.route("/api/quick-editor/channel-config-remove", methods=["POST"])
+    @quick_remove_bp.doc(
+        summary="移除分類關鍵字",
+        description="從分類設定中移除指定關鍵字或子分類",
+        security="CookieAuth",
+    )
     @require_auth(db)
-    def remove_keyword_from_config(auth_channel_id=None):
+    @quick_remove_bp.input(QuickRemoveRequest, arg_name="body")
+    def remove_keyword_from_config(body, auth_channel_id=None):
         try:
-            data = request.get_json()
-            logging.info(f"📨 [config-remove] 接收到前端 POST 資料：{data}")
-
-            body = QuickRemoveRequest(**data)
-
             # ✅ 驗證身份是否與目標 channel 相符
             if body.channelId != auth_channel_id:
                 logging.warning(
@@ -76,8 +79,8 @@ def init_quick_category_remove_route(app, db):
 
             return jsonify({"success": True})
 
-        except ValidationError:
-            raise
         except Exception:
             logging.error("🔥 [config-remove] 發生錯誤", exc_info=True)
             return jsonify({"success": False, "message": "內部伺服器錯誤"}), 500
+
+    app.register_blueprint(quick_remove_bp)

@@ -1,30 +1,25 @@
 import logging
 from datetime import UTC, datetime, timedelta
 
-from flask import Blueprint, jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify, request
 
 from schemas.video_schemas import ClassifiedVideoRequest
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
-video_bp = Blueprint("video", __name__)
+video_bp = APIBlueprint("video", __name__, tag="Video")
 
 
 def init_video_routes(app, db):
     @video_bp.route("/api/videos/classified", methods=["POST"])
-    def get_classified():
+    @video_bp.doc(
+        summary="取得分類影片清單", description="依頻道 ID 與時間區間取得分類後的影片列表"
+    )
+    @video_bp.input(ClassifiedVideoRequest, arg_name="body")
+    def get_classified(body):
         try:
-            data = request.get_json()
-            if data is None:
-                logger.warning("⚠️ 無法解析 JSON，可能缺少 Content-Type: application/json")
-                return jsonify({"error": "無法解析 JSON，請確認 Content-Type"}), 400
-
-            logger.info(f"📥 請求內容：{data}")
-
-            body = ClassifiedVideoRequest(**data)
-
             logger.info(
                 f"🔍 取得分類影片清單：{body.channel_id}（only_settings={body.only_settings}）"
             )
@@ -36,13 +31,14 @@ def init_video_routes(app, db):
             result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
             return jsonify({"videos": result})
 
-        except ValidationError:
-            raise
         except Exception:
             logger.exception("🔥 /api/videos/classified 發生錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @video_bp.route("/api/videos/check-update", methods=["GET"])
+    @video_bp.doc(
+        summary="檢查影片是否需要更新", description="檢查頻道影片同步狀態並產生更新 token"
+    )
     def check_update():
         try:
             channel_id = request.args.get("channelId")

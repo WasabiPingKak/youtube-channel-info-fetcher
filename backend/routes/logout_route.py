@@ -1,12 +1,14 @@
 # routes/logout_route.py
 
-from flask import Blueprint, make_response
+from apiflask import APIBlueprint
+from flask import make_response
 
 
 def init_logout_route(app):
-    logout_bp = Blueprint("logout", __name__, url_prefix="/api")
+    logout_bp = APIBlueprint("logout", __name__, url_prefix="/api", tag="Auth")
 
     @logout_bp.route("/logout", methods=["POST"])
+    @logout_bp.doc(summary="登出", description="清除登入 cookie 並登出")
     def logout():
         response = make_response("", 204)  # No Content
         response.set_cookie(

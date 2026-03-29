@@ -2,7 +2,8 @@ import logging
 import os
 import uuid
 
-from flask import Flask, g, request
+from apiflask import APIFlask
+from flask import g, request
 from flask_cors import CORS
 
 from services.firebase_init_service import init_firestore
@@ -67,7 +68,13 @@ def create_app(config=None):
     from routes.websub_subscribe_route import init_websub_subscribe_route
     from routes.weekly_heatmap_cache_route import init_weekly_heatmap_cache_route
 
-    app = Flask(__name__)
+    app = APIFlask(
+        __name__,
+        title="VTMap API",
+        version="1.0.0",
+        docs_ui="elements",
+    )
+    app.config["DESCRIPTION"] = "VTMap (Vtuber TrailMap) — YouTube 頻道分析與直播管理工具 API"
 
     # 套用外部 config（測試用）
     if config:

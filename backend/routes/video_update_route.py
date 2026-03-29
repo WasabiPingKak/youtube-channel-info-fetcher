@@ -2,8 +2,8 @@ import hmac
 import logging
 from datetime import UTC, datetime, timedelta
 
-from flask import jsonify, request
-from pydantic import ValidationError
+from apiflask import APIBlueprint
+from flask import jsonify
 
 from schemas.video_schemas import VideoUpdateRequest
 from services.classified_video_fetcher import get_classified_videos
@@ -18,14 +18,15 @@ from services.youtube.fetcher import get_video_data
 
 logger = logging.getLogger(__name__)
 
+video_update_bp = APIBlueprint("video_update", __name__, tag="Video")
+
 
 def init_video_update_route(app, db):
-    @app.route("/api/videos/update", methods=["POST"])
-    def update_video_data():
+    @video_update_bp.route("/api/videos/update", methods=["POST"])
+    @video_update_bp.doc(summary="更新頻道影片資料", description="驗證 token 後同步頻道的最新影片")
+    @video_update_bp.input(VideoUpdateRequest, arg_name="body")
+    def update_video_data(body):
         try:
-            data = request.get_json()
-            body = VideoUpdateRequest(**data)
-
             # 讀取 Firestore 中儲存的 token
             token_ref = db.document(f"channel_data/{body.channelId}/channel_info/update_token")
             token_doc = token_ref.get()
@@ -78,8 +79,6 @@ def init_video_update_route(app, db):
 
             return jsonify({"message": "更新完成"})
 
-        except ValidationError:
-            raise
         except Exception:
             logger.exception("🔥 /api/videos/update 發生錯誤")
             return jsonify(
@@ -87,3 +86,5 @@ def init_video_update_route(app, db):
                     "error": "更新失敗",
                 }
             ), 500
+
+    app.register_blueprint(video_update_bp)

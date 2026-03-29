@@ -3,20 +3,20 @@
 import logging
 from datetime import datetime
 
+from apiflask import APIBlueprint
 from dateutil import parser as date_parser
-from flask import Blueprint, jsonify
+from flask import jsonify
 
 
 def init_channel_index_route(app, db):
-    bp = Blueprint("channel_index_route", __name__)
+    bp = APIBlueprint("channel_index_route", __name__, tag="Channel")
 
     @bp.route("/api/channels/index", methods=["GET"])
+    @bp.doc(
+        summary="取得頻道索引",
+        description="回傳所有啟用頻道清單、新加入頻道、以及總註冊數",
+    )
     def get_all_enabled_channels():
-        """
-        從所有 batch 檔中抓出 enabled: true 的頻道清單，
-        並附帶最近三天內加入的頻道清單 newly_joined_channels。
-        同時附上各頻道最後上片時間 lastVideoUploadedAt。
-        """
         try:
             # 🔹 讀取同步資料（channel_id → lastVideoSyncAt）
             sync_ref = db.collection("channel_sync_index").document("index_list")

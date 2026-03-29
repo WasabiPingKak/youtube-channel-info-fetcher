@@ -1,16 +1,18 @@
 import logging
 
-from flask import Blueprint, jsonify, request
+from apiflask import APIBlueprint
+from flask import jsonify, request
 from google.cloud.firestore import Client
 
 from services.trending.trending_service import get_trending_games_summary
 
 logger = logging.getLogger(__name__)
-bp = Blueprint("public_trending", __name__)
+bp = APIBlueprint("public_trending", __name__, tag="Trending")
 
 
 def init_public_trending_route(app, db: Client):
     @bp.route("/api/trending-games", methods=["GET"])
+    @bp.doc(summary="取得遊戲趨勢排行", description="回傳指定天數內的熱門遊戲排行統計")
     def trending_games_api():
         try:
             logger.info("🚀 [GET /api/trending-games] 處理開始")
