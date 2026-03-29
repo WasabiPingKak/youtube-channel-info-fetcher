@@ -34,25 +34,24 @@ def init_my_settings_route(app, db):
             return jsonify({"error": "無權限存取此頻道"}), 403
 
         try:
-            batch_docs = db.collection("channel_index_batch").stream()
+            doc_ref = db.collection("channel_index").document(channel_id)
+            doc = doc_ref.get()
 
-            for doc in batch_docs:
-                batch = doc.to_dict()
-                for item in batch.get("channels", []):
-                    if item.get("channel_id") == channel_id:
-                        return jsonify(
-                            {
-                                "enabled": item.get("enabled", False),
-                                "countryCode": item.get("countryCode", []),
-                                "channel_id": item.get("channel_id"),
-                                "name": item.get("name"),
-                                "thumbnail": item.get("thumbnail"),
-                                "url": item.get("url"),
-                                "show_live_status": item.get("show_live_status", True),
-                            }
-                        )
+            if not doc.exists:
+                return jsonify({"error": "Channel not found"}), 404
 
-            return jsonify({"error": "Channel not found"}), 404
+            data = doc.to_dict()
+            return jsonify(
+                {
+                    "enabled": data.get("enabled", False),
+                    "countryCode": data.get("countryCode", []),
+                    "channel_id": channel_id,
+                    "name": data.get("name"),
+                    "thumbnail": data.get("thumbnail"),
+                    "url": data.get("url"),
+                    "show_live_status": data.get("show_live_status", True),
+                }
+            )
 
         except Exception:
             logger.exception("❌ get_my_settings 發生例外錯誤")
