@@ -1,5 +1,15 @@
 import React from 'react';
 import SubcategoryCard from './SubcategoryCard';
+import { ClassifiedVideoItem } from '@/types/category';
+
+interface Props {
+  subcategories: Record<string, string[]>;
+  onNameChange?: (oldName: string, newName: string) => void;
+  onKeywordsChange: (subcatName: string, kwList: string[]) => void;
+  onEdit?: (subcatName: string) => void;
+  onDeleteSubcategory: (subcatName: string) => void;
+  videos?: ClassifiedVideoItem[];
+}
 
 const SubcategoryListSection = ({
   subcategories,
@@ -8,7 +18,7 @@ const SubcategoryListSection = ({
   onEdit,
   onDeleteSubcategory,
   videos = [],
-}) => {
+}: Props) => {
   return (
     <div className="bg-white dark:bg-zinc-800 rounded shadow p-4 mb-4">
       {Object.entries(subcategories).length === 0 ? (

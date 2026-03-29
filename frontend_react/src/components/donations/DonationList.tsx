@@ -1,12 +1,13 @@
 import React from "react";
 import DonationCard from "./DonationCard";
 import { mockDonations } from "./mockDonations";
+import type { DonationItem } from "@/types/donations";
 
 // 切換是否顯示 mock 測試資料（手動補用）
 const SHOW_MOCK_DONATIONS = false;
 
-const getAmountBucket = (amt) => {
-  const amount = parseInt(amt);
+const getAmountBucket = (amt: number): string => {
+  const amount = Math.floor(amt);
   if (amount < 75) return "30";
   if (amount < 150) return "75";
   if (amount < 300) return "150";
@@ -15,13 +16,17 @@ const getAmountBucket = (amt) => {
   return "1500";
 };
 
-export default function DonationList({ donations }) {
-  const allDonations = SHOW_MOCK_DONATIONS
+interface DonationListProps {
+  donations: DonationItem[];
+}
+
+export default function DonationList({ donations }: DonationListProps) {
+  const allDonations: DonationItem[] = SHOW_MOCK_DONATIONS
     ? [...mockDonations, ...donations]
     : donations;
 
-  const grouped = {};
-  allDonations.forEach((donation) => {
+  const grouped: Record<string, DonationItem[]> = {};
+  allDonations.forEach((donation: DonationItem) => {
     const bucket = getAmountBucket(donation.tradeAmt);
     if (!grouped[bucket]) grouped[bucket] = [];
     grouped[bucket].push(donation);
@@ -35,14 +40,14 @@ export default function DonationList({ donations }) {
         const group = grouped[bucket];
         if (!group || group.length === 0) return null;
 
-        const sortedGroup = group.sort((a, b) =>
+        const sortedGroup = group.sort((a: DonationItem, b: DonationItem) =>
           a.paymentDate.localeCompare(b.paymentDate)
         );
 
         return (
           <div key={bucket}>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {sortedGroup.map((donation, idx) => (
+              {sortedGroup.map((donation: DonationItem, idx: number) => (
                 <DonationCard
                   key={`${bucket}-${idx}`}
                   donation={donation}

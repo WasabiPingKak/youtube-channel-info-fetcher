@@ -8,6 +8,7 @@ import {
   useAutoUpdateVideos,
   useVideoSortControl,
 } from "../hooks";
+import type { SortField } from "../hooks/useVideoSortControl";
 
 import {
   TopLevelTabs,
@@ -26,7 +27,7 @@ import ContentExportCardSection from "../components/chart/ContentExportCardSecti
 
 import MainLayout from "../components/layout/MainLayout";
 
-const VideoExplorerContent = ({ channelId }) => {
+const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
   const {
     sortField,
     sortOrder,
@@ -80,7 +81,7 @@ const VideoExplorerContent = ({ channelId }) => {
     <MainLayout>
       <ContentExportCardSection videos={videos} />
 
-      <TopLevelTabs activeType={videoType} onTypeChange={setVideoType} />
+      <TopLevelTabs activeType={videoType} onTypeChange={(type: string) => setVideoType(type as "live" | "videos" | "shorts")} />
       <SubCategoryTabs
         activeCategory={activeCategory}
         onCategoryChange={setActiveCategory}
@@ -120,13 +121,13 @@ const VideoExplorerContent = ({ channelId }) => {
       <VideoTableHeader
         sortField={sortField}
         sortOrder={sortOrder}
-        onSortChange={handleSortChange}
+        onSortChange={(field: string) => handleSortChange(field as SortField)}
       />
 
       <MobileSortDropdown
         sortField={sortField}
         sortOrder={sortOrder}
-        onSortChange={handleSortChange}
+        onSortChange={(field: string) => handleSortChange(field as SortField)}
         onToggleOrder={() => handleSortChange(sortField)}
       />
 

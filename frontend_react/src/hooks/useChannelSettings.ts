@@ -95,7 +95,7 @@ export const useChannelSettings = (channelId: string) => {
     if (!channelId || !channelSettings) return;
     setLoading(true);
     try {
-      const response = await saveChannelSettings(channelId, channelSettings);
+      const response = await saveChannelSettings(channelId, channelSettings as unknown as Record<string, unknown>);
       if (response.success) {
         toast.success("分類設定已成功儲存");
       } else {

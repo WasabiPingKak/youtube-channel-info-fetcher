@@ -6,7 +6,13 @@ import { FaUserCog, FaAddressCard, FaRegCalendarAlt } from "react-icons/fa";
 import { IoFileTrayFull } from "react-icons/io5";
 import { useUnlockScroll } from "@/hooks/useUnlockScroll";
 
-const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
+interface Props {
+  channelId: string;
+  channelName: string;
+  avatarUrl?: string;
+}
+
+const AvatarDropdown = ({ channelId, channelName, avatarUrl }: Props) => {
   useUnlockScroll();
   const navigate = useNavigate();
   const [isDark, setIsDark] = useState(() =>
@@ -27,7 +33,7 @@ const AvatarDropdown = ({ channelId, channelName, avatarUrl }) => {
     }
   }, []);
 
-  const toggleTheme = (e) => {
+  const toggleTheme = (e: React.MouseEvent | Event) => {
     e.preventDefault();
     e.stopPropagation();
 

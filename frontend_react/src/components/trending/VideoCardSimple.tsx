@@ -1,13 +1,18 @@
 import React from "react";
 
-/**
- * @param {Object} props
- * @param {Object} props.video
- * @param {string} props.video.id
- * @param {string} props.video.title
- * @param {string} props.video.publishedAt
- */
-const VideoCardSimple = ({ video }) => {
+interface VideoInfo {
+  id: string;
+  title: string;
+  publishedAt: string;
+  thumbnail: string;
+  url: string;
+}
+
+interface Props {
+  video: VideoInfo;
+}
+
+const VideoCardSimple = ({ video }: Props) => {
   const { id, title, publishedAt } = video;
 
   if (!id || !title) {

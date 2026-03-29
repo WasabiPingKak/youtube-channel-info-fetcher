@@ -18,18 +18,26 @@ const TIME_PERIODS = [
   { label: "晚上", key: "evening" },
 ];
 
+interface Props {
+  selectedWeekdays: string[];
+  setSelectedWeekdays: React.Dispatch<React.SetStateAction<string[]>>;
+  selectedPeriods: string[];
+  setSelectedPeriods: React.Dispatch<React.SetStateAction<string[]>>;
+  resultCount: number;
+}
+
 export default function ActiveTimeFilterPanel({
   selectedWeekdays,
   setSelectedWeekdays,
   selectedPeriods,
   setSelectedPeriods,
   resultCount: _resultCount,
-}) {
+}: Props) {
   const [showHelpModal, setShowHelpModal] = useState(false);
 
-  const toggle = (list, setter, key) => {
-    setter((prev) =>
-      prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key]
+  const toggle = (list: string[], setter: React.Dispatch<React.SetStateAction<string[]>>, key: string) => {
+    setter((prev: string[]) =>
+      prev.includes(key) ? prev.filter((k: string) => k !== key) : [...prev, key]
     );
   };
 

@@ -3,28 +3,45 @@ import React, { useState } from "react";
 import CountryFlags from "../badges/CountryFlags";
 import { ChannelSelectorCard } from ".";
 
+interface ChannelData {
+  channel_id: string;
+  channelId?: string;
+  [key: string]: unknown;
+}
+
+interface GroupedChannelGroup {
+  code: string;
+  channels: ChannelData[];
+}
+
 /**
  * 預設卡片渲染
  */
-const defaultRenderCard = (channel, _onClick) => (
+const defaultRenderCard = (channel: ChannelData, _onClick?: (...args: unknown[]) => void) => (
   <ChannelSelectorCard
     key={channel.channel_id || channel.channelId}
-    channel={channel}
+    channel={channel as never}
   />
 );
+
+interface Props {
+  groupedChannels: GroupedChannelGroup[];
+  onClick?: (...args: unknown[]) => void;
+  renderCard?: (channel: ChannelData) => React.ReactNode;
+}
 
 /**
  * @param {Object[]} groupedChannels - 由 groupChannelsByCountry 回傳的分組資料
  * @param {Function} onClick - 點擊頻道卡片後的處理函式
  * @param {Function} [renderCard] - （可選）自訂卡片渲染函式 (channel) => JSX
  */
-const GroupedChannelList = ({ groupedChannels, onClick, renderCard = undefined }) => {
+const GroupedChannelList = ({ groupedChannels, onClick, renderCard = undefined }: Props) => {
   // 展開狀態初始化（全部開啟）
-  const [expandedGroups, setExpandedGroups] = useState(() =>
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(groupedChannels.map((g) => [g.code, true]))
   );
 
-  const toggleGroup = (code) => {
+  const toggleGroup = (code: string) => {
     setExpandedGroups((prev) => ({
       ...prev,
       [code]: !prev[code],
@@ -32,8 +49,8 @@ const GroupedChannelList = ({ groupedChannels, onClick, renderCard = undefined }
   };
 
   const render = renderCard
-    ? (channel) => renderCard(channel)
-    : (channel) => defaultRenderCard(channel, onClick);
+    ? (channel: ChannelData) => renderCard(channel)
+    : (channel: ChannelData) => defaultRenderCard(channel, onClick);
 
   return (
     <div className="space-y-6">

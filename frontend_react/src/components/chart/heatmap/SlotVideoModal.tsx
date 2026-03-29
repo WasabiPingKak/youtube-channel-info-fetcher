@@ -1,12 +1,21 @@
 import React from "react";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const getVideosByIds = (videoIds, videos) =>
-  videoIds.map((id) => videos.find((v) => v.videoId === id)).filter(Boolean);
+const getVideosByIds = (videoIds: string[], videos: ClassifiedVideoItem[]): ClassifiedVideoItem[] =>
+  videoIds.map((id: string) => videos.find((v: ClassifiedVideoItem) => v.videoId === id)).filter((v): v is ClassifiedVideoItem => Boolean(v));
 
-const SlotVideoModal = ({ label, hour, videoIds, videos, onClose }) => {
+interface SlotVideoModalProps {
+  label: string;
+  hour: number;
+  videoIds: string[];
+  videos: ClassifiedVideoItem[];
+  onClose: () => void;
+}
+
+const SlotVideoModal = ({ label, hour, videoIds, videos, onClose }: SlotVideoModalProps) => {
   const videoList = getVideosByIds(videoIds, videos);
 
-  const formatHourLabel = (hour) => {
+  const formatHourLabel = (hour: number) => {
     const ampm = hour < 12 ? "上午" : "下午";
     let h = hour % 12;
     if (h === 0) h = 12;
@@ -14,7 +23,7 @@ const SlotVideoModal = ({ label, hour, videoIds, videos, onClose }) => {
   };
 
   // 用來避免點內部卡片時觸發關閉
-  const stopPropagation = (e) => e.stopPropagation();
+  const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 
   return (
     <div

@@ -3,7 +3,11 @@ import SidebarMenu from "../common/SidebarMenu";
 import TopNav from "../common/TopNav";
 import MobileSidebarDrawer from "../common/MobileSidebarDrawer";
 
-const MainLayout = ({ children }) => {
+interface MainLayoutProps {
+  children: React.ReactNode;
+}
+
+const MainLayout = ({ children }: MainLayoutProps) => {
   const [collapsed, setCollapsed] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
 

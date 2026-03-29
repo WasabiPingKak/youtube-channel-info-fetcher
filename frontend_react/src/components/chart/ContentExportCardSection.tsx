@@ -4,8 +4,13 @@ import ContentTreemapSection from "./ContentTreemapSection";
 import StyledExportCard from "./StyledExportCard";
 import ExportPreviewModal from "./ExportPreviewModal";
 import VideoUploadHeatmap from "./VideoUploadHeatmap";
+import type { ClassifiedVideoItem } from "@/types/category";
 
-const ContentExportCardSection = ({ videos }) => {
+interface ContentExportCardSectionProps {
+  videos: ClassifiedVideoItem[];
+}
+
+const ContentExportCardSection = ({ videos }: ContentExportCardSectionProps) => {
   const exportRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("treemap");

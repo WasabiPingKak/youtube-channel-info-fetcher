@@ -37,8 +37,8 @@ const BASE_COLORS = {
 const findPeakMonth = (data: Record<string, string | number>[], keys: string[]) => {
   if (!data || data.length === 0) return null;
   return data.reduce((prev, current) => {
-    const prevTotal = keys.reduce((sum, key) => sum + (prev[key] || 0), 0);
-    const currTotal = keys.reduce((sum, key) => sum + (current[key] || 0), 0);
+    const prevTotal = keys.reduce((sum, key) => sum + (Number(prev[key]) || 0), 0);
+    const currTotal = keys.reduce((sum, key) => sum + (Number(current[key]) || 0), 0);
     return currTotal > prevTotal ? current : prev;
   });
 };

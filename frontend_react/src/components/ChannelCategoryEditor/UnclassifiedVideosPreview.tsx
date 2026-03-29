@@ -1,6 +1,11 @@
 import React from 'react';
+import { ClassifiedVideoItem } from '@/types/category';
 
-const UnclassifiedVideosPreview = ({ videos = [] }) => {
+interface Props {
+  videos?: ClassifiedVideoItem[];
+}
+
+const UnclassifiedVideosPreview = ({ videos = [] }: Props) => {
   const unclassified = videos.filter((v) =>
     v.matchedCategories?.includes("未分類")
   );

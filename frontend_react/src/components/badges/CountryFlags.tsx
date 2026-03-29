@@ -1,6 +1,10 @@
 import React from "react";
 
-const CountryFlags = ({ countryCode }) => {
+interface CountryFlagsProps {
+  countryCode?: string[];
+}
+
+const CountryFlags = ({ countryCode }: CountryFlagsProps) => {
   if (!Array.isArray(countryCode) || countryCode.length === 0) return null;
 
   return (

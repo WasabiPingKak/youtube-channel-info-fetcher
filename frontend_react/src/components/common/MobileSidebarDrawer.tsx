@@ -3,7 +3,12 @@ import React from "react";
 import SidebarMenu from "./SidebarMenu";
 import clsx from "clsx";
 
-const MobileSidebarDrawer = ({ open, onClose }) => {
+interface Props {
+  open: boolean;
+  onClose: () => void;
+}
+
+const MobileSidebarDrawer = ({ open, onClose }: Props) => {
     return (
         <>
             {/* ✅ 背景遮罩 */}

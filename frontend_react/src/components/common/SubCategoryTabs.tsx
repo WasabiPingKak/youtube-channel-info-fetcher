@@ -3,10 +3,15 @@ import React from "react";
 const FIXED_CATEGORY_ORDER = ["遊戲", "雜談", "節目", "音樂"];
 const STATIC_CATEGORIES = ["全部", ...FIXED_CATEGORY_ORDER, "未分類"];
 
+interface Props {
+  activeCategory: string;
+  onCategoryChange: (category: string) => void;
+}
+
 const SubCategoryTabs = ({
   activeCategory,
   onCategoryChange,
-}) => {
+}: Props) => {
   return (
     <div className="flex flex-wrap gap-2 mb-4 px-4">
       {STATIC_CATEGORIES.map((category) => (

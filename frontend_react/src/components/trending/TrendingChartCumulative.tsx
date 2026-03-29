@@ -13,6 +13,16 @@ import ChartLegend from "./ChartLegend";
 import { COLOR_LIST } from "./chartColors";
 import { accumulateChartData } from "./chartUtils";
 import CustomTooltip from "./CustomTooltip";
+import type { TrendingGamesResponse } from "@/types/trending";
+
+interface Props {
+  gameList: TrendingGamesResponse["gameList"];
+  videoCountByGameAndDate: TrendingGamesResponse["videoCountByGameAndDate"];
+  hiddenGames: string[];
+  toggleLine: (game: string) => void;
+  isMobile: boolean;
+  setHiddenGames: (games: string[]) => void;
+}
 
 const TrendingChartCumulative = ({
   gameList,
@@ -21,7 +31,7 @@ const TrendingChartCumulative = ({
   toggleLine,
   isMobile,
   setHiddenGames,
-}) => {
+}: Props) => {
   const displayedData = accumulateChartData(videoCountByGameAndDate, gameList);
 
   const isDark =
@@ -73,7 +83,7 @@ const TrendingChartCumulative = ({
               />
             }
           />
-          {gameList.map((game, index) => (
+          {gameList.map((game: string, index: number) => (
             <Line
               key={game}
               type="monotone"

@@ -1,23 +1,23 @@
 import React, { useState } from "react";
 import ChannelCard from "./ChannelCard";
-import type { ChannelVideoGroup } from "@/types/trending";
+import type { ChannelVideoGroup, TrendingGamesResponse } from "@/types/trending";
 
-/**
- * @param {Object} props
- * @param {string[]} props.gameList
- * @param {Object} props.details  // details[game][channelId] = { channelName, videos: [...] }
- * @param {Object} props.channelInfo  // channelInfo[channelId] = { name, thumbnail, url }
- */
-const TrendingGameList = ({ gameList, details, channelInfo }) => {
-  const [expandedGames, setExpandedGames] = useState({});
+interface Props {
+  gameList: TrendingGamesResponse["gameList"];
+  details: TrendingGamesResponse["details"];
+  channelInfo: TrendingGamesResponse["channelInfo"];
+}
 
-  const toggleGame = (game) => {
+const TrendingGameList = ({ gameList, details, channelInfo }: Props) => {
+  const [expandedGames, setExpandedGames] = useState<Record<string, boolean>>({});
+
+  const toggleGame = (game: string) => {
     setExpandedGames((prev) => ({ ...prev, [game]: !prev[game] }));
   };
 
   return (
     <div className="mt-6 space-y-4">
-      {gameList.map((game) => {
+      {gameList.map((game: string) => {
         const gameDetails = details[game] || {};
         const isOpen = expandedGames[game];
 

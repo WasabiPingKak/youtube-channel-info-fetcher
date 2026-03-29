@@ -1,11 +1,23 @@
 import React from "react";
 import ChartTypePie from "./ChartTypePie";
 
+interface ChartDataItem {
+  category: string;
+  [key: string]: unknown;
+}
+
+interface ChartWithLegendProps {
+  data?: ChartDataItem[];
+  dataKey: string;
+  unit?: string;
+  videos?: { videoId: string; duration?: number }[];
+}
+
 /**
  * ChartWithLegend
  * 圓餅 + 圖例卡片（改為桌機與手機皆為雙行對齊）
  */
-const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
+const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }: ChartWithLegendProps) => {
   const safeData = Array.isArray(data) ? data : [];
 
   if (safeData.length === 0) {
@@ -26,9 +38,9 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
     "#8dd1e1",
   ];
 
-  const total = safeData.reduce((sum, d) => sum + (d[dataKey] || 0), 0);
+  const total = safeData.reduce((sum: number, d: ChartDataItem) => sum + ((d[dataKey] as number) || 0), 0);
 
-  const fmt = (val) =>
+  const fmt = (val: number) =>
     unit.trim() === "小時" ? Number(val).toFixed(1) : val;
 
   return (
@@ -48,7 +60,7 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }) => {
         {/* —— 雙行排版（全裝置通用）—— */}
         <div className="w-full">
           {safeData.map((item, idx) => {
-            const value = item[dataKey] || 0;
+            const value = (item[dataKey] as number) || 0;
             const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
             const color = COLORS[idx % COLORS.length];
             return (

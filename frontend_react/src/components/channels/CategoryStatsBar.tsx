@@ -18,12 +18,26 @@ const LABELS = {
  * 顯示分類統計長條圖，左側分類名稱套用 Badge 樣式
  * @param {{ counts: { talk: number; game: number; music: number; show: number; all: number } }}
  */
-export default function CategoryStatsBar({ counts }) {
+type CategoryKey = "talk" | "game" | "music" | "show";
+
+interface CategoryCounts {
+  talk?: number;
+  game?: number;
+  music?: number;
+  show?: number;
+  all?: number;
+}
+
+interface Props {
+  counts: CategoryCounts | null | undefined;
+}
+
+export default function CategoryStatsBar({ counts }: Props) {
   if (!counts || !counts.all || counts.all === 0) return null;
 
   const total = counts.all;
 
-  const items = ["talk", "game", "music", "show"].map((key) => {
+  const items = (["talk", "game", "music", "show"] as CategoryKey[]).map((key) => {
     const value = counts[key] || 0;
     const pct = value > 0 ? Math.max(1, Math.round((value / total) * 100)) : 0;
     return {

@@ -1,6 +1,11 @@
 import React from "react";
 
-export default function LiveRedirectHelpModal({ open, onClose }) {
+interface LiveRedirectHelpModalProps {
+  open: boolean;
+  onClose: () => void;
+}
+
+export default function LiveRedirectHelpModal({ open, onClose }: LiveRedirectHelpModalProps) {
   if (!open) return null;
 
   return (

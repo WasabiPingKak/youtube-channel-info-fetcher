@@ -48,8 +48,8 @@ export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
         case SORT_FIELDS.GAME:
           return video.game || "-";
         case SORT_FIELDS.KEYWORDS:
-          return video.matchedKeywords?.length > 0
-            ? video.matchedKeywords.join(", ")
+          return (video.matchedKeywords?.length ?? 0) > 0
+            ? video.matchedKeywords!.join(", ")
             : "-";
         default:
           return "";
@@ -61,10 +61,10 @@ export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
       const valB = getVal(b, sortField);
 
       if (sortField === SORT_FIELDS.PUBLISH_DATE) {
-        return (new Date(valA).getTime() - new Date(valB).getTime()) * direction;
+        return (new Date(valA as string).getTime() - new Date(valB as string).getTime()) * direction;
       }
       if (sortField === SORT_FIELDS.DURATION) {
-        return (valA - valB) * direction;
+        return ((valA as number) - (valB as number)) * direction;
       }
 
       const isMissingA = valA === "-";
@@ -73,7 +73,7 @@ export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
       if (isMissingA) return sortOrder === "asc" ? 1 : -1;
       if (isMissingB) return sortOrder === "asc" ? -1 : 1;
 
-      return valA.localeCompare(valB, "zh-Hant-u-co-stroke") * direction;
+      return (valA as string).localeCompare(valB as string, "zh-Hant-u-co-stroke") * direction;
     });
   // eslint-disable-next-line react-hooks/exhaustive-deps -- VIDEO_TYPE_MAP 是元件內常數，不需列為依賴
   }, [videos, videoType, activeCategory, sortField, sortOrder]);

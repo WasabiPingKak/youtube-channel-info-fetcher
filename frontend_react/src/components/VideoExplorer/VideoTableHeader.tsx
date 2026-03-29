@@ -9,8 +9,14 @@ const headers = [
   { key: null, label: "分類", className: "basis-56", disableSort: true },
 ];
 
-const VideoTableHeader = ({ sortField, sortOrder, onSortChange }) => {
-  const renderSortArrow = (key) => {
+interface VideoTableHeaderProps {
+  sortField: string;
+  sortOrder: "asc" | "desc";
+  onSortChange: (field: string) => void;
+}
+
+const VideoTableHeader = ({ sortField, sortOrder, onSortChange }: VideoTableHeaderProps) => {
+  const renderSortArrow = (key: string | null) => {
     if (sortField !== key) return null;
     return sortOrder === "asc" ? "▲" : "▼";
   };

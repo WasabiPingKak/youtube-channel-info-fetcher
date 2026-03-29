@@ -17,8 +17,8 @@ const UserMenu = () => {
   return (
     <AvatarDropdown
       channelId={user.channelId}
-      channelName={user.name}
-      avatarUrl={user.thumbnail}
+      channelName={user.name ?? ""}
+      avatarUrl={user.thumbnail ?? undefined}
     />
   );
 };

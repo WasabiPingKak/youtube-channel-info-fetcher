@@ -8,7 +8,7 @@ import MainLayout from "@/components/layout/MainLayout";
 export default function ReviewPage() {
   const { channelId, year } = useParams();
 
-  const yearInt = parseInt(year, 10);
+  const yearInt = parseInt(year ?? '', 10);
   const isValid = channelId && !isNaN(yearInt);
 
   return (

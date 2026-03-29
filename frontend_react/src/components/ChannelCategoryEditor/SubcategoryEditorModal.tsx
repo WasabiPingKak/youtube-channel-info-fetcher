@@ -1,5 +1,16 @@
 import React, { useState, useEffect, useRef } from 'react';
 import MatchedVideosPreview from './MatchedVideosPreview';
+import { ClassifiedVideoItem } from '@/types/category';
+
+interface Props {
+  title?: string;
+  isOpen: boolean;
+  onClose: () => void;
+  originalName: string;
+  onRename: (oldName: string, newName: string) => void;
+  existingNames?: string[];
+  videos?: ClassifiedVideoItem[];
+}
 
 const SubcategoryEditorModal = ({
   title,
@@ -9,7 +20,7 @@ const SubcategoryEditorModal = ({
   onRename,
   existingNames = [],
   videos = [],
-}) => {
+}: Props) => {
   const [name, setName] = useState('');
   const [error, setError] = useState('');
   const backdropRef = useRef<HTMLDivElement>(null);
@@ -43,7 +54,7 @@ const SubcategoryEditorModal = ({
     onClose();
   };
 
-  const handleBackdropClick = (e) => {
+  const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>) => {
     if (e.target === backdropRef.current) {
       onClose();
     }

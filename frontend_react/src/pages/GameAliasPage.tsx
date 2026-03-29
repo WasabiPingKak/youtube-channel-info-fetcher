@@ -57,7 +57,7 @@ const GameAliasPage = () => {
     0
   );
 
-  const toggleItem = (name) => {
+  const toggleItem = (name: string) => {
     const newSet = new Set(openItems);
     if (newSet.has(name)) {
       newSet.delete(name);
@@ -92,7 +92,7 @@ const GameAliasPage = () => {
           searchText={searchText}
           setSearchText={setSearchText}
           sortOption={sortOption}
-          setSortOption={setSortOption}
+          setSortOption={(v: string) => setSortOption(v as SortOption)}
           mode="game"
         />
 

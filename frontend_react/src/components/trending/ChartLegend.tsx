@@ -1,14 +1,14 @@
 import React from "react";
 import { COLOR_LIST } from "./chartColors";
 
-/**
- * @param {Object} props
- * @param {string[]} props.topGames
- * @param {string[]} props.hiddenGames
- * @param {function} props.setHiddenGames
- * @param {function} props.toggleLine
- */
-const ChartLegend = ({ topGames, hiddenGames, setHiddenGames, toggleLine }) => {
+interface Props {
+  topGames: string[];
+  hiddenGames: string[];
+  setHiddenGames: (games: string[]) => void;
+  toggleLine: (game: string) => void;
+}
+
+const ChartLegend = ({ topGames, hiddenGames, setHiddenGames, toggleLine }: Props) => {
   return (
     <div className="flex flex-col items-center gap-2 mt-4">
       <div className="flex gap-4 text-sm">

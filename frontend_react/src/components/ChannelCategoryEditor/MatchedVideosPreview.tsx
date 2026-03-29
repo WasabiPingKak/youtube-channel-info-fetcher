@@ -1,6 +1,7 @@
 import React from 'react';
+import { ClassifiedVideoItem } from '@/types/category';
 
-const highlightQuery = (text, query) => {
+const highlightQuery = (text: string, query: string) => {
   if (!query) return text;
 
   const regex = new RegExp(`(${query})`, 'gi');
@@ -15,7 +16,12 @@ const highlightQuery = (text, query) => {
   );
 };
 
-const MatchedVideosPreview = ({ query, videos = [] }) => {
+interface Props {
+  query: string;
+  videos?: ClassifiedVideoItem[];
+}
+
+const MatchedVideosPreview = ({ query, videos = [] }: Props) => {
   if (!query.trim()) return null;
 
   const lowerQuery = query.toLowerCase();

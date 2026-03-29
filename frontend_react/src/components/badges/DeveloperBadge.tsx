@@ -1,7 +1,11 @@
 // components/DeveloperBadge.jsx
 import React from "react";
 
-const DeveloperBadge = ({ isAuthor }) => {
+interface DeveloperBadgeProps {
+  isAuthor: boolean;
+}
+
+const DeveloperBadge = ({ isAuthor }: DeveloperBadgeProps) => {
   if (!isAuthor) return null;
 
   return (

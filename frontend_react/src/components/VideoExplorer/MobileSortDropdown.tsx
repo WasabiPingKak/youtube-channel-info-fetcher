@@ -7,12 +7,19 @@ const SORT_OPTIONS = [
   { value: "title", label: "標題" },
 ];
 
+interface MobileSortDropdownProps {
+  sortField: string;
+  sortOrder: "asc" | "desc";
+  onSortChange: (field: string) => void;
+  onToggleOrder: () => void;
+}
+
 const MobileSortDropdown = ({
   sortField,
   sortOrder,
   onSortChange,
   onToggleOrder,
-}) => {
+}: MobileSortDropdownProps) => {
   return (
     <div className="md:hidden px-4 mb-4">
       <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-1">
