@@ -140,7 +140,7 @@ jobs:
           gcloud run deploy youtube-api-service \
             --image "${{ env.IMAGE }}" \
             --region "${{ env.GCP_REGION }}" \
-            --max-instances=3 \
+            --max-instances=1 \
             --allow-unauthenticated \
             --update-secrets "\
           JWT_SECRET=youtube-api-jwt-secret:latest,\
