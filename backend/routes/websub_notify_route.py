@@ -7,9 +7,39 @@ from datetime import UTC, datetime
 from apiflask import APIBlueprint
 from defusedxml.ElementTree import fromstring as safe_xml_fromstring
 from flask import Response, request
+from google.cloud import firestore
 
 websub_notify_bp = APIBlueprint("websub_notify", __name__, tag="WebSub")
 COLLECTION_NAME = "live_redirect_notify_queue"
+
+
+def _write_notify_item(db, doc_id, video_id, new_item):
+    """以 Transaction 原子寫入單筆 WebSub 通知，避免 concurrent 推播造成資料丟失"""
+    doc_ref = db.collection(COLLECTION_NAME).document(doc_id)
+
+    @firestore.transactional
+    def _update_in_transaction(transaction):
+        doc = doc_ref.get(transaction=transaction)
+        current_data = doc.to_dict() or {}
+        videos = current_data.get("videos", [])
+
+        # 若已存在則覆寫更新（用 videoId 去重）
+        existing_index = next(
+            (i for i, v in enumerate(videos) if v["videoId"] == video_id),
+            None,
+        )
+        if existing_index is not None:
+            videos[existing_index] = new_item
+        else:
+            videos.append(new_item)
+
+        transaction.set(
+            doc_ref,
+            {"updatedAt": datetime.now(UTC).isoformat(), "videos": videos},
+        )
+
+    transaction = db.transaction()
+    _update_in_transaction(transaction)
 
 
 def init_websub_notify_route(app, db):
@@ -64,30 +94,13 @@ def init_websub_notify_route(app, db):
 
                     logging.info(f"📺 通知影片 videoId={video_id}，channelId={channel_id}")
 
-                    # 取得該日期的 document 參考
-                    doc_ref = db.collection(COLLECTION_NAME).document(doc_id)
-                    doc = doc_ref.get()
-                    current_data = doc.to_dict() or {}
-                    videos = current_data.get("videos", [])
-
-                    # 若已存在則覆寫更新（用 videoId 去重）
-                    existing_index = next(
-                        (i for i, v in enumerate(videos) if v["videoId"] == video_id), None
-                    )
                     new_item = {
                         "videoId": video_id,
                         "channelId": channel_id,
                         "notifiedAt": notified_at_str,
                         "processedAt": None,
                     }
-
-                    if existing_index is not None:
-                        videos[existing_index] = new_item
-                    else:
-                        videos.append(new_item)
-
-                    # 寫入更新後的資料
-                    doc_ref.set({"updatedAt": datetime.now(UTC).isoformat(), "videos": videos})
+                    _write_notify_item(db, doc_id, video_id, new_item)
 
                 return Response("OK", status=204)
             except Exception:

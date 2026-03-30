@@ -10,9 +10,14 @@ from datetime import UTC, datetime
 from Crypto.Cipher import AES
 from google.api_core.exceptions import GoogleAPIError
 
-MERCHANT_ID = os.getenv("ECPAY_MERCHANT_ID")
-HASH_KEY = os.getenv("ECPAY_HASH_KEY")
-HASH_IV = os.getenv("ECPAY_HASH_IV")
+
+def _get_ecpay_config():
+    """取得 ECPay 設定，延遲到呼叫時才讀取環境變數（避免 module-level side effect）"""
+    return (
+        os.getenv("ECPAY_MERCHANT_ID"),
+        os.getenv("ECPAY_HASH_KEY"),
+        os.getenv("ECPAY_HASH_IV"),
+    )
 
 
 def pad_pkcs7(data: bytes) -> bytes:
@@ -51,32 +56,6 @@ def generate_check_mac_value_for_livestream(raw_decrypted: str, hash_key: str, h
     return hashlib.sha256(raw_string.encode("utf-8")).hexdigest().upper()
 
 
-# 原本的函數保留給一般API使用
-def generate_check_mac_value(data: dict) -> str:
-    """原本的CheckMacValue計算方式（適用於一般金流API）"""
-    sorted_items = sorted(data.items())
-    raw = (
-        f"HashKey={HASH_KEY}&"
-        + "&".join(f"{k}={v}" for k, v in sorted_items)
-        + f"&HashIV={HASH_IV}"
-    )
-    logging.debug("[ECPay] ➕ 原始待 encode 字串: %s", raw)
-    encoded = urllib.parse.quote_plus(raw).lower()
-    encoded = (
-        encoded.replace("%21", "!")
-        .replace("%28", "(")
-        .replace("%29", ")")
-        .replace("%2a", "*")
-        .replace("%2d", "-")
-        .replace("%2e", ".")
-        .replace("%5f", "_")
-    )
-    logging.debug("[ECPay] 🔐 編碼後字串: %s", encoded)
-    sha256 = hashlib.sha256()
-    sha256.update(encoded.encode("utf-8"))
-    return sha256.hexdigest().upper()
-
-
 def get_amount_bucket(trade_amt_str: str) -> str:
     try:
         amount = int(float(trade_amt_str))  # 支援 "100.0" 也可被分類
@@ -101,6 +80,8 @@ def get_amount_bucket(trade_amt_str: str) -> str:
 def handle_ecpay_return(form: dict, db):
     logging.info("[ECPay] 收到付款通知表單：%s", form)
 
+    expected_merchant_id, hash_key, hash_iv = _get_ecpay_config()
+
     merchant_id = form.get("MerchantID")
     data_encrypted = form.get("Data")
     received_mac = form.get("CheckMacValue")
@@ -109,15 +90,17 @@ def handle_ecpay_return(form: dict, db):
     logging.debug("[ECPay] Data (Encrypted): %s", data_encrypted)
     logging.debug("[ECPay] CheckMacValue (Received): %s", received_mac)
 
-    if merchant_id != MERCHANT_ID:
-        logging.error("[ECPay] MerchantID 不符：收到=%s, 預期=%s", merchant_id, MERCHANT_ID)
+    if merchant_id != expected_merchant_id:
+        logging.error(
+            "[ECPay] MerchantID 不符：收到=%s, 預期=%s", merchant_id, expected_merchant_id
+        )
         raise ValueError("MerchantID 不正確")
 
     # 解密
-    decrypted_json_str, raw_decrypted_str = aes_decrypt(data_encrypted, HASH_KEY, HASH_IV)
+    decrypted_json_str, raw_decrypted_str = aes_decrypt(data_encrypted, hash_key, hash_iv)
 
     # CheckMacValue 驗證（使用 AES 解密後的原始 URL encoded 字串）
-    expected_mac = generate_check_mac_value_for_livestream(raw_decrypted_str, HASH_KEY, HASH_IV)
+    expected_mac = generate_check_mac_value_for_livestream(raw_decrypted_str, hash_key, hash_iv)
 
     if not hmac.compare_digest(expected_mac, received_mac):
         logging.warning("[ECPay] CheckMacValue 驗證失敗")
