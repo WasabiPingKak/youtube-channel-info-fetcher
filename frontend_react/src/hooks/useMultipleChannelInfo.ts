@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 export interface ChannelInfo {
   name: string;
   url: string;
   thumbnail: string;
 }
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export function useMultipleChannelInfo(channelIds: string[]) {
   const [data, setData] = useState<Record<string, ChannelInfo>>({});
@@ -20,17 +20,21 @@ export function useMultipleChannelInfo(channelIds: string[]) {
       setIsLoading(true);
       setError(null);
 
-      const results: Record<string, ChannelInfo> = {};
-
       try {
-        for (const channelId of channelIds) {
-          const docRef = doc(db, "channel_data", channelId, "channel_info", "info");
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            results[channelId] = docSnap.data() as ChannelInfo;
-          }
+        const res = await fetch(`${API_BASE}/api/channels/info/batch`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ channel_ids: channelIds }),
+        });
+
+        if (!res.ok) {
+          throw new Error(`HTTP 錯誤：${res.status}`);
         }
-        setData(results);
+
+        const result = await res.json();
+        if (result.success) {
+          setData(result.channels);
+        }
       } catch (err) {
         setError(err as Error);
       } finally {

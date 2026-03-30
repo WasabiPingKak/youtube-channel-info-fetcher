@@ -4,7 +4,7 @@ from apiflask import APIBlueprint
 from flask import jsonify
 
 from schemas.settings_schemas import LoadSettingsRequest
-from services.firestore_settings_service import load_category_settings
+from services.firestore_settings_service import load_category_settings, save_category_settings
 
 firestore_settings_bp = APIBlueprint("firestore_settings", __name__, tag="Settings")
 
@@ -23,9 +23,16 @@ def init_firestore_settings_routes(app, db):
             if settings is not None:
                 logging.info(f"✅ 成功載入分類設定，channel_id={body.channel_id}")
                 return jsonify({"success": True, "settings": settings}), 200
-            else:
-                logging.warning(f"⚠️ 設定不存在，channel_id={body.channel_id}")
-                return jsonify({"success": False, "error": "NOT_FOUND", "code": "not-found"}), 200
+
+            # 設定不存在，若 init_default=True 則自動建立預設結構
+            if body.init_default:
+                default_settings = {"雜談": {}, "遊戲": {}, "音樂": {}, "節目": {}}
+                save_category_settings(db, body.channel_id, default_settings)
+                logging.info(f"✅ 自動建立預設分類設定，channel_id={body.channel_id}")
+                return jsonify({"success": True, "settings": default_settings}), 200
+
+            logging.warning(f"⚠️ 設定不存在，channel_id={body.channel_id}")
+            return jsonify({"success": False, "error": "NOT_FOUND", "code": "not-found"}), 200
 
         except Exception:
             logging.exception("🔥 無法載入分類設定")

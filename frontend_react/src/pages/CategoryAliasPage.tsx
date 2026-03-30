@@ -1,20 +1,21 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 import MainLayout from "../components/layout/MainLayout";
 import { filterAndSortAliases, type SortOption } from "../utils/filterAndSortAliases";
 import AliasSearchBar from "../utils/AliasSearchBar";
 
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 const SKIPPED_CATEGORY = "遊戲";
 
 const CategoryAliasPage = () => {
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading, error } = useQuery<Record<string, Record<string, string[]>>>({
     queryKey: ["defaultCategoryAliases"],
     queryFn: async () => {
-      const docRef = doc(db, "global_settings", "default_categories_config_v2");
-      const snapshot = await getDoc(docRef);
-      return snapshot.exists() ? snapshot.data() : {};
+      const res = await fetch(`${API_BASE}/api/categories/default-config`);
+      if (!res.ok) throw new Error(`HTTP 錯誤：${res.status}`);
+      const result = await res.json();
+      if (result.success) return result.config;
+      throw new Error(result.error || "無法載入預���分類設定");
     },
     staleTime: 1000 * 60 * 60, // 1 小時
   });

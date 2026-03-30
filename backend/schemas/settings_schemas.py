@@ -35,3 +35,5 @@ class SaveAndApplyRequest(ChannelIdBody):
 
 class LoadSettingsRequest(ChannelIdBody):
     """POST /api/firestore/load-category-settings"""
+
+    init_default: bool = False

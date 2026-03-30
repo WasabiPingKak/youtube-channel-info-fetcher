@@ -6,8 +6,9 @@ import { buildSuggestedKeywordCards } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryEditorStore } from '@/stores/useQuickCategoryEditorStore';
 import KeywordCardList from '@/components/QuickCategoryEditor/KeywordCardList';
 import MainLayout from '../components/layout/MainLayout';
-import { getFirestore, doc, getDoc } from 'firebase/firestore';
 import { useMyChannelId } from '@/hooks/useMyChannelId';
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 import {
   showLoginRequiredToast,
   showPermissionDeniedToast,
@@ -66,64 +67,55 @@ const QuickCategoryEditorPage = () => {
     }
   }, [meLoading, me, channelId, navigate]);
 
-  // Firestore 略過關鍵字
+  // 透過後端 API 載入 skip_keywords + config
   useEffect(() => {
-    const loadSkipKeywords = async () => {
+    const loadInitData = async () => {
       if (!channelId) return;
       try {
-        const db = getFirestore();
-        const docRef = doc(db, 'channel_data', channelId, 'settings', 'skip_keywords');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          const skips = data.skipped || [];
-          setSkipKeywords(skips);
+        const res = await fetch(
+          `${API_BASE}/api/quick-editor/init-data?channel_id=${channelId}`,
+          { credentials: 'include' }
+        );
+        if (!res.ok) {
+          console.error('🔥 無法載入初始資料:', res.status);
+          return;
         }
-      } catch (err) {
-        console.error('🔥 無法載入 skip_keywords:', err);
-      } finally {
-        setLoadingSkips(false);
-      }
-    };
-    loadSkipKeywords();
-  }, [channelId]);
+        const result = await res.json();
+        if (!result.success) {
+          console.error('🔥 載入初始資料失敗:', result.error);
+          return;
+        }
 
-  // Firestore 分類 config
-  useEffect(() => {
-    const loadConfig = async () => {
-      if (!channelId) return;
-      try {
-        const db = getFirestore();
-        const docRef = doc(db, 'channel_data', channelId, 'settings', 'config');
-        const docSnap = await getDoc(docRef);
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          // 一個 keyword 對應多個主分類
-          const map = new Map();
-          for (const mainCategory in data) {
-            const subcategories = data[mainCategory] || {};
-            for (const subcategoryName in subcategories) {
-              const keywords = subcategories[subcategoryName] || [];
-              if (keywords.length === 0) {
-                if (!map.has(subcategoryName)) map.set(subcategoryName, []);
-                map.get(subcategoryName).push({ mainCategory, subcategoryName });
-              } else {
-                for (const keyword of keywords) {
-                  if (!map.has(keyword)) map.set(keyword, []);
-                  map.get(keyword).push({ mainCategory, subcategoryName });
-                }
+        // skip_keywords
+        setSkipKeywords(result.skip_keywords || []);
+
+        // config → configMap
+        const data = result.config || {};
+        const map = new Map();
+        for (const mainCategory in data) {
+          const subcategories = data[mainCategory] || {};
+          for (const subcategoryName in subcategories) {
+            const keywords = subcategories[subcategoryName] || [];
+            if (keywords.length === 0) {
+              if (!map.has(subcategoryName)) map.set(subcategoryName, []);
+              map.get(subcategoryName).push({ mainCategory, subcategoryName });
+            } else {
+              for (const keyword of keywords) {
+                if (!map.has(keyword)) map.set(keyword, []);
+                map.get(keyword).push({ mainCategory, subcategoryName });
               }
             }
           }
-          setConfigMap(map);
         }
+        setConfigMap(map);
       } catch (err) {
-        console.error('🔥 無法載入 config 設定:', err);
+        console.error('🔥 無法載入初始資料:', err);
       } finally {
+        setLoadingSkips(false);
         setLoadingConfig(false);
       }
     };
-    loadConfig();
+    loadInitData();
   }, [channelId]);
 
   // 初始化卡片（合併 keyword + skip + config）
