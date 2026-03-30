@@ -12,15 +12,16 @@ import pytest
 from Crypto.Cipher import AES
 
 from services.ecpay_service import (
-    HASH_IV,
-    HASH_KEY,
-    MERCHANT_ID,
+    _get_ecpay_config,
     aes_decrypt,
     generate_check_mac_value_for_livestream,
     get_amount_bucket,
     handle_ecpay_return,
     pad_pkcs7,
 )
+
+# 測試用：從環境變數取得設定值
+MERCHANT_ID, HASH_KEY, HASH_IV = _get_ecpay_config()
 
 # ═══════════════════════════════════════════════════════
 # 輔助函數：用已知 key/iv 加密測試資料

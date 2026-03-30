@@ -65,7 +65,13 @@ class TestWebSubPostNotification:
     def test_valid_xml_writes_to_firestore(self, websub_client, shared_mock_db):
         mock_doc = MagicMock()
         mock_doc.to_dict.return_value = None
-        shared_mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
+        # transaction 內的 get 也要回傳 mock_doc
+        doc_ref_mock = shared_mock_db.collection.return_value.document.return_value
+        doc_ref_mock.get.return_value = mock_doc
+
+        # mock transaction：讓 @firestore.transactional 裝飾的函式可以直接執行
+        mock_tx = MagicMock()
+        shared_mock_db.transaction.return_value = mock_tx
 
         resp = websub_client.post(
             "/websub-callback",
@@ -73,7 +79,7 @@ class TestWebSubPostNotification:
             content_type="application/atom+xml",
         )
         assert resp.status_code == 204
-        shared_mock_db.collection.return_value.document.return_value.set.assert_called()
+        mock_tx.set.assert_called()
 
     def test_invalid_signature_returns_403(self, websub_client):
         """設定 WEBSUB_SECRET 後，錯誤簽名應被拒絕"""
@@ -94,6 +100,9 @@ class TestWebSubPostNotification:
             mock_doc = MagicMock()
             mock_doc.to_dict.return_value = None
             shared_mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
+
+            mock_tx = MagicMock()
+            shared_mock_db.transaction.return_value = mock_tx
 
             resp = websub_client.post(
                 "/websub-callback",
