@@ -1,18 +1,11 @@
 """
-共用 fixtures：Flask test app、mock Firestore db、JWT 環境變數
+共用 fixtures：Flask test app、mock Firestore db
+
+測試用環境變數統一定義在 pyproject.toml [tool.pytest.ini_options] env，
+由 pytest-env 自動注入，不再硬編碼於此。
 """
 
-import os
-
 import pytest
-
-# ── 在任何 backend 模組被 import 之前，先設定必要的環境變數 ──
-os.environ["JWT_SECRET"] = "test-secret-key-for-unit-tests-minimum-32-bytes"
-os.environ["ADMIN_CHANNEL_IDS"] = "UC_ADMIN_001,UC_ADMIN_002"
-os.environ["ECPAY_MERCHANT_ID"] = "TestMerchantID"
-os.environ["ECPAY_HASH_KEY"] = "TestHashKey1234A"  # 必須 16 bytes（AES-128）
-os.environ["ECPAY_HASH_IV"] = "TestHashIV12345A"  # 必須 16 bytes
-os.environ["ADMIN_API_KEY"] = "test-admin-api-key"
 
 
 @pytest.fixture

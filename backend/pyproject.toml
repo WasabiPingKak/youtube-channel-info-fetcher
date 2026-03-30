@@ -1,3 +1,11 @@
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 pythonpath = ["."]
+env = [
+    "JWT_SECRET=test-secret-key-for-unit-tests-minimum-32-bytes",
+    "ADMIN_CHANNEL_IDS=UC_ADMIN_001,UC_ADMIN_002",
+    "ECPAY_MERCHANT_ID=TestMerchantID",
+    "ECPAY_HASH_KEY=TestHashKey1234A",
+    "ECPAY_HASH_IV=TestHashIV12345A",
+    "ADMIN_API_KEY=test-admin-api-key",
+]
