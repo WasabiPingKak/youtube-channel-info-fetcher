@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.category_editor_schemas import QuickRemoveRequest
 from utils.auth_decorator import require_auth
@@ -35,47 +36,59 @@ def init_quick_category_remove_route(app, db):
                 .document("config")
             )
 
-            doc = config_ref.get()
-            config_data = doc.to_dict() or {}
-            logging.info(f"📦 [config-remove] 原始 config 資料（{body.channelId}）: {config_data}")
-
-            modified = False
-            updated_config = {}
-
-            for main_cat, sub_map in config_data.items():
-                updated_sub_map = {}
-
-                for sub_name, keywords in sub_map.items():
-                    if sub_name == body.keyword:
-                        logging.info(
-                            f"🗑 子分類名稱「{sub_name}」等於 keyword「{body.keyword}」，整個子分類移除"
-                        )
-                        modified = True
-                        continue
-
-                    if isinstance(keywords, list):
-                        if body.keyword in keywords:
-                            logging.info(
-                                f"🔎 關鍵字「{body.keyword}」出現在「{main_cat}／{sub_name}」中，移除該項"
-                            )
-                            filtered = [k for k in keywords if k != body.keyword]
-                            modified = True
-                        else:
-                            filtered = keywords
-                        updated_sub_map[sub_name] = filtered
-                    else:
-                        logging.warning(f"⚠️ 子分類「{sub_name}」格式非 list，保留原樣：{keywords}")
-                        updated_sub_map[sub_name] = keywords
-
-                updated_config[main_cat] = updated_sub_map
-
-            if modified:
-                logging.info(f"✅ [config-remove] 更新後 config：{updated_config}")
-                config_ref.set(updated_config)
-            else:
-                logging.warning(
-                    f"❗ [config-remove] keyword「{body.keyword}」未出現在任何子分類名稱或陣列中，無需修改"
+            @firestore.transactional
+            def _remove_in_transaction(transaction):
+                doc = config_ref.get(transaction=transaction)
+                config_data = doc.to_dict() or {}
+                logging.info(
+                    f"📦 [config-remove] 原始 config 資料（{body.channelId}）: {config_data}"
                 )
+
+                modified = False
+                updated_config = {}
+
+                for main_cat, sub_map in config_data.items():
+                    updated_sub_map = {}
+
+                    for sub_name, keywords in sub_map.items():
+                        if sub_name == body.keyword:
+                            logging.info(
+                                f"🗑 子分類名稱「{sub_name}」等於 keyword「{body.keyword}」，"
+                                f"整個子分類移除"
+                            )
+                            modified = True
+                            continue
+
+                        if isinstance(keywords, list):
+                            if body.keyword in keywords:
+                                logging.info(
+                                    f"🔎 關鍵字「{body.keyword}」出現在"
+                                    f"「{main_cat}／{sub_name}」中，移除該項"
+                                )
+                                filtered = [k for k in keywords if k != body.keyword]
+                                modified = True
+                            else:
+                                filtered = keywords
+                            updated_sub_map[sub_name] = filtered
+                        else:
+                            logging.warning(
+                                f"⚠️ 子分類「{sub_name}」格式非 list，保留原樣：{keywords}"
+                            )
+                            updated_sub_map[sub_name] = keywords
+
+                    updated_config[main_cat] = updated_sub_map
+
+                if modified:
+                    logging.info(f"✅ [config-remove] 更新後 config：{updated_config}")
+                    transaction.set(config_ref, updated_config)
+                else:
+                    logging.warning(
+                        f"❗ [config-remove] keyword「{body.keyword}」"
+                        f"未出現在任何子分類名稱或陣列中，無需修改"
+                    )
+
+            transaction = db.transaction()
+            _remove_in_transaction(transaction)
 
             return jsonify({"success": True})
 

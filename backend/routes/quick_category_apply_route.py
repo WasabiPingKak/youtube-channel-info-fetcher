@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.category_editor_schemas import QuickApplyRequest
 from utils.auth_decorator import require_auth
@@ -35,33 +36,37 @@ def init_quick_category_apply_route(app, db):
                 .document("config")
             )
 
-            doc = config_ref.get()
-            config_data = doc.to_dict() or {}
-            updated_config = config_data.copy()
+            @firestore.transactional
+            def _apply_in_transaction(transaction):
+                doc = config_ref.get(transaction=transaction)
+                config_data = doc.to_dict() or {}
+                updated_config = config_data.copy()
 
-            # ✅ 確保四大主分類永遠存在，且型別為 dict（防止過去為 list）
-            REQUIRED_MAIN_CATEGORIES = ["雜談", "遊戲", "音樂", "節目"]
-            for cat in REQUIRED_MAIN_CATEGORIES:
-                if not isinstance(updated_config.get(cat), dict):
-                    updated_config[cat] = {}
+                # 確保四大主分類永遠存在，且型別為 dict（防止過去為 list）
+                required_main_categories = ["雜談", "遊戲", "音樂", "節目"]
+                for cat in required_main_categories:
+                    if not isinstance(updated_config.get(cat), dict):
+                        updated_config[cat] = {}
 
-            # ➤ 寫入分類設定
-            for target in body.targets:
-                main_category = target.mainCategory
-                subcategory_name = target.subcategoryName
+                for target in body.targets:
+                    main_category = target.mainCategory
+                    subcategory_name = target.subcategoryName
 
-                if not isinstance(updated_config.get(main_category), dict):
-                    updated_config[main_category] = {}
+                    if not isinstance(updated_config.get(main_category), dict):
+                        updated_config[main_category] = {}
 
-                if subcategory_name == body.keyword:
-                    updated_config[main_category].setdefault(subcategory_name, [])
-                else:
-                    updated_config[main_category].setdefault(subcategory_name, [])
-                    if body.keyword not in updated_config[main_category][subcategory_name]:
-                        updated_config[main_category][subcategory_name].append(body.keyword)
+                    if subcategory_name == body.keyword:
+                        updated_config[main_category].setdefault(subcategory_name, [])
+                    else:
+                        updated_config[main_category].setdefault(subcategory_name, [])
+                        if body.keyword not in updated_config[main_category][subcategory_name]:
+                            updated_config[main_category][subcategory_name].append(body.keyword)
+
+                transaction.set(config_ref, updated_config, merge=True)
 
             logging.info(f"📥 正在儲存快速分類設定：{body.channelId} - {body.keyword}")
-            config_ref.set(updated_config, merge=True)
+            transaction = db.transaction()
+            _apply_in_transaction(transaction)
 
             return jsonify({"success": True, "message": "已儲存分類設定"})
 

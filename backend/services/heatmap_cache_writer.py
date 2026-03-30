@@ -2,6 +2,7 @@ import logging
 from datetime import UTC, datetime
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 from google.cloud.firestore import Client
 
 from services.firestore.channel_loader import load_all_channels_from_index_list
@@ -69,31 +70,35 @@ def write_weekly_heatmap_cache(db: Client):
         weekly_data = build_weekly_heatmap_cache(db)
         weekly_channels = weekly_data.get("channels", [])
 
-        # Step 2: 讀取 pending 資料（若存在）
         pending_ref = db.collection("stats_cache").document("active_time_pending")
-        pending_doc = pending_ref.get()
-        pending_data = pending_doc.to_dict() if pending_doc.exists else {}
-        pending_channels = pending_data.get("channels", [])
+        weekly_ref = db.collection("stats_cache").document("active_time_weekly")
 
-        logging.info(f"🔄 讀取 pending 快取：{len(pending_channels)} 筆")
+        # Step 2-5: Transaction 內讀取 pending → 合併 → 寫入 weekly → 清空 pending
+        @firestore.transactional
+        def _merge_and_clear(transaction):
+            pending_doc = pending_ref.get(transaction=transaction)
+            pending_data = pending_doc.to_dict() if pending_doc.exists else {}
+            pending_channels = pending_data.get("channels", [])
 
-        # Step 3: 合併並去重（channelId 為 key）
-        combined = {c["channelId"]: c for c in weekly_channels}
-        for p in pending_channels:
-            combined[p["channelId"]] = p  # 用 pending 覆蓋同 ID
+            logging.info(f"🔄 讀取 pending 快取：{len(pending_channels)} 筆")
 
-        merged_channels = list(combined.values())
-        logging.info(f"📝 合併後頻道總數：{len(merged_channels)}")
+            # 合併並去重（channelId 為 key，pending 覆蓋同 ID）
+            combined = {c["channelId"]: c for c in weekly_channels}
+            for p in pending_channels:
+                combined[p["channelId"]] = p
 
-        # Step 4: 寫入 merged 結果
-        ref = db.collection("stats_cache").document("active_time_weekly")
-        weekly_data["channels"] = merged_channels
-        ref.set(weekly_data)
-        logging.info(f"✅ 已覆蓋寫入 active_time_weekly，共 {len(merged_channels)} 筆")
+            merged_channels = list(combined.values())
+            logging.info(f"📝 合併後頻道總數：{len(merged_channels)}")
 
-        # Step 5: 清空 pending
-        pending_ref.set({"channels": []})
-        logging.info("🧹 已清空 active_time_pending")
+            weekly_data["channels"] = merged_channels
+            transaction.set(weekly_ref, weekly_data)
+            transaction.set(pending_ref, {"channels": []})
+
+            return len(merged_channels)
+
+        transaction = db.transaction()
+        count = _merge_and_clear(transaction)
+        logging.info(f"✅ 已覆蓋寫入 active_time_weekly，共 {count} 筆，並清空 pending")
 
         return True
     except GoogleAPIError as e:
@@ -132,13 +137,8 @@ def append_to_pending_cache(db, channel_id: str):
             logging.warning(f"⚠️ [pending] 找不到 {channel_id} 的 metadata，略過")
             return
 
-        # 🔃 Step 3: 讀取現有 pending 陣列
+        # 🔃 Step 3: Transaction 內讀取 pending → 去重 → 寫回
         pending_ref = db.collection("stats_cache").document("active_time_pending")
-        pending_doc = pending_ref.get()
-        pending_data = pending_doc.to_dict() if pending_doc.exists else {}
-        current_channels = pending_data.get("channels", [])
-
-        # 建立新資料
         new_entry = {
             "channelId": channel_id,
             "name": meta.get("name"),
@@ -148,14 +148,22 @@ def append_to_pending_cache(db, channel_id: str):
             "totalCount": total_count,
         }
 
-        # 過濾舊資料（同 channelId）
-        filtered = [c for c in current_channels if c.get("channelId") != channel_id]
-        filtered.append(new_entry)
+        @firestore.transactional
+        def _append_in_transaction(transaction):
+            pending_doc = pending_ref.get(transaction=transaction)
+            pending_data = pending_doc.to_dict() if pending_doc.exists else {}
+            current_channels = pending_data.get("channels", [])
 
-        # 寫入回 Firestore
-        pending_ref.set({"channels": filtered})
+            filtered = [c for c in current_channels if c.get("channelId") != channel_id]
+            filtered.append(new_entry)
+
+            transaction.set(pending_ref, {"channels": filtered})
+            return len(filtered)
+
+        transaction = db.transaction()
+        count = _append_in_transaction(transaction)
         logging.info(
-            f"🟣 [pending] 已將 {channel_id} 加入 active_time_pending 快取（共 {len(filtered)} 筆）"
+            f"🟣 [pending] 已將 {channel_id} 加入 active_time_pending 快取（共 {count} 筆）"
         )
 
     except GoogleAPIError as e:

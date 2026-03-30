@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.cloud import firestore
 
 from schemas.settings_schemas import UpdateSettingsRequest
 from utils.auth_decorator import require_auth
@@ -73,29 +74,36 @@ def init_my_settings_route(app, db):
                 )
                 return jsonify({"error": "無權限修改此頻道資料"}), 403
 
+            # 先掃描找到目標 batch doc ref
             target_doc_ref = None
-            target_channels = []
-
             batch_docs = db.collection("channel_index_batch").stream()
             for doc in batch_docs:
                 doc_data = doc.to_dict()
                 channels = doc_data.get("channels", [])
-                for i, item in enumerate(channels):
-                    if item.get("channel_id") == body.channelId:
-                        target_doc_ref = doc.reference
-                        target_channels = channels
-                        target_channels[i]["enabled"] = body.enabled
-                        target_channels[i]["countryCode"] = body.countryCode
-                        target_channels[i]["show_live_status"] = body.show_live_status
-                        break
-                if target_doc_ref:
+                if any(item.get("channel_id") == body.channelId for item in channels):
+                    target_doc_ref = doc.reference
                     break
 
             if not target_doc_ref:
                 return jsonify({"error": "Channel not found"}), 404
 
-            target_doc_ref.update({"channels": target_channels})
+            # Transaction 內讀取最新版本再修改
+            @firestore.transactional
+            def _update_batch_in_transaction(transaction):
+                fresh_doc = target_doc_ref.get(transaction=transaction)
+                fresh_channels = fresh_doc.to_dict().get("channels", [])
+                for i, item in enumerate(fresh_channels):
+                    if item.get("channel_id") == body.channelId:
+                        fresh_channels[i]["enabled"] = body.enabled
+                        fresh_channels[i]["countryCode"] = body.countryCode
+                        fresh_channels[i]["show_live_status"] = body.show_live_status
+                        break
+                transaction.update(target_doc_ref, {"channels": fresh_channels})
 
+            transaction = db.transaction()
+            _update_batch_in_transaction(transaction)
+
+            # channel_index 是獨立文件的 merge，不需 Transaction
             index_doc_ref = db.collection("channel_index").document(body.channelId)
             index_doc_ref.set(
                 {

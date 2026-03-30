@@ -3,6 +3,7 @@
 import logging
 from datetime import datetime, timedelta
 
+from google.cloud import firestore
 from google.cloud.firestore import Client
 
 from services.classified_video_fetcher import classify_live_title
@@ -11,6 +12,25 @@ from services.live_redirect.video_classifier import classify_video
 from services.live_redirect.youtube_api import batch_fetch_video_details
 
 logger = logging.getLogger(__name__)
+
+
+def _mark_processed_in_transaction(db: Client, date_str: str, processed_ids: set, now: datetime):
+    """以 Transaction 標記 notify queue 中已處理的影片，避免覆蓋同時寫入的新 WebSub 通知"""
+    ref = db.collection("live_redirect_notify_queue").document(date_str)
+
+    @firestore.transactional
+    def _txn(transaction):
+        doc = ref.get(transaction=transaction)
+        data = doc.to_dict() or {}
+        new_list = []
+        for v in data.get("videos", []):
+            if v.get("videoId") in processed_ids:
+                v["processedAt"] = now.isoformat()
+            new_list.append(v)
+        transaction.set(ref, {"updatedAt": now.isoformat(), "videos": new_list})
+
+    transaction = db.transaction()
+    _txn(transaction)
 
 
 def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> dict:
@@ -102,16 +122,9 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
             merged_map[vid] = c
     output_channels = list(merged_map.values())
 
-    # 📝 回寫 notify queue 的 processedAt
+    # 📝 回寫 notify queue 的 processedAt（Transaction 避免覆蓋新進的 WebSub 通知）
     for date_str in [yesterday_str, today_str]:
-        ref = db.collection("live_redirect_notify_queue").document(date_str)
-        data = ref.get().to_dict() or {}
-        new_list = []
-        for v in data.get("videos", []):
-            if v.get("videoId") in processed_ids:
-                v["processedAt"] = now.isoformat()
-            new_list.append(v)
-        ref.set({"updatedAt": now.isoformat(), "videos": new_list})
+        _mark_processed_in_transaction(db, date_str, processed_ids, now)
 
     # 🕒 懶更新機制：補查快取中未收播的影片
     lazy_result = _lazy_refresh_endtime(db, old_channels, cached_map, end_recorded, now)
