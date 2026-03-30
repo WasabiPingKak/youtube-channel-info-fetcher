@@ -8,13 +8,10 @@ from flask_cors import CORS
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from services.firebase_init_service import init_firestore
+from utils.logging_config import setup_logging
 from utils.rate_limiter import limiter
 
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s %(levelname)s [%(name)s] [request_id=%(request_id)s] %(message)s",
-    force=True,
-)
+setup_logging()
 
 # 讓沒有 request context 的 log 也能正常輸出
 old_factory = logging.getLogRecordFactory()
