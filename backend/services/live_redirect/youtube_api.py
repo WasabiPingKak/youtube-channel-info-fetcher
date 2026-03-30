@@ -6,11 +6,21 @@ import os
 import requests
 from requests.exceptions import RequestException
 
+from utils.retry import retry_on_transient_error
+
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 
 
 def _get_api_key() -> str:
     return os.getenv("API_KEY", "")
+
+
+@retry_on_transient_error(max_retries=3, base_delay=1.0)
+def _fetch_with_retry(params: dict) -> list[dict]:
+    """帶 retry 的 YouTube API 請求"""
+    resp = requests.get(YOUTUBE_API_URL, params=params, timeout=10)
+    resp.raise_for_status()
+    return resp.json().get("items", [])
 
 
 def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
@@ -31,9 +41,7 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
 
         try:
             logging.info(f"🌐 查詢 YouTube API：{batch}")
-            resp = requests.get(YOUTUBE_API_URL, params=params, timeout=10)
-            resp.raise_for_status()
-            items = resp.json().get("items", [])
+            items = _fetch_with_retry(params)
             results.extend(items)
             logging.info(f"📦 成功取得 {len(items)} 筆影片資訊")
         except RequestException as e:

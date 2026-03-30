@@ -4,6 +4,8 @@ import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from utils.retry import retry_on_transient_error
+
 
 def fetch_channel_basic_info(channel_id: str) -> dict:
     """
@@ -19,9 +21,13 @@ def fetch_channel_basic_info(channel_id: str) -> dict:
     if not api_key:
         raise OSError("❌ 未設定 API_KEY 環境變數")
 
+    @retry_on_transient_error(max_retries=3, base_delay=1.0)
+    def _fetch():
+        yt = build("youtube", "v3", developerKey=api_key)
+        return yt.channels().list(part="snippet", id=channel_id).execute()
+
     try:
-        youtube = build("youtube", "v3", developerKey=api_key)
-        response = youtube.channels().list(part="snippet", id=channel_id).execute()
+        response = _fetch()
 
         items = response.get("items", [])
         if not items:
