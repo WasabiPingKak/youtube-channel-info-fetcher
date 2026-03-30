@@ -1,32 +1,31 @@
 import { useQuery } from '@tanstack/react-query';
-import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { db } from '../lib/firebase'; // 請依你的實際路徑調整
 
-const DEFAULT_CATEGORY_STRUCTURE = {
-  雜談: {},
-  遊戲: {},
-  音樂: {},
-  節目: {},
-};
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 const getCategoryConfig = async (channelId: string) => {
-  const configRef = doc(db, 'channel_data', channelId, 'settings', 'config');
-  const snapshot = await getDoc(configRef);
+  const res = await fetch(`${API_BASE}/api/firestore/load-category-settings`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ channel_id: channelId, init_default: true }),
+  });
 
-  if (snapshot.exists()) {
-    return snapshot.data();
-  } else {
-    await setDoc(configRef, DEFAULT_CATEGORY_STRUCTURE);
-    return DEFAULT_CATEGORY_STRUCTURE;
+  if (!res.ok) {
+    throw new Error(`HTTP 錯誤：${res.status}`);
   }
+
+  const result = await res.json();
+  if (result.success && result.settings) {
+    return result.settings;
+  }
+
+  throw new Error(result.error || "無法載入分類設定");
 };
 
 export const useCategoryConfig = (channelId: string) => {
   const queryResult = useQuery({
     queryKey: ['category-config', channelId],
     queryFn: () => getCategoryConfig(channelId),
-    // staleTime: Infinity,
-    // gcTime: Infinity, // TanStack Query v5 寫法
+    enabled: !!channelId,
   });
 
   return {

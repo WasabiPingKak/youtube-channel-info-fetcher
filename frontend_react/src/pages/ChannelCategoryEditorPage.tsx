@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { doc, setDoc } from 'firebase/firestore';
-import { db } from '@/lib/firebase';
 import toast from 'react-hot-toast';
+import { saveChannelSettings } from '@/lib/firestore';
 import isEqual from 'lodash.isequal';
 
 import { useMyChannelId } from '@/hooks/useMyChannelId';
@@ -119,19 +118,16 @@ const ChannelCategoryEditorPage = () => {
 
   const handleSave = async () => {
     try {
-      const configRef = doc(
-        db,
-        'channel_data',
-        me.channelId!,
-        'settings',
-        'config'
-      );
-      await setDoc(configRef, editableData);
+      const result = await saveChannelSettings(me.channelId!, editableData);
+      if (!result.success) {
+        showFailureToast(`❌ 儲存失敗：${result.error}`);
+        return;
+      }
       toast.success('✅ 已儲存分類設定，重新整理中...');
-      const result = await refetch();
+      const refetchResult = await refetch();
       await refetchVideos();
-      if (result.data) {
-        setEditableData(structuredClone(result.data));
+      if (refetchResult.data) {
+        setEditableData(structuredClone(refetchResult.data));
       } else {
         console.warn('⚠ 分類設定重新載入失敗，editableData 未同步');
       }

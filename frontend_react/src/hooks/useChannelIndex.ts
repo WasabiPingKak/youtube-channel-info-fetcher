@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "../lib/firebase";
 
 export type { ChannelIndexInfo } from "@/types/channel";
 import type { ChannelIndexInfo } from "@/types/channel";
+
+const API_BASE = import.meta.env.VITE_API_BASE || "";
 
 export function useChannelIndex(channelId: string) {
   const [data, setData] = useState<ChannelIndexInfo | null>(null);
@@ -20,19 +20,20 @@ export function useChannelIndex(channelId: string) {
       setIsLoading(true);
       setError(null);
 
-      const docRef = doc(db, "channel_index", channelId);
       try {
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const raw = docSnap.data();
-          setData(raw as ChannelIndexInfo);
+        const res = await fetch(`${API_BASE}/api/channels/index/${channelId}`);
+        if (!res.ok) {
+          throw new Error(`HTTP 錯誤：${res.status}`);
+        }
+        const result = await res.json();
+        if (result.success && result.channel) {
+          setData(result.channel as ChannelIndexInfo);
         } else {
           console.warn("⚠️ 找不到該頻道索引文件");
           setData(null);
         }
       } catch (err) {
-        console.error("❌ Firestore 讀取錯誤：", err);
+        console.error("❌ 讀取頻道索引錯誤：", err);
         setError(err instanceof Error ? err : new Error("未知錯誤"));
       } finally {
         setIsLoading(false);
