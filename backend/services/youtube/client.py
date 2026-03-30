@@ -3,6 +3,14 @@ import logging
 import googleapiclient.discovery
 import googleapiclient.errors
 
+from utils.retry import retry_on_transient_error
+
+
+@retry_on_transient_error(max_retries=3, base_delay=1.0)
+def _execute_api_request(request):
+    """包裝 googleapiclient request.execute()，加入 retry"""
+    return request.execute()
+
 
 def get_youtube_service(api_key):
     try:
@@ -18,11 +26,8 @@ def get_channel_id(youtube, input_channel):
 
     username = input_channel[1:] if input_channel.startswith("@") else input_channel
     try:
-        response = (
-            youtube.search()
-            .list(part="snippet", q=username, type="channel", maxResults=1)
-            .execute()
-        )
+        request = youtube.search().list(part="snippet", q=username, type="channel", maxResults=1)
+        response = _execute_api_request(request)
         if response["items"]:
             return response["items"][0]["snippet"]["channelId"]
         else:
@@ -38,7 +43,8 @@ def get_channel_id(youtube, input_channel):
 
 def get_uploads_playlist_id(youtube, channel_id):
     try:
-        response = youtube.channels().list(part="contentDetails", id=channel_id).execute()
+        request = youtube.channels().list(part="contentDetails", id=channel_id)
+        response = _execute_api_request(request)
         items = response.get("items", [])
         if not items:
             logging.warning("⚠️ [get_uploads_playlist_id] 找不到頻道內容，頻道 ID: %s", channel_id)

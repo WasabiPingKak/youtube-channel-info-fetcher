@@ -2,6 +2,14 @@ import logging
 
 from googleapiclient.errors import HttpError
 
+from utils.retry import retry_on_transient_error
+
+
+@retry_on_transient_error(max_retries=3, base_delay=1.0)
+def _execute_api_request(request):
+    """包裝 googleapiclient request.execute()，加入 retry"""
+    return request.execute()
+
 
 def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int = None):
     video_ids = []
@@ -17,7 +25,7 @@ def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int = None):
                 maxResults=50,
                 pageToken=next_page_token,
             )
-            response = request.execute()
+            response = _execute_api_request(request)
             ids_in_page = [item["contentDetails"]["videoId"] for item in response["items"]]
             video_ids += ids_in_page
             page_count += 1
@@ -49,11 +57,10 @@ def fetch_video_details(youtube, video_ids):
     for i in range(0, len(video_ids), 50):
         batch = video_ids[i : i + 50]
         try:
-            response = (
-                youtube.videos()
-                .list(part="snippet,contentDetails,liveStreamingDetails", id=",".join(batch))
-                .execute()
+            request = youtube.videos().list(
+                part="snippet,contentDetails,liveStreamingDetails", id=",".join(batch)
             )
+            response = _execute_api_request(request)
             video_details.extend(response["items"])
             logging.info(
                 f"✅ 抓取影片詳情成功（第 {i // 50 + 1} 批，共 {len(response['items'])} 筆）"
