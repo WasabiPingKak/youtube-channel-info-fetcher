@@ -72,6 +72,7 @@ def create_app(config=None):
     app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
 
     # ── Rate Limiter ──
+    app.config.setdefault("RATELIMIT_STORAGE_URI", os.getenv("RATE_LIMIT_STORAGE_URL", "memory://"))
     limiter.init_app(app)
 
     # ── CORS ──

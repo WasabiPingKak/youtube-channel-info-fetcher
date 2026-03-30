@@ -8,64 +8,64 @@ from unittest.mock import MagicMock, patch
 class TestDispatchTask:
     """dispatch_task 單一任務派發"""
 
-    @patch.dict(
-        "os.environ",
-        {
-            "GOOGLE_CLOUD_PROJECT": "test-project",
-            "CLOUD_RUN_SERVICE_URL": "https://test.run.app",
-            "ADMIN_API_KEY": "test-key",
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "https://test.run.app",
         },
     )
-    def test_dispatches_task_successfully(self):
-        import importlib
+    @patch.dict("os.environ", {"ADMIN_API_KEY": "test-key"})
+    def test_dispatches_task_successfully(self, _mock_config):
+        from utils.cloud_tasks_client import dispatch_task
 
-        import utils.cloud_tasks_client as mod
-
-        # mock 整個 CloudTasksClient class
         mock_client = MagicMock()
         mock_client.queue_path.return_value = "projects/test/locations/asia-east1/queues/q"
         mock_task = MagicMock()
         mock_task.name = "tasks/123"
         mock_client.create_task.return_value = mock_task
 
-        with patch("utils.cloud_tasks_client.tasks_v2.CloudTasksClient", return_value=mock_client):
-            mod._client = None  # 重設快取
-            importlib.reload(mod)
-            result = mod.dispatch_task("/api/test", params={"id": "123"})
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = dispatch_task("/api/test", params={"id": "123"})
 
         assert result == "tasks/123"
         mock_client.create_task.assert_called_once()
 
-    @patch.dict("os.environ", {"GOOGLE_CLOUD_PROJECT": "", "CLOUD_RUN_SERVICE_URL": ""})
-    def test_missing_config_returns_none(self):
-        import importlib
-
-        import utils.cloud_tasks_client as mod
-
-        importlib.reload(mod)
-        result = mod.dispatch_task("/api/test")
-        assert result is None
-
-    @patch.dict(
-        "os.environ",
-        {
-            "GOOGLE_CLOUD_PROJECT": "test-project",
-            "CLOUD_RUN_SERVICE_URL": "https://test.run.app",
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "",
         },
     )
-    def test_create_task_failure_returns_none(self):
-        import importlib
+    def test_missing_config_returns_none(self, _mock_config):
+        from utils.cloud_tasks_client import dispatch_task
 
-        import utils.cloud_tasks_client as mod
+        result = dispatch_task("/api/test")
+        assert result is None
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "https://test.run.app",
+        },
+    )
+    def test_create_task_failure_returns_none(self, _mock_config):
+        from utils.cloud_tasks_client import dispatch_task
 
         mock_client = MagicMock()
         mock_client.queue_path.return_value = "projects/test/locations/asia-east1/queues/q"
         mock_client.create_task.side_effect = Exception("API error")
 
-        with patch("utils.cloud_tasks_client.tasks_v2.CloudTasksClient", return_value=mock_client):
-            mod._client = None
-            importlib.reload(mod)
-            result = mod.dispatch_task("/api/test")
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = dispatch_task("/api/test")
 
         assert result is None
 

@@ -14,13 +14,16 @@ from google.cloud import tasks_v2
 
 logger = logging.getLogger(__name__)
 
-# 環境變數（deploy_backend.sh 注入）
-_PROJECT_ID = os.getenv("GOOGLE_CLOUD_PROJECT")
-_LOCATION = os.getenv("CLOUD_TASKS_LOCATION", "asia-east1")
-_QUEUE_NAME = os.getenv("CLOUD_TASKS_QUEUE", "websub-subscribe")
 
-# Cloud Run 服務自身的 URL，用來建立 task target
-_SERVICE_URL = os.getenv("CLOUD_RUN_SERVICE_URL", "")
+def _get_config():
+    """延遲讀取環境變數，避免 import time 綁定"""
+    return {
+        "project_id": os.getenv("GOOGLE_CLOUD_PROJECT", ""),
+        "location": os.getenv("CLOUD_TASKS_LOCATION", "asia-east1"),
+        "queue_name": os.getenv("CLOUD_TASKS_QUEUE", "websub-subscribe"),
+        "service_url": os.getenv("CLOUD_RUN_SERVICE_URL", ""),
+    }
+
 
 _client = None
 
@@ -49,17 +52,19 @@ def dispatch_task(
     Returns:
         task name（成功時）或 None（失敗時）
     """
-    if not _PROJECT_ID or not _SERVICE_URL:
-        logger.error(
-            f"❌ Cloud Tasks 設定不完整：PROJECT={_PROJECT_ID}, SERVICE_URL={_SERVICE_URL}"
-        )
+    config = _get_config()
+    project_id = config["project_id"]
+    service_url = config["service_url"]
+
+    if not project_id or not service_url:
+        logger.error(f"❌ Cloud Tasks 設定不完整：PROJECT={project_id}, SERVICE_URL={service_url}")
         return None
 
     client = _get_client()
-    queue_path = client.queue_path(_PROJECT_ID, _LOCATION, _QUEUE_NAME)
+    queue_path = client.queue_path(project_id, config["location"], config["queue_name"])
 
     # 組裝目標 URL
-    url = f"{_SERVICE_URL.rstrip('/')}{path}"
+    url = f"{service_url.rstrip('/')}{path}"
     if params:
         url = f"{url}?{urlencode(params)}"
 
