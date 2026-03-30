@@ -6,12 +6,16 @@ import os
 import requests
 from requests.exceptions import RequestException
 
-YOUTUBE_API_KEY = os.getenv("API_KEY")
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
 
 
+def _get_api_key() -> str:
+    return os.getenv("API_KEY", "")
+
+
 def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
-    if not YOUTUBE_API_KEY:
+    api_key = _get_api_key()
+    if not api_key:
         logging.error("❌ 環境變數 API_KEY 未設定")
         return []
 
@@ -22,7 +26,7 @@ def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:
         params = {
             "part": "snippet,liveStreamingDetails,status",
             "id": ",".join(batch),
-            "key": YOUTUBE_API_KEY,
+            "key": api_key,
         }
 
         try:
