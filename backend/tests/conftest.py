@@ -12,6 +12,7 @@ os.environ["ADMIN_CHANNEL_IDS"] = "UC_ADMIN_001,UC_ADMIN_002"
 os.environ["ECPAY_MERCHANT_ID"] = "TestMerchantID"
 os.environ["ECPAY_HASH_KEY"] = "TestHashKey1234A"  # 必須 16 bytes（AES-128）
 os.environ["ECPAY_HASH_IV"] = "TestHashIV12345A"  # 必須 16 bytes
+os.environ["ADMIN_API_KEY"] = "test-admin-api-key"
 
 
 @pytest.fixture
