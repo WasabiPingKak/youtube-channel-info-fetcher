@@ -40,6 +40,15 @@ def create_app(config=None):
     config : dict | None
         額外的 Flask config，測試時可傳入 {"TESTING": True} 等設定。
     """
+    # ── 本地開發時載入 .env.local（Cloud Run 由環境變數注入，不需要）──
+    if os.getenv("ENV") != "production":
+        from pathlib import Path
+
+        from dotenv import load_dotenv
+
+        env_path = Path(__file__).resolve().parent / ".env.local"
+        load_dotenv(dotenv_path=env_path)
+
     from utils.route_loader import register_all_routes
 
     # Swagger UI 僅在 staging 環境啟用
