@@ -1,15 +1,20 @@
 """
 app.py create_app factory 測試：初始化流程、middleware、錯誤處理
 
-注意：app.py 在 module level 有 `app = create_app()`，
-因此 mock 需用 patch("app.init_firestore") 來替換已綁定的名稱。
+注意：app.py 在 module level 有 `app = create_app()`。
+mock 必須 patch 來源模組（services.firebase_init_service），
+確保在 app module 被 import 時 mock 已生效，避免 CI 因無 GCP 憑證而失敗。
 """
 
 import os
+import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
 
+# patch 來源模組，而非 app module 上的名稱，
+# 這樣即使 app module 尚未被 import，mock 也會在 module-level create_app() 時生效
+_FIRESTORE_PATCH = "services.firebase_init_service.init_firestore"
 _ROUTES_PATCH = "utils.route_loader.register_all_routes"
 
 
@@ -17,8 +22,16 @@ def _create_test_app(config=None, **env_overrides):
     """建立測試用 app，mock Firestore 與 route registration"""
     env = {"ALLOWED_ORIGINS": "http://localhost:5173", **env_overrides}
     with patch.dict(os.environ, env, clear=False):
-        with patch("app.init_firestore") as mock_init, patch(_ROUTES_PATCH):
+        with patch(_FIRESTORE_PATCH) as mock_init, patch(_ROUTES_PATCH):
             mock_init.return_value = MagicMock()
+
+            # 若 app module 尚未被 import，先在 mock context 中 import
+            # 讓 module-level 的 `app = create_app()` 使用 mock
+            if "app" not in sys.modules:
+                import app as _app_module  # noqa: F811
+
+                assert _app_module  # 確保 import 不被最佳化移除
+
             from app import create_app
 
             return create_app(config)
@@ -37,6 +50,8 @@ class TestCreateApp:
         assert app.config["CUSTOM_KEY"] == "custom_value"
 
     def test_firestore_init_failure_raises(self):
+        # 此測試需 patch app module 上已綁定的名稱（from ... import 語義）
+        # 前面的測試已確保 app module 在 sys.modules 中
         env = {"ALLOWED_ORIGINS": "http://localhost:5173"}
         with patch.dict(os.environ, env, clear=False):
             with (
