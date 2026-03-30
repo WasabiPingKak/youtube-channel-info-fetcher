@@ -7,8 +7,8 @@ from pydantic import BaseModel, Field, field_validator
 from utils.channel_validator import is_valid_channel_id
 
 
-class AdminInitRequest(BaseModel):
-    """POST /api/admin/initialize_channel"""
+class _TargetChannelMixin(BaseModel):
+    """共用的 target_channel_id 驗證"""
 
     target_channel_id: str = Field(min_length=1)
 
@@ -18,6 +18,14 @@ class AdminInitRequest(BaseModel):
         if not is_valid_channel_id(v):
             raise ValueError("target_channel_id 格式不合法")
         return v
+
+
+class AdminInitRequest(_TargetChannelMixin):
+    """POST /api/admin/initialize_channel"""
+
+
+class AdminRevokeRequest(_TargetChannelMixin):
+    """POST /api/admin/revoke"""
 
 
 class BuildTrendingRequest(BaseModel):

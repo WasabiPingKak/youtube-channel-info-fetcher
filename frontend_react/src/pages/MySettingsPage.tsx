@@ -9,6 +9,7 @@ import {
   showLoginRequiredToast,
   showPermissionDeniedToast,
 } from "@/components/common/ToastManager";
+import { AdminRevokeSection } from "@/components/profile_settings/AdminRevokeSection";
 import ChannelSelectorCard from "@/components/channels/ChannelSelectorCard";
 import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
@@ -156,6 +157,8 @@ export default function MySettingsPage() {
         >
           登出
         </button>
+
+        {me?.isAdmin && <AdminRevokeSection />}
       </div>
     </MainLayout>
   );
