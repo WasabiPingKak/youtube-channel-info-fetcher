@@ -4,15 +4,6 @@ from datetime import UTC, datetime, timedelta
 
 import jwt
 
-# ✅ 僅在本地開發時讀取 .env.local（Cloud Run 不需要這一段）
-if os.getenv("ENV") != "production":
-    from pathlib import Path
-
-    from dotenv import load_dotenv
-
-    env_path = Path(__file__).resolve().parent.parent / ".env.local"
-    load_dotenv(dotenv_path=env_path)
-
 from utils.admin_ids import get_admin_channel_ids
 
 JWT_ALGORITHM = "HS256"
