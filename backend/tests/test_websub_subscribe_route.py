@@ -140,19 +140,19 @@ class TestSubscribeOne:
         resp = websub_client.post("/api/websub/subscribe-one?channel_id=UCxxxxxxxxxxxxxxxxxxxxxx")
         assert resp.status_code == 401
 
-    def test_missing_channel_id_returns_400(self, websub_client):
+    def test_missing_channel_id_returns_422(self, websub_client):
         resp = websub_client.post(
             "/api/websub/subscribe-one",
             headers=ADMIN_HEADERS,
         )
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
-    def test_invalid_channel_id_returns_400(self, websub_client):
+    def test_invalid_channel_id_returns_422(self, websub_client):
         resp = websub_client.post(
             "/api/websub/subscribe-one?channel_id=invalid",
             headers=ADMIN_HEADERS,
         )
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
     @patch("routes.websub_subscribe_route.subscribe_channel_by_id")
     def test_successful_subscribe(self, mock_sub, websub_client):

@@ -15,13 +15,13 @@ import logging
 from typing import Any
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 
 # 服務層：讀取分類設定
+from schemas.common import ChannelIdQuery
 from services.firestore_settings_service import load_category_settings
 from utils.auth_decorator import require_auth
-from utils.channel_validator import is_valid_channel_id
 from utils.error_response import error_response
 
 category_editor_bp = APIBlueprint("category_editor", __name__, tag="Category Editor")
@@ -58,14 +58,9 @@ def init_category_editor_routes(app, db):
         security="CookieAuth",
     )
     @require_auth(db)
-    def get_editor_data(auth_channel_id=None):
-        channel_id = request.args.get("channel_id")
-        if not channel_id:
-            logging.warning("⚠️ 缺少 channel_id 參數")
-            return jsonify({"error": "channel_id is required"}), 400
-        if not is_valid_channel_id(channel_id):
-            logging.warning(f"⚠️ channel_id 格式不合法：{channel_id}")
-            return jsonify({"error": "channel_id 格式不合法"}), 400
+    @category_editor_bp.input(ChannelIdQuery, location="query", arg_name="query")
+    def get_editor_data(query, auth_channel_id=None):
+        channel_id = query.channel_id
 
         if channel_id != auth_channel_id:
             logging.warning(

@@ -1,13 +1,13 @@
 import logging
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 
+from schemas.common import ChannelIdCamelQuery
 from schemas.video_schemas import ClassifiedVideoRequest
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
 from services.video_check_update_service import check_channel_update_status
-from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
 video_bp = APIBlueprint("video", __name__, tag="Video")
@@ -44,13 +44,10 @@ def init_video_routes(app, db):
     @video_bp.doc(
         summary="檢查影片是否需要更新", description="檢查頻道影片同步狀態並產生更新 token"
     )
-    def check_update():
+    @video_bp.input(ChannelIdCamelQuery, location="query", arg_name="query")
+    def check_update(query):
         try:
-            channel_id = request.args.get("channelId")
-            if not channel_id:
-                return jsonify({"error": "Missing channelId"}), 400
-            if not is_valid_channel_id(channel_id):
-                return jsonify({"error": "channelId 格式不合法"}), 400
+            channel_id = query.channelId
 
             result = check_channel_update_status(db, channel_id)
             return jsonify(result)

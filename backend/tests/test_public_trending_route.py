@@ -68,13 +68,10 @@ class TestTrendingGames:
         assert resp.status_code == 200
         assert mock_summary.call_args[0][1] == 30
 
-    @patch("routes.public_trending_route.get_trending_games_summary")
-    def test_non_numeric_days_falls_back_to_30(self, mock_summary, client):
-        """非數字 days 應 fallback 到 30"""
-        mock_summary.return_value = {"games": [], "days": 30}
+    def test_non_numeric_days_returns_422(self, client):
+        """非數字 days 應回傳 422 驗證錯誤"""
         resp = client.get("/api/trending-games?days=abc")
-        assert resp.status_code == 200
-        assert mock_summary.call_args[0][1] == 30
+        assert resp.status_code == 422
 
     @patch("routes.public_trending_route.get_trending_games_summary")
     def test_service_error_returns_500(self, mock_summary, client):
