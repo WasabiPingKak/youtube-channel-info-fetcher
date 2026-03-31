@@ -4,6 +4,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from utils.channel_validator import is_valid_channel_id
 from utils.error_response import error_response
@@ -45,6 +46,10 @@ def init_channel_index_detail_route(app, db):
                         )
 
             return error_response("找不到該頻道", 404)
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("❌ 無法讀取頻道索引詳情")

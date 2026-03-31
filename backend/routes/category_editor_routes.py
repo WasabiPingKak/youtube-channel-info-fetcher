@@ -16,6 +16,7 @@ from typing import Any
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 
 # 服務層：讀取分類設定
 from services.firestore_settings_service import load_category_settings
@@ -121,7 +122,11 @@ def init_category_editor_routes(app, db):
                 }
             ), 200
 
-        except Exception:  # pylint: disable=broad-except
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
+
+        except Exception:
             logging.exception("🔥 無法取得 editor-data")
             return error_response("伺服器內部錯誤", 500)
 

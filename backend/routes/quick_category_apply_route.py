@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
 from schemas.category_editor_schemas import QuickApplyRequest
@@ -71,8 +72,12 @@ def init_quick_category_apply_route(app, db):
 
             return jsonify({"success": True, "message": "已儲存分類設定"})
 
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
+
         except Exception:
-            logging.error("🔥 快速分類 API 發生錯誤", exc_info=True)
+            logging.exception("🔥 快速分類 API 發生錯誤")
             return error_response("內部錯誤，請稍後再試", 500)
 
     app.register_blueprint(quick_apply_bp)

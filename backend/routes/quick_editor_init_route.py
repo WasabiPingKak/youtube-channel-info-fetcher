@@ -4,6 +4,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
@@ -59,6 +60,10 @@ def init_quick_editor_init_route(app, db):
                     "config": config,
                 }
             )
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("❌ 無法讀取快速編輯器初始資料")

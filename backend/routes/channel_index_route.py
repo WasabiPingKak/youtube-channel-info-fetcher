@@ -6,6 +6,7 @@ from datetime import datetime
 from apiflask import APIBlueprint
 from dateutil import parser as date_parser
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from utils.error_response import error_response
 
@@ -102,6 +103,10 @@ def init_channel_index_route(app, db):
                     "total_registered_count": total_registered_count,
                 }
             )
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("❌ 無法讀取頻道索引")

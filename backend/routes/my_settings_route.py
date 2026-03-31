@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
 from schemas.settings_schemas import UpdateSettingsRequest
@@ -53,6 +54,10 @@ def init_my_settings_route(app, db):
                     "show_live_status": data.get("show_live_status", True),
                 }
             )
+
+        except GoogleAPIError:
+            logger.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logger.exception("❌ get_my_settings 發生例外錯誤")
@@ -115,6 +120,10 @@ def init_my_settings_route(app, db):
             )
 
             return jsonify({"success": True}), 200
+
+        except GoogleAPIError:
+            logger.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logger.exception("❌ update_my_settings 發生例外錯誤")

@@ -3,6 +3,7 @@ import logging
 from apiflask import APIBlueprint
 from firebase_admin import firestore
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.category_editor_schemas import SkipKeywordRequest
 from utils.auth_decorator import require_auth
@@ -46,8 +47,12 @@ def init_skip_keyword_routes(app, db):
 
             return jsonify({"success": True})
 
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logger.error("🔥 加入略過關鍵字失敗", exc_info=True)
+            logger.exception("🔥 加入略過關鍵字失敗")
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     @bp.route("/remove", methods=["POST"])
@@ -78,8 +83,12 @@ def init_skip_keyword_routes(app, db):
 
             return jsonify({"success": True})
 
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logger.error("🔥 移除略過關鍵字失敗", exc_info=True)
+            logger.exception("🔥 移除略過關鍵字失敗")
             return jsonify({"error": "內部伺服器錯誤"}), 500
 
     app.register_blueprint(bp)

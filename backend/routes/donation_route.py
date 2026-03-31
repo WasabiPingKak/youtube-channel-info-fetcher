@@ -4,6 +4,7 @@ from datetime import datetime
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 
 def init_donation_route(app, db):
@@ -68,6 +69,10 @@ def init_donation_route(app, db):
                 r.pop("_sortKey", None)
 
             return jsonify(sorted_result)
+
+        except GoogleAPIError:
+            logging.exception("[Donation] Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logging.exception("[Donation] 讀取捐款資料失敗")

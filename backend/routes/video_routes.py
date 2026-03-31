@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.video_schemas import ClassifiedVideoRequest
 from services.classified_video_fetcher import get_classified_videos, get_merged_settings
@@ -30,6 +31,10 @@ def init_video_routes(app, db):
 
             result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
             return jsonify({"videos": result})
+
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logger.exception("🔥 /api/videos/classified 發生錯誤")
@@ -142,6 +147,10 @@ def init_video_routes(app, db):
                 response["updateToken"] = token
 
             return jsonify(response)
+
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logger.exception("🔥 /api/videos/check-update 發生錯誤")

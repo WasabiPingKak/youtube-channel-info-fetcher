@@ -4,6 +4,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.settings_schemas import SaveAndApplyRequest
 from services.firestore_settings_service import (
@@ -53,6 +54,10 @@ def init_category_save_apply_routes(app, db):
             return jsonify(
                 {"success": True, "message": "設定已儲存並成功套用分類", "updated_count": -1}
             )
+
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("🔥 /api/categories/save-and-apply 發生例外錯誤")

@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from services.heatmap_analyzer import analyze_and_update_all_channels
 from utils.admin_auth import require_admin_key
@@ -36,8 +37,12 @@ def init_sync_heatmap_route(app, db):
                 }
             ), 200
 
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logging.error("🔥 [sync] 頻道影片活躍統計失敗", exc_info=True)
+            logging.exception("🔥 [sync] 頻道影片活躍統計失敗")
             return jsonify(
                 {
                     "error": "Internal server error",
