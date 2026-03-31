@@ -22,6 +22,6 @@ def init_oauth_state_route(app, db):
             }
         )
         logging.info(f"✅ 已產生 OAuth state：{state[:8]}...")
-        return jsonify({"state": state})
+        return jsonify({"success": True, "state": state})
 
     app.register_blueprint(bp)

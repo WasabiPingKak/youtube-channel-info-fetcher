@@ -3,11 +3,11 @@
 import logging
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 
+from schemas.common import ChannelIdQuery
 from utils.auth_decorator import require_auth
-from utils.channel_validator import is_valid_channel_id
 from utils.error_response import error_response
 
 
@@ -21,12 +21,9 @@ def init_quick_editor_init_route(app, db):
         security="CookieAuth",
     )
     @require_auth(db)
-    def get_quick_editor_init_data(auth_channel_id=None):
-        channel_id = request.args.get("channel_id")
-        if not channel_id:
-            return error_response("channel_id 為必填", 400)
-        if not is_valid_channel_id(channel_id):
-            return error_response("channel_id 格式不合法", 400)
+    @bp.input(ChannelIdQuery, location="query", arg_name="query")
+    def get_quick_editor_init_data(query, auth_channel_id=None):
+        channel_id = query.channel_id
 
         if channel_id != auth_channel_id:
             # 檢查是否為 admin

@@ -1,13 +1,13 @@
 import logging
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
+from schemas.common import ChannelIdCamelQuery
 from schemas.settings_schemas import UpdateSettingsRequest
 from utils.auth_decorator import require_auth
-from utils.channel_validator import is_valid_channel_id
 
 logger = logging.getLogger(__name__)
 
@@ -20,14 +20,11 @@ def init_my_settings_route(app, db):
         summary="取得個人設定", description="取得目前登入使用者的頻道設定", security="CookieAuth"
     )
     @require_auth(db)
-    def get_my_settings(auth_channel_id=None):
+    @bp.input(ChannelIdCamelQuery, location="query", arg_name="query")
+    def get_my_settings(query, auth_channel_id=None):
         logger.info(f"✅ /my-settings/get 驗證成功，channel_id = {auth_channel_id}")
 
-        channel_id = request.args.get("channelId")
-        if not channel_id:
-            return jsonify({"error": "Missing channelId"}), 400
-        if not is_valid_channel_id(channel_id):
-            return jsonify({"error": "channelId 格式不合法"}), 400
+        channel_id = query.channelId
 
         if channel_id != auth_channel_id:
             logger.warning(
@@ -45,6 +42,7 @@ def init_my_settings_route(app, db):
             data = doc.to_dict()
             return jsonify(
                 {
+                    "success": True,
                     "enabled": data.get("enabled", False),
                     "countryCode": data.get("countryCode", []),
                     "channel_id": channel_id,

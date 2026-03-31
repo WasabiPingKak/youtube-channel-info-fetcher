@@ -92,13 +92,13 @@ class TestGetClassified:
 class TestCheckUpdate:
     """GET /api/videos/check-update"""
 
-    def test_missing_channel_id_returns_400(self, video_client):
+    def test_missing_channel_id_returns_422(self, video_client):
         resp = video_client.get("/api/videos/check-update")
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
-    def test_invalid_channel_id_returns_400(self, video_client):
+    def test_invalid_channel_id_returns_422(self, video_client):
         resp = video_client.get("/api/videos/check-update?channelId=bad")
-        assert resp.status_code == 400
+        assert resp.status_code == 422
 
     def test_new_channel_should_update(self, video_client, shared_mock_db):
         mock_doc = MagicMock()

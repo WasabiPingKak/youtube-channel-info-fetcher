@@ -78,7 +78,7 @@ def init_video_update_route(app, db):
 
             token_ref.delete()
 
-            return jsonify({"message": "更新完成"})
+            return jsonify({"success": True, "message": "更新完成"})
 
         except GoogleAPIError:
             logger.exception("🔥 Firestore 操作失敗")

@@ -1,10 +1,11 @@
 import logging
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
+from schemas.common import TrendingQuery
 from services.trending.trending_service import get_trending_games_summary
 
 logger = logging.getLogger(__name__)
@@ -14,20 +15,11 @@ bp = APIBlueprint("public_trending", __name__, tag="Trending")
 def init_public_trending_route(app, db: Client):
     @bp.route("/api/trending-games", methods=["GET"])
     @bp.doc(summary="取得遊戲趨勢排行", description="回傳指定天數內的熱門遊戲排行統計")
-    def trending_games_api():
+    @bp.input(TrendingQuery, location="query", arg_name="query")
+    def trending_games_api(query):
         try:
             logger.info("🚀 [GET /api/trending-games] 處理開始")
-
-            # 取得並驗證 days 參數
-            try:
-                days = int(request.args.get("days", "30"))
-            except ValueError:
-                logger.warning("⚠️ days 參數格式錯誤，已套用預設值 30")
-                days = 30
-
-            if days not in {7, 14, 30}:
-                logger.warning(f"⚠️ days 參數不合法：{days}，已套用預設值 30")
-                days = 30
+            days = query.days
 
             result = get_trending_games_summary(db, days)
 

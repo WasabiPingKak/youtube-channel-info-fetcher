@@ -5,12 +5,12 @@ from datetime import UTC, datetime
 
 import requests
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
+from schemas.common import ChannelIdQuery
 from utils.admin_auth import require_admin_key
-from utils.channel_validator import is_valid_channel_id
 from utils.cloud_tasks_client import dispatch_tasks_batch
 
 websub_subscribe_bp = APIBlueprint("websub_subscribe", __name__, tag="WebSub")
@@ -179,16 +179,13 @@ def init_websub_subscribe_route(app, db: Client):
         security="BearerAuth",
     )
     @require_admin_key
-    def subscribe_single_channel():
+    @websub_subscribe_bp.input(ChannelIdQuery, location="query", arg_name="query")
+    def subscribe_single_channel(query):
         """
         訂閱單一頻道。由 Cloud Tasks 呼叫（帶 Admin Key），也可手動測試。
         Cloud Tasks 會自動 retry 失敗的 task。
         """
-        channel_id = request.args.get("channel_id")
-        if not channel_id:
-            return jsonify({"error": "缺少 channel_id 參數"}), 400
-        if not is_valid_channel_id(channel_id):
-            return jsonify({"error": "channel_id 格式不合法"}), 400
+        channel_id = query.channel_id
 
         success = subscribe_channel_by_id(channel_id)
         if success:

@@ -42,7 +42,7 @@ def init_api_heatmap_route(app, db):
                 logging.error(f"[heatmap] 欄位缺失：{channel_id}")
                 abort(500, description="matrix or totalCount missing.")
 
-            return jsonify({"matrix": matrix, "totalCount": total_count})
+            return jsonify({"success": True, "matrix": matrix, "totalCount": total_count})
 
         except GoogleAPIError:
             logging.exception(f"[heatmap] Firestore 操作失敗：{channel_id}")

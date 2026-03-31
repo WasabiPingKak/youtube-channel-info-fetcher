@@ -1,13 +1,13 @@
 import logging
 
 from apiflask import APIBlueprint
-from flask import jsonify, request
+from flask import jsonify
 from google.api_core.exceptions import GoogleAPIError
 
 from routes.websub_subscribe_route import subscribe_channel_by_id
+from schemas.common import InitChannelQuery
 from services.channel_initializer import run_channel_initialization
 from services.firestore.auth_service import get_refresh_token
-from utils.channel_validator import is_valid_channel_id
 from utils.error_response import error_response
 from utils.rate_limiter import limiter
 
@@ -18,16 +18,10 @@ def init_channel_route(app, db):
     @bp.route("/api/init-channel", methods=["GET"])
     @bp.doc(summary="初始化頻道", description="執行頻道初始化流程，包含影片同步與 WebSub 訂閱")
     @limiter.limit("5 per minute")
-    def init_channel():
-        channel_id = request.args.get("channel")
+    @bp.input(InitChannelQuery, location="query", arg_name="query")
+    def init_channel(query):
+        channel_id = query.channel
         logging.debug(f"📥 [InitAPI] 收到初始化請求：channel={channel_id}")
-
-        if not channel_id:
-            logging.warning("[InitAPI] ⚠️ 未提供 channelId 參數")
-            return error_response("Missing channelId", 400)
-        if not is_valid_channel_id(channel_id):
-            logging.warning(f"[InitAPI] ⚠️ channelId 格式不合法：{channel_id}")
-            return error_response("Invalid channelId format", 400)
 
         try:
             token = get_refresh_token(db, channel_id)
