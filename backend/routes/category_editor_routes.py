@@ -21,6 +21,7 @@ from flask import jsonify, request
 from services.firestore_settings_service import load_category_settings
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
+from utils.error_response import error_response
 
 category_editor_bp = APIBlueprint("category_editor", __name__, tag="Category Editor")
 
@@ -122,14 +123,6 @@ def init_category_editor_routes(app, db):
 
         except Exception:  # pylint: disable=broad-except
             logging.exception("🔥 無法取得 editor-data")
-            return (
-                jsonify(
-                    {
-                        "error": "internal_error",
-                        "message": "伺服器內部錯誤",
-                    }
-                ),
-                500,
-            )
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(category_editor_bp)

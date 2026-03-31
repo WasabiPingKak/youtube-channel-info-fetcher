@@ -7,6 +7,8 @@ from apiflask import APIBlueprint
 from dateutil import parser as date_parser
 from flask import jsonify
 
+from utils.error_response import error_response
+
 
 def init_channel_index_route(app, db):
     bp = APIBlueprint("channel_index_route", __name__, tag="Channel")
@@ -103,7 +105,7 @@ def init_channel_index_route(app, db):
 
         except Exception:
             logging.exception("❌ 無法讀取頻道索引")
-            return jsonify({"success": False, "error": "無法讀取頻道索引"}), 500
+            return error_response("無法讀取頻道索引", 500)
 
     app.register_blueprint(bp)
 

@@ -7,6 +7,7 @@ from flask import jsonify, request
 
 from utils.auth_decorator import require_auth
 from utils.channel_validator import is_valid_channel_id
+from utils.error_response import error_response
 
 
 def init_quick_editor_init_route(app, db):
@@ -22,9 +23,9 @@ def init_quick_editor_init_route(app, db):
     def get_quick_editor_init_data(auth_channel_id=None):
         channel_id = request.args.get("channel_id")
         if not channel_id:
-            return jsonify({"success": False, "error": "channel_id 為必填"}), 400
+            return error_response("channel_id 為必填", 400)
         if not is_valid_channel_id(channel_id):
-            return jsonify({"success": False, "error": "channel_id 格式不合法"}), 400
+            return error_response("channel_id 格式不合法", 400)
 
         if channel_id != auth_channel_id:
             # 檢查是否為 admin
@@ -36,7 +37,7 @@ def init_quick_editor_init_route(app, db):
             )
             meta = meta_ref.get().to_dict() or {}
             if not meta.get("isAdmin"):
-                return jsonify({"success": False, "error": "無權限存取此頻道"}), 403
+                return error_response("無權限存取此頻道", 403)
 
         try:
             base_ref = db.collection("channel_data").document(channel_id).collection("settings")
@@ -61,6 +62,6 @@ def init_quick_editor_init_route(app, db):
 
         except Exception:
             logging.exception("❌ 無法讀取快速編輯器初始資料")
-            return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(bp)

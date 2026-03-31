@@ -8,6 +8,7 @@ from routes.websub_subscribe_route import subscribe_channel_by_id
 from services.channel_initializer import run_channel_initialization
 from services.firestore.auth_service import get_refresh_token
 from utils.channel_validator import is_valid_channel_id
+from utils.error_response import error_response
 from utils.rate_limiter import limiter
 
 
@@ -23,26 +24,16 @@ def init_channel_route(app, db):
 
         if not channel_id:
             logging.warning("[InitAPI] ⚠️ 未提供 channelId 參數")
-            return jsonify(
-                {"success": False, "error": "Missing channelId", "code": "MISSING_CHANNEL_ID"}
-            ), 400
+            return error_response("Missing channelId", 400)
         if not is_valid_channel_id(channel_id):
             logging.warning(f"[InitAPI] ⚠️ channelId 格式不合法：{channel_id}")
-            return jsonify(
-                {
-                    "success": False,
-                    "error": "Invalid channelId format",
-                    "code": "INVALID_CHANNEL_ID",
-                }
-            ), 400
+            return error_response("Invalid channelId format", 400)
 
         try:
             token = get_refresh_token(db, channel_id)
             if not token:
                 logging.warning(f"[InitAPI] ⚠️ 該頻道尚未授權：{channel_id}")
-                return jsonify(
-                    {"success": False, "error": "Channel is not authorized", "code": "UNAUTHORIZED"}
-                ), 401
+                return error_response("Channel is not authorized", 401)
 
             logging.info(f"[InitAPI] ✅ 開始執行初始化流程 for {channel_id}")
             run_channel_initialization(db, channel_id)
@@ -55,14 +46,10 @@ def init_channel_route(app, db):
 
         except GoogleAPIError:
             logging.exception(f"[InitAPI] ❌ Firestore 操作失敗 for {channel_id}")
-            return jsonify(
-                {"success": False, "error": "Firestore 操作失敗", "code": "FIRESTORE_ERROR"}
-            ), 500
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception(f"[InitAPI] ❌ 初始化過程錯誤 for {channel_id}")
-            return jsonify(
-                {"success": False, "error": "伺服器內部錯誤", "code": "INTERNAL_ERROR"}
-            ), 500
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(bp)
