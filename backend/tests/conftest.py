@@ -8,6 +8,14 @@
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _clear_revoke_cache():
+    """每個測試前清空撤銷快取，避免跨測試污染"""
+    from utils.auth_decorator import _revoke_cache
+
+    _revoke_cache.clear()
+
+
 @pytest.fixture
 def mock_db():
     """回傳一個可控制行為的 mock Firestore client"""

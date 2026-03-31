@@ -1,15 +1,24 @@
 import logging
 from functools import wraps
 
+from cachetools import TTLCache
 from flask import jsonify, request
 
 from utils.jwt_util import verify_jwt
+
+# 撤銷狀態快取：最多 256 個 channel，TTL 60 秒
+_revoke_cache: TTLCache = TTLCache(maxsize=256, ttl=60)
+
+
+def clear_revoke_cache(channel_id: str) -> None:
+    """清除指定 channel 的撤銷快取，供撤銷 API 呼叫"""
+    _revoke_cache.pop(channel_id, None)
 
 
 def require_auth(db):
     """
     JWT 認證 decorator factory。
-    驗證 JWT 簽名 + Firestore revoked_at 撤銷檢查，
+    驗證 JWT 簽名 + Firestore revoked_at 撤銷檢查（帶 TTL 快取），
     通過後將 auth_channel_id 注入 kwargs。
 
     用法：@require_auth(db)
@@ -33,15 +42,20 @@ def require_auth(db):
                 logging.warning("🔒 JWT 中缺少 channelId")
                 return jsonify({"error": "無效的使用者身份"}), 403
 
-            # 撤銷檢查：revoked_at 晚於 token 簽發時間 → token 已作廢
-            meta_ref = (
-                db.collection("channel_data")
-                .document(channel_id)
-                .collection("channel_info")
-                .document("meta")
-            )
-            meta = meta_ref.get().to_dict() or {}
-            revoked_at = meta.get("revoked_at")
+            # 撤銷檢查（帶 TTL 快取，減少 Firestore per-request 讀取）
+            revoked_at = _revoke_cache.get(channel_id)
+            if revoked_at is None:
+                meta_ref = (
+                    db.collection("channel_data")
+                    .document(channel_id)
+                    .collection("channel_info")
+                    .document("meta")
+                )
+                meta = meta_ref.get().to_dict() or {}
+                # 存入快取：無 revoked_at 時用 False 表示「已查過、未撤銷」
+                revoked_at = meta.get("revoked_at") or False
+                _revoke_cache[channel_id] = revoked_at
+
             iat = decoded.get("iat", 0)
             if revoked_at and revoked_at.timestamp() > iat:
                 logging.warning(f"🔒 token 已被撤銷，channel_id = {channel_id}")

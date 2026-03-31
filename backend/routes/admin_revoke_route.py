@@ -6,7 +6,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import SERVER_TIMESTAMP
 
 from schemas.admin_schemas import AdminRevokeRequest
-from utils.auth_decorator import require_auth
+from utils.auth_decorator import clear_revoke_cache, require_auth
 from utils.jwt_util import is_admin_channel_id
 from utils.rate_limiter import limiter
 
@@ -44,6 +44,7 @@ def init_admin_revoke_route(app, db):
                 return jsonify({"error": "找不到該頻道的授權資料"}), 404
 
             meta_ref.update({"revoked_at": SERVER_TIMESTAMP})
+            clear_revoke_cache(target_id)
 
             # Audit log
             logging.info(f"🔒 管理員撤銷授權：operator={auth_channel_id}, target={target_id}")
