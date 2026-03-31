@@ -3,7 +3,7 @@ import type { TrendingGamesResponse } from "@/types/trending";
 
 export type { VideoItem, SummaryStats, ChartDataPoint, ChannelVideoGroup, TrendingGamesResponse } from "@/types/trending";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 
 export const useTrendingGamesQuery = (days: 7 | 14 | 30 = 30) => {

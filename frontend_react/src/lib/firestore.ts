@@ -1,5 +1,4 @@
-const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5173";
-
+import { apiPost } from "@/lib/api";
 
 /**
  * 從後端 API 讀取指定頻道的分類設定
@@ -7,10 +6,8 @@ const API_BASE = import.meta.env.VITE_API_BASE || "http://localhost:5173";
  */
 export const loadChannelSettings = async (channelId: string) => {
   try {
-    const res = await fetch(`${API_BASE}/api/firestore/load-category-settings`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ channel_id: channelId }),
+    const res = await apiPost("/api/firestore/load-category-settings", {
+      channel_id: channelId,
     });
 
     if (res.status === 404) {
@@ -41,13 +38,9 @@ export const loadChannelSettings = async (channelId: string) => {
  */
 export const saveChannelSettings = async (channelId: string, data: Record<string, unknown>) => {
   try {
-    const res = await fetch(`${API_BASE}/api/categories/save-and-apply`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        channel_id: channelId,
-        settings: data,
-      }),
+    const res = await apiPost("/api/categories/save-and-apply", {
+      channel_id: channelId,
+      settings: data,
     });
 
     if (!res.ok) {

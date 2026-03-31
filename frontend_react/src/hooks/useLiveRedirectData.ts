@@ -1,7 +1,7 @@
 // hooks/useLiveRedirectData.ts
 import { useQuery } from "@tanstack/react-query";
 
-const BASE_URL = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 import type { LiveChannelData, LiveRedirectCacheResponse } from "@/types/live";
 
@@ -13,7 +13,7 @@ export function useLiveRedirectData() {
   return useQuery({
     queryKey: ["liveRedirectCache"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/api/live-redirect/cache`);
+      const res = await fetch(`${API_BASE}/api/live-redirect/cache`);
 
       if (!res.ok) {
         const text = await res.text();

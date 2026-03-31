@@ -3,7 +3,7 @@ import type { ActiveTimeResponse } from "@/types/activeTime";
 
 export type { ActiveTimeMatrix, ActiveTimeChannel, ActiveTimeResponse } from "@/types/activeTime";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 const fetchActiveTimeChannels = async (): Promise<ActiveTimeResponse> => {
   const res = await fetch(`${API_BASE}/api/heatmap/weekly`, {

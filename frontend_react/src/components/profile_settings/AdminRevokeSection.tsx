@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { toast } from "react-hot-toast";
+import { apiPost } from "@/lib/api";
 import { showFailureToast } from "@/components/common/ToastManager";
 
 export function AdminRevokeSection() {
@@ -15,11 +16,8 @@ export function AdminRevokeSection() {
 
         setLoading(true);
         try {
-            const res = await fetch("/api/admin/revoke", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                credentials: "include",
-                body: JSON.stringify({ target_channel_id: targetChannelId }),
+            const res = await apiPost("/api/admin/revoke", {
+                target_channel_id: targetChannelId,
             });
 
             if (!res.ok) {

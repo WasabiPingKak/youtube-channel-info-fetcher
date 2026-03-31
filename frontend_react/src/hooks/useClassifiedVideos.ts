@@ -3,7 +3,7 @@ import type { ClassifiedVideoItem } from "@/types/category";
 
 export type { ClassifiedVideoItem } from "@/types/category";
 
-const BASE_URL = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export function useClassifiedVideos(
   channelId: string,
@@ -17,7 +17,7 @@ export function useClassifiedVideos(
   } = useQuery({
     queryKey: ["classified", channelId, videoType],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/api/videos/classified`, {
+      const res = await fetch(`${API_BASE}/api/videos/classified`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

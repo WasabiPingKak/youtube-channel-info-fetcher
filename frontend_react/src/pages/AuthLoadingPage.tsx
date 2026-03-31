@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
+import { apiFetch } from "@/lib/api";
 import MainLayout from "../components/layout/MainLayout";
 
 const AuthLoadingPage = () => {
@@ -19,7 +20,7 @@ const AuthLoadingPage = () => {
     setInitSuccess(false);
 
     try {
-      const res = await fetch(`/api/init-channel?channel=${channelId}`);
+      const res = await apiFetch(`/api/init-channel?channel=${channelId}`);
       const data = await res.json();
 
       if (!res.ok || !data.success) {

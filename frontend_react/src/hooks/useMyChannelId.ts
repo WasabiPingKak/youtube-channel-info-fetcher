@@ -8,13 +8,13 @@ export type MeResponse = {
   thumbnail?: string | null;
 };
 
-const BASE_URL = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export function useMyChannelId() {
   return useQuery<MeResponse>({
     queryKey: ["me"],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/api/me`, {
+      const res = await fetch(`${API_BASE}/api/me`, {
         credentials: "include",
       });
 

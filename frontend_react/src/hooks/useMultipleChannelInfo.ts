@@ -6,7 +6,7 @@ export interface ChannelInfo {
   thumbnail: string;
 }
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export function useMultipleChannelInfo(channelIds: string[]) {
   const [data, setData] = useState<Record<string, ChannelInfo>>({});

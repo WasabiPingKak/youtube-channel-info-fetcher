@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useMyChannelId } from "@/hooks/useMyChannelId";
 import { toast } from "react-hot-toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { apiFetch, apiPost } from "@/lib/api";
 import {
   showSuccessToast,
   showFailureToast,
@@ -29,9 +30,7 @@ export function useMySettings() {
   const fetchSettings = async (channelId: string) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/my-settings/get?channelId=${channelId}`, {
-        credentials: "include",
-      });
+      const res = await apiFetch(`/api/my-settings/get?channelId=${channelId}`);
       if (!res.ok) throw new Error("Fetch failed");
       const data: MySettingsResponse = await res.json();
       setChannelInfo(data);
@@ -53,16 +52,11 @@ export function useMySettings() {
 
   const handleSave = async () => {
     try {
-      const res = await fetch("/api/my-settings/update", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channelId: user?.channelId,
-          enabled,
-          countryCode: selectedCountries,
-          show_live_status: visibleLive,
-        }),
-        credentials: "include",
+      const res = await apiPost("/api/my-settings/update", {
+        channelId: user?.channelId,
+        enabled,
+        countryCode: selectedCountries,
+        show_live_status: visibleLive,
       });
 
       if (!res.ok) throw new Error();

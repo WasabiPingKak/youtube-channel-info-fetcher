@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import HeatmapContainer from "./HeatmapContainer";
 import type { ClassifiedVideoItem } from "@/types/category";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 interface HeatmapResponse {
   matrix?: Record<string, Record<string, string[]>>;

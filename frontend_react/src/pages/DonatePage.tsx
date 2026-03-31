@@ -4,7 +4,7 @@ import MainLayout from "@/components/layout/MainLayout";
 import DonationList from "@/components/donations/DonationList";
 import type { DonationItem } from "@/types/donations";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export default function DonatePage() {
   const [donations, setDonations] = useState<DonationItem[]>([]);
