@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import type { SuggestedKeywordCardState } from '@/utils/keywordCardBuilder';
 import { useQuickCategoryApply } from '@/hooks/useQuickCategoryApply';
+import { apiPost } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface QuickCategoryEditorStore {
@@ -115,14 +116,9 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
       });
 
       try {
-        const res = await fetch('/api/quick-editor/channel-config-remove', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            channelId: state.channelId,
-            keyword,
-          }),
-          credentials: 'include',
+        const res = await apiPost('/api/quick-editor/channel-config-remove', {
+          channelId: state.channelId,
+          keyword,
         });
 
         if (!res.ok) {
@@ -185,11 +181,9 @@ export const useQuickCategoryEditorStore = create<QuickCategoryEditorStore>((set
 
       const channelId = get().channelId;
       try {
-        const res = await fetch(`/api/quick-editor/skip-keyword/${skipped ? 'add' : 'remove'}`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ channelId, keyword }),
-          credentials: 'include',
+        const res = await apiPost(`/api/quick-editor/skip-keyword/${skipped ? 'add' : 'remove'}`, {
+          channelId,
+          keyword,
         });
 
         if (!res.ok) {

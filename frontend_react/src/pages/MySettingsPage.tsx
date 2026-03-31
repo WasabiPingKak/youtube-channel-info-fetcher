@@ -15,6 +15,7 @@ import MainLayout from "../components/layout/MainLayout";
 import { Link, useNavigate } from "react-router-dom";
 import { toast } from "react-hot-toast";
 import { MdAnalytics } from "react-icons/md";
+import { apiPost } from "@/lib/api";
 
 export default function MySettingsPage() {
   const {
@@ -63,7 +64,7 @@ export default function MySettingsPage() {
 
   const handleLogout = async () => {
     try {
-      const res = await fetch("/api/logout", { method: "POST" });
+      const res = await apiPost("/api/logout", {});
       if (!res.ok) throw new Error("Logout failed");
       toast.success("已成功登出");
       navigate("/");

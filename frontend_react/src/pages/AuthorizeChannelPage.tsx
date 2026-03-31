@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import MainLayout from "../components/layout/MainLayout";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;
 const REDIRECT_URI = import.meta.env.VITE_GOOGLE_REDIRECT_URI;
 const SCOPE = "https://www.googleapis.com/auth/youtube.readonly";

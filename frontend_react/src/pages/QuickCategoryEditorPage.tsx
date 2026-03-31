@@ -8,7 +8,7 @@ import KeywordCardList from '@/components/QuickCategoryEditor/KeywordCardList';
 import MainLayout from '../components/layout/MainLayout';
 import { useMyChannelId } from '@/hooks/useMyChannelId';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 import {
   showLoginRequiredToast,
   showPermissionDeniedToast,

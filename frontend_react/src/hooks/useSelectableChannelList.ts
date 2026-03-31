@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export type { ChannelIndexEntry } from "@/types/channel";
 import type { ChannelIndexEntry } from "@/types/channel";

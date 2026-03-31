@@ -14,7 +14,7 @@ export interface ClassifiedVideoItem {
   matchedPairs?: { main: string; keyword: string; hitKeywords: string[] }[];
 }
 
-const BASE_URL = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 // 🔧 工具：取得台灣時區的 UTC 範圍
 function getTaiwanYearRangeUTC(year: number) {
@@ -41,7 +41,7 @@ export function useAnnualReviewData(channelId: string, year: number) {
   } = useQuery({
     queryKey: ["annual-review", channelId, year],
     queryFn: async () => {
-      const res = await fetch(`${BASE_URL}/api/videos/classified`, {
+      const res = await fetch(`${API_BASE}/api/videos/classified`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

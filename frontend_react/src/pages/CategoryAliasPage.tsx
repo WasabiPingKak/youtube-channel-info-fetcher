@@ -4,7 +4,7 @@ import MainLayout from "../components/layout/MainLayout";
 import { filterAndSortAliases, type SortOption } from "../utils/filterAndSortAliases";
 import AliasSearchBar from "../utils/AliasSearchBar";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 const SKIPPED_CATEGORY = "遊戲";
 
 const CategoryAliasPage = () => {

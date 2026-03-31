@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 export type { ChannelIndexInfo } from "@/types/channel";
 import type { ChannelIndexInfo } from "@/types/channel";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
+import { API_BASE } from "@/lib/api";
 
 export function useChannelIndex(channelId: string) {
   const [data, setData] = useState<ChannelIndexInfo | null>(null);
