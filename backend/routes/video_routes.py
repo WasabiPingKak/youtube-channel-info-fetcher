@@ -27,10 +27,10 @@ def init_video_routes(app, db):
 
             if body.only_settings:
                 settings = get_merged_settings(db, body.channel_id)
-                return jsonify({"settings": settings})
+                return jsonify({"success": True, "settings": settings})
 
             result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
-            return jsonify({"videos": result})
+            return jsonify({"success": True, "videos": result})
 
         except GoogleAPIError:
             logger.exception("🔥 Firestore 操作失敗")

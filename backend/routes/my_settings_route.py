@@ -42,6 +42,7 @@ def init_my_settings_route(app, db):
             data = doc.to_dict()
             return jsonify(
                 {
+                    "success": True,
                     "enabled": data.get("enabled", False),
                     "countryCode": data.get("countryCode", []),
                     "channel_id": channel_id,

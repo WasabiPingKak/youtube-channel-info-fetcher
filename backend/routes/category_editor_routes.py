@@ -111,6 +111,7 @@ def init_category_editor_routes(app, db):
 
             return jsonify(
                 {
+                    "success": True,
                     "config": config,
                     "videos": videos,
                     "removedSuggestedKeywords": config.get("removedSuggestedKeywords", []),

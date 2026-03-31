@@ -26,6 +26,7 @@ def init_me_route(app, db):
             return (
                 jsonify(
                     {
+                        "success": True,
                         "channelId": None,
                         "isAdmin": False,
                     }
@@ -64,6 +65,7 @@ def init_me_route(app, db):
         if not doc.exists:
             logging.error(f"❌ Firestore 找不到頻道：{channel_id}")
             response_data = {
+                "success": True,
                 "channelId": channel_id,
                 "isAdmin": is_admin,
                 "name": None,
@@ -72,6 +74,7 @@ def init_me_route(app, db):
         else:
             data = doc.to_dict()
             response_data = {
+                "success": True,
                 "channelId": channel_id,
                 "isAdmin": is_admin,
                 "name": data.get("name"),
