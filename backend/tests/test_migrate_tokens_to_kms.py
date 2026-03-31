@@ -57,7 +57,7 @@ class TestMigrateTokens:
 
         meta_docs = [self._make_meta_doc(cid, token) for cid, token in channels.items()]
 
-        db.collection_group.return_value.where.return_value.stream.return_value = iter(meta_docs)
+        db.collection_group.return_value.stream.return_value = iter(meta_docs)
         return db
 
     def test_dry_run_does_not_write(self):
@@ -162,9 +162,7 @@ class TestMigrateTokens:
         other_doc.reference.path = "channel_data/UC002/channel_info/settings"
         other_doc.to_dict.return_value = {"some_field": "value"}
 
-        db.collection_group.return_value.where.return_value.stream.return_value = iter(
-            [meta_doc, other_doc]
-        )
+        db.collection_group.return_value.stream.return_value = iter([meta_doc, other_doc])
 
         with patch("tools.migrate_tokens_to_kms.kms_encrypt", return_value="enc"):
             stats = migrate_tokens(db, dry_run=False)
