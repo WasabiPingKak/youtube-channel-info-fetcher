@@ -101,6 +101,30 @@ class TestMiddleware:
         assert "X-Request-ID" in resp.headers
 
 
+class TestKmsGuardrail:
+    """部署環境 KMS 啟動檢查"""
+
+    def test_deployed_env_without_kms_raises(self):
+        """部署環境缺少 KMS 設定時 create_app 必須失敗"""
+        with pytest.raises(RuntimeError, match="部署環境必須設定 KMS"):
+            _create_test_app(config=None, FIRESTORE_DATABASE="(default)")
+
+    def test_deployed_env_staging_without_kms_raises(self):
+        """Staging 環境缺少 KMS 設定時 create_app 必須失敗"""
+        with pytest.raises(RuntimeError, match="部署環境必須設定 KMS"):
+            _create_test_app(config=None, FIRESTORE_DATABASE="staging")
+
+    def test_testing_mode_skips_kms_check(self):
+        """TESTING 模式不檢查 KMS"""
+        app = _create_test_app({"TESTING": True}, FIRESTORE_DATABASE="(default)")
+        assert app is not None
+
+    def test_local_env_without_kms_ok(self):
+        """本地環境無 KMS 設定不影響啟動"""
+        app = _create_test_app(config=None)
+        assert app is not None
+
+
 class TestCorsValidation:
     """CORS 白名單驗證"""
 

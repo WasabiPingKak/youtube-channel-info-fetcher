@@ -109,6 +109,15 @@ def create_app(config=None):
         response.headers["X-Request-ID"] = g.get("request_id", "-")
         return response
 
+    # ── KMS Guardrail（部署環境必須設定 KMS）──
+    if not app.config.get("TESTING"):
+        from utils.kms_crypto import _is_deployed_env, is_kms_configured
+
+        if _is_deployed_env() and not is_kms_configured():
+            raise RuntimeError(
+                "❌ 部署環境必須設定 KMS（KMS_KEY_RING、KMS_KEY_ID、GOOGLE_CLOUD_PROJECT）"
+            )
+
     # ── Firestore ──
     try:
         db = init_firestore()

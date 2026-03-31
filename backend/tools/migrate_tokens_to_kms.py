@@ -20,6 +20,10 @@ migrate_tokens_to_kms.py
 
   # 指定資料庫
   python tools/migrate_tokens_to_kms.py --database staging --apply
+
+  # 稽核模式：只掃描回報未加密 token 數量（exit code 非零表示有未加密 token）
+  python tools/migrate_tokens_to_kms.py --audit
+  python tools/migrate_tokens_to_kms.py --audit --database staging
 """
 
 import argparse
@@ -77,6 +81,48 @@ def init_firestore_client(database_id: str) -> firestore.Client:
     client = firestore.Client(credentials=credentials, project=project_id, database=database_id)
     logger.info(f"✓ Firestore 客戶端初始化成功（資料庫: {database_id}）")
     return client
+
+
+def audit_tokens(db: firestore.Client) -> dict:
+    """
+    稽核模式：掃描所有 channel_data 下的 meta 文件，統計 token 加密狀態。
+    只讀不寫，回傳統計結果與未加密的 channel_id 清單。
+
+    Returns:
+        dict: 統計結果，含 plaintext_channel_ids 清單
+    """
+    stats = {
+        "scanned": 0,
+        "plaintext_found": 0,
+        "already_encrypted": 0,
+        "skipped_no_token": 0,
+        "plaintext_channel_ids": [],
+    }
+
+    meta_docs = db.collection_group("channel_info").stream()
+
+    for meta_doc in meta_docs:
+        path_parts = meta_doc.reference.path.split("/")
+        if len(path_parts) < 4 or path_parts[2] != "channel_info" or path_parts[3] != "meta":
+            continue
+
+        channel_id = path_parts[1]
+        stats["scanned"] += 1
+
+        data = meta_doc.to_dict()
+        raw_token = data.get("refresh_token")
+
+        if not raw_token:
+            stats["skipped_no_token"] += 1
+            continue
+
+        if is_plaintext_token(raw_token):
+            stats["plaintext_found"] += 1
+            stats["plaintext_channel_ids"].append(channel_id)
+        else:
+            stats["already_encrypted"] += 1
+
+    return stats
 
 
 def migrate_tokens(db: firestore.Client, dry_run: bool) -> dict:
@@ -169,6 +215,11 @@ def parse_arguments():
         help="正式執行：加密明文 token 並寫回 Firestore（未指定時預設為 dry-run）",
     )
     parser.add_argument(
+        "--audit",
+        action="store_true",
+        help="稽核模式：只掃描並回報未加密 token 數量，不做任何寫入",
+    )
+    parser.add_argument(
         "--database",
         type=str,
         default="(default)",
@@ -181,6 +232,38 @@ def parse_arguments():
 def main():
     """主程式進入點"""
     args = parse_arguments()
+
+    # --audit 模式：只掃描不寫入，不需要 KMS
+    if args.audit:
+        db = init_firestore_client(args.database)
+
+        print("=" * 60)
+        print("Refresh Token Audit")
+        print("=" * 60)
+        print(f"資料庫: {args.database}")
+        print("=" * 60)
+        print()
+
+        logger.info("開始稽核 channel_data...")
+        stats = audit_tokens(db)
+
+        print()
+        print("=" * 60)
+        print("Audit Summary")
+        print("=" * 60)
+        print(f"總頻道數: {stats['scanned']}")
+        print(f"已加密: {stats['already_encrypted']}")
+        print(f"未加密: {stats['plaintext_found']}")
+        print(f"無 token: {stats['skipped_no_token']}")
+
+        if stats["plaintext_channel_ids"]:
+            print(f"未加密頻道: {', '.join(stats['plaintext_channel_ids'])}")
+
+        print("=" * 60)
+
+        # 非零 exit code 供 CI 判斷
+        sys.exit(1 if stats["plaintext_found"] > 0 else 0)
+
     dry_run = not args.apply
 
     # 檢查 KMS 是否已設定（dry-run 僅掃描不加密，不需要 KMS）

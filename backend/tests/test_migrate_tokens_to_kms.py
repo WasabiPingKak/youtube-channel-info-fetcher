@@ -5,7 +5,7 @@ migrate_tokens_to_kms 測試：批次加密明文 refresh_token
 import base64
 from unittest.mock import MagicMock, patch
 
-from tools.migrate_tokens_to_kms import is_plaintext_token, migrate_tokens
+from tools.migrate_tokens_to_kms import audit_tokens, is_plaintext_token, migrate_tokens
 
 
 class TestIsPlaintextToken:
@@ -169,3 +169,60 @@ class TestMigrateTokens:
 
         assert stats["scanned"] == 1
         assert stats["plaintext_found"] == 1
+
+
+class TestAuditTokens:
+    """測試稽核模式"""
+
+    def _make_meta_doc(self, channel_id: str, token_value: str | None):
+        doc = MagicMock()
+        doc.reference.path = f"channel_data/{channel_id}/channel_info/meta"
+        if token_value is None:
+            doc.to_dict.return_value = {}
+        else:
+            doc.to_dict.return_value = {"refresh_token": token_value}
+        return doc
+
+    def _make_mock_db(self, channels: dict):
+        db = MagicMock()
+        meta_docs = [self._make_meta_doc(cid, token) for cid, token in channels.items()]
+        db.collection_group.return_value.stream.return_value = iter(meta_docs)
+        return db
+
+    def test_all_encrypted(self):
+        """全部已加密時回傳 plaintext_found=0"""
+        encrypted = base64.b64encode(b"already-encrypted").decode("utf-8")
+        db = self._make_mock_db({"UC001": encrypted, "UC002": encrypted})
+
+        stats = audit_tokens(db)
+
+        assert stats["scanned"] == 2
+        assert stats["already_encrypted"] == 2
+        assert stats["plaintext_found"] == 0
+        assert stats["plaintext_channel_ids"] == []
+
+    def test_finds_plaintext(self):
+        """找到明文 token 時回傳 channel_id 清單"""
+        encrypted = base64.b64encode(b"encrypted").decode("utf-8")
+        db = self._make_mock_db(
+            {
+                "UC001": "1//0abc-plaintext",
+                "UC002": encrypted,
+                "UC003": "1//0def-also-plain",
+            }
+        )
+
+        stats = audit_tokens(db)
+
+        assert stats["plaintext_found"] == 2
+        assert stats["already_encrypted"] == 1
+        assert set(stats["plaintext_channel_ids"]) == {"UC001", "UC003"}
+
+    def test_no_token_channels(self):
+        """無 token 的頻道不算未加密"""
+        db = self._make_mock_db({"UC001": None})
+
+        stats = audit_tokens(db)
+
+        assert stats["skipped_no_token"] == 1
+        assert stats["plaintext_found"] == 0
