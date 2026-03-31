@@ -230,7 +230,7 @@ def main():
     print(f"已加密: {stats['already_encrypted']}")
     print(f"發現明文: {stats['plaintext_found']}")
     if args.dry_run:
-        print(f"狀態: 🚧 Dry Run 完成（未寫入）")
+        print("狀態: 🚧 Dry Run 完成（未寫入）")
     else:
         print(f"成功加密: {stats['encrypted']}")
         print(f"加密失敗: {stats['errors']}")
