@@ -90,6 +90,48 @@ class TestRequireAuth:
         assert resp.status_code == 403
         assert resp.get_json()["error"] == "Token revoked"
 
+    def test_cache_avoids_repeated_firestore_calls(self, mock_db):
+        """第二次請求應命中快取，不再查 Firestore"""
+        app = self._make_app_with_protected_route(mock_db)
+        client = app.test_client()
+
+        token = generate_jwt("UC_CACHE_TEST")
+        client.set_cookie("__session", token)
+
+        # 第一次請求 → 查 Firestore
+        resp1 = client.get("/protected")
+        assert resp1.status_code == 200
+
+        # 第二次請求 → 應命中快取
+        resp2 = client.get("/protected")
+        assert resp2.status_code == 200
+
+        # Firestore get() 只被呼叫 1 次
+        get_mock = mock_db.collection.return_value.document.return_value.collection.return_value.document.return_value.get
+        assert get_mock.call_count == 1
+
+    def test_clear_revoke_cache_forces_refetch(self, mock_db):
+        """clear_revoke_cache 後下一次請求應重新查 Firestore"""
+        from utils.auth_decorator import clear_revoke_cache
+
+        app = self._make_app_with_protected_route(mock_db)
+        client = app.test_client()
+
+        token = generate_jwt("UC_CLEAR_TEST")
+        client.set_cookie("__session", token)
+
+        # 第一次請求 → 查 Firestore 並寫入快取
+        client.get("/protected")
+
+        # 清除快取
+        clear_revoke_cache("UC_CLEAR_TEST")
+
+        # 第二次請求 → 應再次查 Firestore
+        client.get("/protected")
+
+        get_mock = mock_db.collection.return_value.document.return_value.collection.return_value.document.return_value.get
+        assert get_mock.call_count == 2
+
 
 # ═══════════════════════════════════════════════════════
 # OAuth callback CSRF 防護
