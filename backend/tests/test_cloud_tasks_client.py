@@ -83,3 +83,45 @@ class TestDispatchTasksBatch:
             params_list=[{"id": "1"}, {"id": "2"}, {"id": "3"}],
         )
         assert result == {"dispatched": 2, "failed": 1}
+
+    @patch("utils.cloud_tasks_client.dispatch_task")
+    def test_batch_empty_list(self, mock_dispatch):
+        from utils.cloud_tasks_client import dispatch_tasks_batch
+
+        result = dispatch_tasks_batch("/api/test", params_list=[])
+        assert result == {"dispatched": 0, "failed": 0}
+        mock_dispatch.assert_not_called()
+
+    @patch("utils.cloud_tasks_client.dispatch_task")
+    def test_batch_all_fail(self, mock_dispatch):
+        from utils.cloud_tasks_client import dispatch_tasks_batch
+
+        mock_dispatch.return_value = None
+        result = dispatch_tasks_batch(
+            "/api/test",
+            params_list=[{"id": "1"}, {"id": "2"}],
+        )
+        assert result == {"dispatched": 0, "failed": 2}
+
+    @patch("utils.cloud_tasks_client.dispatch_task")
+    def test_batch_handles_exception_in_future(self, mock_dispatch):
+        from utils.cloud_tasks_client import dispatch_tasks_batch
+
+        mock_dispatch.side_effect = Exception("unexpected error")
+        result = dispatch_tasks_batch(
+            "/api/test",
+            params_list=[{"id": "1"}],
+        )
+        assert result == {"dispatched": 0, "failed": 1}
+
+    @patch("utils.cloud_tasks_client.dispatch_task")
+    def test_batch_with_custom_max_workers(self, mock_dispatch):
+        from utils.cloud_tasks_client import dispatch_tasks_batch
+
+        mock_dispatch.return_value = "task/1"
+        result = dispatch_tasks_batch(
+            "/api/test",
+            params_list=[{"id": "1"}, {"id": "2"}],
+            max_workers=1,
+        )
+        assert result == {"dispatched": 2, "failed": 0}

@@ -98,25 +98,39 @@ def dispatch_tasks_batch(
     *,
     params_list: list[dict],
     method: str = "POST",
+    max_workers: int = 10,
 ) -> dict:
     """
-    批次建立多個 Cloud Tasks。
+    批次建立多個 Cloud Tasks（並行執行）。
 
     Args:
         path: API 路徑
         params_list: 每個 task 的 query string 參數列表
+        method: HTTP method（預設 POST）
+        max_workers: 最大並行數（預設 10）
 
     Returns:
         {"dispatched": int, "failed": int}
     """
+    import concurrent.futures
+
     dispatched = 0
     failed = 0
 
-    for params in params_list:
-        result = dispatch_task(path, params=params, method=method)
-        if result:
-            dispatched += 1
-        else:
-            failed += 1
+    with concurrent.futures.ThreadPoolExecutor(max_workers=max_workers) as executor:
+        futures = {
+            executor.submit(dispatch_task, path, params=params, method=method): params
+            for params in params_list
+        }
+        for future in concurrent.futures.as_completed(futures):
+            try:
+                result = future.result()
+                if result:
+                    dispatched += 1
+                else:
+                    failed += 1
+            except Exception:
+                logger.exception("🔥 批次派發 task 時發生例外")
+                failed += 1
 
     return {"dispatched": dispatched, "failed": failed}
