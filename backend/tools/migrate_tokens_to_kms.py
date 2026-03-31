@@ -74,9 +74,7 @@ def init_firestore_client(database_id: str) -> firestore.Client:
     credentials = service_account.Credentials.from_service_account_file(str(firebase_key_path))
     project_id = credentials.project_id
 
-    client = firestore.Client(
-        credentials=credentials, project=project_id, database=database_id
-    )
+    client = firestore.Client(credentials=credentials, project=project_id, database=database_id)
     logger.info(f"✓ Firestore 客戶端初始化成功（資料庫: {database_id}）")
     return client
 
@@ -206,7 +204,9 @@ def main():
 
     if not args.dry_run:
         try:
-            response = input("\n⚠️  此操作將修改 Firestore 資料，請輸入 'yes' 以確認: ").strip().lower()
+            response = (
+                input("\n⚠️  此操作將修改 Firestore 資料，請輸入 'yes' 以確認: ").strip().lower()
+            )
             if response != "yes":
                 print("❌ 操作已取消")
                 sys.exit(0)

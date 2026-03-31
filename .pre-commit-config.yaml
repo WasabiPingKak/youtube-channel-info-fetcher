@@ -18,11 +18,9 @@ repos:
       - id: ruff
         args: [--config, backend/ruff.toml]
         files: ^backend/
-        exclude: ^backend/tools/
       - id: ruff-format
         args: [--config, backend/ruff.toml]
         files: ^backend/
-        exclude: ^backend/tools/
 
   # pytest — Backend 單元測試
   - repo: local
