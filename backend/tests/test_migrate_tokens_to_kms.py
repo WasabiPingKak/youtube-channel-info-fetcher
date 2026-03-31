@@ -32,61 +32,32 @@ class TestIsPlaintextToken:
 class TestMigrateTokens:
     """測試批次遷移邏輯"""
 
+    def _make_meta_doc(self, channel_id: str, token_value: str | None):
+        """建立一個 mock meta document，模擬 collection_group 查詢結果"""
+        doc = MagicMock()
+        doc.reference.path = f"channel_data/{channel_id}/channel_info/meta"
+        doc.reference.update = MagicMock()
+
+        if token_value is None:
+            doc.to_dict.return_value = {}
+        else:
+            doc.to_dict.return_value = {"refresh_token": token_value}
+
+        return doc
+
     def _make_mock_db(self, channels: dict):
         """
-        建立 mock Firestore client。
+        建立 mock Firestore client（使用 collection_group 查詢）。
 
         Args:
             channels: {channel_id: refresh_token_value | None}
-                      None 表示 meta 文件不存在或無 token 欄位
+                      None 表示 meta 文件存在但無 token 欄位
         """
         db = MagicMock()
 
-        # mock channel_data.stream() 回傳 channel 列表
-        channel_docs = []
-        for channel_id in channels:
-            doc = MagicMock()
-            doc.id = channel_id
-            channel_docs.append(doc)
+        meta_docs = [self._make_meta_doc(cid, token) for cid, token in channels.items()]
 
-        # 建立每個 channel 的 meta mock
-        meta_mocks = {}
-        for channel_id, token_value in channels.items():
-            meta_ref = MagicMock()
-            meta_doc = MagicMock()
-
-            if token_value is None:
-                # meta 文件存在但無 refresh_token 欄位
-                meta_doc.exists = True
-                meta_doc.to_dict.return_value = {}
-            else:
-                meta_doc.exists = True
-                meta_doc.to_dict.return_value = {"refresh_token": token_value}
-
-            meta_ref.get.return_value = meta_doc
-            meta_ref.update = MagicMock()
-            meta_mocks[channel_id] = meta_ref
-
-        # mock db.collection(...).document(...).collection(...).document(...)
-        def mock_collection(collection_name):
-            col = MagicMock()
-
-            def mock_document(doc_id):
-                doc_ref = MagicMock()
-
-                def mock_sub_collection(sub_name):
-                    sub_col = MagicMock()
-                    sub_col.document = lambda sub_doc_id: meta_mocks.get(doc_id, MagicMock())
-                    return sub_col
-
-                doc_ref.collection = mock_sub_collection
-                return doc_ref
-
-            col.document = mock_document
-            col.stream.return_value = iter(channel_docs)
-            return col
-
-        db.collection = mock_collection
+        db.collection_group.return_value.where.return_value.stream.return_value = iter(meta_docs)
         return db
 
     def test_dry_run_does_not_write(self):
@@ -179,3 +150,24 @@ class TestMigrateTokens:
         assert stats["already_encrypted"] == 1
         assert stats["skipped_no_token"] == 1
         assert stats["encrypted"] == 1
+
+    def test_skips_non_meta_documents(self):
+        """collection_group 回傳非 meta 文件時應略過"""
+        db = MagicMock()
+
+        # 一筆正常 meta，一筆非 meta 的 channel_info 文件
+        meta_doc = self._make_meta_doc("UC001", "1//0abc-token_test")
+
+        other_doc = MagicMock()
+        other_doc.reference.path = "channel_data/UC002/channel_info/settings"
+        other_doc.to_dict.return_value = {"some_field": "value"}
+
+        db.collection_group.return_value.where.return_value.stream.return_value = iter(
+            [meta_doc, other_doc]
+        )
+
+        with patch("tools.migrate_tokens_to_kms.kms_encrypt", return_value="enc"):
+            stats = migrate_tokens(db, dry_run=False)
+
+        assert stats["scanned"] == 1
+        assert stats["plaintext_found"] == 1

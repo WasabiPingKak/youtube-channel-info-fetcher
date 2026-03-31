@@ -95,23 +95,20 @@ def migrate_tokens(db: firestore.Client, dry_run: bool) -> dict:
         "errors": 0,
     }
 
-    # 取得所有 channel_data 下的文件
-    channel_docs = db.collection("channel_data").stream()
+    # 使用 collection_group 查詢所有 channel_info/meta 文件
+    # （Firestore 的 parent document 可能不存在，無法靠 top-level stream 掃描）
+    meta_docs = db.collection_group("channel_info").where("__name__", ">=", "").stream()
 
-    for channel_doc in channel_docs:
-        channel_id = channel_doc.id
-        meta_ref = (
-            db.collection("channel_data")
-            .document(channel_id)
-            .collection("channel_info")
-            .document("meta")
-        )
-        meta_doc = meta_ref.get()
+    for meta_doc in meta_docs:
+        # 從路徑取得 channel_id: channel_data/{channel_id}/channel_info/meta
+        path_parts = meta_doc.reference.path.split("/")
+        if len(path_parts) < 4 or path_parts[2] != "channel_info" or path_parts[3] != "meta":
+            continue
+
+        channel_id = path_parts[1]
+        meta_ref = meta_doc.reference
 
         stats["scanned"] += 1
-
-        if not meta_doc.exists:
-            continue
 
         data = meta_doc.to_dict()
         raw_token = data.get("refresh_token")
