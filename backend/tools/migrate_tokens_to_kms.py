@@ -12,14 +12,14 @@ migrate_tokens_to_kms.py
 - 支援指定目標資料庫（預設 production）
 
 使用範例：
-  # Dry Run（預覽影響範圍，不實際寫入）
-  python tools/migrate_tokens_to_kms.py --dry-run
-
-  # 正式執行（加密 production 資料庫）
+  # 預覽影響範圍（預設 dry-run）
   python tools/migrate_tokens_to_kms.py
 
+  # 正式執行（加密 production 資料庫）
+  python tools/migrate_tokens_to_kms.py --apply
+
   # 指定資料庫
-  python tools/migrate_tokens_to_kms.py --database staging --dry-run
+  python tools/migrate_tokens_to_kms.py --database staging --apply
 """
 
 import argparse
@@ -152,21 +152,21 @@ def parse_arguments():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 使用範例:
-  # Dry Run（預覽影響範圍）
-  python tools/migrate_tokens_to_kms.py --dry-run
-
-  # 正式執行
+  # 預覽影響範圍（預設 dry-run）
   python tools/migrate_tokens_to_kms.py
 
+  # 正式執行
+  python tools/migrate_tokens_to_kms.py --apply
+
   # 指定資料庫
-  python tools/migrate_tokens_to_kms.py --database staging --dry-run
+  python tools/migrate_tokens_to_kms.py --database staging --apply
         """,
     )
 
     parser.add_argument(
-        "--dry-run",
+        "--apply",
         action="store_true",
-        help="Dry Run 模式：只掃描並顯示需要加密的 token，不實際寫入",
+        help="正式執行：加密明文 token 並寫回 Firestore（未指定時預設為 dry-run）",
     )
     parser.add_argument(
         "--database",
@@ -181,9 +181,10 @@ def parse_arguments():
 def main():
     """主程式進入點"""
     args = parse_arguments()
+    dry_run = not args.apply
 
     # 檢查 KMS 是否已設定（dry-run 僅掃描不加密，不需要 KMS）
-    if not args.dry_run and not is_kms_configured():
+    if not dry_run and not is_kms_configured():
         logger.error("❌ KMS 未設定！請確認環境變數 GOOGLE_CLOUD_PROJECT、KMS_KEY_RING、KMS_KEY_ID")
         logger.error("   此腳本需要 KMS 才能加密 token，不可在未設定 KMS 的環境下執行。")
         sys.exit(1)
@@ -196,10 +197,10 @@ def main():
     print("Refresh Token KMS Migration")
     print("=" * 60)
     print(f"資料庫: {args.database}")
-    print(f"Dry Run: {'是' if args.dry_run else '否'}")
+    print(f"模式: {'🚧 Dry Run（預覽）' if dry_run else '⚡ Apply（正式執行）'}")
     print("=" * 60)
 
-    if not args.dry_run:
+    if not dry_run:
         try:
             response = (
                 input("\n⚠️  此操作將修改 Firestore 資料，請輸入 'yes' 以確認: ").strip().lower()
@@ -215,7 +216,7 @@ def main():
     logger.info("開始掃描 channel_data...")
 
     # 執行遷移
-    stats = migrate_tokens(db, args.dry_run)
+    stats = migrate_tokens(db, dry_run)
 
     # 顯示結果
     print()
@@ -226,7 +227,7 @@ def main():
     print(f"無 token: {stats['skipped_no_token']}")
     print(f"已加密: {stats['already_encrypted']}")
     print(f"發現明文: {stats['plaintext_found']}")
-    if args.dry_run:
+    if dry_run:
         print("狀態: 🚧 Dry Run 完成（未寫入）")
     else:
         print(f"成功加密: {stats['encrypted']}")
