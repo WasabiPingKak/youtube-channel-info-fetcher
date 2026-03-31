@@ -7,10 +7,9 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apiflask import APIFlask
+from conftest import create_test_app
 
 from routes.websub_subscribe_route import subscribe_channel_by_id
-from utils.rate_limiter import limiter
 
 ADMIN_KEY = os.environ["ADMIN_API_KEY"]
 ADMIN_HEADERS = {"Authorization": f"Bearer {ADMIN_KEY}"}
@@ -27,10 +26,7 @@ def websub_app(shared_mock_db):
 
     importlib.reload(mod)
 
-    app = APIFlask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    limiter.init_app(app)
+    app = create_test_app()
     mod.init_websub_subscribe_route(app, shared_mock_db)
     return app
 

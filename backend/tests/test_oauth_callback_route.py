@@ -6,24 +6,14 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask import Flask
+from conftest import create_test_app
 
 from routes.oauth_callback_route import init_oauth_callback_route
-from utils.rate_limiter import limiter
-
-
-@pytest.fixture
-def mock_db():
-    return MagicMock()
 
 
 @pytest.fixture
 def app(mock_db):
-    app = Flask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    app.config["FRONTEND_BASE_URL"] = "http://localhost:5173"
-    limiter.init_app(app)
+    app = create_test_app(FRONTEND_BASE_URL="http://localhost:5173")
     init_oauth_callback_route(app, mock_db)
     return app
 
@@ -37,11 +27,7 @@ class TestOAuthCallbackDebugMode:
     """OAUTH_DEBUG_MODE 啟用時的行為"""
 
     def test_debug_mode_returns_debug_response(self, mock_db):
-        app = Flask(__name__)
-        app.config["TESTING"] = True
-        app.config["RATELIMIT_ENABLED"] = False
-        app.config["OAUTH_DEBUG_MODE"] = True
-        limiter.init_app(app)
+        app = create_test_app(OAUTH_DEBUG_MODE=True)
         init_oauth_callback_route(app, mock_db)
 
         client = app.test_client()

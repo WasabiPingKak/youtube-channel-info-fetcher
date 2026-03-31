@@ -6,24 +6,15 @@ from datetime import UTC, datetime
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask import Flask
+from conftest import create_test_app
 
 from routes.me_route import init_me_route
 from utils.jwt_util import generate_jwt
-from utils.rate_limiter import limiter
-
-
-@pytest.fixture
-def mock_db():
-    return MagicMock()
 
 
 @pytest.fixture
 def app(mock_db):
-    app = Flask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    limiter.init_app(app)
+    app = create_test_app()
     init_me_route(app, mock_db)
     return app
 

@@ -8,7 +8,7 @@ import importlib
 from unittest.mock import MagicMock, patch
 
 import pytest
-from flask import Flask
+from conftest import create_test_app
 
 SAMPLE_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns:yt="http://www.youtube.com/xml/schemas/2015"
@@ -33,8 +33,7 @@ def websub_app(shared_mock_db):
 
     importlib.reload(mod)
 
-    app = Flask(__name__)
-    app.config["TESTING"] = True
+    app = create_test_app()
     mod.init_websub_notify_route(app, shared_mock_db)
     return app
 
