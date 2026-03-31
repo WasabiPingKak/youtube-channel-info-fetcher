@@ -38,14 +38,28 @@ def is_kms_configured() -> bool:
     return bool(_get_key_name())
 
 
+def _is_deployed_env() -> bool:
+    """判斷是否為部署環境（production 或 staging）。
+    透過 FIRESTORE_DATABASE 環境變數判斷：Cloud Run 部署時一定會設定此值。
+    """
+    db = os.getenv("FIRESTORE_DATABASE", "")
+    return db in ("(default)", "staging")
+
+
 def kms_encrypt(plaintext: str) -> str:
     """
     使用 KMS 加密字串，回傳 base64 編碼的密文。
-    若 KMS 未設定，回傳原文（開發環境 fallback）。
+    部署環境（production / staging）若 KMS 未設定，直接 raise 阻止明文儲存。
+    本地開發環境允許 fallback 回傳原文。
     """
     key_name = _get_key_name()
     if not key_name:
-        logger.warning("[KMS] ⚠️ KMS 未設定，refresh_token 將以明文儲存")
+        if _is_deployed_env():
+            raise RuntimeError(
+                "KMS 未設定，禁止在部署環境以明文儲存 token。"
+                "請確認環境變數 GOOGLE_CLOUD_PROJECT、KMS_KEY_RING、KMS_KEY_ID"
+            )
+        logger.warning("[KMS] ⚠️ KMS 未設定，refresh_token 將以明文儲存（僅限本地開發）")
         return plaintext
 
     from google.cloud import kms
