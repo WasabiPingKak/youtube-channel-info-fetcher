@@ -48,3 +48,10 @@ repos:
         language: system
         files: ^frontend_react/src/.*\.(ts|tsx)$
         pass_filenames: false
+
+      - id: vitest
+        name: vitest (frontend unit tests)
+        entry: bash -c 'cd frontend_react && npx vitest run'
+        language: system
+        files: ^frontend_react/src/.*\.(ts|tsx)$
+        pass_filenames: false
