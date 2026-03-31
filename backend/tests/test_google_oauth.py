@@ -8,6 +8,7 @@ import pytest
 import requests
 
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
+from utils.exceptions import ExternalServiceError
 
 
 class TestExchangeCodeForTokens:
@@ -36,7 +37,7 @@ class TestExchangeCodeForTokens:
         mock_resp.json.return_value = {"error": "invalid_grant"}
         mock_post.return_value = mock_resp
 
-        with pytest.raises(Exception, match="400"):
+        with pytest.raises(ExternalServiceError, match="OAuth token 交換失敗"):
             exchange_code_for_tokens("bad_code")
 
     @patch("services.google_oauth.requests.post")
@@ -48,7 +49,7 @@ class TestExchangeCodeForTokens:
         mock_resp.text = "Internal Server Error"
         mock_post.return_value = mock_resp
 
-        with pytest.raises(Exception, match="500"):
+        with pytest.raises(ExternalServiceError, match="OAuth token 交換失敗"):
             exchange_code_for_tokens("code")
 
     @patch("services.google_oauth.requests.post")

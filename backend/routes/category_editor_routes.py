@@ -16,13 +16,11 @@ from typing import Any
 
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 # 服務層：讀取分類設定
 from schemas.common import ChannelIdQuery
 from services.firestore_settings_service import load_category_settings
 from utils.auth_decorator import require_auth
-from utils.error_response import error_response
 
 category_editor_bp = APIBlueprint("category_editor", __name__, tag="Category Editor")
 
@@ -68,62 +66,53 @@ def init_category_editor_routes(app, db):
             )
             return jsonify({"error": "無權限存取此頻道"}), 403
 
-        try:
-            logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")
+        logging.info(f"🚀 開始讀取編輯器資料 for channel_id={channel_id}")
 
-            # 1. 讀取分類設定
-            config = load_category_settings(db, channel_id) or {}
-            logging.info(f"✅ config 載入成功，欄位數：{len(config)}")
-            if not config:
-                logging.warning("⚠️ 該頻道尚未建立 config 文件")
+        # 1. 讀取分類設定
+        config = load_category_settings(db, channel_id) or {}
+        logging.info(f"✅ config 載入成功，欄位數：{len(config)}")
+        if not config:
+            logging.warning("⚠️ 該頻道尚未建立 config 文件")
 
-            # 2. 讀取影片清單
-            videos_coll = db.collection("channel_data").document(channel_id).collection("videos")
-            docs = list(videos_coll.stream())
-            logging.info(f"📦 讀取 Firestore 影片文件數量：{len(docs)}")
+        # 2. 讀取影片清單
+        videos_coll = db.collection("channel_data").document(channel_id).collection("videos")
+        docs = list(videos_coll.stream())
+        logging.info(f"📦 讀取 Firestore 影片文件數量：{len(docs)}")
 
-            videos: list[dict[str, Any]] = []
-            for i, doc in enumerate(docs):
-                data = doc.to_dict() or {}
-                logging.debug(f"🔍 處理影片 {i + 1}：{data.get('title', '無標題')}")
+        videos: list[dict[str, Any]] = []
+        for i, doc in enumerate(docs):
+            data = doc.to_dict() or {}
+            logging.debug(f"🔍 處理影片 {i + 1}：{data.get('title', '無標題')}")
 
-                video_item = {
-                    "videoId": data.get("videoId", doc.id),
-                    "title": data.get("title"),
-                    "publishDate": _serialize_timestamp(data.get("publishDate")),
-                    "duration": data.get("duration"),
-                    "type": _normalize_type(data.get("type")),
-                    "matchedCategories": data.get("matchedCategories", []),
-                    "game": data.get("game"),
-                }
+            video_item = {
+                "videoId": data.get("videoId", doc.id),
+                "title": data.get("title"),
+                "publishDate": _serialize_timestamp(data.get("publishDate")),
+                "duration": data.get("duration"),
+                "type": _normalize_type(data.get("type")),
+                "matchedCategories": data.get("matchedCategories", []),
+                "game": data.get("game"),
+            }
 
-                if not data.get("type"):
-                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 type 欄位")
-                if not data.get("title"):
-                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 title")
-                if not data.get("publishDate"):
-                    logging.warning(f"⚠️ 影片 {doc.id} 缺少 publishDate")
+            if not data.get("type"):
+                logging.warning(f"⚠️ 影片 {doc.id} 缺少 type 欄位")
+            if not data.get("title"):
+                logging.warning(f"⚠️ 影片 {doc.id} 缺少 title")
+            if not data.get("publishDate"):
+                logging.warning(f"⚠️ 影片 {doc.id} 缺少 publishDate")
 
-                videos.append(video_item)
+            videos.append(video_item)
 
-            if not videos:
-                logging.warning("⚠️ 該頻道目前影片為空，或全部無法解析")
+        if not videos:
+            logging.warning("⚠️ 該頻道目前影片為空，或全部無法解析")
 
-            return jsonify(
-                {
-                    "success": True,
-                    "config": config,
-                    "videos": videos,
-                    "removedSuggestedKeywords": config.get("removedSuggestedKeywords", []),
-                }
-            ), 200
-
-        except GoogleAPIError:
-            logging.exception("🔥 Firestore 操作失敗")
-            return error_response("Firestore 操作失敗", 500)
-
-        except Exception:
-            logging.exception("🔥 無法取得 editor-data")
-            return error_response("伺服器內部錯誤", 500)
+        return jsonify(
+            {
+                "success": True,
+                "config": config,
+                "videos": videos,
+                "removedSuggestedKeywords": config.get("removedSuggestedKeywords", []),
+            }
+        ), 200
 
     app.register_blueprint(category_editor_bp)

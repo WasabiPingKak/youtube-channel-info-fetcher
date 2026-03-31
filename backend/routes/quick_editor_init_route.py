@@ -1,10 +1,7 @@
 # routes/quick_editor_init_route.py
 
-import logging
-
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from schemas.common import ChannelIdQuery
 from utils.auth_decorator import require_auth
@@ -37,33 +34,24 @@ def init_quick_editor_init_route(app, db):
             if not meta.get("isAdmin"):
                 return error_response("無權限存取此頻道", 403)
 
-        try:
-            base_ref = db.collection("channel_data").document(channel_id).collection("settings")
+        base_ref = db.collection("channel_data").document(channel_id).collection("settings")
 
-            # 讀取 skip_keywords
-            skip_doc = base_ref.document("skip_keywords").get()
-            skip_keywords = []
-            if skip_doc.exists:
-                skip_keywords = skip_doc.to_dict().get("skipped", [])
+        # 讀取 skip_keywords
+        skip_doc = base_ref.document("skip_keywords").get()
+        skip_keywords = []
+        if skip_doc.exists:
+            skip_keywords = skip_doc.to_dict().get("skipped", [])
 
-            # 讀取 config
-            config_doc = base_ref.document("config").get()
-            config = config_doc.to_dict() if config_doc.exists else {}
+        # 讀取 config
+        config_doc = base_ref.document("config").get()
+        config = config_doc.to_dict() if config_doc.exists else {}
 
-            return jsonify(
-                {
-                    "success": True,
-                    "skip_keywords": skip_keywords,
-                    "config": config,
-                }
-            )
-
-        except GoogleAPIError:
-            logging.exception("❌ Firestore 操作失敗")
-            return error_response("Firestore 操作失敗", 500)
-
-        except Exception:
-            logging.exception("❌ 無法讀取快速編輯器初始資料")
-            return error_response("伺服器內部錯誤", 500)
+        return jsonify(
+            {
+                "success": True,
+                "skip_keywords": skip_keywords,
+                "config": config,
+            }
+        )
 
     app.register_blueprint(bp)

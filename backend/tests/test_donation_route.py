@@ -194,4 +194,4 @@ class TestDonationError:
         mock_db.collection.return_value.stream.side_effect = Exception("Firestore down")
         resp = client.get("/api/donations")
         assert resp.status_code == 500
-        assert resp.get_json()["error"] == "Internal server error"
+        assert resp.get_json()["error"] == "伺服器內部錯誤"

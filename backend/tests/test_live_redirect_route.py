@@ -144,4 +144,4 @@ class TestLiveRedirectCacheRoute:
 
         resp = client.get("/api/live-redirect/cache")
         assert resp.status_code == 500
-        assert resp.get_json()["error"] == "Internal Server Error"
+        assert resp.get_json()["error"] == "伺服器內部錯誤"

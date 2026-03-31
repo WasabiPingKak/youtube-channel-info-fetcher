@@ -3,7 +3,6 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from schemas.common import LiveRedirectQuery
@@ -23,34 +22,25 @@ def init_live_redirect_route(app, db: Client):
     @limiter.limit("30 per minute")
     @live_redirect_bp.input(LiveRedirectQuery, location="query", arg_name="query")
     def get_live_redirect_cache(query):
-        try:
-            force = query.force
-            skip_cache = query.skipCache
-            now = datetime.now(UTC)
+        force = query.force
+        skip_cache = query.skipCache
+        now = datetime.now(UTC)
 
-            # 🔍 檢查是否已有新鮮快取
-            if not skip_cache:
-                cached = check_and_return_fresh_cache(db, now, force)
-                if cached is not None:
-                    return jsonify(cached)
+        # 🔍 檢查是否已有新鮮快取
+        if not skip_cache:
+            cached = check_and_return_fresh_cache(db, now, force)
+            if cached is not None:
+                return jsonify(cached)
 
-            # 📥 取得待處理影片清單（從 notify queue 取出未處理的 videoId）
-            pending_videos = get_pending_video_ids(db, force=force, now=now)
-            logging.info(f"📌 待處理影片數量：{len(pending_videos)}")
+        # 📥 取得待處理影片清單（從 notify queue 取出未處理的 videoId）
+        pending_videos = get_pending_video_ids(db, force=force, now=now)
+        logging.info(f"📌 待處理影片數量：{len(pending_videos)}")
 
-            # 🔄 更新快取資料與回寫 processedAt
-            result = process_video_ids(db, pending_videos, now)
-            logging.info(f"✅ 快取重建完成，共 {len(result['channels'])} 筆資料")
+        # 🔄 更新快取資料與回寫 processedAt
+        result = process_video_ids(db, pending_videos, now)
+        logging.info(f"✅ 快取重建完成，共 {len(result['channels'])} 筆資料")
 
-            return jsonify(result)
-
-        except GoogleAPIError:
-            logging.exception("🔥 Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logging.exception("🔥 /api/live-redirect/cache 快取流程失敗")
-            return jsonify({"error": "Internal Server Error"}), 500
+        return jsonify(result)
 
     app.register_blueprint(live_redirect_bp)
 

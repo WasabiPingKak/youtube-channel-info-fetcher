@@ -1,10 +1,7 @@
 # routes/default_categories_route.py
 
-import logging
-
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from utils.error_response import error_response
 
@@ -18,21 +15,12 @@ def init_default_categories_route(app, db):
         description="回傳 global_settings/default_categories_config_v2 的內容",
     )
     def get_default_categories_config():
-        try:
-            doc_ref = db.collection("global_settings").document("default_categories_config_v2")
-            doc = doc_ref.get()
+        doc_ref = db.collection("global_settings").document("default_categories_config_v2")
+        doc = doc_ref.get()
 
-            if doc.exists:
-                return jsonify({"success": True, "config": doc.to_dict()})
-            else:
-                return error_response("找不到預設分類設定", 404)
-
-        except GoogleAPIError:
-            logging.exception("❌ Firestore 操作失敗")
-            return error_response("Firestore 操作失敗", 500)
-
-        except Exception:
-            logging.exception("❌ 無法讀取預設分類設定")
-            return error_response("伺服器內部錯誤", 500)
+        if doc.exists:
+            return jsonify({"success": True, "config": doc.to_dict()})
+        else:
+            return error_response("找不到預設分類設定", 404)
 
     app.register_blueprint(bp)

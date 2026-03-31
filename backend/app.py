@@ -88,13 +88,10 @@ def create_app(config=None):
 
     # ── 全域錯誤處理 ──
     from schemas import register_validation_error_handler
+    from utils.exceptions import register_error_handlers
 
     register_validation_error_handler(app)
-
-    @app.errorhandler(500)
-    def handle_internal_error(e):
-        logging.exception("未處理的伺服器錯誤")
-        return {"error": "伺服器內部錯誤"}, 500
+    register_error_handlers(app)
 
     # ── Middleware ──
     @app.before_request

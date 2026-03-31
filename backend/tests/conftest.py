@@ -8,21 +8,24 @@
 import pytest
 from apiflask import APIFlask
 
+from utils.exceptions import register_error_handlers
 from utils.rate_limiter import limiter
 
 
 def create_test_app(**extra_config):
-    """建立路由測試用的 APIFlask app（含 TESTING + rate limiter）
+    """建立路由測試用的 APIFlask app（含 TESTING + rate limiter + 全域 error handler）
 
     可傳入額外 config，例如 FRONTEND_BASE_URL。
     各測試檔在自己的 fixture 中呼叫此函式後再註冊所需路由。
     """
     app = APIFlask(__name__)
     app.config["TESTING"] = True
+    app.config["PROPAGATE_EXCEPTIONS"] = False
     app.config["RATELIMIT_ENABLED"] = False
     for key, value in extra_config.items():
         app.config[key] = value
     limiter.init_app(app)
+    register_error_handlers(app)
     return app
 
 

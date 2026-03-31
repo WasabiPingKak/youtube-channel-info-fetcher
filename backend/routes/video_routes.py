@@ -2,7 +2,6 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from schemas.common import ChannelIdCamelQuery
 from schemas.video_schemas import ClassifiedVideoRequest
@@ -20,25 +19,14 @@ def init_video_routes(app, db):
     )
     @video_bp.input(ClassifiedVideoRequest, arg_name="body")
     def get_classified(body):
-        try:
-            logger.info(
-                f"🔍 取得分類影片清單：{body.channel_id}（only_settings={body.only_settings}）"
-            )
+        logger.info(f"🔍 取得分類影片清單：{body.channel_id}（only_settings={body.only_settings}）")
 
-            if body.only_settings:
-                settings = get_merged_settings(db, body.channel_id)
-                return jsonify({"success": True, "settings": settings})
+        if body.only_settings:
+            settings = get_merged_settings(db, body.channel_id)
+            return jsonify({"success": True, "settings": settings})
 
-            result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
-            return jsonify({"success": True, "videos": result})
-
-        except GoogleAPIError:
-            logger.exception("🔥 Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logger.exception("🔥 /api/videos/classified 發生錯誤")
-            return jsonify({"error": "伺服器內部錯誤"}), 500
+        result = get_classified_videos(db, body.channel_id, start=body.start, end=body.end)
+        return jsonify({"success": True, "videos": result})
 
     @video_bp.route("/api/videos/check-update", methods=["GET"])
     @video_bp.doc(
@@ -46,19 +34,10 @@ def init_video_routes(app, db):
     )
     @video_bp.input(ChannelIdCamelQuery, location="query", arg_name="query")
     def check_update(query):
-        try:
-            channel_id = query.channelId
+        channel_id = query.channelId
 
-            result = check_channel_update_status(db, channel_id)
-            return jsonify(result)
-
-        except GoogleAPIError:
-            logger.exception("🔥 Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logger.exception("🔥 /api/videos/check-update 發生錯誤")
-            return jsonify({"error": "伺服器內部錯誤"}), 500
+        result = check_channel_update_status(db, channel_id)
+        return jsonify(result)
 
     app.register_blueprint(video_bp)
     logger.info("✅ [video_routes] /api/videos/* 路由已註冊")

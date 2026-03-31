@@ -3,7 +3,6 @@ import logging
 from apiflask import APIBlueprint
 from firebase_admin import firestore
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from schemas.category_editor_schemas import SkipKeywordRequest
 from utils.auth_decorator import require_auth
@@ -28,32 +27,23 @@ def init_skip_keyword_routes(app, db):
     @require_auth(db)
     @bp.input(SkipKeywordRequest, arg_name="body")
     def add_skipped_keyword(body, auth_channel_id=None):
-        try:
-            logger.info(f"✅ /skip-keyword/add 驗證成功，channel_id = {auth_channel_id}")
+        logger.info(f"✅ /skip-keyword/add 驗證成功，channel_id = {auth_channel_id}")
 
-            if body.channelId != auth_channel_id:
-                logger.warning(
-                    f"⛔ 嘗試略過他人頻道：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
-                )
-                return jsonify({"error": "無權限操作此頻道資料"}), 403
-
-            doc_ref = (
-                db.collection("channel_data")
-                .document(body.channelId)
-                .collection("settings")
-                .document("skip_keywords")
+        if body.channelId != auth_channel_id:
+            logger.warning(
+                f"⛔ 嘗試略過他人頻道：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
             )
-            doc_ref.set({"skipped": firestore.ArrayUnion([body.keyword])}, merge=True)
+            return jsonify({"error": "無權限操作此頻道資料"}), 403
 
-            return jsonify({"success": True})
+        doc_ref = (
+            db.collection("channel_data")
+            .document(body.channelId)
+            .collection("settings")
+            .document("skip_keywords")
+        )
+        doc_ref.set({"skipped": firestore.ArrayUnion([body.keyword])}, merge=True)
 
-        except GoogleAPIError:
-            logger.exception("🔥 Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logger.exception("🔥 加入略過關鍵字失敗")
-            return jsonify({"error": "內部伺服器錯誤"}), 500
+        return jsonify({"success": True})
 
     @bp.route("/remove", methods=["POST"])
     @bp.doc(
@@ -64,31 +54,22 @@ def init_skip_keyword_routes(app, db):
     @require_auth(db)
     @bp.input(SkipKeywordRequest, arg_name="body")
     def remove_skipped_keyword(body, auth_channel_id=None):
-        try:
-            logger.info(f"✅ /skip-keyword/remove 驗證成功，channel_id = {auth_channel_id}")
+        logger.info(f"✅ /skip-keyword/remove 驗證成功，channel_id = {auth_channel_id}")
 
-            if body.channelId != auth_channel_id:
-                logger.warning(
-                    f"⛔ 嘗試移除他人略過關鍵字：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
-                )
-                return jsonify({"error": "無權限操作此頻道資料"}), 403
-
-            doc_ref = (
-                db.collection("channel_data")
-                .document(body.channelId)
-                .collection("settings")
-                .document("skip_keywords")
+        if body.channelId != auth_channel_id:
+            logger.warning(
+                f"⛔ 嘗試移除他人略過關鍵字：JWT={auth_channel_id}, 請求 channel_id={body.channelId}"
             )
-            doc_ref.set({"skipped": firestore.ArrayRemove([body.keyword])}, merge=True)
+            return jsonify({"error": "無權限操作此頻道資料"}), 403
 
-            return jsonify({"success": True})
+        doc_ref = (
+            db.collection("channel_data")
+            .document(body.channelId)
+            .collection("settings")
+            .document("skip_keywords")
+        )
+        doc_ref.set({"skipped": firestore.ArrayRemove([body.keyword])}, merge=True)
 
-        except GoogleAPIError:
-            logger.exception("🔥 Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logger.exception("🔥 移除略過關鍵字失敗")
-            return jsonify({"error": "內部伺服器錯誤"}), 500
+        return jsonify({"success": True})
 
     app.register_blueprint(bp)

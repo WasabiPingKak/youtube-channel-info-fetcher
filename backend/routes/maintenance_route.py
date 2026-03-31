@@ -3,7 +3,6 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from schemas.admin_schemas import MaintenanceRequest
@@ -23,23 +22,14 @@ def init_maintenance_route(app, db: Client):
     @require_admin_key
     @maintenance_bp.input(MaintenanceRequest, arg_name="body")
     def clean_live_cache(body):
-        try:
-            logging.info(f"🧹 開始清除 live 快取資料，模式：{body.mode.value}")
-            full_result = clean_all_expired_documents(db, body.mode.value, cache_type="live")
-            result = {
-                k: v
-                for k, v in full_result.items()
-                if k in ["live_redirect_notify_queue", "live_redirect_cache"]
-            }
-            return jsonify(result)
-
-        except GoogleAPIError:
-            logging.exception("❌ Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logging.exception("❌ 清除 live 快取失敗")
-            return jsonify({"error": "Internal server error"}), 500
+        logging.info(f"🧹 開始清除 live 快取資料，模式：{body.mode.value}")
+        full_result = clean_all_expired_documents(db, body.mode.value, cache_type="live")
+        result = {
+            k: v
+            for k, v in full_result.items()
+            if k in ["live_redirect_notify_queue", "live_redirect_cache"]
+        }
+        return jsonify(result)
 
     @maintenance_bp.route("/maintenance/clean-trending-games-cache", methods=["POST"])
     @maintenance_bp.doc(
@@ -50,17 +40,8 @@ def init_maintenance_route(app, db: Client):
     @require_admin_key
     @maintenance_bp.input(MaintenanceRequest, arg_name="body")
     def clean_trending_games_cache(body):
-        try:
-            logging.info(f"🧹 開始清除 trending games 快取，模式：{body.mode.value}")
-            result = clean_all_expired_documents(db, body.mode.value, cache_type="trending_games")
-            return jsonify(result)
-
-        except GoogleAPIError:
-            logging.exception("❌ Firestore 操作失敗")
-            return jsonify({"error": "Firestore 操作失敗"}), 500
-
-        except Exception:
-            logging.exception("❌ 清除 trending games 快取失敗")
-            return jsonify({"error": "Internal server error"}), 500
+        logging.info(f"🧹 開始清除 trending games 快取，模式：{body.mode.value}")
+        result = clean_all_expired_documents(db, body.mode.value, cache_type="trending_games")
+        return jsonify(result)
 
     app.register_blueprint(maintenance_bp, url_prefix="/api")

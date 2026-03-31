@@ -5,6 +5,8 @@ import os
 
 import requests
 
+from utils.exceptions import ExternalServiceError
+
 
 def exchange_code_for_tokens(code: str) -> dict:
     url = "https://oauth2.googleapis.com/token"
@@ -30,7 +32,10 @@ def exchange_code_for_tokens(code: str) -> dict:
         except (ValueError, json.JSONDecodeError):
             detail = response.text
         logging.error(f"[OAuth] ❌ Google 回應錯誤: {response.status_code} → {detail}")
-        raise Exception(f"❌ Failed to exchange token: {response.status_code} → {detail}")
+        raise ExternalServiceError(
+            "OAuth token 交換失敗",
+            log_message=f"Google OAuth 回應錯誤: {response.status_code} → {detail}",
+        )
 
     logging.info("[OAuth] ✅ 成功取得 access_token")
     return response.json()

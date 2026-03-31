@@ -10,6 +10,7 @@ from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
 from utils.admin_ids import get_admin_channel_ids
+from utils.exceptions import ConfigurationError, NotFoundError
 
 FIRESTORE_CONFIG_PATH = "channel_data/{channel_id}/settings/config"
 FIRESTORE_INFO_PATH = "channel_data/{channel_id}/channel_info/info"
@@ -52,7 +53,7 @@ def run_channel_initialization(db, channel_id: str):
 
     api_key = os.getenv("API_KEY")
     if not api_key:
-        raise Exception("未設定 YOUTUBE_API_KEY")
+        raise ConfigurationError("未設定 YouTube API Key")
 
     try:
         youtube = build("youtube", "v3", developerKey=api_key)
@@ -61,7 +62,7 @@ def run_channel_initialization(db, channel_id: str):
 
         items = response.get("items", [])
         if not items:
-            raise Exception("找不到頻道資訊，請確認 channelId 是否正確")
+            raise NotFoundError("找不到頻道資訊，請確認 channelId 是否正確")
 
         snippet = items[0]["snippet"]
 

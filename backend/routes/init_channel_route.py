@@ -2,7 +2,6 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from routes.websub_subscribe_route import subscribe_channel_by_id
 from schemas.common import InitChannelQuery
@@ -23,27 +22,18 @@ def init_channel_route(app, db):
         channel_id = query.channel
         logging.debug(f"📥 [InitAPI] 收到初始化請求：channel={channel_id}")
 
-        try:
-            token = get_refresh_token(db, channel_id)
-            if not token:
-                logging.warning(f"[InitAPI] ⚠️ 該頻道尚未授權：{channel_id}")
-                return error_response("Channel is not authorized", 401)
+        token = get_refresh_token(db, channel_id)
+        if not token:
+            logging.warning(f"[InitAPI] ⚠️ 該頻道尚未授權：{channel_id}")
+            return error_response("Channel is not authorized", 401)
 
-            logging.info(f"[InitAPI] ✅ 開始執行初始化流程 for {channel_id}")
-            run_channel_initialization(db, channel_id)
-            logging.info(f"[InitAPI] 🎉 初始化完成 for {channel_id}")
+        logging.info(f"[InitAPI] ✅ 開始執行初始化流程 for {channel_id}")
+        run_channel_initialization(db, channel_id)
+        logging.info(f"[InitAPI] 🎉 初始化完成 for {channel_id}")
 
-            if not subscribe_channel_by_id(channel_id):
-                logging.warning(f"[InitAPI] ⚠️ WebSub 訂閱失敗 for {channel_id}")
+        if not subscribe_channel_by_id(channel_id):
+            logging.warning(f"[InitAPI] ⚠️ WebSub 訂閱失敗 for {channel_id}")
 
-            return jsonify({"success": True, "channelId": channel_id, "message": "初始化完成"}), 200
-
-        except GoogleAPIError:
-            logging.exception(f"[InitAPI] ❌ Firestore 操作失敗 for {channel_id}")
-            return error_response("Firestore 操作失敗", 500)
-
-        except Exception:
-            logging.exception(f"[InitAPI] ❌ 初始化過程錯誤 for {channel_id}")
-            return error_response("伺服器內部錯誤", 500)
+        return jsonify({"success": True, "channelId": channel_id, "message": "初始化完成"}), 200
 
     app.register_blueprint(bp)

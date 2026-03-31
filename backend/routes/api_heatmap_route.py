@@ -2,7 +2,6 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import abort, jsonify
-from google.api_core.exceptions import GoogleAPIError
 
 from utils.channel_validator import is_valid_channel_id
 
@@ -16,40 +15,31 @@ def init_api_heatmap_route(app, db):
         if not is_valid_channel_id(channel_id):
             return jsonify({"error": "channel_id 格式不合法"}), 400
 
-        try:
-            # Firestore 路徑：channel_data/{channel_id}/heat_map/channel_video_heatmap
-            doc_ref = (
-                db.collection("channel_data")
-                .document(channel_id)
-                .collection("heat_map")
-                .document("channel_video_heatmap")
-            )
-            doc = doc_ref.get()
+        # Firestore 路徑：channel_data/{channel_id}/heat_map/channel_video_heatmap
+        doc_ref = (
+            db.collection("channel_data")
+            .document(channel_id)
+            .collection("heat_map")
+            .document("channel_video_heatmap")
+        )
+        doc = doc_ref.get()
 
-            if not doc.exists:
-                logging.warning(f"[heatmap] 找不到資料：{channel_id}")
-                abort(404, description="heatmap data not found.")
+        if not doc.exists:
+            logging.warning(f"[heatmap] 找不到資料：{channel_id}")
+            abort(404, description="heatmap data not found.")
 
-            all_range = doc.to_dict().get("all_range")
-            if not all_range:
-                logging.warning(f"[heatmap] all_range 欄位不存在：{channel_id}")
-                abort(404, description="heatmap format invalid.")
+        all_range = doc.to_dict().get("all_range")
+        if not all_range:
+            logging.warning(f"[heatmap] all_range 欄位不存在：{channel_id}")
+            abort(404, description="heatmap format invalid.")
 
-            matrix = all_range.get("matrix")
-            total_count = all_range.get("totalCount")
+        matrix = all_range.get("matrix")
+        total_count = all_range.get("totalCount")
 
-            if matrix is None or total_count is None:
-                logging.error(f"[heatmap] 欄位缺失：{channel_id}")
-                abort(500, description="matrix or totalCount missing.")
+        if matrix is None or total_count is None:
+            logging.error(f"[heatmap] 欄位缺失：{channel_id}")
+            abort(500, description="matrix or totalCount missing.")
 
-            return jsonify({"success": True, "matrix": matrix, "totalCount": total_count})
-
-        except GoogleAPIError:
-            logging.exception(f"[heatmap] Firestore 操作失敗：{channel_id}")
-            abort(500, description="Firestore error")
-
-        except Exception:
-            logging.exception(f"[heatmap] 發生錯誤：{channel_id}")
-            abort(500, description="internal server error")
+        return jsonify({"success": True, "matrix": matrix, "totalCount": total_count})
 
     app.register_blueprint(bp)
