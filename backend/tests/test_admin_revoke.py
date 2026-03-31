@@ -15,16 +15,11 @@ TARGET_ID = "UCtargetChannelXXXXXXXXX"
 
 def _make_app(mock_db):
     """建立掛載 admin_revoke_route 的測試 app"""
-    from apiflask import APIFlask
+    from conftest import create_test_app
 
     from routes.admin_revoke_route import init_admin_revoke_route
-    from utils.rate_limiter import limiter
 
-    app = APIFlask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-
-    limiter.init_app(app)
+    app = create_test_app()
     init_admin_revoke_route(app, mock_db)
 
     return app

@@ -7,10 +7,9 @@ import os
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apiflask import APIFlask
+from conftest import create_test_app
 
 from schemas import register_validation_error_handler
-from utils.rate_limiter import limiter
 
 ADMIN_KEY = os.environ["ADMIN_API_KEY"]
 ADMIN_HEADERS = {"Authorization": f"Bearer {ADMIN_KEY}"}
@@ -27,10 +26,7 @@ def trending_app(shared_mock_db):
 
     importlib.reload(mod)
 
-    app = APIFlask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    limiter.init_app(app)
+    app = create_test_app()
     register_validation_error_handler(app)
     mod.init_internal_trending_route(app, shared_mock_db)
     return app

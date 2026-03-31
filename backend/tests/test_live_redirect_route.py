@@ -7,10 +7,9 @@ from datetime import UTC, datetime, timedelta
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apiflask import APIFlask
+from conftest import create_test_app
 
 from routes.live_redirect_route import check_and_return_fresh_cache
-from utils.rate_limiter import limiter
 
 
 @pytest.fixture(scope="module")
@@ -24,10 +23,7 @@ def redirect_app(shared_mock_db):
 
     importlib.reload(mod)
 
-    app = APIFlask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    limiter.init_app(app)
+    app = create_test_app()
     mod.init_live_redirect_route(app, shared_mock_db)
     return app
 

@@ -6,9 +6,7 @@ import importlib
 from unittest.mock import MagicMock, patch
 
 import pytest
-from apiflask import APIFlask
-
-from utils.rate_limiter import limiter
+from conftest import create_test_app
 
 
 @pytest.fixture(scope="module")
@@ -22,10 +20,7 @@ def trending_app(shared_mock_db):
 
     importlib.reload(mod)
 
-    app = APIFlask(__name__)
-    app.config["TESTING"] = True
-    app.config["RATELIMIT_ENABLED"] = False
-    limiter.init_app(app)
+    app = create_test_app()
     mod.init_public_trending_route(app, shared_mock_db)
     return app
 
