@@ -154,8 +154,9 @@ python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
 OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/kms_crypto.py`）：
 - **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1）
 - **環境變數**: `KMS_KEY_RING`、`KMS_KEY_ID`（已設定於 Cloud Run prod + staging）
-- **向下相容**: KMS 未設定時 fallback 明文（開發環境）；讀取時自動辨識未加密的舊資料
-- **批次加密遷移**: `tools/migrate_tokens_to_kms.py` 可掃描並加密所有明文 token（預設 dry-run，需 `--apply` 才執行）
+- **安全防護**: 部署環境（production / staging）KMS 未設定時 `kms_encrypt` 直接 raise、`create_app()` 啟動失敗，禁止明文 fallback。本地開發允許 fallback 明文
+- **讀取相容**: `kms_decrypt` 仍自動辨識未加密的舊資料，不中斷服務
+- **批次加密遷移**: `tools/migrate_tokens_to_kms.py` 可掃描並加密所有明文 token（預設 dry-run，需 `--apply` 才執行；`--audit` 僅掃描回報未加密數量）
 
 ## Code Style
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments
