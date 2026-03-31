@@ -17,6 +17,8 @@ npm install          # Install dependencies
 npm run dev          # Start dev server (Vite)
 npm run build        # Production build
 npm run preview      # Preview production build
+npm test             # Run tests (Vitest)
+npm run test:watch   # Run tests in watch mode
 ```
 
 ### Backend (backend/)
