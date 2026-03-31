@@ -75,7 +75,10 @@ def kms_decrypt(ciphertext: str) -> str:
     try:
         ciphertext_bytes = base64.b64decode(ciphertext)
     except Exception:
-        logger.warning("[KMS] ⚠️ 非 base64 格式，視為未加密的舊資料直接回傳")
+        logger.warning(
+            "[KMS] ⚠️ 偵測到未加密的明文 token（非 base64 格式），"
+            "請執行 migrate_tokens_to_kms.py 進行批次加密"
+        )
         return ciphertext
 
     from google.cloud import kms
@@ -91,6 +94,9 @@ def kms_decrypt(ciphertext: str) -> str:
         logger.info("[KMS] ✅ 解密完成")
         return response.plaintext.decode("utf-8")
     except Exception:
-        # KMS 解密失敗，可能是未加密的舊資料
-        logger.warning("[KMS] ⚠️ KMS 解密失敗，視為未加密的舊資料直接回傳")
+        # KMS 解密失敗，可能是未加密的舊資料或 key rotation 問題
+        logger.warning(
+            "[KMS] ⚠️ KMS 解密失敗，視為未加密的舊資料直接回傳。"
+            "若此訊息持續出現，請檢查 KMS key 狀態或執行 migrate_tokens_to_kms.py"
+        )
         return ciphertext
