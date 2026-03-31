@@ -44,7 +44,7 @@ VTMap 是一套針對 Vtuber 頻道經營的分析與導流工具，解決 YouTu
 | Hosting    | Google Cloud Run (backend), Firebase Hosting (frontend)                        |
 | Async Jobs | Google Cloud Tasks (WebSub 訂閱等非同步作業)                                    |
 | Linting    | Ruff (backend), ESLint (frontend), pre-commit hooks                            |
-| Testing    | pytest (backend)                                                               |
+| Testing    | pytest (backend), Vitest (frontend)                                            |
 
 ## 架構
 
