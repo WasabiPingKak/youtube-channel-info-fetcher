@@ -16,3 +16,4 @@ node_modules
 .cursorrules
 .claude/
 channel_list*
+*.stackdump
