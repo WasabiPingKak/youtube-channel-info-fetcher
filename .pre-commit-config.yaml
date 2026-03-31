@@ -16,7 +16,7 @@ repos:
     rev: v0.12.0
     hooks:
       - id: ruff
-        args: [--fix, --config, backend/ruff.toml]
+        args: [--config, backend/ruff.toml]
         files: ^backend/
         exclude: ^backend/tools/
       - id: ruff-format
