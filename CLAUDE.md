@@ -153,6 +153,7 @@ OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/k
 - **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1）
 - **環境變數**: `KMS_KEY_RING`、`KMS_KEY_ID`（已設定於 Cloud Run prod + staging）
 - **向下相容**: KMS 未設定時 fallback 明文（開發環境）；讀取時自動辨識未加密的舊資料
+- **批次加密遷移**: `tools/migrate_tokens_to_kms.py` 可掃描並加密所有明文 token（預設 dry-run，需 `--apply` 才執行）
 
 ## Code Style
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments
