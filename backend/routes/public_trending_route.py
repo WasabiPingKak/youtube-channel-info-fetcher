@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from services.trending.trending_service import get_trending_games_summary
@@ -37,8 +38,12 @@ def init_public_trending_route(app, db: Client):
             logger.info(f"✅ 趨勢資料傳回成功（區間 {days} 天）")
             return jsonify(result)
 
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logger.error("🔥 /api/trending-games 發生例外錯誤", exc_info=True)
+            logger.exception("🔥 /api/trending-games 發生例外錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(bp)

@@ -2,9 +2,11 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.settings_schemas import LoadSettingsRequest
 from services.firestore_settings_service import load_category_settings, save_category_settings
+from utils.error_response import error_response
 
 firestore_settings_bp = APIBlueprint("firestore_settings", __name__, tag="Settings")
 
@@ -32,12 +34,14 @@ def init_firestore_settings_routes(app, db):
                 return jsonify({"success": True, "settings": default_settings}), 200
 
             logging.warning(f"⚠️ 設定不存在，channel_id={body.channel_id}")
-            return jsonify({"success": False, "error": "NOT_FOUND", "code": "not-found"}), 200
+            return error_response("設定不存在", 404)
+
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("🔥 無法載入分類設定")
-            return jsonify(
-                {"success": False, "error": "伺服器內部錯誤", "code": "INTERNAL_SERVER_ERROR"}
-            ), 200
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(firestore_settings_bp)

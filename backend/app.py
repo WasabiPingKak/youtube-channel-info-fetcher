@@ -91,6 +91,11 @@ def create_app(config=None):
 
     register_validation_error_handler(app)
 
+    @app.errorhandler(500)
+    def handle_internal_error(e):
+        logging.exception("未處理的伺服器錯誤")
+        return {"error": "伺服器內部錯誤"}, 500
+
     # ── Middleware ──
     @app.before_request
     def assign_request_id():

@@ -3,6 +3,7 @@ from datetime import datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 from pytz import timezone
 
@@ -43,8 +44,12 @@ def init_internal_trending_route(app, db: Client):
             result = build_trending_for_date_range(start_date, body.days, db, force=body.force)
             return jsonify(result)
 
+        except GoogleAPIError:
+            logger.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logger.error("❌ /build-daily-trending 發生未預期錯誤", exc_info=True)
+            logger.exception("❌ /build-daily-trending 發生未預期錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     @bp.route("/refresh-daily-cache", methods=["POST"])
@@ -76,8 +81,12 @@ def init_internal_trending_route(app, db: Client):
             )
             return jsonify(result)
 
+        except GoogleAPIError:
+            logger.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logger.error("❌ /refresh-daily-cache 發生未預期錯誤", exc_info=True)
+            logger.exception("❌ /refresh-daily-cache 發生未預期錯誤")
             return jsonify({"error": "伺服器內部錯誤"}), 500
 
     app.register_blueprint(bp)

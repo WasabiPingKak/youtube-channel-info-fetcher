@@ -13,16 +13,19 @@ export const loadChannelSettings = async (channelId: string) => {
       body: JSON.stringify({ channel_id: channelId }),
     });
 
+    if (res.status === 404) {
+      return { success: false, error: "NOT_FOUND", code: "not-found" };
+    }
     if (!res.ok) {
       return { success: false, error: `HTTP錯誤：${res.status}`, code: "HTTP_ERROR" };
     }
 
     const result = await res.json();
     return {
-      success: result.success,
+      success: true,
       settings: result.settings || null,
-      error: result.error || null,
-      code: result.code || null,
+      error: null,
+      code: null,
     };
   } catch (error: unknown) {
     console.error("loadChannelSettings error:", error);
@@ -48,13 +51,14 @@ export const saveChannelSettings = async (channelId: string, data: Record<string
     });
 
     if (!res.ok) {
-      return { success: false, error: `HTTP錯誤：${res.status}` };
+      const result = await res.json().catch(() => null);
+      return { success: false, error: result?.error || `HTTP錯誤：${res.status}` };
     }
 
     const result = await res.json();
 
-    if (!result.success) {
-      return { success: false, error: result.error || "未知錯誤" };
+    if (result.error) {
+      return { success: false, error: result.error };
     }
 
     return { success: true, updated_count: result.updated_count };

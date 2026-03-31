@@ -3,6 +3,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from schemas.admin_schemas import MaintenanceRequest
@@ -32,6 +33,10 @@ def init_maintenance_route(app, db: Client):
             }
             return jsonify(result)
 
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
             logging.exception("❌ 清除 live 快取失敗")
             return jsonify({"error": "Internal server error"}), 500
@@ -49,6 +54,10 @@ def init_maintenance_route(app, db: Client):
             logging.info(f"🧹 開始清除 trending games 快取，模式：{body.mode.value}")
             result = clean_all_expired_documents(db, body.mode.value, cache_type="trending_games")
             return jsonify(result)
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logging.exception("❌ 清除 trending games 快取失敗")

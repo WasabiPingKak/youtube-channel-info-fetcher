@@ -4,8 +4,10 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.channel_info_batch_schema import ChannelInfoBatchRequest
+from utils.error_response import error_response
 
 
 def init_channel_info_batch_route(app, db):
@@ -38,8 +40,12 @@ def init_channel_info_batch_route(app, db):
 
             return jsonify({"success": True, "channels": channels})
 
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
+
         except Exception:
             logging.exception("❌ 無法批次讀取頻道資訊")
-            return jsonify({"success": False, "error": "無法讀取頻道資訊"}), 500
+            return error_response("無法讀取頻道資訊", 500)
 
     app.register_blueprint(bp)

@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from services.live_redirect.cache_updater import process_video_ids
@@ -40,6 +41,10 @@ def init_live_redirect_route(app, db: Client):
             logging.info(f"✅ 快取重建完成，共 {len(result['channels'])} 筆資料")
 
             return jsonify(result)
+
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logging.exception("🔥 /api/live-redirect/cache 快取流程失敗")

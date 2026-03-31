@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.video_schemas import VideoUpdateRequest
 from services.classified_video_fetcher import get_classified_videos
@@ -78,6 +79,10 @@ def init_video_update_route(app, db):
             token_ref.delete()
 
             return jsonify({"message": "更新完成"})
+
+        except GoogleAPIError:
+            logger.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
 
         except Exception:
             logger.exception("🔥 /api/videos/update 發生錯誤")

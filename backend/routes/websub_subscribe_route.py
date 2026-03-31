@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 import requests
 from apiflask import APIBlueprint
 from flask import jsonify, request
+from google.api_core.exceptions import GoogleAPIError
 from google.cloud.firestore import Client
 
 from utils.admin_auth import require_admin_key
@@ -155,11 +156,19 @@ def init_websub_subscribe_route(app, db: Client):
             _log_job_result(db, "websub-subscribe-all", result)
             return jsonify(result), 200
 
+        except GoogleAPIError:
+            result["duration_seconds"] = round(time.monotonic() - start_time, 2)
+            result["status"] = "error"
+            result["message"] = "Firestore 操作失敗"
+            logging.exception("🔥 Firestore 操作失敗")
+            _log_job_result(db, "websub-subscribe-all", result)
+            return jsonify(result), 500
+
         except Exception:
             result["duration_seconds"] = round(time.monotonic() - start_time, 2)
             result["status"] = "error"
             result["message"] = "訂閱派發過程發生錯誤"
-            logging.error("🔥 訂閱派發失敗", exc_info=True)
+            logging.exception("🔥 訂閱派發失敗")
             _log_job_result(db, "websub-subscribe-all", result)
             return jsonify(result), 500
 

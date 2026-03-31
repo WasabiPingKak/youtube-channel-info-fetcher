@@ -4,8 +4,10 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from utils.channel_validator import is_valid_channel_id
+from utils.error_response import error_response
 
 
 def init_channel_index_detail_route(app, db):
@@ -18,7 +20,7 @@ def init_channel_index_detail_route(app, db):
     )
     def get_channel_index_detail(channel_id):
         if not is_valid_channel_id(channel_id):
-            return jsonify({"success": False, "error": "channel_id 格式不合法"}), 400
+            return error_response("channel_id 格式不合法", 400)
 
         try:
             root_ref = db.collection("channel_index_batch")
@@ -43,10 +45,14 @@ def init_channel_index_detail_route(app, db):
                             }
                         )
 
-            return jsonify({"success": False, "error": "找不到該頻道"}), 404
+            return error_response("找不到該頻道", 404)
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("❌ 無法讀取頻道索引詳情")
-            return jsonify({"success": False, "error": "無法讀取頻道索引"}), 500
+            return error_response("無法讀取頻道索引", 500)
 
     app.register_blueprint(bp)

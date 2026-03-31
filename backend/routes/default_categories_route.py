@@ -4,6 +4,9 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
+
+from utils.error_response import error_response
 
 
 def init_default_categories_route(app, db):
@@ -22,10 +25,14 @@ def init_default_categories_route(app, db):
             if doc.exists:
                 return jsonify({"success": True, "config": doc.to_dict()})
             else:
-                return jsonify({"success": False, "error": "找不到預設分類設定"}), 404
+                return error_response("找不到預設分類設定", 404)
+
+        except GoogleAPIError:
+            logging.exception("❌ Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("❌ 無法讀取預設分類設定")
-            return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(bp)

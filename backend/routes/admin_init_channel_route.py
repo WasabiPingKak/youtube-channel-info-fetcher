@@ -7,6 +7,7 @@ from google.api_core.exceptions import GoogleAPIError
 from schemas.admin_schemas import AdminInitRequest
 from services.channel_initializer import run_channel_initialization
 from utils.admin_auth import require_admin_key
+from utils.error_response import error_response
 
 
 def init_admin_init_channel_route(app, db):
@@ -36,10 +37,10 @@ def init_admin_init_channel_route(app, db):
 
         except GoogleAPIError:
             logging.exception("🔥 Firestore 操作失敗")
-            return jsonify({"success": False, "error": "Firestore 操作失敗"}), 500
+            return error_response("Firestore 操作失敗", 500)
 
         except Exception:
             logging.exception("🔥 初始化過程發生未知錯誤")
-            return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(bp)

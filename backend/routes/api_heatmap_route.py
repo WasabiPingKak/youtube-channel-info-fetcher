@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import abort, jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from utils.channel_validator import is_valid_channel_id
 
@@ -42,6 +43,10 @@ def init_api_heatmap_route(app, db):
                 abort(500, description="matrix or totalCount missing.")
 
             return jsonify({"matrix": matrix, "totalCount": total_count})
+
+        except GoogleAPIError:
+            logging.exception(f"[heatmap] Firestore 操作失敗：{channel_id}")
+            abort(500, description="Firestore error")
 
         except Exception:
             logging.exception(f"[heatmap] 發生錯誤：{channel_id}")

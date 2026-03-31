@@ -4,6 +4,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from schemas.settings_schemas import SaveAndApplyRequest
 from services.firestore_settings_service import (
@@ -11,6 +12,7 @@ from services.firestore_settings_service import (
     save_category_settings,
 )
 from utils.auth_decorator import require_auth
+from utils.error_response import error_response
 
 category_save_apply_bp = APIBlueprint("category_save_apply", __name__, tag="Category Editor")
 
@@ -30,7 +32,7 @@ def init_category_save_apply_routes(app, db):
                 logging.warning(
                     f"⛔ 嘗試儲存他人頻道分類：JWT={auth_channel_id}, 請求={body.channel_id}"
                 )
-                return jsonify({"success": False, "error": "無權限操作此頻道"}), 403
+                return error_response("無權限操作此頻道", 403)
 
             # 1. 讀取現有設定
             old = load_category_settings(db, body.channel_id)
@@ -47,14 +49,18 @@ def init_category_save_apply_routes(app, db):
             # 儲存分類設定
             saved = save_category_settings(db, body.channel_id, body.settings)
             if not saved:
-                return jsonify({"success": False, "error": "無法儲存分類設定"}), 500
+                return error_response("無法儲存分類設定", 500)
 
             return jsonify(
                 {"success": True, "message": "設定已儲存並成功套用分類", "updated_count": -1}
             )
 
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return error_response("Firestore 操作失敗", 500)
+
         except Exception:
             logging.exception("🔥 /api/categories/save-and-apply 發生例外錯誤")
-            return jsonify({"success": False, "error": "伺服器內部錯誤"}), 500
+            return error_response("伺服器內部錯誤", 500)
 
     app.register_blueprint(category_save_apply_bp)

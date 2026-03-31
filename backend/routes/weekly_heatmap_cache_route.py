@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.api_core.exceptions import GoogleAPIError
 
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
 from utils.admin_auth import require_admin_key
@@ -25,8 +26,12 @@ def init_weekly_heatmap_cache_route(app, db):
                 return jsonify({"message": "✅ 快取更新成功"}), 200
             else:
                 return jsonify({"error": "⚠️ 快取更新失敗"}), 500
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logging.error("🔥 快取更新時發生例外", exc_info=True)
+            logging.exception("🔥 快取更新時發生例外")
             return jsonify({"error": "快取更新失敗"}), 500
 
     @bp.route("/api/heatmap/weekly", methods=["GET"])
@@ -61,8 +66,12 @@ def init_weekly_heatmap_cache_route(app, db):
 
             return jsonify(response), 200
 
+        except GoogleAPIError:
+            logging.exception("🔥 Firestore 操作失敗")
+            return jsonify({"error": "Firestore 操作失敗"}), 500
+
         except Exception:
-            logging.error("🔥 讀取 weekly heatmap cache 失敗", exc_info=True)
+            logging.exception("🔥 讀取 weekly heatmap cache 失敗")
             return jsonify({"error": "internal server error"}), 500
 
     app.register_blueprint(bp)
