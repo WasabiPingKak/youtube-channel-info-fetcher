@@ -187,8 +187,8 @@ def main():
     """主程式進入點"""
     args = parse_arguments()
 
-    # 檢查 KMS 是否已設定
-    if not is_kms_configured():
+    # 檢查 KMS 是否已設定（dry-run 僅掃描不加密，不需要 KMS）
+    if not args.dry_run and not is_kms_configured():
         logger.error("❌ KMS 未設定！請確認環境變數 GOOGLE_CLOUD_PROJECT、KMS_KEY_RING、KMS_KEY_ID")
         logger.error("   此腳本需要 KMS 才能加密 token，不可在未設定 KMS 的環境下執行。")
         sys.exit(1)
