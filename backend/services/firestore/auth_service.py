@@ -8,7 +8,7 @@ from google.cloud import firestore
 from utils.kms_crypto import kms_decrypt, kms_encrypt
 
 
-def save_channel_auth(db, channel_id: str, refresh_token: str):
+def save_channel_auth(db: firestore.Client, channel_id: str, refresh_token: str):
     try:
         doc_ref = (
             db.collection("channel_data")
@@ -30,7 +30,7 @@ def save_channel_auth(db, channel_id: str, refresh_token: str):
         raise
 
 
-def get_refresh_token(db, channel_id: str) -> str | None:
+def get_refresh_token(db: firestore.Client, channel_id: str) -> str | None:
     """
     讀取已授權頻道的 refresh_token。
     自動處理 KMS 解密，並向下相容未加密的舊資料。

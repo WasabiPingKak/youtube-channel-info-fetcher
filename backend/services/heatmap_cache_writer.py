@@ -106,7 +106,7 @@ def write_weekly_heatmap_cache(db: Client):
         return False
 
 
-def append_to_pending_cache(db, channel_id: str):
+def append_to_pending_cache(db: firestore.Client, channel_id: str):
     """
     將單一新初始化頻道的活躍 heatmap 統計結果寫入 pending 快取文件（避免重複）
 
@@ -152,7 +152,7 @@ def append_to_pending_cache(db, channel_id: str):
         def _append_in_transaction(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
             pending_data = pending_doc.to_dict() if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
-            current_channels = pending_data.get("channels", [])
+            current_channels = pending_data.get("channels", [])  # type: ignore[reportOptionalMemberAccess]
 
             filtered = [c for c in current_channels if c.get("channelId") != channel_id]
             filtered.append(new_entry)

@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify, make_response, request
+from google.cloud import firestore
 
 from utils.jwt_util import (
     JWT_EXP_HOURS,
@@ -13,7 +14,7 @@ from utils.jwt_util import (
 from utils.rate_limiter import limiter
 
 
-def init_me_route(app, db):
+def init_me_route(app, db: firestore.Client):
     me_bp = APIBlueprint("me", __name__, url_prefix="/api", tag="Auth")
 
     @me_bp.route("/me", methods=["GET"])
@@ -62,7 +63,7 @@ def init_me_route(app, db):
         doc_ref = db.collection("channel_index").document(channel_id)
         doc = doc_ref.get()
 
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logging.error(f"❌ Firestore 找不到頻道：{channel_id}")
             response_data = {
                 "success": True,
@@ -72,7 +73,7 @@ def init_me_route(app, db):
                 "thumbnail": None,
             }
         else:
-            data = doc.to_dict()
+            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
             response_data = {
                 "success": True,
                 "channelId": channel_id,

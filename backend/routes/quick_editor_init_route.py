@@ -2,13 +2,14 @@
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.common import ChannelIdQuery
 from utils.auth_decorator import require_auth
 from utils.error_response import error_response
 
 
-def init_quick_editor_init_route(app, db):
+def init_quick_editor_init_route(app, db: firestore.Client):
     bp = APIBlueprint("quick_editor_init_route", __name__, tag="Category Editor")
 
     @bp.route("/api/quick-editor/init-data", methods=["GET"])

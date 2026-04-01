@@ -1,13 +1,14 @@
 import logging
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 from utils.admin_ids import get_admin_channel_ids
 
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 
 
-def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
+def write_channel_index(db: firestore.Client, channel_id: str, name: str, thumbnail: str) -> None:
     """
     建立或更新 channel_index/{channel_id} 文件，若內容無變化則略過。
     """
@@ -23,7 +24,7 @@ def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
 
     try:
         snapshot = doc_ref.get()
-        existing = snapshot.to_dict() if snapshot.exists else None
+        existing = snapshot.to_dict() if snapshot.exists else None  # type: ignore[reportAttributeAccessIssue]
 
         if existing == index_data:
             logging.info(f"[Index] ✅ 資料無變化，略過更新：{channel_id}")

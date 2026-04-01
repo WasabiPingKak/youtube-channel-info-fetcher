@@ -13,14 +13,14 @@ websub_notify_bp = APIBlueprint("websub_notify", __name__, tag="WebSub")
 COLLECTION_NAME = "live_redirect_notify_queue"
 
 
-def _write_notify_item(db, doc_id, video_id, new_item):
+def _write_notify_item(db: firestore.Client, doc_id, video_id, new_item):
     """以 Transaction 原子寫入單筆 WebSub 通知，避免 concurrent 推播造成資料丟失"""
     doc_ref = db.collection(COLLECTION_NAME).document(doc_id)
 
     @firestore.transactional
     def _update_in_transaction(transaction):
         doc = doc_ref.get(transaction=transaction)
-        current_data = doc.to_dict() or {}
+        current_data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         videos = current_data.get("videos", [])
 
         # 若已存在則覆寫更新（用 videoId 去重）
@@ -42,7 +42,7 @@ def _write_notify_item(db, doc_id, video_id, new_item):
     _update_in_transaction(transaction)
 
 
-def init_websub_notify_route(app, db):
+def init_websub_notify_route(app, db: firestore.Client):
     @websub_notify_bp.route("/websub-callback", methods=["GET", "POST"])
     @websub_notify_bp.doc(
         summary="WebSub 回調",

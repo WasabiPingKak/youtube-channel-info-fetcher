@@ -1,6 +1,8 @@
 import logging
 from datetime import UTC, datetime
 
+from google.cloud import firestore
+
 from services.firestore.active_time_writer import write_active_time_all_to_channel_index_batch
 from services.firestore.channel_loader import (
     load_all_channels_from_index_list,
@@ -17,7 +19,7 @@ def create_empty_video_matrix():
     return {k: [[] for _ in range(24)] for k in WEEKDAY_KEYS}
 
 
-def analyze_and_update_all_channels(db):
+def analyze_and_update_all_channels(db: firestore.Client):
     updated = 0
     skipped = 0
     skipped_channels = []
@@ -70,7 +72,7 @@ def analyze_and_update_all_channels(db):
     return {"updated": updated, "skipped": skipped, "skipped_channels": skipped_channels}
 
 
-def update_single_channel_heatmap(db, channel_id: str) -> bool:
+def update_single_channel_heatmap(db: firestore.Client, channel_id: str) -> bool:
     """針對單一頻道進行影片活躍時間分析與寫入（不檢查 lastVideoSyncAt）
 
     回傳：

@@ -2,12 +2,13 @@
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from utils.channel_validator import is_valid_channel_id
 from utils.error_response import error_response
 
 
-def init_channel_index_detail_route(app, db):
+def init_channel_index_detail_route(app, db: firestore.Client):
     bp = APIBlueprint("channel_index_detail_route", __name__, tag="Channel")
 
     @bp.route("/api/channels/index/<channel_id>", methods=["GET"])
@@ -23,7 +24,7 @@ def init_channel_index_detail_route(app, db):
         docs = root_ref.stream()
 
         for doc in docs:
-            data = doc.to_dict()
+            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
             for entry in data.get("channels", []):
                 if entry.get("channel_id") == channel_id:
                     return jsonify(

@@ -4,6 +4,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.settings_schemas import SaveAndApplyRequest
 from services.firestore_settings_service import (
@@ -16,7 +17,7 @@ from utils.error_response import error_response
 category_save_apply_bp = APIBlueprint("category_save_apply", __name__, tag="Category Editor")
 
 
-def init_category_save_apply_routes(app, db):
+def init_category_save_apply_routes(app, db: firestore.Client):
     @category_save_apply_bp.route("/api/categories/save-and-apply", methods=["POST"])
     @category_save_apply_bp.doc(
         summary="儲存並套用分類設定",

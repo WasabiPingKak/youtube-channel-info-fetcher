@@ -2,13 +2,14 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.admin_schemas import AdminInitRequest
 from services.channel_initializer import run_channel_initialization
 from utils.admin_auth import require_admin_key
 
 
-def init_admin_init_channel_route(app, db):
+def init_admin_init_channel_route(app, db: firestore.Client):
     bp = APIBlueprint("admin_init_channel", __name__, tag="Admin")
 
     @bp.route("/api/admin/initialize_channel", methods=["POST"])

@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.common import ChannelIdCamelQuery
 from schemas.video_schemas import ClassifiedVideoRequest
@@ -12,7 +13,7 @@ logger = logging.getLogger(__name__)
 video_bp = APIBlueprint("video", __name__, tag="Video")
 
 
-def init_video_routes(app, db):
+def init_video_routes(app, db: firestore.Client):
     @video_bp.route("/api/videos/classified", methods=["POST"])
     @video_bp.doc(
         summary="取得分類影片清單", description="依頻道 ID 與時間區間取得分類後的影片列表"

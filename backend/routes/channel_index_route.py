@@ -2,11 +2,12 @@
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from services.channel_index_service import get_all_enabled_channels_data
 
 
-def init_channel_index_route(app, db):
+def init_channel_index_route(app, db: firestore.Client):
     bp = APIBlueprint("channel_index_route", __name__, tag="Channel")
 
     @bp.route("/api/channels/index", methods=["GET"])

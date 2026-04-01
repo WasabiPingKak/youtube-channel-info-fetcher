@@ -2,12 +2,13 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from services.heatmap_cache_writer import write_weekly_heatmap_cache
 from utils.admin_auth import require_admin_key
 
 
-def init_weekly_heatmap_cache_route(app, db):
+def init_weekly_heatmap_cache_route(app, db: firestore.Client):
     bp = APIBlueprint("weekly_heatmap_cache_route", __name__, tag="Heatmap")
 
     @bp.route("/admin/update_weekly_heatmap_cache", methods=["GET"])
@@ -34,11 +35,11 @@ def init_weekly_heatmap_cache_route(app, db):
         if not weekly_doc.exists:
             return jsonify({"error": "weekly cache not found"}), 404
 
-        weekly_data = weekly_doc.to_dict()
+        weekly_data = weekly_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         pending_data = pending_doc.to_dict() if pending_doc.exists else {}
 
         weekly_list = weekly_data.get("channels", [])
-        pending_list = pending_data.get("channels", [])
+        pending_list = pending_data.get("channels", [])  # type: ignore[reportOptionalMemberAccess]
 
         # 👉 轉為 dict[channelId] → pending 覆蓋 weekly
         channel_map = {ch["channelId"]: ch for ch in weekly_list if "channelId" in ch}

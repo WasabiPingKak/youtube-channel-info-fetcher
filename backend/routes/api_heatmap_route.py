@@ -2,11 +2,12 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import abort, jsonify
+from google.cloud import firestore
 
 from utils.channel_validator import is_valid_channel_id
 
 
-def init_api_heatmap_route(app, db):
+def init_api_heatmap_route(app, db: firestore.Client):
     bp = APIBlueprint("api_heatmap", __name__, tag="Heatmap")
 
     @bp.route("/api/heatmap/<channel_id>", methods=["GET"])

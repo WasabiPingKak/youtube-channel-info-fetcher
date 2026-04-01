@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from routes.websub_subscribe_route import subscribe_channel_by_id
 from schemas.common import InitChannelQuery
@@ -11,7 +12,7 @@ from utils.error_response import error_response
 from utils.rate_limiter import limiter
 
 
-def init_channel_route(app, db):
+def init_channel_route(app, db: firestore.Client):
     bp = APIBlueprint("init_channel", __name__, tag="Channel")
 
     @bp.route("/api/init-channel", methods=["GET"])

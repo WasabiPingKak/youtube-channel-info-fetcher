@@ -2,11 +2,12 @@
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from utils.error_response import error_response
 
 
-def init_default_categories_route(app, db):
+def init_default_categories_route(app, db: firestore.Client):
     bp = APIBlueprint("default_categories_route", __name__, tag="Category")
 
     @bp.route("/api/categories/default-config", methods=["GET"])
@@ -18,8 +19,8 @@ def init_default_categories_route(app, db):
         doc_ref = db.collection("global_settings").document("default_categories_config_v2")
         doc = doc_ref.get()
 
-        if doc.exists:
-            return jsonify({"success": True, "config": doc.to_dict()})
+        if doc.exists:  # type: ignore[reportAttributeAccessIssue]
+            return jsonify({"success": True, "config": doc.to_dict() or {}})  # type: ignore[reportAttributeAccessIssue]
         else:
             return error_response("找不到預設分類設定", 404)
 

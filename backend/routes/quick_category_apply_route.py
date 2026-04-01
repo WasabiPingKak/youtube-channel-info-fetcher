@@ -10,7 +10,7 @@ from utils.auth_decorator import require_auth
 quick_apply_bp = APIBlueprint("quick_category_apply", __name__, tag="Category Editor")
 
 
-def init_quick_category_apply_route(app, db):
+def init_quick_category_apply_route(app, db: firestore.Client):
     @quick_apply_bp.route("/api/quick-editor/channel-config-apply", methods=["POST"])
     @quick_apply_bp.doc(
         summary="快速套用分類關鍵字",

@@ -6,12 +6,14 @@ import inspect
 import logging
 import pkgutil
 
+from google.cloud import firestore
+
 import routes
 
 logger = logging.getLogger(__name__)
 
 
-def register_all_routes(app, db):
+def register_all_routes(app, db: firestore.Client):
     """掃描 routes package 下所有模組，自動呼叫 init_* 函式註冊路由。"""
     registered = []
 

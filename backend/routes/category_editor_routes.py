@@ -16,6 +16,7 @@ from typing import Any
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 # 服務層：讀取分類設定
 from schemas.common import ChannelIdQuery
@@ -46,7 +47,7 @@ def _normalize_type(raw: Any) -> str:
     return "unknown"
 
 
-def init_category_editor_routes(app, db):
+def init_category_editor_routes(app, db: firestore.Client):
     """註冊 category editor 相關 API 路由到 app。"""
 
     @category_editor_bp.route("/api/categories/editor-data", methods=["GET"])
