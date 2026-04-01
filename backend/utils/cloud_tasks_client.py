@@ -26,6 +26,7 @@ def _get_config():
 
 
 _client = None
+_healthy: bool | None = None  # 快取：None=未檢查, True/False=上次結果
 
 
 def _get_client() -> tasks_v2.CloudTasksClient:
@@ -33,6 +34,45 @@ def _get_client() -> tasks_v2.CloudTasksClient:
     if _client is None:
         _client = tasks_v2.CloudTasksClient()
     return _client
+
+
+def check_health() -> dict:
+    """
+    檢查 Cloud Tasks 服務是否可用。
+
+    透過 GetQueue 驗證 queue 存在且 API 已啟用。
+    結果會快取，避免每次 healthz 都打 API。
+
+    Returns:
+        {"healthy": bool, "reason": str | None}
+    """
+    global _healthy
+
+    config = _get_config()
+    project_id = config["project_id"]
+
+    if not project_id:
+        _healthy = False
+        return {"healthy": False, "reason": "GOOGLE_CLOUD_PROJECT 未設定"}
+
+    try:
+        client = _get_client()
+        queue_name = client.queue_path(project_id, config["location"], config["queue_name"])
+        client.get_queue(name=queue_name)
+        _healthy = True
+        return {"healthy": True, "reason": None}
+    except Exception as e:
+        _healthy = False
+        error_msg = str(e)
+        # 辨識常見錯誤類型，提供明確原因
+        if "PERMISSION_DENIED" in error_msg or "403" in error_msg:
+            reason = "Cloud Tasks API 未啟用或權限不足"
+        elif "NOT_FOUND" in error_msg or "404" in error_msg:
+            reason = f"Queue 不存在：{config['queue_name']}"
+        else:
+            reason = f"Cloud Tasks 連線異常：{error_msg[:200]}"
+        logger.warning(f"Cloud Tasks health check 失敗：{reason}")
+        return {"healthy": False, "reason": reason}
 
 
 def dispatch_task(
