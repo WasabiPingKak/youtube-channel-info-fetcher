@@ -66,7 +66,7 @@ npm run lint                     # Lint src/
 ### Tech Stack
 - **Frontend**: React 19 + TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query (data fetching), shadcn/ui components
 - **Backend**: APIFlask + Python (Application Factory pattern), Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting), Pydantic (request validation), OpenAPI 3.1 (auto-generated via APIFlask)
-- **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch)
+- **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch), Cloud Trace (distributed tracing via OpenTelemetry)
 
 ### Project Structure
 ```
@@ -104,6 +104,7 @@ npm run lint                     # Lint src/
 - **錯誤處理**: `utils/exceptions.py` 定義自訂 exception hierarchy（`AppError` → `NotFoundError` 404 / `AuthorizationError` 403 / `ConfigurationError` 500 / `ExternalServiceError` 502）。`app.py` 的 `register_error_handlers()` 註冊全域 handler 統一處理 `AppError`、`GoogleAPIError`（Firestore）、`HttpError`（YouTube API），路由層不需重複 try/except。回應格式統一為 `{"error": "<message>"}` + 正確 HTTP 狀態碼。Callback 端點（ECPay、OAuth、WebSub）保留本地 error handling（回傳純文字）
 - **Health check**: `/healthz` 端點檢查 Firestore 連線 + Cloud Tasks queue 可用性（`check_health()` 透過 GetQueue 驗證），回傳結構化 `checks` 物件，任一失敗即 503。`/` 僅回傳服務存活訊息
 - **Rate limiting 已知限制**: Flask-Limiter 預設使用 `memory://` storage，在 Cloud Run 多 instance 環境下各 instance 各自計算，無法全域一致限制。若需全域限制需改用 Redis 作為 storage backend（設定 `RATE_LIMIT_STORAGE_URL` 環境變數）
+- **OpenTelemetry tracing**: `utils/otel_setup.py` 在 Cloud Run 環境（`K_SERVICE` 存在）自動啟用，將 traces 推送到 Cloud Trace。Flask request 與 outbound HTTP 自動 instrumentation，Cloud Logging JSON log 注入 trace context 支援自動關聯。本地開發時自動跳過，初始化失敗不影響服務運行
 
 ### Data Flow
 ```
