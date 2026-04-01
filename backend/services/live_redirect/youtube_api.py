@@ -6,6 +6,8 @@ import os
 import requests
 from requests.exceptions import RequestException
 
+from utils.breaker_instances import youtube_breaker
+from utils.circuit_breaker import circuit_breaker
 from utils.retry import retry_on_transient_error
 
 YOUTUBE_API_URL = "https://www.googleapis.com/youtube/v3/videos"
@@ -15,9 +17,10 @@ def _get_api_key() -> str:
     return os.getenv("API_KEY", "")
 
 
+@circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
 def _fetch_with_retry(params: dict) -> list[dict]:
-    """帶 retry 的 YouTube API 請求"""
+    """帶 retry + 熔斷保護的 YouTube API 請求"""
     resp = requests.get(YOUTUBE_API_URL, params=params, timeout=10)
     resp.raise_for_status()
     return resp.json().get("items", [])

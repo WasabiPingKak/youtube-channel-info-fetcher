@@ -3,12 +3,15 @@ import logging
 import googleapiclient.discovery
 import googleapiclient.errors
 
+from utils.breaker_instances import youtube_breaker
+from utils.circuit_breaker import circuit_breaker
 from utils.retry import retry_on_transient_error
 
 
+@circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
 def _execute_api_request(request):
-    """包裝 googleapiclient request.execute()，加入 retry"""
+    """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護"""
     return request.execute()
 
 

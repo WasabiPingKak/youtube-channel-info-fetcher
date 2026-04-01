@@ -5,9 +5,12 @@ import logging
 from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
+from utils.breaker_instances import firestore_breaker
+from utils.circuit_breaker import circuit_breaker
 from utils.kms_crypto import kms_decrypt, kms_encrypt
 
 
+@circuit_breaker(firestore_breaker, excluded_exceptions=(KeyError, AttributeError))
 def save_channel_auth(db: firestore.Client, channel_id: str, refresh_token: str):
     try:
         doc_ref = (
@@ -36,6 +39,10 @@ def get_refresh_token(db: firestore.Client, channel_id: str) -> str | None:
     自動處理 KMS 解密，並向下相容未加密的舊資料。
     如果不存在或發生錯誤則回傳 None。
     """
+    if not firestore_breaker.allow_request():
+        logging.warning("🔴 Firestore 熔斷中，略過讀取 refresh_token：%s", channel_id)
+        return None
+
     try:
         doc_ref = (
             db.collection("channel_data")
@@ -55,9 +62,11 @@ def get_refresh_token(db: firestore.Client, channel_id: str) -> str | None:
 
         token = kms_decrypt(raw_token)
         logging.info(f"[Auth] ✅ 成功取得 refresh_token：channel_id={channel_id}")
+        firestore_breaker.record_success()
         return token
 
     except GoogleAPIError:
+        firestore_breaker.record_failure()
         logging.exception(f"[Auth] ❌ Firestore 讀取失敗：channel_id={channel_id}")
         return None
 

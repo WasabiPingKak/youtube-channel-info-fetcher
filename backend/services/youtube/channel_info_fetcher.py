@@ -4,7 +4,17 @@ import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from utils.breaker_instances import youtube_breaker
+from utils.circuit_breaker import circuit_breaker
 from utils.retry import retry_on_transient_error
+
+
+@circuit_breaker(youtube_breaker)
+@retry_on_transient_error(max_retries=3, base_delay=1.0)
+def _fetch_channel_snippet(api_key: str, channel_id: str):
+    """帶 retry + 熔斷保護的頻道資訊 API 請求"""
+    yt = build("youtube", "v3", developerKey=api_key)
+    return yt.channels().list(part="snippet", id=channel_id).execute()
 
 
 def fetch_channel_basic_info(channel_id: str) -> dict:
@@ -21,13 +31,8 @@ def fetch_channel_basic_info(channel_id: str) -> dict:
     if not api_key:
         raise OSError("❌ 未設定 API_KEY 環境變數")
 
-    @retry_on_transient_error(max_retries=3, base_delay=1.0)
-    def _fetch():
-        yt = build("youtube", "v3", developerKey=api_key)
-        return yt.channels().list(part="snippet", id=channel_id).execute()
-
     try:
-        response = _fetch()
+        response = _fetch_channel_snippet(api_key, channel_id)
 
         items = response.get("items", [])
         if not items:
