@@ -95,17 +95,17 @@ npm run lint                     # Lint src/
 ```
 
 ### Key Patterns
-- **Backend routes** are modular: each feature has its own `init_*_route(app, db)` function in `routes/`，使用 `APIBlueprint` 並帶有 `@bp.doc()` OpenAPI 標記。路由透過 `utils/route_loader.py` 自動掃描註冊，新增 route 只需建檔不用改 `app.py`
-- **OpenAPI 文件**: APIFlask 自動產生 OpenAPI 3.1 spec，`/docs` 提供 Swagger UI，`/openapi.json` 提供 spec
-- **Frontend uses `@/` alias** for imports (maps to `src/`)
-- **React Query persistence**: 12-hour cache with localStorage
-- **Dual environments**: staging and production with separate `.env` files and **separate Firestore databases**
-- **Pydantic validation**: POST routes 透過 `@bp.input(Schema)` 驗證請求（APIFlask 原生整合），ValidationError 由 `schemas/__init__.py` 的 `error_processor` 統一回傳 422
-- **錯誤處理**: `utils/exceptions.py` 定義自訂 exception hierarchy（`AppError` → `NotFoundError` 404 / `AuthorizationError` 403 / `ConfigurationError` 500 / `ExternalServiceError` 502）。`app.py` 的 `register_error_handlers()` 註冊全域 handler 統一處理 `AppError`、`GoogleAPIError`（Firestore）、`HttpError`（YouTube API），路由層不需重複 try/except。回應格式統一為 `{"error": "<message>"}` + 正確 HTTP 狀態碼。Callback 端點（ECPay、OAuth、WebSub）保留本地 error handling（回傳純文字）
-- **Health check**: `/healthz` 端點檢查 Firestore 連線 + Cloud Tasks queue 可用性（`check_health()` 透過 GetQueue 驗證），回傳結構化 `checks` 物件，任一失敗即 503。`/` 僅回傳服務存活訊息
-- **Rate limiting 已知限制**: Flask-Limiter 預設使用 `memory://` storage，在 Cloud Run 多 instance 環境下各 instance 各自計算，無法全域一致限制。若需全域限制需改用 Redis 作為 storage backend（設定 `RATE_LIMIT_STORAGE_URL` 環境變數）
-- **OpenTelemetry tracing**: `utils/otel_setup.py` 在 Cloud Run 環境（`K_SERVICE` 存在）自動啟用，將 traces 推送到 Cloud Trace。Flask request 與 outbound HTTP 自動 instrumentation，Cloud Logging JSON log 注入 trace context 支援自動關聯。本地開發時自動跳過，初始化失敗不影響服務運行
-- **Circuit Breaker 熔斷機制**: `utils/circuit_breaker.py` 提供 `CircuitBreaker` class + `@circuit_breaker` decorator。YouTube API 與 Firestore 各自獨立的熔斷器（`utils/breaker_instances.py`），連續失敗 5 次後自動熔斷 30 秒，避免無效重試拖慢系統。CLOSED → OPEN → HALF_OPEN 三態自動轉換。`/healthz` 回傳熔斷器狀態供監控。熔斷時 YouTube 端回傳 503（`CircuitOpenError`），Firestore 端視函式回傳空值或 503。狀態為 process-local（各 Cloud Run instance 獨立）
+- **Route 自動註冊**: `utils/route_loader.py` 掃描 `routes/` 自動註冊，新增 route 只需建檔
+- **OpenAPI**: APIFlask 自動產生 spec，`/docs` Swagger UI，`/openapi.json`
+- **Frontend `@/` alias**: maps to `src/`
+- **React Query**: 12-hour cache with localStorage
+- **Dual environments**: staging / production，各自 `.env` + 獨立 Firestore 資料庫
+- **Pydantic validation**: `@bp.input(Schema)` 驗證，422 由 `schemas/__init__.py` error_processor 處理
+- **錯誤處理**: `utils/exceptions.py` exception hierarchy + `app.py` 全域 handler，路由層不需 try/except
+- **Health check**: `/healthz` 檢查 Firestore + Cloud Tasks，任一失敗 503
+- **Rate limiting**: `memory://` storage，多 Cloud Run instance 各自計算（全域需改 Redis）
+- **OpenTelemetry**: `utils/otel_setup.py`，Cloud Run 自動啟用，本地跳過
+- **Circuit Breaker**: `utils/circuit_breaker.py` + `utils/breaker_instances.py`，YouTube API 與 Firestore 各自獨立熔斷
 
 ### Data Flow
 ```
@@ -127,49 +127,24 @@ Frontend → Firebase Hosting → Cloud Run Backend → YouTube API / Firestore
 
 #### 資料庫遷移
 
-使用 `migrate_prod_to_staging.py` 將 Production 資料複製到 Staging：
-
+`tools/migrate_prod_to_staging.py` — Production → Staging 資料複製（自動脫敏 OAuth token、禁止反向操作）：
 ```bash
 cd backend
-
-# 完整複製（保留 90 天資料，自動脫敏）
-python tools/migrate_prod_to_staging.py --full --days 90
-
-# 複製所有歷史資料
-python tools/migrate_prod_to_staging.py --full --all-history
-
-# 只複製指定 Collections
-python tools/migrate_prod_to_staging.py --collections channel_data,channel_index_batch --days 90
-
-# Dry Run 模式（不實際寫入）
-python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
+python tools/migrate_prod_to_staging.py --full --days 90          # 常用：保留 90 天
+python tools/migrate_prod_to_staging.py --full --days 90 --dry-run # 預覽不寫入
 ```
-
-**安全機制**：
-- 自動脫敏：移除 OAuth refresh_token 和 access_token
-- 安全檢查：禁止從 Staging 複製到 Production
-- 互動確認：執行前需輸入 'yes' 確認
 
 ### 備份策略
 
-Production `(default)` 資料庫已啟用 Firestore 原生排程備份：
-- **頻率**：每日
-- **保留期間**：7 天
-- **管理指令**：
-  - 查看排程：`gcloud firestore backups schedules list --database='(default)' --project=vtuber-channel-analyzer-v3`
-  - 查看備份：`gcloud firestore backups list --project=vtuber-channel-analyzer-v3`
-  - 從備份還原：`gcloud firestore databases restore --source-backup=BACKUP_ID --destination-database='restored-db' --project=vtuber-channel-analyzer-v3`
-- **還原限制**：只能還原到新資料庫，需透過切換 `FIRESTORE_DATABASE` 環境變數或資料遷移來恢復服務
-- **Staging 不備份**：可從 Production 用 `migrate_prod_to_staging.py` 重建
+Production `(default)` 資料庫：Firestore 原生排程備份，每日一次，保留 7 天。還原只能到新資料庫。Staging 不備份（可從 Production 用 migrate 腳本重建）。
 
 ### Refresh Token 加密
 
 OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/kms_crypto.py`）：
-- **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1）
-- **環境變數**: `KMS_KEY_RING`、`KMS_KEY_ID`（已設定於 Cloud Run prod + staging）
-- **安全防護**: 部署環境（production / staging）KMS 未設定時 `kms_encrypt` 直接 raise、`create_app()` 啟動失敗，禁止明文 fallback。本地開發允許 fallback 明文
-- **讀取相容**: `kms_decrypt` 仍自動辨識未加密的舊資料，不中斷服務
-- **批次加密遷移**: `tools/migrate_tokens_to_kms.py` 可掃描並加密所有明文 token（預設 dry-run，需 `--apply` 才執行；`--audit` 僅掃描回報未加密數量）
+- **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1），環境變數 `KMS_KEY_RING` + `KMS_KEY_ID`
+- 部署環境 KMS 未設定 → `kms_encrypt` raise，禁止明文。本地開發允許 fallback
+- `kms_decrypt` 自動辨識未加密舊資料，不中斷服務
+- 批次遷移：`tools/migrate_tokens_to_kms.py`（預設 dry-run，`--apply` 執行）
 
 ## Code Style
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments
