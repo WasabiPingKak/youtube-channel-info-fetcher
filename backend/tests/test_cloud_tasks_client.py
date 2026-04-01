@@ -70,6 +70,118 @@ class TestDispatchTask:
         assert result is None
 
 
+class TestCheckHealth:
+    """check_health Cloud Tasks 健康檢查"""
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "https://test.run.app",
+        },
+    )
+    def test_healthy(self, _mock_config):
+        from utils.cloud_tasks_client import check_health
+
+        mock_client = MagicMock()
+        mock_client.queue_path.return_value = (
+            "projects/test/locations/asia-east1/queues/websub-subscribe"
+        )
+        mock_client.get_queue.return_value = MagicMock()
+
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = check_health()
+
+        assert result["healthy"] is True
+        assert result["reason"] is None
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "",
+        },
+    )
+    def test_missing_project_id(self, _mock_config):
+        from utils.cloud_tasks_client import check_health
+
+        result = check_health()
+        assert result["healthy"] is False
+        assert "GOOGLE_CLOUD_PROJECT" in result["reason"]
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "https://test.run.app",
+        },
+    )
+    def test_permission_denied(self, _mock_config):
+        from utils.cloud_tasks_client import check_health
+
+        mock_client = MagicMock()
+        mock_client.queue_path.return_value = "projects/test/locations/asia-east1/queues/q"
+        mock_client.get_queue.side_effect = Exception(
+            "403 PERMISSION_DENIED: Cloud Tasks API has not been enabled"
+        )
+
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = check_health()
+
+        assert result["healthy"] is False
+        assert "未啟用" in result["reason"]
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "nonexistent-queue",
+            "service_url": "https://test.run.app",
+        },
+    )
+    def test_queue_not_found(self, _mock_config):
+        from utils.cloud_tasks_client import check_health
+
+        mock_client = MagicMock()
+        mock_client.queue_path.return_value = "projects/test/locations/asia-east1/queues/q"
+        mock_client.get_queue.side_effect = Exception("404 NOT_FOUND: Queue does not exist")
+
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = check_health()
+
+        assert result["healthy"] is False
+        assert "不存在" in result["reason"]
+
+    @patch(
+        "utils.cloud_tasks_client._get_config",
+        return_value={
+            "project_id": "test-project",
+            "location": "asia-east1",
+            "queue_name": "websub-subscribe",
+            "service_url": "https://test.run.app",
+        },
+    )
+    def test_generic_error(self, _mock_config):
+        from utils.cloud_tasks_client import check_health
+
+        mock_client = MagicMock()
+        mock_client.queue_path.return_value = "projects/test/locations/asia-east1/queues/q"
+        mock_client.get_queue.side_effect = Exception("Some unexpected error")
+
+        with patch("utils.cloud_tasks_client._get_client", return_value=mock_client):
+            result = check_health()
+
+        assert result["healthy"] is False
+        assert "連線異常" in result["reason"]
+
+
 class TestDispatchTasksBatch:
     """dispatch_tasks_batch 批次派發"""
 
