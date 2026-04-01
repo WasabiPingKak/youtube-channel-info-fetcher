@@ -104,17 +104,37 @@ class TestMiddleware:
 class TestKmsGuardrail:
     """部署環境 KMS 啟動檢查"""
 
-    @pytest.mark.xfail(reason="KMS guardrail 在本地測試環境無法正確觸發，待修復")
+    @pytest.fixture(autouse=True)
+    def _reset_kms_cache(self):
+        """每個測試前後都重置 _kms_key_name 快取，避免跨測試汙染"""
+        import utils.kms_crypto as _kms_mod
+
+        saved = _kms_mod._kms_key_name
+        _kms_mod._kms_key_name = None
+        yield
+        _kms_mod._kms_key_name = saved
+
     def test_deployed_env_without_kms_raises(self):
         """部署環境缺少 KMS 設定時 create_app 必須失敗"""
         with pytest.raises(RuntimeError, match="部署環境必須設定 KMS"):
-            _create_test_app(config=None, FIRESTORE_DATABASE="(default)")
+            _create_test_app(
+                config=None,
+                FIRESTORE_DATABASE="(default)",
+                GOOGLE_CLOUD_PROJECT="",
+                KMS_KEY_RING="",
+                KMS_KEY_ID="",
+            )
 
-    @pytest.mark.xfail(reason="KMS guardrail 在本地測試環境無法正確觸發，待修復")
     def test_deployed_env_staging_without_kms_raises(self):
         """Staging 環境缺少 KMS 設定時 create_app 必須失敗"""
         with pytest.raises(RuntimeError, match="部署環境必須設定 KMS"):
-            _create_test_app(config=None, FIRESTORE_DATABASE="staging")
+            _create_test_app(
+                config=None,
+                FIRESTORE_DATABASE="staging",
+                GOOGLE_CLOUD_PROJECT="",
+                KMS_KEY_RING="",
+                KMS_KEY_ID="",
+            )
 
     def test_testing_mode_skips_kms_check(self):
         """TESTING 模式不檢查 KMS"""
