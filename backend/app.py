@@ -80,6 +80,11 @@ def create_app(config=None):
             raise ValueError("❌ ALLOWED_ORIGINS 必須設定具體域名，不可為空或 *")
     CORS(app, origins=allowed_origins, supports_credentials=True)
 
+    # ── OpenTelemetry（Cloud Run 環境自動啟用）──
+    from utils.otel_setup import init_otel
+
+    init_otel(app)
+
     # ── App Config ──
     app.config.setdefault(
         "OAUTH_DEBUG_MODE", os.getenv("OAUTH_DEBUG_MODE", "false").lower() == "true"

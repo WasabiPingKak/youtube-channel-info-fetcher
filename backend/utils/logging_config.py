@@ -34,10 +34,34 @@ class CloudJsonFormatter(JsonFormatter):
         log_record["severity"] = _CLOUD_SEVERITY.get(record.levelname, "DEFAULT")
         log_record["logger"] = record.name
         log_record["request_id"] = getattr(record, "request_id", "-")
+        _inject_trace_context(log_record)
         # 移除 python-json-logger 預設塞入但 Cloud Logging 不需要的欄位
         log_record.pop("levelname", None)
         log_record.pop("name", None)
         log_record.pop("taskName", None)
+
+
+def _inject_trace_context(log_record):
+    """注入 trace/span 欄位，讓 Cloud Logging 自動關聯 Cloud Trace。
+
+    使用 Cloud Logging 規定的欄位名稱：
+    - logging.googleapis.com/trace
+    - logging.googleapis.com/spanId
+    - logging.googleapis.com/trace_sampled
+    """
+    try:
+        from opentelemetry import trace
+
+        span = trace.get_current_span()
+        ctx = span.get_span_context()
+        if ctx and ctx.trace_id != 0:
+            project = os.getenv("GOOGLE_CLOUD_PROJECT", "")
+            trace_id_hex = format(ctx.trace_id, "032x")
+            log_record["logging.googleapis.com/trace"] = f"projects/{project}/traces/{trace_id_hex}"
+            log_record["logging.googleapis.com/spanId"] = format(ctx.span_id, "016x")
+            log_record["logging.googleapis.com/trace_sampled"] = bool(ctx.trace_flags.sampled)
+    except Exception:
+        pass  # OTel 未安裝或未啟用時靜默跳過
 
 
 def setup_logging():
