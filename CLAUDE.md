@@ -103,7 +103,7 @@ cd frontend_react
 - **Dual environments**: staging and production with separate `.env` files and **separate Firestore databases**
 - **Pydantic validation**: POST routes 透過 `@bp.input(Schema)` 驗證請求（APIFlask 原生整合），ValidationError 由 `schemas/__init__.py` 的 `error_processor` 統一回傳 422
 - **錯誤處理**: `utils/exceptions.py` 定義自訂 exception hierarchy（`AppError` → `NotFoundError` 404 / `AuthorizationError` 403 / `ConfigurationError` 500 / `ExternalServiceError` 502）。`app.py` 的 `register_error_handlers()` 註冊全域 handler 統一處理 `AppError`、`GoogleAPIError`（Firestore）、`HttpError`（YouTube API），路由層不需重複 try/except。回應格式統一為 `{"error": "<message>"}` + 正確 HTTP 狀態碼。Callback 端點（ECPay、OAuth、WebSub）保留本地 error handling（回傳純文字）
-- **Health check**: `/healthz` 端點檢查 Firestore 連線狀態，`/` 僅回傳服務存活訊息
+- **Health check**: `/healthz` 端點檢查 Firestore 連線 + Cloud Tasks queue 可用性（`check_health()` 透過 GetQueue 驗證），回傳結構化 `checks` 物件，任一失敗即 503。`/` 僅回傳服務存活訊息
 - **Rate limiting 已知限制**: Flask-Limiter 預設使用 `memory://` storage，在 Cloud Run 多 instance 環境下各 instance 各自計算，無法全域一致限制。若需全域限制需改用 Redis 作為 storage backend（設定 `RATE_LIMIT_STORAGE_URL` 環境變數）
 
 ### Data Flow
