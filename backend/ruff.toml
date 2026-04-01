@@ -18,7 +18,7 @@ ignore = [
 ]
 
 [lint.isort]
-known-first-party = ["schemas", "services", "routes", "utils"]
+known-first-party = ["schemas", "services", "routes", "utils", "tests"]
 
 [format]
 quote-style = "double"
