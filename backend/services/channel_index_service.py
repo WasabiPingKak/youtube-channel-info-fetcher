@@ -4,6 +4,7 @@ import logging
 from datetime import datetime
 
 from dateutil import parser as date_parser
+from google.cloud import firestore
 
 logger = logging.getLogger(__name__)
 
@@ -20,7 +21,7 @@ def try_parse_date(val):
     return None
 
 
-def get_all_enabled_channels_data(db) -> dict:
+def get_all_enabled_channels_data(db: firestore.Client) -> dict:
     """取得所有啟用頻道清單、新加入頻道、以及總註冊數。
 
     Returns:
@@ -35,8 +36,8 @@ def get_all_enabled_channels_data(db) -> dict:
     sync_doc = sync_ref.get()
     sync_map = {}
 
-    if sync_doc.exists:
-        sync_list = sync_doc.to_dict().get("channels", [])
+    if sync_doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        sync_list = sync_doc.to_dict().get("channels", [])  # type: ignore[reportOptionalMemberAccess]
         for item in sync_list:
             cid = item.get("channel_id")
             sync_time = item.get("lastVideoSyncAt")
@@ -52,7 +53,7 @@ def get_all_enabled_channels_data(db) -> dict:
     total_registered_count = 0
 
     for doc in docs:
-        data = doc.to_dict()
+        data = doc.to_dict() or {}
         batch_channels = data.get("channels", [])
         for entry in batch_channels:
             total_registered_count += 1

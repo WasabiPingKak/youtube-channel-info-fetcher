@@ -10,7 +10,7 @@ from utils.auth_decorator import require_auth
 logger = logging.getLogger(__name__)
 
 
-def init_skip_keyword_routes(app, db):
+def init_skip_keyword_routes(app, db: firestore.Client):
     bp = APIBlueprint(
         "skip_keyword",
         __name__,

@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import Response, jsonify
+from google.cloud import firestore
 
 from utils.cloud_tasks_client import check_health as check_cloud_tasks_health
 
@@ -9,7 +10,7 @@ base_bp = APIBlueprint("base", __name__, tag="Base")
 logger = logging.getLogger(__name__)
 
 
-def init_base_routes(app, db=None):
+def init_base_routes(app, db: firestore.Client | None = None):
     @base_bp.route("/")
     @base_bp.doc(summary="服務存活檢查", description="確認服務是否正常運行", hide=True)
     def index():

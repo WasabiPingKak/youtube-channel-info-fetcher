@@ -4,9 +4,10 @@ from datetime import datetime
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 
-def init_donation_route(app, db):
+def init_donation_route(app, db: firestore.Client):
     blueprint = APIBlueprint("donation", __name__, tag="Donation")
 
     @blueprint.route("/donations", methods=["GET"])
@@ -21,7 +22,7 @@ def init_donation_route(app, db):
         result = []
 
         for date_doc in date_docs:
-            date_doc_data = date_doc.to_dict()
+            date_doc_data = date_doc.to_dict() or {}
             items_data = date_doc_data.get("items", [])
 
             if not items_data or not isinstance(items_data, list):

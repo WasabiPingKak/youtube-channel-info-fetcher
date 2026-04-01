@@ -32,12 +32,12 @@ def build_weekly_heatmap_cache(db: Client):
 
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:
             logging.warning(f"⚠️ {channel_id} heatmap 文件不存在，跳過")
             missing_count += 1
             continue
 
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}
         all_range = data.get("all_range")
         if not all_range:
             logging.warning(f"⚠️ {channel_id} 未包含 all_range，跳過")
@@ -106,7 +106,7 @@ def write_weekly_heatmap_cache(db: Client):
         return False
 
 
-def append_to_pending_cache(db, channel_id: str):
+def append_to_pending_cache(db: firestore.Client, channel_id: str):
     """
     將單一新初始化頻道的活躍 heatmap 統計結果寫入 pending 快取文件（避免重複）
 
@@ -118,11 +118,11 @@ def append_to_pending_cache(db, channel_id: str):
         # 🔍 Step 1: 讀取 heatmap matrix
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:
             logging.warning(f"⚠️ [pending] {channel_id} heatmap 文件不存在，無法加入快取")
             return
 
-        all_range = (doc.to_dict() or {}).get("all_range")  # type: ignore[reportAttributeAccessIssue]
+        all_range = (doc.to_dict() or {}).get("all_range")
         if not all_range:
             logging.warning(f"⚠️ [pending] {channel_id} 無 all_range，無法加入快取")
             return
@@ -152,7 +152,7 @@ def append_to_pending_cache(db, channel_id: str):
         def _append_in_transaction(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
             pending_data = pending_doc.to_dict() if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
-            current_channels = pending_data.get("channels", [])
+            current_channels = pending_data.get("channels", [])  # type: ignore[reportOptionalMemberAccess]
 
             filtered = [c for c in current_channels if c.get("channelId") != channel_id]
             filtered.append(new_entry)

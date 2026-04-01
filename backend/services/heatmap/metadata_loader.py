@@ -1,9 +1,10 @@
 import logging
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
-def build_channel_metadata_lookup(db) -> dict:
+def build_channel_metadata_lookup(db: firestore.Client) -> dict:
     """
     從 Firestore 的 channel_index_batch 建立 channelId 對應 metadata 的查詢表
 
@@ -18,7 +19,7 @@ def build_channel_metadata_lookup(db) -> dict:
     try:
         batch_docs = db.collection("channel_index_batch").stream()
         for batch_doc in batch_docs:
-            data = batch_doc.to_dict()
+            data = batch_doc.to_dict() or {}
             for entry in data.get("channels", []):
                 cid = entry.get("channel_id")
                 if cid:

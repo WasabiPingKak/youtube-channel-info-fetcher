@@ -32,7 +32,7 @@ def check_and_update_channel_info(db: Client, channel_id: str, batch_id: str) ->
         def _update_in_transaction(transaction):
             index_doc = index_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
             batch_doc = batch_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
-            info_doc = info_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            info_doc = info_ref.get(transaction=transaction).to_dict() or {}
 
             batch_channels = batch_doc.get("channels", [])
             batch_entry = next(

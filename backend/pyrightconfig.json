@@ -1,7 +1,7 @@
 {
     "pythonVersion": "3.12",
     "pythonPlatform": "Linux",
-    "typeCheckingMode": "basic",
+    "typeCheckingMode": "standard",
     "include": [
         "."
     ],
@@ -11,5 +11,8 @@
         "**/__pycache__"
     ],
     "reportMissingImports": true,
-    "reportMissingTypeStubs": false
+    "reportMissingTypeStubs": false,
+    "reportUnnecessaryTypeIgnoreComment": "warning",
+    "reportDeprecated": "warning",
+    "reportDuplicateImport": "warning"
 }

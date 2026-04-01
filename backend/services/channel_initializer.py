@@ -18,7 +18,7 @@ FIRESTORE_INDEX_COLLECTION = "channel_index"
 DEFAULT_CONFIG_PATH = Path(__file__).resolve().parent / "config" / "default_config.json"
 
 
-def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
+def init_config_if_absent(db: firestore.Client, channel_id: str, channel_name: str = "") -> None:
     try:
         doc_path = FIRESTORE_CONFIG_PATH.format(channel_id=channel_id)
         doc_ref = db.document(doc_path)
@@ -48,7 +48,7 @@ def init_config_if_absent(db, channel_id: str, channel_name: str = "") -> None:
         raise
 
 
-def run_channel_initialization(db, channel_id: str):
+def run_channel_initialization(db: firestore.Client, channel_id: str):
     logging.info(f"[Init] 🔄 開始初始化頻道：{channel_id}")
 
     api_key = os.getenv("API_KEY")
@@ -98,7 +98,7 @@ def run_channel_initialization(db, channel_id: str):
         raise
 
 
-def append_channel_to_batch(db, channel_id: str, info_data: dict):
+def append_channel_to_batch(db: firestore.Client, channel_id: str, info_data: dict):
     try:
         logging.info(f"[Batch] 🚀 開始處理 channel_index_batch 寫入：{channel_id}")
         root_ref = db.collection("channel_index_batch")
@@ -107,7 +107,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
 
         # 先檢查是否已存在於任何 batch（包含 batch_0）
         for doc in docs:
-            data = doc.to_dict()
+            data = doc.to_dict() or {}
             channels = data.get("channels", [])
             if any(c.get("channel_id") == channel_id for c in channels):
                 logging.info(f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入 batch")
@@ -126,7 +126,7 @@ def append_channel_to_batch(db, channel_id: str, info_data: dict):
 
             last_batch_id = f"batch_{max_batch_number or 1}"
             last_batch_ref = root_ref.document(last_batch_id)
-            last_batch_data = last_batch_ref.get().to_dict() or {}
+            last_batch_data = last_batch_ref.get().to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
             current_channels = last_batch_data.get("channels", [])
             logging.info(f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）")
 

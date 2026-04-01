@@ -9,6 +9,7 @@ from datetime import UTC, datetime
 
 from Crypto.Cipher import AES
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
 def _get_ecpay_config():
@@ -77,7 +78,7 @@ def get_amount_bucket(trade_amt_str: str) -> str:
         return "1500"
 
 
-def handle_ecpay_return(form: dict, db):  # noqa: C901
+def handle_ecpay_return(form: dict, db: firestore.Client):  # noqa: C901
     logging.info("[ECPay] 收到付款通知表單：%s", form)
 
     expected_merchant_id, hash_key, hash_iv = _get_ecpay_config()
@@ -133,7 +134,7 @@ def handle_ecpay_return(form: dict, db):  # noqa: C901
     doc_ref = db.collection("donations_by_amount").document(bucket_key)
     try:
         doc_snapshot = doc_ref.get()
-        existing = doc_snapshot.to_dict() or {}
+        existing = doc_snapshot.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         existing_items = existing.get("items", [])
 
         if any(item.get("OrderInfo", {}).get("TradeNo") == trade_no for item in existing_items):

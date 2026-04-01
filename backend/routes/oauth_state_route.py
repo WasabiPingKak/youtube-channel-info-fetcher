@@ -3,12 +3,13 @@ import uuid
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 from google.cloud.firestore import SERVER_TIMESTAMP
 
 from utils.rate_limiter import limiter
 
 
-def init_oauth_state_route(app, db):
+def init_oauth_state_route(app, db: firestore.Client):
     bp = APIBlueprint("oauth_state", __name__, url_prefix="/api", tag="Auth")
 
     @bp.route("/oauth/state", methods=["POST"])

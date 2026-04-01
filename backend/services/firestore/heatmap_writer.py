@@ -3,9 +3,10 @@ import logging
 from datetime import UTC, datetime
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
-def is_channel_heatmap_initialized(db, channel_id: str) -> bool:
+def is_channel_heatmap_initialized(db: firestore.Client, channel_id: str) -> bool:
     """
     檢查頻道 heat_map 是否已初始化（即是否含有 all_range 欄位）
 
@@ -21,7 +22,7 @@ def is_channel_heatmap_initialized(db, channel_id: str) -> bool:
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
         if doc.exists:
-            is_initialized = "all_range" in doc.to_dict()
+            is_initialized = "all_range" in (doc.to_dict() or {})
             if not is_initialized:
                 logging.info(f"🆕 頻道 {channel_id} 尚未初始化 heatmap（無 all_range）")
             return is_initialized

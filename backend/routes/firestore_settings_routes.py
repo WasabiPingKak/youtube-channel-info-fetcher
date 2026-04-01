@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.settings_schemas import LoadSettingsRequest
 from services.firestore_settings_service import load_category_settings, save_category_settings
@@ -10,7 +11,7 @@ from utils.error_response import error_response
 firestore_settings_bp = APIBlueprint("firestore_settings", __name__, tag="Settings")
 
 
-def init_firestore_settings_routes(app, db):
+def init_firestore_settings_routes(app, db: firestore.Client):
     @firestore_settings_bp.route("/api/firestore/load-category-settings", methods=["POST"])
     @firestore_settings_bp.doc(summary="載入分類設定", description="依頻道 ID 載入分類設定")
     @firestore_settings_bp.input(LoadSettingsRequest, arg_name="body")

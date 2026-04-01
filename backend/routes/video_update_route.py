@@ -4,6 +4,7 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.video_schemas import VideoUpdateRequest
 from services.classified_video_fetcher import get_classified_videos
@@ -21,7 +22,7 @@ logger = logging.getLogger(__name__)
 video_update_bp = APIBlueprint("video_update", __name__, tag="Video")
 
 
-def init_video_update_route(app, db):
+def init_video_update_route(app, db: firestore.Client):
     @video_update_bp.route("/api/videos/update", methods=["POST"])
     @video_update_bp.doc(summary="更新頻道影片資料", description="驗證 token 後同步頻道的最新影片")
     @video_update_bp.input(VideoUpdateRequest, arg_name="body")
@@ -33,7 +34,7 @@ def init_video_update_route(app, db):
         if not token_doc.exists:
             return jsonify({"error": "Token 不存在或已使用"}), 403
 
-        token_data = token_doc.to_dict()
+        token_data = token_doc.to_dict() or {}
         stored_token = token_data.get("token")
         expires_at = token_data.get("expiresAt")
 

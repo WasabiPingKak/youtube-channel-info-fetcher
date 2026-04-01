@@ -3,6 +3,7 @@ from datetime import UTC, datetime, timedelta
 
 from apiflask import APIBlueprint
 from flask import current_app, jsonify, make_response, redirect, request
+from google.cloud import firestore
 
 from services.firestore.auth_service import save_channel_auth
 from services.google_oauth import exchange_code_for_tokens, get_channel_id
@@ -12,7 +13,7 @@ from utils.rate_limiter import limiter
 OAUTH_STATE_TTL_SECONDS = 600  # 10 分鐘
 
 
-def init_oauth_callback_route(app, db):
+def init_oauth_callback_route(app, db: firestore.Client):
     oauth_bp = APIBlueprint("oauth", __name__, tag="Auth")
 
     @oauth_bp.route("/oauth/callback")
@@ -37,12 +38,12 @@ def init_oauth_callback_route(app, db):
 
         state_ref = db.collection("oauth_states").document(state)
         state_doc = state_ref.get()
-        if not state_doc.exists:
+        if not state_doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logging.warning("⚠️ OAuth state 不存在或已使用")
             return "Invalid OAuth state", 403
 
         # 檢查是否過期
-        state_data = state_doc.to_dict()
+        state_data = state_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         created_at = state_data.get("created_at")
         if created_at:
             now = datetime.now(UTC)

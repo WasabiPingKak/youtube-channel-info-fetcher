@@ -2,12 +2,13 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from services.heatmap_analyzer import analyze_and_update_all_channels
 from utils.admin_auth import require_admin_key
 
 
-def init_sync_heatmap_route(app, db):
+def init_sync_heatmap_route(app, db: firestore.Client):
     bp = APIBlueprint("sync_heatmap_route", __name__, tag="Admin")
 
     @bp.route("/api/sync/channel_video_heatmap", methods=["GET"])

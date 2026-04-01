@@ -11,7 +11,7 @@ from utils.auth_decorator import require_auth
 logger = logging.getLogger(__name__)
 
 
-def init_my_settings_route(app, db):
+def init_my_settings_route(app, db: firestore.Client):
     bp = APIBlueprint("my_settings", __name__, url_prefix="/api/my-settings", tag="Settings")
 
     @bp.route("/get", methods=["GET"])
@@ -34,10 +34,10 @@ def init_my_settings_route(app, db):
         doc_ref = db.collection("channel_index").document(channel_id)
         doc = doc_ref.get()
 
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             return jsonify({"error": "Channel not found"}), 404
 
-        data = doc.to_dict()
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         return jsonify(
             {
                 "success": True,
@@ -70,7 +70,7 @@ def init_my_settings_route(app, db):
         target_doc_ref = None
         batch_docs = db.collection("channel_index_batch").stream()
         for doc in batch_docs:
-            doc_data = doc.to_dict()
+            doc_data = doc.to_dict() or {}
             channels = doc_data.get("channels", [])
             if any(item.get("channel_id") == body.channelId for item in channels):
                 target_doc_ref = doc.reference
@@ -83,7 +83,7 @@ def init_my_settings_route(app, db):
         @firestore.transactional
         def _update_batch_in_transaction(transaction):
             fresh_doc = target_doc_ref.get(transaction=transaction)
-            fresh_channels = fresh_doc.to_dict().get("channels", [])
+            fresh_channels = fresh_doc.to_dict().get("channels", [])  # type: ignore[reportOptionalMemberAccess]
             for i, item in enumerate(fresh_channels):
                 if item.get("channel_id") == body.channelId:
                     fresh_channels[i]["enabled"] = body.enabled

@@ -2,17 +2,18 @@ import logging
 import re
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
-def load_all_channels_from_index_list(db):
+def load_all_channels_from_index_list(db: firestore.Client):
     try:
         ref = db.collection("channel_sync_index").document("index_list")
         doc = ref.get()
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logging.warning("⚠️ index_list 文件不存在")
             return []
 
-        data = doc.to_dict()
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         channels = data.get("channels", [])
         logging.info(f"📥 從 index_list 載入 {len(channels)} 個頻道")
         return channels
@@ -22,7 +23,7 @@ def load_all_channels_from_index_list(db):
         return []
 
 
-def load_videos_for_channel(db, channel_id):
+def load_videos_for_channel(db: firestore.Client, channel_id):
     try:
         collection_ref = db.collection(f"channel_data/{channel_id}/videos_batch")
         batch_docs = collection_ref.stream()
@@ -44,7 +45,7 @@ def load_videos_for_channel(db, channel_id):
 
         all_videos = []
         for batch_num, batch_doc in batch_list:
-            data = batch_doc.to_dict()
+            data = batch_doc.to_dict() or {}
             videos = data.get("videos", [])
             all_videos.extend(videos)
             logging.info(f"📄 batch_{batch_num} 含 {len(videos)} 部影片")

@@ -2,11 +2,12 @@
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.channel_info_batch_schema import ChannelInfoBatchRequest
 
 
-def init_channel_info_batch_route(app, db):
+def init_channel_info_batch_route(app, db: firestore.Client):
     bp = APIBlueprint("channel_info_batch_route", __name__, tag="Channel")
 
     @bp.route("/api/channels/info/batch", methods=["POST"])

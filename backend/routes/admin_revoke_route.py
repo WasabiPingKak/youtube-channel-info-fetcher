@@ -2,6 +2,7 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import jsonify
+from google.cloud import firestore
 from google.cloud.firestore import SERVER_TIMESTAMP
 
 from schemas.admin_schemas import AdminRevokeRequest
@@ -10,7 +11,7 @@ from utils.jwt_util import is_admin_channel_id
 from utils.rate_limiter import limiter
 
 
-def init_admin_revoke_route(app, db):
+def init_admin_revoke_route(app, db: firestore.Client):
     bp = APIBlueprint("admin_revoke", __name__, tag="Admin")
 
     @bp.route("/api/admin/revoke", methods=["POST"])

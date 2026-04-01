@@ -10,7 +10,7 @@ from utils.auth_decorator import require_auth
 quick_remove_bp = APIBlueprint("quick_category_remove", __name__, tag="Category Editor")
 
 
-def init_quick_category_remove_route(app, db):
+def init_quick_category_remove_route(app, db: firestore.Client):
     @quick_remove_bp.route("/api/quick-editor/channel-config-remove", methods=["POST"])
     @quick_remove_bp.doc(
         summary="移除分類關鍵字",

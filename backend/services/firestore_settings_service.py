@@ -1,9 +1,10 @@
 import logging
 
 from google.api_core.exceptions import GoogleAPIError
+from google.cloud import firestore
 
 
-def load_category_settings(db, channel_id: str):
+def load_category_settings(db: firestore.Client, channel_id: str):
     doc_ref = (
         db.collection("channel_data").document(channel_id).collection("settings").document("config")
     )
@@ -13,7 +14,7 @@ def load_category_settings(db, channel_id: str):
     return None
 
 
-def save_category_settings(db, channel_id: str, settings: dict) -> bool:
+def save_category_settings(db: firestore.Client, channel_id: str, settings: dict) -> bool:
     try:
         doc_ref = (
             db.collection("channel_data")

@@ -3,6 +3,7 @@ from functools import wraps
 
 from cachetools import TTLCache
 from flask import jsonify, request
+from google.cloud import firestore
 
 from utils.jwt_util import verify_jwt
 
@@ -15,7 +16,7 @@ def clear_revoke_cache(channel_id: str) -> None:
     _revoke_cache.pop(channel_id, None)
 
 
-def require_auth(db):
+def require_auth(db: firestore.Client):
     """
     JWT 認證 decorator factory。
     驗證 JWT 簽名 + Firestore revoked_at 撤銷檢查（帶 TTL 快取），

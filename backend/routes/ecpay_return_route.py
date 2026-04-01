@@ -3,12 +3,13 @@ import logging
 
 from apiflask import APIBlueprint
 from flask import request
+from google.cloud import firestore
 
 from services.ecpay_service import handle_ecpay_return
 from utils.rate_limiter import limiter
 
 
-def init_ecpay_return_route(app, db):
+def init_ecpay_return_route(app, db: firestore.Client):
     blueprint = APIBlueprint("ecpay_return", __name__, tag="Payment")
 
     @blueprint.route("/ecpay/return", methods=["POST"])

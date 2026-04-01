@@ -4,10 +4,12 @@ import logging
 import secrets
 from datetime import UTC, datetime, timedelta
 
+from google.cloud import firestore
+
 logger = logging.getLogger(__name__)
 
 
-def check_channel_update_status(db, channel_id: str) -> dict:
+def check_channel_update_status(db: firestore.Client, channel_id: str) -> dict:
     """檢查頻道影片同步狀態，必要時產生更新 token。
 
     讀取 channel_sync_index/index_list，判斷頻道是否超過 12 小時未同步，
@@ -26,7 +28,7 @@ def check_channel_update_status(db, channel_id: str) -> dict:
     last_video_sync_at = None
     should_update = False
 
-    if not doc.exists:
+    if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
         logger.info(f"📄 [check-update] 尚未存在 index_list，初始化頻道 {channel_id}")
         index_ref.set(
             {
@@ -43,7 +45,7 @@ def check_channel_update_status(db, channel_id: str) -> dict:
         )
         should_update = True
     else:
-        data = doc.to_dict()
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         channels = data.get("channels", [])
         found = False
         for ch in channels:
