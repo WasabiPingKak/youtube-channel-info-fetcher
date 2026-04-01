@@ -48,19 +48,14 @@ cd frontend_react
 npm run lint                     # Lint src/
 ```
 
-### Deployment
-```bash
-# Backend (Google Cloud Run)
-cd backend
-./deploy_backend.sh --staging      # Deploy to staging
-./deploy_backend.sh --prod         # Deploy to production
-./cleanup_old_revisions.sh --prod  # Clean old Cloud Run revisions (keeps 10)
+### Deployment (CI/CD)
 
-# Frontend (Firebase Hosting)
-cd frontend_react
-./deploy_frontend.sh --staging     # Deploy to staging
-./deploy_frontend.sh --prod        # Deploy to production
-```
+部署由 GitHub Actions 自動執行，不需本地腳本：
+
+- **Staging**: push 到 `develop` → `.github/workflows/deploy-staging.yml`
+- **Production**: push 到 `main` → `.github/workflows/deploy-production.yml`
+
+每個 workflow 包含品質閘門（lint + test）通過後才部署 Backend（Cloud Run）與 Frontend（Firebase Hosting）。
 
 ## Architecture
 
