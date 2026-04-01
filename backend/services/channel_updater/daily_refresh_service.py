@@ -94,7 +94,7 @@ def get_batch_id_map(db: Client) -> dict[str, str]:
     result = {}
     docs = db.collection("channel_index_batch").stream()
     for doc in docs:
-        data = doc.to_dict()
+        data = doc.to_dict() or {}
         for ch in data.get("channels", []):
             cid = ch.get("channel_id")
             if cid:
@@ -112,11 +112,11 @@ def run_daily_channel_refresh(
 ) -> dict:
     index_ref = db.collection("channel_sync_index").document("index_list")
     index_doc = index_ref.get()
-    if not index_doc.exists:
+    if not index_doc.exists:  # type: ignore[reportAttributeAccessIssue]
         logger.warning("📭 無 index_list 文件，略過")
         return {"status": "no_index_list"}
 
-    index_data = index_doc.to_dict()
+    index_data = index_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
     all_channels = index_data.get("channels", [])
 
     selected = select_channels_for_scan(all_channels, limit=limit, include_recent=include_recent)

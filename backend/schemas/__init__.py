@@ -1,10 +1,10 @@
 """Pydantic schema 模組 — 提供共用的錯誤處理註冊"""
 
-from flask import Flask
+from apiflask import APIFlask
 from pydantic import ValidationError
 
 
-def register_validation_error_handler(app: Flask):
+def register_validation_error_handler(app: APIFlask):
     """註冊全域 Pydantic ValidationError → 422 錯誤處理
 
     同時覆寫 apiflask 內建的 validation_error 格式，

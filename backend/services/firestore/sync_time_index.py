@@ -12,10 +12,10 @@ def get_last_video_sync_time(db: Client, channel_id: str):
     try:
         index_ref = db.collection("channel_sync_index").document("index_list")
         doc = index_ref.get()
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             return None
 
-        data = doc.to_dict()
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         channels = data.get("channels", [])
         for ch in channels:
             if ch.get("channel_id") == channel_id:
@@ -44,15 +44,14 @@ def update_last_sync_time(db: Client, channel_id: str, new_videos: list[dict]) -
         @firestore.transactional
         def _update_in_transaction(transaction):
             doc = index_ref.get(transaction=transaction)
-
-            if not doc.exists:
+            if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
                 transaction.set(
                     index_ref,
                     {"channels": [{"channel_id": channel_id, "lastVideoSyncAt": latest}]},
                 )
                 logger.info(f"🕒 [init] 建立 index_list 並加入 {channel_id}")
             else:
-                data = doc.to_dict()
+                data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
                 channels = data.get("channels", [])
 
                 found = False

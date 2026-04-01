@@ -13,7 +13,7 @@ def get_pending_video_ids(db: Client, force: bool, now) -> list[dict]:
 
     for date_str in [yesterday_str, today_str]:
         doc = db.collection("live_redirect_notify_queue").document(date_str).get()
-        data = doc.to_dict() or {}
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         videos = data.get("videos", [])
 
         for v in videos:

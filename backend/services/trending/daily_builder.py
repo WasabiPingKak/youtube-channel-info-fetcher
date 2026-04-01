@@ -55,7 +55,9 @@ def build_trending_for_date_range(
             }
 
             for channel in active_channels:
-                channel_id = channel.get("channel_id")
+                channel_id: str = channel.get("channel_id", "")
+                if not channel_id:
+                    continue
                 settings = channel_settings_map[channel_id]
                 all_videos = channel_videos_map[channel_id]
 
@@ -63,8 +65,8 @@ def build_trending_for_date_range(
                 videos = [
                     v
                     for v in all_videos
-                    if parse_firestore_date(v.get("publishDate"))
-                    and parse_firestore_date(v.get("publishDate")).date() == target_date
+                    if (pd := parse_firestore_date(v.get("publishDate")))
+                    and pd.date() == target_date
                 ]
 
                 # 使用共用函式分類

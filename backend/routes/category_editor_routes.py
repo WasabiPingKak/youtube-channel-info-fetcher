@@ -25,7 +25,7 @@ from utils.auth_decorator import require_auth
 category_editor_bp = APIBlueprint("category_editor", __name__, tag="Category Editor")
 
 
-def _serialize_timestamp(ts: Any) -> str:
+def _serialize_timestamp(ts: Any) -> str | None:
     """將 Firestore Timestamp / datetime 轉為 ISO 8601 字串（UTC）。"""
     if ts is None:
         return None

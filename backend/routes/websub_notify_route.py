@@ -86,8 +86,13 @@ def init_websub_notify_route(app, db):
                 logging.info(f"📦 WebSub 接收到 {len(entries)} 筆新影片通知")
 
                 for entry in entries:
-                    video_id = entry.find("yt:videoId", ns).text
-                    channel_id = entry.find("yt:channelId", ns).text
+                    video_id_elem = entry.find("yt:videoId", ns)
+                    channel_id_elem = entry.find("yt:channelId", ns)
+                    if video_id_elem is None or channel_id_elem is None:
+                        logging.warning("⚠️ WebSub 通知缺少 videoId 或 channelId，略過")
+                        continue
+                    video_id = video_id_elem.text
+                    channel_id = channel_id_elem.text
                     notified_at = datetime.now(UTC)
                     notified_at_str = notified_at.isoformat()
                     doc_id = notified_at.date().isoformat()  # 以 YYYY-MM-DD 作為 document ID
@@ -106,5 +111,7 @@ def init_websub_notify_route(app, db):
             except Exception:
                 logging.error("🔥 WebSub 推播處理失敗", exc_info=True)
                 return Response("Internal Server Error", status=500)
+
+        return Response("Method Not Allowed", status=405)
 
     app.register_blueprint(websub_notify_bp)

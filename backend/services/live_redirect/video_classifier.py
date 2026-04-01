@@ -63,11 +63,11 @@ def classify_video(db: Client, item: dict, now: datetime) -> dict | None:
 
     # 🔍 查頻道資訊
     channel_doc = db.collection(CHANNEL_INDEX_COLLECTION).document(channel_id).get()
-    if not channel_doc.exists:
+    if not channel_doc.exists:  # type: ignore[reportAttributeAccessIssue]
         logging.warning(f"❗ 找不到頻道資料：{channel_id}")
         return None
 
-    channel = channel_doc.to_dict()
+    channel = channel_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
     viewers = (
         int(live_details.get("concurrentViewers", "0"))
         if "concurrentViewers" in live_details

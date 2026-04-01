@@ -14,18 +14,18 @@ def get_active_channels(db: Client) -> list[dict[str, Any]]:
     try:
         logger.info("🔍 嘗試載入 channel_sync_index/index_list")
         doc = db.collection("channel_sync_index").document("index_list").get()
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logger.warning("⚠️ 無 index_list 文件，無法取得活躍頻道")
             return []
 
-        items = doc.to_dict().get("channels", [])
+        items = (doc.to_dict() or {}).get("channels", [])  # type: ignore[reportAttributeAccessIssue]
         logger.info("📋 總頻道數量：%d", len(items))
 
         # 🔽 收集所有 disabled 的 channel_id
         disabled_ids: set[str] = set()
         batch_docs = db.collection("channel_index_batch").stream()
         for batch_doc in batch_docs:
-            batch_data = batch_doc.to_dict()
+            batch_data = batch_doc.to_dict() or {}
             for ch in batch_data.get("channels", []):
                 if not ch.get("enabled", True):  # 預設為 True，僅在明確為 False 時加入排除
                     disabled_ids.add(ch.get("channel_id"))

@@ -114,7 +114,7 @@ def init_websub_subscribe_route(app, db: Client):
                 return jsonify(result), 400
 
             doc = db.collection("channel_sync_index").document("index_list").get()
-            data = doc.to_dict() or {}
+            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
             channels = data.get("channels", [])
 
             if not channels:
