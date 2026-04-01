@@ -105,6 +105,7 @@ npm run lint                     # Lint src/
 - **Health check**: `/healthz` 端點檢查 Firestore 連線 + Cloud Tasks queue 可用性（`check_health()` 透過 GetQueue 驗證），回傳結構化 `checks` 物件，任一失敗即 503。`/` 僅回傳服務存活訊息
 - **Rate limiting 已知限制**: Flask-Limiter 預設使用 `memory://` storage，在 Cloud Run 多 instance 環境下各 instance 各自計算，無法全域一致限制。若需全域限制需改用 Redis 作為 storage backend（設定 `RATE_LIMIT_STORAGE_URL` 環境變數）
 - **OpenTelemetry tracing**: `utils/otel_setup.py` 在 Cloud Run 環境（`K_SERVICE` 存在）自動啟用，將 traces 推送到 Cloud Trace。Flask request 與 outbound HTTP 自動 instrumentation，Cloud Logging JSON log 注入 trace context 支援自動關聯。本地開發時自動跳過，初始化失敗不影響服務運行
+- **Circuit Breaker 熔斷機制**: `utils/circuit_breaker.py` 提供 `CircuitBreaker` class + `@circuit_breaker` decorator。YouTube API 與 Firestore 各自獨立的熔斷器（`utils/breaker_instances.py`），連續失敗 5 次後自動熔斷 30 秒，避免無效重試拖慢系統。CLOSED → OPEN → HALF_OPEN 三態自動轉換。`/healthz` 回傳熔斷器狀態供監控。熔斷時 YouTube 端回傳 503（`CircuitOpenError`），Firestore 端視函式回傳空值或 503。狀態為 process-local（各 Cloud Run instance 獨立）
 
 ### Data Flow
 ```
