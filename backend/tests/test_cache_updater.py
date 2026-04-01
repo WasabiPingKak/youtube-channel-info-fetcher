@@ -79,7 +79,7 @@ class TestProcessVideoIds:
         self.db.collection.return_value.document.return_value.get.return_value = empty_doc
 
     @patch("services.live_redirect.cache_updater._lazy_refresh_endtime")
-    @patch("services.live_redirect.cache_updater._mark_processed_in_transaction")
+    @patch("services.live_redirect.cache_updater._mark_processed")
     @patch("services.live_redirect.cache_updater.classify_live_title")
     @patch("services.live_redirect.cache_updater.classify_video")
     @patch("services.live_redirect.cache_updater.batch_fetch_video_details")
@@ -103,7 +103,7 @@ class TestProcessVideoIds:
         mock_mark.assert_called()
 
     @patch("services.live_redirect.cache_updater._lazy_refresh_endtime")
-    @patch("services.live_redirect.cache_updater._mark_processed_in_transaction")
+    @patch("services.live_redirect.cache_updater._mark_processed")
     @patch("services.live_redirect.cache_updater.build_fallback_entry")
     @patch("services.live_redirect.cache_updater.batch_fetch_video_details")
     def test_fallback_when_youtube_returns_nothing(
@@ -124,7 +124,7 @@ class TestProcessVideoIds:
         assert len(result["channels"]) >= 1
 
     @patch("services.live_redirect.cache_updater._lazy_refresh_endtime")
-    @patch("services.live_redirect.cache_updater._mark_processed_in_transaction")
+    @patch("services.live_redirect.cache_updater._mark_processed")
     @patch("services.live_redirect.cache_updater.batch_fetch_video_details")
     def test_empty_notify_returns_cache(self, mock_fetch, mock_mark, mock_lazy):
         self._setup_empty_cache()

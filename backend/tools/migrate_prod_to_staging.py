@@ -62,7 +62,8 @@ ALL_COLLECTIONS = [
     "trending_games_daily",  # 趨勢資料
     "stats_cache",  # 快取資料
     "live_redirect_cache",  # 直播快取
-    "live_redirect_notify_queue",  # 通知佇列
+    "live_redirect_notifications",  # 通知佇列（新）
+    "live_redirect_notify_queue",  # 通知佇列（舊，過渡期後移除）
     "channel_index",  # 遺留索引（最後）
 ]
 
@@ -269,11 +270,13 @@ def should_copy_document(
     if collection_name in [
         "trending_games_daily",
         "live_redirect_cache",
+        "live_redirect_notifications",
         "live_redirect_notify_queue",
     ]:
         try:
-            # 文件 ID 格式: YYYY-MM-DD
-            doc_date = datetime.strptime(doc_id, "%Y-%m-%d").replace(tzinfo=UTC)
+            # 文件 ID 格式: "YYYY-MM-DD" 或 "YYYY-MM-DD_xxx"
+            date_part = doc_id[:10]
+            doc_date = datetime.strptime(date_part, "%Y-%m-%d").replace(tzinfo=UTC)
             cutoff_date = datetime.now(UTC) - timedelta(days=days_filter)
             return doc_date >= cutoff_date
         except ValueError:

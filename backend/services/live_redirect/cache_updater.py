@@ -3,7 +3,6 @@
 import logging
 from datetime import datetime, timedelta
 
-from google.cloud import firestore
 from google.cloud.firestore import Client
 
 from services.classified_video_fetcher import classify_live_title
@@ -13,24 +12,17 @@ from services.live_redirect.youtube_api import batch_fetch_video_details
 
 logger = logging.getLogger(__name__)
 
+NOTIFY_COLLECTION = "live_redirect_notifications"
 
-def _mark_processed_in_transaction(db: Client, date_str: str, processed_ids: set, now: datetime):
-    """以 Transaction 標記 notify queue 中已處理的影片，避免覆蓋同時寫入的新 WebSub 通知"""
-    ref = db.collection("live_redirect_notify_queue").document(date_str)
 
-    @firestore.transactional
-    def _txn(transaction):
-        doc = ref.get(transaction=transaction)
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
-        new_list = []
-        for v in data.get("videos", []):
-            if v.get("videoId") in processed_ids:
-                v["processedAt"] = now.isoformat()
-            new_list.append(v)
-        transaction.set(ref, {"updatedAt": now.isoformat(), "videos": new_list})
-
-    transaction = db.transaction()
-    _txn(transaction)
+def _mark_processed(db: Client, processed_ids: set, now: datetime):
+    """標記新 collection 中已處理的通知（Firestore in query 上限 30 筆，需分批）"""
+    collection_ref = db.collection(NOTIFY_COLLECTION)
+    id_list = list(processed_ids)
+    for i in range(0, len(id_list), 30):
+        batch = id_list[i : i + 30]
+        for doc in collection_ref.where("videoId", "in", batch).stream():
+            doc.reference.update({"processedAt": now.isoformat()})
 
 
 def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> dict:
@@ -122,9 +114,9 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
             merged_map[vid] = c
     output_channels = list(merged_map.values())
 
-    # 📝 回寫 notify queue 的 processedAt（Transaction 避免覆蓋新進的 WebSub 通知）
-    for date_str in [yesterday_str, today_str]:
-        _mark_processed_in_transaction(db, date_str, processed_ids, now)
+    # 📝 回寫 notify queue 的 processedAt
+    if processed_ids:
+        _mark_processed(db, processed_ids, now)
 
     # 🕒 懶更新機制：補查快取中未收播的影片
     lazy_result = _lazy_refresh_endtime(db, old_channels, cached_map, end_recorded, now)

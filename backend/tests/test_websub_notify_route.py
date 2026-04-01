@@ -62,23 +62,22 @@ class TestWebSubPostNotification:
     """POST /websub-callback 推播處理"""
 
     def test_valid_xml_writes_to_firestore(self, websub_client, shared_mock_db):
-        mock_doc = MagicMock()
-        mock_doc.to_dict.return_value = None
-        # transaction 內的 get 也要回傳 mock_doc
-        doc_ref_mock = shared_mock_db.collection.return_value.document.return_value
-        doc_ref_mock.get.return_value = mock_doc
-
-        # mock transaction：讓 @firestore.transactional 裝飾的函式可以直接執行
-        mock_tx = MagicMock()
-        shared_mock_db.transaction.return_value = mock_tx
-
         resp = websub_client.post(
             "/websub-callback",
             data=SAMPLE_XML,
             content_type="application/atom+xml",
         )
         assert resp.status_code == 204
-        mock_tx.set.assert_called()
+
+        # 驗證寫入新 collection（直接 doc.set，不再用 transaction）
+        shared_mock_db.collection.assert_called_with("live_redirect_notifications")
+        doc_mock = shared_mock_db.collection.return_value.document.return_value
+        doc_mock.set.assert_called()
+
+        # 驗證 doc ID 格式為 {date}_{videoId}
+        doc_id = shared_mock_db.collection.return_value.document.call_args[0][0]
+        assert "dQw4w9WgXcQ" in doc_id
+        assert "_" in doc_id
 
     def test_invalid_signature_returns_403(self, websub_client):
         """設定 WEBSUB_SECRET 後，錯誤簽名應被拒絕"""
@@ -95,13 +94,6 @@ class TestWebSubPostNotification:
         with patch.dict("os.environ", {"WEBSUB_SECRET": "my-secret"}):
             xml_bytes = SAMPLE_XML.encode()
             sig = "sha1=" + hmac.new(b"my-secret", xml_bytes, hashlib.sha1).hexdigest()
-
-            mock_doc = MagicMock()
-            mock_doc.to_dict.return_value = None
-            shared_mock_db.collection.return_value.document.return_value.get.return_value = mock_doc
-
-            mock_tx = MagicMock()
-            shared_mock_db.transaction.return_value = mock_tx
 
             resp = websub_client.post(
                 "/websub-callback",

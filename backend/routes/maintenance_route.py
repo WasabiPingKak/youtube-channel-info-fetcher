@@ -27,7 +27,12 @@ def init_maintenance_route(app, db: Client):
         result = {
             k: v
             for k, v in full_result.items()
-            if k in ["live_redirect_notify_queue", "live_redirect_cache"]
+            if k
+            in [
+                "live_redirect_notifications",
+                "live_redirect_notify_queue",
+                "live_redirect_cache",
+            ]
         }
         return jsonify(result)
 
