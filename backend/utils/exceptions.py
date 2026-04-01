@@ -61,6 +61,13 @@ def register_error_handlers(app):
     from google.api_core.exceptions import GoogleAPIError
     from googleapiclient.errors import HttpError
 
+    from utils.circuit_breaker import CircuitOpenError
+
+    @app.errorhandler(CircuitOpenError)
+    def handle_circuit_open(e):
+        logging.warning("🔴 熔斷器已開啟：%s", e.breaker_name)
+        return {"error": "服務暫時不可用，請稍後再試"}, 503
+
     @app.errorhandler(AppError)
     def handle_app_error(e):
         if e.status_code >= 500:

@@ -3,6 +3,7 @@ import logging
 from apiflask import APIBlueprint
 from flask import Response, jsonify
 
+from utils.circuit_breaker import get_all_breaker_statuses
 from utils.cloud_tasks_client import check_health as check_cloud_tasks_health
 
 base_bp = APIBlueprint("base", __name__, tag="Base")
@@ -37,8 +38,12 @@ def init_base_routes(app, db=None):
         # --- Cloud Tasks ---
         checks["cloud_tasks"] = check_cloud_tasks_health()
 
-        # 彙整結果
-        all_healthy = all(c.get("healthy") for c in checks.values())
+        # --- Circuit Breakers（資訊性質，不影響 healthy 判定）---
+        checks["circuit_breakers"] = get_all_breaker_statuses()
+
+        # 彙整結果（circuit_breakers 不參與 healthy 判定）
+        health_checks = {k: v for k, v in checks.items() if k != "circuit_breakers"}
+        all_healthy = all(c.get("healthy") for c in health_checks.values())
         status_code = 200 if all_healthy else 503
         return jsonify(
             {

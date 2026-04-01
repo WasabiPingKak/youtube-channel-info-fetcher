@@ -3,8 +3,14 @@ import re
 
 from google.api_core.exceptions import GoogleAPIError
 
+from utils.breaker_instances import firestore_breaker
+
 
 def load_all_channels_from_index_list(db):
+    if not firestore_breaker.allow_request():
+        logging.warning("🔴 Firestore 熔斷中，略過載入 index_list")
+        return []
+
     try:
         ref = db.collection("channel_sync_index").document("index_list")
         doc = ref.get()
@@ -15,14 +21,20 @@ def load_all_channels_from_index_list(db):
         data = doc.to_dict()
         channels = data.get("channels", [])
         logging.info(f"📥 從 index_list 載入 {len(channels)} 個頻道")
+        firestore_breaker.record_success()
         return channels
 
     except GoogleAPIError as e:
+        firestore_breaker.record_failure()
         logging.error(f"🔥 無法讀取 channel_sync_index/index_list：{e}")
         return []
 
 
 def load_videos_for_channel(db, channel_id):
+    if not firestore_breaker.allow_request():
+        logging.warning("🔴 Firestore 熔斷中，略過載入影片：%s", channel_id)
+        return []
+
     try:
         collection_ref = db.collection(f"channel_data/{channel_id}/videos_batch")
         batch_docs = collection_ref.stream()
@@ -50,8 +62,10 @@ def load_videos_for_channel(db, channel_id):
             logging.info(f"📄 batch_{batch_num} 含 {len(videos)} 部影片")
 
         logging.info(f"🎞️ {channel_id} 最終統計影片數量：{len(all_videos)}")
+        firestore_breaker.record_success()
         return all_videos
 
     except GoogleAPIError as e:
+        firestore_breaker.record_failure()
         logging.error(f"🔥 無法讀取 {channel_id} 的影片資料：{e}")
         return []

@@ -3,10 +3,13 @@ import logging
 from google.api_core.exceptions import GoogleAPIError
 
 from utils.admin_ids import get_admin_channel_ids
+from utils.breaker_instances import firestore_breaker
+from utils.circuit_breaker import circuit_breaker
 
 FIRESTORE_INDEX_COLLECTION = "channel_index"
 
 
+@circuit_breaker(firestore_breaker, excluded_exceptions=(FileNotFoundError, ValueError))
 def write_channel_index(db, channel_id: str, name: str, thumbnail: str) -> None:
     """
     建立或更新 channel_index/{channel_id} 文件，若內容無變化則略過。

@@ -4,6 +4,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 from google.cloud.firestore import Client
 
+from utils.breaker_instances import firestore_breaker
 from utils.youtube_utils import normalize_video_item
 
 BATCH_SIZE = 2000
@@ -21,6 +22,10 @@ def get_batch_doc_ref(db: Client, channel_id: str, batch_index: int):
 
 
 def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dict]) -> dict:
+    if not firestore_breaker.allow_request():
+        logger.warning("🔴 Firestore 熔斷中，略過寫入：%s", channel_id)
+        return {"batches_written": 0, "videos_written": 0, "error": "circuit breaker open"}
+
     try:
         # 🔎 預處理：只保留特定欄位
         normalized_videos = []
@@ -120,11 +125,13 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dic
             f"✅ 寫入完成，共 {len(normalized_videos)} 筆影片，分為 {len(new_batches) + (1 if merged_count else 0)} 批"
         )
 
+        firestore_breaker.record_success()
         return {
             "batches_written": len(new_batches) + (1 if merged_count else 0),
             "videos_written": len(normalized_videos),
         }
 
     except GoogleAPIError as e:
+        firestore_breaker.record_failure()
         logger.error("🔥 寫入 Firestore batch 時發生錯誤: %s", e, exc_info=True)
         return {"batches_written": 0, "videos_written": 0, "error": str(e)}
