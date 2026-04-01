@@ -53,7 +53,7 @@ def get_all_enabled_channels_data(db: firestore.Client) -> dict:
     total_registered_count = 0
 
     for doc in docs:
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}
         batch_channels = data.get("channels", [])
         for entry in batch_channels:
             total_registered_count += 1

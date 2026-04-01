@@ -107,7 +107,7 @@ def append_channel_to_batch(db: firestore.Client, channel_id: str, info_data: di
 
         # 先檢查是否已存在於任何 batch（包含 batch_0）
         for doc in docs:
-            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = doc.to_dict() or {}
             channels = data.get("channels", [])
             if any(c.get("channel_id") == channel_id for c in channels):
                 logging.info(f"[Batch] ⚠️ 頻道 {channel_id} 已存在於 {doc.id}，略過寫入 batch")

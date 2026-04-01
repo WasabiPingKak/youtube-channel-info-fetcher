@@ -70,7 +70,7 @@ def init_my_settings_route(app, db: firestore.Client):
         target_doc_ref = None
         batch_docs = db.collection("channel_index_batch").stream()
         for doc in batch_docs:
-            doc_data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            doc_data = doc.to_dict() or {}
             channels = doc_data.get("channels", [])
             if any(item.get("channel_id") == body.channelId for item in channels):
                 target_doc_ref = doc.reference

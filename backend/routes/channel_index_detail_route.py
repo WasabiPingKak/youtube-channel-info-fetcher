@@ -24,7 +24,7 @@ def init_channel_index_detail_route(app, db: firestore.Client):
         docs = root_ref.stream()
 
         for doc in docs:
-            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = doc.to_dict() or {}
             for entry in data.get("channels", []):
                 if entry.get("channel_id") == channel_id:
                     return jsonify(

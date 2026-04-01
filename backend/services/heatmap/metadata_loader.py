@@ -19,7 +19,7 @@ def build_channel_metadata_lookup(db: firestore.Client) -> dict:
     try:
         batch_docs = db.collection("channel_index_batch").stream()
         for batch_doc in batch_docs:
-            data = batch_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = batch_doc.to_dict() or {}
             for entry in data.get("channels", []):
                 cid = entry.get("channel_id")
                 if cid:

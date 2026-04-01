@@ -35,7 +35,7 @@ def init_weekly_heatmap_cache_route(app, db: firestore.Client):
         if not weekly_doc.exists:
             return jsonify({"error": "weekly cache not found"}), 404
 
-        weekly_data = weekly_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        weekly_data = weekly_doc.to_dict() or {}
         pending_data = pending_doc.to_dict() if pending_doc.exists else {}
 
         weekly_list = weekly_data.get("channels", [])

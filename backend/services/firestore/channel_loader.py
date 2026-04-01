@@ -45,7 +45,7 @@ def load_videos_for_channel(db: firestore.Client, channel_id):
 
         all_videos = []
         for batch_num, batch_doc in batch_list:
-            data = batch_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = batch_doc.to_dict() or {}
             videos = data.get("videos", [])
             all_videos.extend(videos)
             logging.info(f"📄 batch_{batch_num} 含 {len(videos)} 部影片")

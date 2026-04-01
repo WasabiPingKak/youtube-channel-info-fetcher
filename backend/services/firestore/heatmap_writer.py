@@ -21,8 +21,8 @@ def is_channel_heatmap_initialized(db: firestore.Client, channel_id: str) -> boo
     try:
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
-        if doc.exists:  # type: ignore[reportAttributeAccessIssue]
-            is_initialized = "all_range" in (doc.to_dict() or {})  # type: ignore[reportAttributeAccessIssue]
+        if doc.exists:
+            is_initialized = "all_range" in (doc.to_dict() or {})
             if not is_initialized:
                 logging.info(f"🆕 頻道 {channel_id} 尚未初始化 heatmap（無 all_range）")
             return is_initialized

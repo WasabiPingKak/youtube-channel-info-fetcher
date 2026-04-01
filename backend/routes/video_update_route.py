@@ -34,7 +34,7 @@ def init_video_update_route(app, db: firestore.Client):
         if not token_doc.exists:
             return jsonify({"error": "Token 不存在或已使用"}), 403
 
-        token_data = token_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        token_data = token_doc.to_dict() or {}
         stored_token = token_data.get("token")
         expires_at = token_data.get("expiresAt")
 

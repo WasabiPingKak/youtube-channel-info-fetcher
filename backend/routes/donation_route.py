@@ -22,7 +22,7 @@ def init_donation_route(app, db: firestore.Client):
         result = []
 
         for date_doc in date_docs:
-            date_doc_data = date_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            date_doc_data = date_doc.to_dict() or {}
             items_data = date_doc_data.get("items", [])
 
             if not items_data or not isinstance(items_data, list):
