@@ -7,7 +7,8 @@ from google.cloud.firestore import Client
 # 📋 全部清除規則表
 CLEANUP_RULES = {
     "live": {
-        "live_redirect_notify_queue": 7,
+        "live_redirect_notifications": 7,
+        "live_redirect_notify_queue": 7,  # 舊 collection（過渡期後移除）
         "live_redirect_cache": 7,
     },
     "trending_games": {
@@ -51,7 +52,9 @@ def clean_all_expired_documents(db: Client, mode: str, cache_type: str) -> dict:
         for doc_ref in all_docs:
             doc_id = doc_ref.id
             try:
-                doc_date = datetime.strptime(doc_id, "%Y-%m-%d").date()
+                # 支援 "YYYY-MM-DD" 與 "YYYY-MM-DD_xxx" 兩種格式
+                date_part = doc_id[:10]
+                doc_date = datetime.strptime(date_part, "%Y-%m-%d").date()
                 if doc_date < cutoff_date:
                     docs_to_delete.append(doc_id)
                 else:
