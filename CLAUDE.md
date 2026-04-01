@@ -148,6 +148,18 @@ python tools/migrate_prod_to_staging.py --full --days 90 --dry-run
 - 安全檢查：禁止從 Staging 複製到 Production
 - 互動確認：執行前需輸入 'yes' 確認
 
+### 備份策略
+
+Production `(default)` 資料庫已啟用 Firestore 原生排程備份：
+- **頻率**：每日
+- **保留期間**：7 天
+- **管理指令**：
+  - 查看排程：`gcloud firestore backups schedules list --database='(default)' --project=vtuber-channel-analyzer-v3`
+  - 查看備份：`gcloud firestore backups list --project=vtuber-channel-analyzer-v3`
+  - 從備份還原：`gcloud firestore databases restore --source-backup=BACKUP_ID --destination-database='restored-db' --project=vtuber-channel-analyzer-v3`
+- **還原限制**：只能還原到新資料庫，需透過切換 `FIRESTORE_DATABASE` 環境變數或資料遷移來恢復服務
+- **Staging 不備份**：可從 Production 用 `migrate_prod_to_staging.py` 重建
+
 ### Refresh Token 加密
 
 OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/kms_crypto.py`）：
