@@ -32,7 +32,7 @@ pytest --cov                       # Run tests with coverage
 
 ### Linting & Formatting
 ```bash
-# Pre-commit hooks（Ruff + ESLint + .env 保護）
+# Pre-commit hooks（Ruff + pyright + ESLint + .env 保護）
 pip install pre-commit           # 安裝 pre-commit framework
 pre-commit install               # 啟用 git hook
 pre-commit run --all-files       # 手動跑全部檢查
@@ -42,6 +42,10 @@ cd backend
 ruff check . --config ruff.toml       # Lint
 ruff check . --config ruff.toml --fix # Lint + 自動修正
 ruff format . --config ruff.toml      # Format
+
+# Backend — pyright（靜態型別檢查）
+cd backend
+pyright                          # 依 pyrightconfig.json 設定檢查
 
 # Frontend — ESLint
 cd frontend_react
