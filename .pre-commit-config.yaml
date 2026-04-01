@@ -22,6 +22,16 @@ repos:
         args: [--config, backend/ruff.toml]
         files: ^backend/
 
+  # pyright — Python 靜態型別檢查
+  - repo: local
+    hooks:
+      - id: pyright
+        name: pyright (backend type check)
+        entry: bash -c 'cd backend && pyright'
+        language: system
+        files: ^backend/.*\.py$
+        pass_filenames: false
+
   # pytest — Backend 單元測試
   - repo: local
     hooks:

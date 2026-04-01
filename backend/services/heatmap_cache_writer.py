@@ -32,12 +32,12 @@ def build_weekly_heatmap_cache(db: Client):
 
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logging.warning(f"⚠️ {channel_id} heatmap 文件不存在，跳過")
             missing_count += 1
             continue
 
-        data = doc.to_dict()
+        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         all_range = data.get("all_range")
         if not all_range:
             logging.warning(f"⚠️ {channel_id} 未包含 all_range，跳過")
@@ -77,7 +77,7 @@ def write_weekly_heatmap_cache(db: Client):
         @firestore.transactional
         def _merge_and_clear(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
-            pending_data = pending_doc.to_dict() if pending_doc.exists else {}
+            pending_data = (pending_doc.to_dict() or {}) if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
             pending_channels = pending_data.get("channels", [])
 
             logging.info(f"🔄 讀取 pending 快取：{len(pending_channels)} 筆")
@@ -118,11 +118,11 @@ def append_to_pending_cache(db, channel_id: str):
         # 🔍 Step 1: 讀取 heatmap matrix
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")
         doc = doc_ref.get()
-        if not doc.exists:
+        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logging.warning(f"⚠️ [pending] {channel_id} heatmap 文件不存在，無法加入快取")
             return
 
-        all_range = doc.to_dict().get("all_range")
+        all_range = (doc.to_dict() or {}).get("all_range")  # type: ignore[reportAttributeAccessIssue]
         if not all_range:
             logging.warning(f"⚠️ [pending] {channel_id} 無 all_range，無法加入快取")
             return
@@ -151,7 +151,7 @@ def append_to_pending_cache(db, channel_id: str):
         @firestore.transactional
         def _append_in_transaction(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
-            pending_data = pending_doc.to_dict() if pending_doc.exists else {}
+            pending_data = pending_doc.to_dict() if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
             current_channels = pending_data.get("channels", [])
 
             filtered = [c for c in current_channels if c.get("channelId") != channel_id]

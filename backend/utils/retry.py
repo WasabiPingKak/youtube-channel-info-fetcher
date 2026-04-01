@@ -11,7 +11,9 @@ logger = logging.getLogger(__name__)
 RETRYABLE_STATUS_CODES = {429, 500, 502, 503}
 
 
-def retry_on_transient_error(max_retries=3, base_delay=1.0, max_delay=30.0):
+def retry_on_transient_error(
+    max_retries: int = 3, base_delay: float = 1.0, max_delay: float = 30.0
+):
     """
     Decorator：對暫時性錯誤自動重試（exponential backoff）。
 
@@ -29,7 +31,7 @@ def retry_on_transient_error(max_retries=3, base_delay=1.0, max_delay=30.0):
     def decorator(func):
         @wraps(func)
         def wrapper(*args, **kwargs):
-            last_exception = None
+            last_exception: Exception | None = None
 
             for attempt in range(max_retries + 1):
                 try:
@@ -49,7 +51,9 @@ def retry_on_transient_error(max_retries=3, base_delay=1.0, max_delay=30.0):
                     )
                     time.sleep(delay)
 
-            raise last_exception  # pragma: no cover
+            if last_exception is not None:  # pragma: no cover
+                raise last_exception
+            raise RuntimeError("retry_on_transient_error 內部邏輯錯誤")  # pragma: no cover
 
         return wrapper
 
@@ -59,8 +63,9 @@ def retry_on_transient_error(max_retries=3, base_delay=1.0, max_delay=30.0):
 def _is_retryable(error: Exception) -> bool:
     """判斷是否為可重試的暫時性錯誤"""
     # googleapiclient.errors.HttpError
-    if hasattr(error, "resp") and hasattr(error.resp, "status"):
-        return error.resp.status in RETRYABLE_STATUS_CODES
+    resp = getattr(error, "resp", None)
+    if resp is not None and hasattr(resp, "status"):
+        return resp.status in RETRYABLE_STATUS_CODES
 
     # requests.exceptions.RequestException（連線逾時、網路中斷）
     from requests.exceptions import ConnectionError as ReqConnectionError
@@ -70,7 +75,8 @@ def _is_retryable(error: Exception) -> bool:
         return True
 
     # requests.exceptions.HTTPError（有 response 物件）
-    if hasattr(error, "response") and error.response is not None:
-        return error.response.status_code in RETRYABLE_STATUS_CODES
+    response = getattr(error, "response", None)
+    if response is not None:
+        return response.status_code in RETRYABLE_STATUS_CODES
 
     return False

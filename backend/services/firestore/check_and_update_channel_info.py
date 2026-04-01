@@ -30,9 +30,9 @@ def check_and_update_channel_info(db: Client, channel_id: str, batch_id: str) ->
         # 使用 Transaction 確保讀寫一致性（batch write 僅保證原子寫入，不保證讀寫隔離）
         @firestore.transactional
         def _update_in_transaction(transaction):
-            index_doc = index_ref.get(transaction=transaction).to_dict() or {}
-            batch_doc = batch_ref.get(transaction=transaction).to_dict() or {}
-            info_doc = info_ref.get(transaction=transaction).to_dict() or {}
+            index_doc = index_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            batch_doc = batch_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            info_doc = info_ref.get(transaction=transaction).to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
 
             batch_channels = batch_doc.get("channels", [])
             batch_entry = next(

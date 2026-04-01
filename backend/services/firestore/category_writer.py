@@ -22,9 +22,7 @@ def _update_category_counts_in_transaction(transaction, doc_ref, channel_id, cou
     return False
 
 
-def write_category_counts_to_channel_index_batch(
-    db: Client, channel_id: str, counts: dict[str, int]
-) -> None:
+def write_category_counts_to_channel_index_batch(db: Client, channel_id: str, counts: dict) -> None:
     """
     寫入 category_counts 至 channel_index_batch 中對應的頻道資料。
     - 對所有 batch_* 文件逐一掃描 channels 陣列

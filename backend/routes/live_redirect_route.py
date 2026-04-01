@@ -59,7 +59,7 @@ def check_and_return_fresh_cache(db: Client, now: datetime, force: bool) -> dict
     """
     today_str = now.date().isoformat()
     cache_ref = db.collection("live_redirect_cache").document(today_str)
-    today_cache = cache_ref.get().to_dict() or {}
+    today_cache = cache_ref.get().to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
 
     updated_at_str = today_cache.get("updatedAt")
     if updated_at_str:

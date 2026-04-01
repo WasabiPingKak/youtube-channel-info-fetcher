@@ -39,7 +39,7 @@ def init_me_route(app, db):
             logging.warning("🔒 /api/me：JWT 驗證失敗，非法 token")
             return jsonify({"error": "Invalid token"}), 403
 
-        channel_id = decoded.get("channelId")
+        channel_id: str = decoded.get("channelId", "")
         is_admin = is_admin_channel_id(channel_id)
 
         # ✅ 撤銷檢查：revoked_at 晚於 token 簽發時間 → token 已作廢

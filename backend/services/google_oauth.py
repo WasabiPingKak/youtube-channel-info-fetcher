@@ -41,7 +41,7 @@ def exchange_code_for_tokens(code: str) -> dict:
     return response.json()
 
 
-def get_channel_id(access_token: str) -> str:
+def get_channel_id(access_token: str) -> str | None:
     headers = {
         "Authorization": f"Bearer {access_token}",
     }

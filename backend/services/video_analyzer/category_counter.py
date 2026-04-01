@@ -8,12 +8,12 @@ CATEGORY_MAPPING = {
 }
 
 
-def count_category_counts(videos: list[dict]) -> dict[str, int]:
+def count_category_counts(videos: list[dict]) -> dict:
     """
     接收經 get_classified_videos() 處理過的影片清單，
     回傳符合 Firestore 儲存結構的 category_counts 統計結果。
     """
-    counts = {
+    counts: dict[str, int] = {
         "talk": 0,
         "game": 0,
         "music": 0,
@@ -31,7 +31,7 @@ def count_category_counts(videos: list[dict]) -> dict[str, int]:
             counts["all"] += 1
 
         # 紀錄本影片已算過的分類，避免重複加總
-        already_counted = set()
+        already_counted: set[str] = set()
 
         for cat in matched:
             key = CATEGORY_MAPPING.get(cat)
@@ -40,6 +40,5 @@ def count_category_counts(videos: list[dict]) -> dict[str, int]:
                 already_counted.add(key)
 
     # 加入更新時間
-    counts["updatedAt"] = datetime.now(UTC).isoformat()
-
-    return counts
+    result: dict = {**counts, "updatedAt": datetime.now(UTC).isoformat()}
+    return result

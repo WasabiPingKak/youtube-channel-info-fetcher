@@ -1,8 +1,8 @@
 import logging
 
 from apiflask import APIBlueprint
-from firebase_admin import firestore
 from flask import jsonify
+from google.cloud import firestore
 
 from schemas.category_editor_schemas import SkipKeywordRequest
 from utils.auth_decorator import require_auth

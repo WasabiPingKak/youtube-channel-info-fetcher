@@ -9,7 +9,7 @@ from services.youtube.videos import fetch_video_details, get_video_ids_from_play
 from utils.youtube_utils import get_video_type
 
 
-def get_video_data(date_ranges=None, input_channel=None, limit_pages=None):
+def get_video_data(date_ranges=None, input_channel=None, limit_pages: int | None = None):
     api_key = os.getenv("API_KEY")
 
     if not api_key:

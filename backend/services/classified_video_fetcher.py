@@ -1,7 +1,7 @@
 import logging
 from datetime import datetime
 
-from firebase_admin.firestore import Client
+from google.cloud.firestore import Client
 
 from utils.categorizer import match_category_and_game
 from utils.settings_game_merger import merge_game_categories_with_aliases

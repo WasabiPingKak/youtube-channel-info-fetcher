@@ -1,7 +1,7 @@
 import logging
 from typing import Any
 
-from firebase_admin.firestore import Client
+from google.cloud.firestore import Client
 
 logger = logging.getLogger(__name__)
 logger.debug("✅ [settings_main_merger.py] 模組載入中...")
@@ -20,11 +20,11 @@ def merge_main_categories_with_user_config(db: Client, settings: dict[str, Any])
 
         default_ref = db.collection("global_settings").document("default_categories_config_v2")
         default_doc = default_ref.get()
-        if not default_doc.exists:
+        if not default_doc.exists:  # type: ignore[reportAttributeAccessIssue]
             logger.warning("⚠️ 找不到 default_categories_config_v2，跳過合併")
             return settings
 
-        default_config = default_doc.to_dict()
+        default_config = default_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
         logger.debug("📥 成功載入 default_categories_config_v2")
 
         # 🔍 使用者設定為扁平主分類格式

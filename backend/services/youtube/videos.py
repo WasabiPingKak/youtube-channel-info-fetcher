@@ -11,7 +11,7 @@ def _execute_api_request(request):
     return request.execute()
 
 
-def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int = None):
+def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int | None = None):
     video_ids = []
     next_page_token = None
     page_count = 0

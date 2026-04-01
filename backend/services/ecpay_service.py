@@ -77,10 +77,13 @@ def get_amount_bucket(trade_amt_str: str) -> str:
         return "1500"
 
 
-def handle_ecpay_return(form: dict, db):
+def handle_ecpay_return(form: dict, db):  # noqa: C901
     logging.info("[ECPay] 收到付款通知表單：%s", form)
 
     expected_merchant_id, hash_key, hash_iv = _get_ecpay_config()
+    if not hash_key or not hash_iv:
+        logging.error("[ECPay] 缺少 ECPAY_HASH_KEY 或 ECPAY_HASH_IV 環境變數")
+        raise ValueError("ECPay 設定不完整")
 
     merchant_id = form.get("MerchantID")
     data_encrypted = form.get("Data")
@@ -95,6 +98,10 @@ def handle_ecpay_return(form: dict, db):
             "[ECPay] MerchantID 不符：收到=%s, 預期=%s", merchant_id, expected_merchant_id
         )
         raise ValueError("MerchantID 不正確")
+
+    if not data_encrypted or not received_mac:
+        logging.error("[ECPay] 缺少 Data 或 CheckMacValue 欄位")
+        raise ValueError("缺少必要欄位")
 
     # 解密
     decrypted_json_str, raw_decrypted_str = aes_decrypt(data_encrypted, hash_key, hash_iv)

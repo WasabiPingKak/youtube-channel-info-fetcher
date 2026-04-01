@@ -57,9 +57,8 @@ def get_theme_top_by_videos(
 
     for theme, videos in theme_videos.items():
         channel_ids = {v.get("channelId") for v in videos if v.get("channelId")}
-        latest_ts = max(
-            (v.get("publishDate") for v in videos if v.get("publishDate")), default=None
-        )
+        publish_dates = [v["publishDate"] for v in videos if v.get("publishDate")]
+        latest_ts = max(publish_dates) if publish_dates else None
 
         # 若無有效發佈時間則跳過（避免影響排序）
         if not latest_ts:
@@ -170,7 +169,7 @@ def filter_channel_info(
 def analyze_trending_summary(
     videos: list[dict[str, Any]],
     theme_key: str = "game",
-    channel_info: dict[str, dict[str, str]] = None,
+    channel_info: dict[str, dict[str, str]] | None = None,
     days: int = 30,
 ) -> dict[str, Any]:
     """

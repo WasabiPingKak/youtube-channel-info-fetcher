@@ -114,15 +114,13 @@ def dispatch_task(
     if admin_key:
         headers["Authorization"] = f"Bearer {admin_key}"
 
-    task = {
-        "http_request": {
-            "http_method": tasks_v2.HttpMethod.POST
-            if method == "POST"
-            else tasks_v2.HttpMethod.GET,
-            "url": url,
-            "headers": headers,
-        }
-    }
+    task = tasks_v2.Task(
+        http_request=tasks_v2.HttpRequest(
+            http_method=tasks_v2.HttpMethod.POST if method == "POST" else tasks_v2.HttpMethod.GET,
+            url=url,
+            headers=headers,
+        )
+    )
 
     try:
         created = client.create_task(parent=queue_path, task=task)

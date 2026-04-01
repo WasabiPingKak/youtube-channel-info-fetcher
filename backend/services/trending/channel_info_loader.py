@@ -9,7 +9,7 @@ def load_channel_info_index(db: Client) -> dict[str, dict[str, str]]:
     result = {}
     batch_docs = db.collection("channel_index_batch").stream()
     for doc in batch_docs:
-        data = doc.to_dict()
+        data = doc.to_dict() or {}
         channels = data.get("channels", [])
         for ch in channels:
             cid = ch.get("channel_id")
