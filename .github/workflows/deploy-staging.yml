@@ -47,7 +47,7 @@ jobs:
           ECPAY_MERCHANT_ID: "2000132"
 
   frontend-check:
-    name: Frontend Lint & Build
+    name: Frontend Lint, Test & Build
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -68,6 +68,9 @@ jobs:
 
       - name: TypeScript typecheck
         run: npx tsc --noEmit
+
+      - name: Run Vitest
+        run: npm test
 
       - name: Build (staging)
         run: npm run build -- --mode staging
