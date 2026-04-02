@@ -38,7 +38,7 @@ VTMap 是一套針對 Vtuber 頻道經營的分析與導流工具，解決 YouTu
 
 | Layer      | Technology                                                                     |
 | ---------- | ------------------------------------------------------------------------------ |
-| Frontend   | React 19, TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query      |
+| Frontend   | React 19, TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query, shadcn/ui |
 | Backend    | APIFlask + Python, Gunicorn, Pydantic (request validation), Flask-Limiter (rate limiting) |
 | Database   | Google Cloud Firestore（Production / Staging 雙資料庫隔離）                      |
 | Hosting    | Google Cloud Run (backend), Firebase Hosting (frontend)                        |
@@ -53,7 +53,7 @@ Browser --> Firebase Hosting (React SPA)
                 |
                 | TanStack Query (12hr cache + localStorage)
                 v
-           Cloud Run (Flask API, 37 endpoints)
+           Cloud Run (Flask API)
                 |
                 ├──> Firestore
                 ├──> YouTube Data API v3
@@ -153,44 +153,12 @@ cd frontend_react && npm run lint
 
 ## 部署
 
-本專案可部署 staging 與 production 雙環境，並具備版本註記與歷史版本清理功能。
+部署由 GitHub Actions 自動執行，push 到對應分支即觸發：
 
-### 後端（Google Cloud Run）
+- **Staging**: push 到 `develop` → `.github/workflows/deploy-staging.yml`
+- **Production**: push 到 `main` → `.github/workflows/deploy-production.yml`
 
-```bash
-cd backend
-./deploy_backend.sh --staging   # 部署至 Staging
-./deploy_backend.sh --prod      # 部署至 Production
-```
-
-功能包含：
-- 載入對應 `.env` 設定檔內容
-- 建立並上傳 Docker 映像至 Google Container Registry
-- 寫入 Git Commit Hash 至 `version.txt`
-- 自動切換流量至最新 READY 版本
-
-#### 清理舊版本 Revisions
-
-定期清理 Cloud Run 歷史版本以節省資源（保留最近 10 筆）：
-
-```bash
-./cleanup_old_revisions.sh --staging
-./cleanup_old_revisions.sh --prod
-```
-
-### 前端（Firebase Hosting）
-
-```bash
-cd frontend_react
-./deploy_frontend.sh --staging   # 部署至 staging target
-./deploy_frontend.sh --prod      # 部署至 production target
-```
-
-功能包含：
-- 取得 Git Commit Hash 並插入至 `<head>` 中註解
-- `staging` 模式會將 `<title>` 改為「VTMap 頻道旅圖 staging」
-- 執行 `npm run build -- --mode` 指令產出正式版
-- 使用 Firebase CLI 部署至對應 Hosting target
+每個 workflow 包含品質閘門（lint + test），通過後才部署 Backend（Cloud Run）與 Frontend（Firebase Hosting）。
 
 ### Firestore 資料庫環境隔離
 
@@ -237,7 +205,7 @@ youtube-channel-info-fetcher/
 ├── backend/
 │   ├── app.py                 # APIFlask 入口（Application Factory）
 │   ├── schemas/               # Pydantic request/response schemas
-│   ├── routes/                # API 路由模組（37 endpoints）
+│   ├── routes/                # API 路由模組
 │   ├── services/              # 商業邏輯層
 │   │   ├── youtube/           # YouTube API 串接
 │   │   ├── firestore/         # 資料庫操作
