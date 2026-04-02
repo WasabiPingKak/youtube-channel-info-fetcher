@@ -4,17 +4,32 @@ import os
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
+from services.youtube.client import _TracedHttp
 from utils.breaker_instances import youtube_breaker
 from utils.circuit_breaker import circuit_breaker
 from utils.retry import retry_on_transient_error
+
+try:
+    from opentelemetry import trace
+
+    _tracer = trace.get_tracer(__name__)
+except ImportError:
+    _tracer = None
 
 
 @circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
 def _fetch_channel_snippet(api_key: str, channel_id: str):
     """帶 retry + 熔斷保護的頻道資訊 API 請求"""
-    yt = build("youtube", "v3", developerKey=api_key)
-    return yt.channels().list(part="snippet", id=channel_id).execute()
+    yt = build("youtube", "v3", developerKey=api_key, http=_TracedHttp())
+    req = yt.channels().list(part="snippet", id=channel_id)
+    if _tracer:
+        with _tracer.start_as_current_span(
+            "youtube.api",
+            attributes={"rpc.service": "youtube", "rpc.method": "youtube.channels.list"},
+        ):
+            return req.execute()
+    return req.execute()
 
 
 def fetch_channel_basic_info(channel_id: str) -> dict:

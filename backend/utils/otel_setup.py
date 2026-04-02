@@ -10,6 +10,15 @@ import os
 logger = logging.getLogger(__name__)
 
 
+def _requests_request_hook(span, request_obj):
+    """注入 X-Request-ID 到 outbound requests 請求 header。"""
+    from utils.request_id import get_request_id
+
+    rid = get_request_id()
+    if rid != "-":
+        request_obj.headers["X-Request-ID"] = rid
+
+
 def init_otel(app):
     """初始化 OpenTelemetry tracing。
 
@@ -51,7 +60,8 @@ def init_otel(app):
         FlaskInstrumentor().instrument_app(app)
 
         # 自動攔截 outbound HTTP（YouTube API、game alias 等）
-        RequestsInstrumentor().instrument()
+        # request_hook 注入 X-Request-ID，讓 distributed tracing 鏈路完整
+        RequestsInstrumentor().instrument(request_hook=_requests_request_hook)
 
         logger.info("OpenTelemetry initialized: traces → Cloud Trace")
 
