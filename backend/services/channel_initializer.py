@@ -48,7 +48,7 @@ def init_config_if_absent(db: firestore.Client, channel_id: str, channel_name: s
         raise
 
 
-def run_channel_initialization(db: firestore.Client, channel_id: str):
+def run_channel_initialization(db: firestore.Client, channel_id: str) -> None:
     logging.info(f"[Init] 🔄 開始初始化頻道：{channel_id}")
 
     api_key = os.getenv("API_KEY")
@@ -98,7 +98,7 @@ def run_channel_initialization(db: firestore.Client, channel_id: str):
         raise
 
 
-def append_channel_to_batch(db: firestore.Client, channel_id: str, info_data: dict):
+def append_channel_to_batch(db: firestore.Client, channel_id: str, info_data: dict) -> None:
     try:
         logging.info(f"[Batch] 🚀 開始處理 channel_index_batch 寫入：{channel_id}")
         root_ref = db.collection("channel_index_batch")

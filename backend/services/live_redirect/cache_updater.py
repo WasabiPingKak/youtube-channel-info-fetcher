@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 NOTIFY_COLLECTION = "live_redirect_notifications"
 
 
-def _mark_processed(db: Client, processed_ids: set, now: datetime):
+def _mark_processed(db: Client, processed_ids: set, now: datetime) -> None:
     """標記新 collection 中已處理的通知（Firestore in query 上限 30 筆，需分批）"""
     collection_ref = db.collection(NOTIFY_COLLECTION)
     id_list = list(processed_ids)

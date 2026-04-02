@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 # Firestore 路徑常數
-def get_batch_doc_ref(db: Client, channel_id: str, batch_index: int):
+def get_batch_doc_ref(db: Client, channel_id: str, batch_index: int) -> firestore.DocumentReference:
     return (
         db.collection("channel_data")
         .document(channel_id)
@@ -86,7 +86,7 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dic
                 if not last_doc.exists:
                     return 0, normalized_videos
 
-                data = last_doc.to_dict()
+                data = last_doc.to_dict() or {}
                 videos = data.get("videos", [])
                 space_left = BATCH_SIZE - len(videos)
 

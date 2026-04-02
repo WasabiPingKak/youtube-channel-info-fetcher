@@ -11,7 +11,7 @@ from utils.kms_crypto import kms_decrypt, kms_encrypt
 
 
 @circuit_breaker(firestore_breaker, excluded_exceptions=(KeyError, AttributeError))
-def save_channel_auth(db: firestore.Client, channel_id: str, refresh_token: str):
+def save_channel_auth(db: firestore.Client, channel_id: str, refresh_token: str) -> None:
     try:
         doc_ref = (
             db.collection("channel_data")

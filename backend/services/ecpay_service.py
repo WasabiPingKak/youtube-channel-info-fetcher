@@ -12,7 +12,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
 
-def _get_ecpay_config():
+def _get_ecpay_config() -> tuple[str | None, str | None, str | None]:
     """取得 ECPay 設定，延遲到呼叫時才讀取環境變數（避免 module-level side effect）"""
     return (
         os.getenv("ECPAY_MERCHANT_ID"),
@@ -78,7 +78,7 @@ def get_amount_bucket(trade_amt_str: str) -> str:
         return "1500"
 
 
-def handle_ecpay_return(form: dict, db: firestore.Client):  # noqa: C901
+def handle_ecpay_return(form: dict, db: firestore.Client) -> str | tuple[str, int]:  # noqa: C901
     logging.info("[ECPay] 收到付款通知表單：%s", form)
 
     expected_merchant_id, hash_key, hash_iv = _get_ecpay_config()

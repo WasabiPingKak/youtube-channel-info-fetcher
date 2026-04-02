@@ -10,7 +10,7 @@ from services.heatmap.metadata_loader import build_channel_metadata_lookup
 from services.heatmap.utils import convert_matrix_to_count
 
 
-def build_weekly_heatmap_cache(db: Client):
+def build_weekly_heatmap_cache(db: Client) -> dict:
     # 預先讀取基本資料 mapping
     metadata_lookup = build_channel_metadata_lookup(db)
     channels = load_all_channels_from_index_list(db)
@@ -64,7 +64,7 @@ def build_weekly_heatmap_cache(db: Client):
     return {"version": 1, "generatedAt": datetime.now(UTC).isoformat(), "channels": result}
 
 
-def write_weekly_heatmap_cache(db: Client):
+def write_weekly_heatmap_cache(db: Client) -> bool:
     try:
         # Step 1: 主體資料來自 build_weekly_heatmap_cache()
         weekly_data = build_weekly_heatmap_cache(db)
@@ -106,7 +106,7 @@ def write_weekly_heatmap_cache(db: Client):
         return False
 
 
-def append_to_pending_cache(db: firestore.Client, channel_id: str):
+def append_to_pending_cache(db: firestore.Client, channel_id: str) -> None:
     """
     將單一新初始化頻道的活躍 heatmap 統計結果寫入 pending 快取文件（避免重複）
 

@@ -6,7 +6,7 @@ from google.cloud.firestore import Client
 
 
 @firestore.transactional
-def _update_category_counts_in_transaction(transaction, doc_ref, channel_id, counts):
+def _update_category_counts_in_transaction(transaction, doc_ref, channel_id, counts) -> bool:
     """Transaction 內讀取 batch 文件並更新 category_counts"""
     doc = doc_ref.get(transaction=transaction)
     if not doc.exists:

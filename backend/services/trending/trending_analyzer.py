@@ -5,7 +5,11 @@ from datetime import UTC, datetime, timedelta
 from typing import Any
 
 
-def build_theme_statistics(videos: list[dict[str, Any]], theme_key: str, dates: list[str]):
+def build_theme_statistics(
+    videos: list[dict[str, Any]], theme_key: str, dates: list[str]
+) -> tuple[
+    dict[str, dict[str, int]], dict[str, list[dict[str, Any]]], dict[str, dict[str, dict[str, int]]]
+]:
     """
     聚合主題統計資料（不分排序方式），共用。
     回傳：
@@ -83,7 +87,9 @@ def get_theme_top_by_videos(
     return [theme for theme, _, _, _ in sorted_themes[:top_n]]
 
 
-def build_theme_details(theme_names: list[str], theme_videos: dict[str, list[dict[str, Any]]]):
+def build_theme_details(
+    theme_names: list[str], theme_videos: dict[str, list[dict[str, Any]]]
+) -> dict[str, dict[str, Any]]:
     """
     將主題影片清單彙整為 details: 主題 → 頻道 → 影片清單
     注意：不主動提供 thumbnail 與 url，僅提供 id、title、publishedAt

@@ -3,11 +3,12 @@ import os
 
 import firebase_admin
 from firebase_admin import credentials, firestore
+from google.cloud.firestore import Client
 
 logger = logging.getLogger(__name__)
 
 
-def init_firestore():
+def init_firestore() -> Client:
     """
     初始化 Firestore 客戶端，根據環境變數選擇資料庫
 

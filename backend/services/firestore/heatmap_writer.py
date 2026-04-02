@@ -34,7 +34,7 @@ def is_channel_heatmap_initialized(db: firestore.Client, channel_id: str) -> boo
         return False
 
 
-def convert_to_nested_map(matrix):
+def convert_to_nested_map(matrix) -> dict[str, dict[str, list[str]]]:
     """
     將 matrix 由 map<string, list<list<string>>> 轉為 map<string, map<string, list<string>>>
     Firestore 不接受 array of array，但接受 map of map
@@ -51,7 +51,7 @@ def write_channel_heatmap_result(
     full_matrix=None,
     full_count=None,
     slot_counter=None,  # 仍保留此參數供其他模組使用（但本函式中不處理）
-):
+) -> None:
     try:
         # 將 path 修正為合法的 4 段（collection/document/collection/document）
         doc_ref = db.document(f"channel_data/{channel_id}/heat_map/channel_video_heatmap")

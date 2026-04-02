@@ -1,7 +1,7 @@
 DAY_KEYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
 
 
-def convert_matrix_to_count(matrix):
+def convert_matrix_to_count(matrix) -> tuple[dict[str, dict[str, int]], int]:
     """
     將 Firestore heatmap matrix 結構從影片 ID 陣列轉為 count 統計結構
 

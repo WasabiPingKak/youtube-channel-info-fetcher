@@ -14,12 +14,12 @@ from utils.datetime_utils import get_taiwan_datetime_from_publish, is_within_las
 WEEKDAY_KEYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 
 
-def create_empty_video_matrix():
+def create_empty_video_matrix() -> dict[str, list[list]]:
     """建立一個空的 7x24 matrix（key 為 'Sun'~'Sat'）"""
     return {k: [[] for _ in range(24)] for k in WEEKDAY_KEYS}
 
 
-def analyze_and_update_all_channels(db: firestore.Client):
+def analyze_and_update_all_channels(db: firestore.Client) -> dict:
     updated = 0
     skipped = 0
     skipped_channels = []

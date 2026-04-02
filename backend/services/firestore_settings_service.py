@@ -4,7 +4,7 @@ from google.api_core.exceptions import GoogleAPIError
 from google.cloud import firestore
 
 
-def load_category_settings(db: firestore.Client, channel_id: str):
+def load_category_settings(db: firestore.Client, channel_id: str) -> dict | None:
     doc_ref = (
         db.collection("channel_data").document(channel_id).collection("settings").document("config")
     )
