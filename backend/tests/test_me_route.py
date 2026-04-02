@@ -1,21 +1,24 @@
 """
 /api/me 路由測試：匿名訪問、JWT 驗證、撤銷檢查、admin 判斷、滑動續期
+
+使用 Firestore emulator 取代 MagicMock。
+保留 should_renew 的 patch（控制分支用，本體在 test_jwt_util.py 測試）。
 """
 
 from datetime import UTC, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from conftest import create_test_app
+from conftest import create_test_app, seed_channel_index, seed_channel_meta
 
 from routes.me_route import init_me_route
 from utils.jwt_util import generate_jwt
 
 
 @pytest.fixture
-def app(mock_db):
+def app(db):
     app = create_test_app()
-    init_me_route(app, mock_db)
+    init_me_route(app, db)
     return app
 
 
@@ -24,24 +27,10 @@ def client(app):
     return app.test_client()
 
 
-def _setup_normal_db(mock_db, *, name="測試頻道", thumbnail="https://example.com/thumb.jpg"):
-    """設定正常的 Firestore mock（meta 無 revoked_at、channel_index 有資料）"""
-    meta_doc = MagicMock()
-    meta_doc.to_dict.return_value = {}
-
-    index_doc = MagicMock()
-    index_doc.exists = True
-    index_doc.to_dict.return_value = {"name": name, "thumbnail": thumbnail}
-
-    def route_collection(col_name):
-        mock_col = MagicMock()
-        if col_name == "channel_data":
-            mock_col.document.return_value.collection.return_value.document.return_value.get.return_value = meta_doc
-        elif col_name == "channel_index":
-            mock_col.document.return_value.get.return_value = index_doc
-        return mock_col
-
-    mock_db.collection.side_effect = route_collection
+def _seed_normal_channel(db, channel_id="UC_ACTIVE_TEST_01234567"):
+    """在 Firestore emulator 中 seed 一個正常頻道的完整資料"""
+    seed_channel_meta(db, channel_id)
+    seed_channel_index(db, channel_id, name="測試頻道", thumbnail="https://example.com/thumb.jpg")
 
 
 class TestMeAnonymous:
@@ -81,53 +70,39 @@ class TestMeInvalidToken:
 class TestMeTokenRevocation:
     """token 撤銷檢查"""
 
-    def test_revoked_token_returns_403(self, client, mock_db):
-        token = generate_jwt("UC_REVOKED_TEST")
+    def test_revoked_token_returns_403(self, db, client):
+        channel_id = "UC_REVOKED_TEST"
+        token = generate_jwt(channel_id)
 
         revoked_time = datetime(2099, 1, 1, tzinfo=UTC)
-        meta_doc = MagicMock()
-        meta_doc.to_dict.return_value = {"revoked_at": revoked_time}
-
-        mock_db.collection.return_value.document.return_value.collection.return_value.document.return_value.get.return_value = meta_doc
+        seed_channel_meta(db, channel_id, revoked_at=revoked_time)
 
         client.set_cookie("__session", token)
         resp = client.get("/api/me")
         assert resp.status_code == 403
         assert resp.get_json()["error"] == "Token revoked"
 
-    def test_non_revoked_returns_200(self, client, mock_db):
-        token = generate_jwt("UC_ACTIVE_TEST_01234567")
-        _setup_normal_db(mock_db)
+    def test_non_revoked_returns_200(self, db, client):
+        channel_id = "UC_ACTIVE_TEST_01234567"
+        token = generate_jwt(channel_id)
+        _seed_normal_channel(db, channel_id)
 
         client.set_cookie("__session", token)
         resp = client.get("/api/me")
         assert resp.status_code == 200
         data = resp.get_json()
-        assert data["channelId"] == "UC_ACTIVE_TEST_01234567"
+        assert data["channelId"] == channel_id
         assert data["name"] == "測試頻道"
 
 
 class TestMeChannelInfo:
     """Firestore 頻道資訊讀取"""
 
-    def test_channel_not_found_returns_null_name(self, client, mock_db):
-        token = generate_jwt("UC_NOTFOUND_TEST_012345")
-
-        meta_doc = MagicMock()
-        meta_doc.to_dict.return_value = {}
-
-        index_doc = MagicMock()
-        index_doc.exists = False
-
-        def route_collection(col_name):
-            mock_col = MagicMock()
-            if col_name == "channel_data":
-                mock_col.document.return_value.collection.return_value.document.return_value.get.return_value = meta_doc
-            elif col_name == "channel_index":
-                mock_col.document.return_value.get.return_value = index_doc
-            return mock_col
-
-        mock_db.collection.side_effect = route_collection
+    def test_channel_not_found_returns_null_name(self, db, client):
+        channel_id = "UC_NOTFOUND_TEST_012345"
+        token = generate_jwt(channel_id)
+        # 只 seed meta（無 revoked_at），不 seed channel_index
+        seed_channel_meta(db, channel_id)
 
         client.set_cookie("__session", token)
         resp = client.get("/api/me")
@@ -140,19 +115,21 @@ class TestMeChannelInfo:
 class TestMeAdminStatus:
     """admin 判斷"""
 
-    def test_admin_channel_returns_is_admin_true(self, client, mock_db):
-        # UC_ADMIN_001 在 conftest.py 中設定為 admin
-        token = generate_jwt("UC_ADMIN_001")
-        _setup_normal_db(mock_db)
+    def test_admin_channel_returns_is_admin_true(self, db, client):
+        # UC_ADMIN_001 在 pyproject.toml 中設定為 admin
+        channel_id = "UC_ADMIN_001"
+        token = generate_jwt(channel_id)
+        _seed_normal_channel(db, channel_id)
 
         client.set_cookie("__session", token)
         resp = client.get("/api/me")
         assert resp.status_code == 200
         assert resp.get_json()["isAdmin"] is True
 
-    def test_non_admin_channel_returns_is_admin_false(self, client, mock_db):
-        token = generate_jwt("UC_REGULAR_USER_1234567")
-        _setup_normal_db(mock_db)
+    def test_non_admin_channel_returns_is_admin_false(self, db, client):
+        channel_id = "UC_REGULAR_USER_1234567"
+        token = generate_jwt(channel_id)
+        _seed_normal_channel(db, channel_id)
 
         client.set_cookie("__session", token)
         resp = client.get("/api/me")
@@ -163,9 +140,10 @@ class TestMeAdminStatus:
 class TestMeSlidingWindow:
     """JWT 滑動視窗續期"""
 
-    def test_renews_cookie_when_near_expiry(self, client, mock_db):
-        token = generate_jwt("UC_RENEW_TEST_123456789")
-        _setup_normal_db(mock_db)
+    def test_renews_cookie_when_near_expiry(self, db, client):
+        channel_id = "UC_RENEW_TEST_123456789"
+        token = generate_jwt(channel_id)
+        _seed_normal_channel(db, channel_id)
 
         with patch("routes.me_route.should_renew", return_value=True):
             client.set_cookie("__session", token)
@@ -175,9 +153,10 @@ class TestMeSlidingWindow:
         set_cookies = [h for h in resp.headers.getlist("Set-Cookie") if "__session" in h]
         assert len(set_cookies) > 0, "應設定新的 __session cookie"
 
-    def test_no_renewal_when_not_near_expiry(self, client, mock_db):
-        token = generate_jwt("UC_FRESH_TEST_1234567890")
-        _setup_normal_db(mock_db)
+    def test_no_renewal_when_not_near_expiry(self, db, client):
+        channel_id = "UC_FRESH_TEST_1234567890"
+        token = generate_jwt(channel_id)
+        _seed_normal_channel(db, channel_id)
 
         with patch("routes.me_route.should_renew", return_value=False):
             client.set_cookie("__session", token)

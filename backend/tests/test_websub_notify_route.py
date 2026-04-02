@@ -1,11 +1,14 @@
 """
 WebSub callback route 測試：驗證 GET 驗證、POST 推播寫入、簽名驗證
+
+使用 Firestore emulator 取代 MagicMock。
+HMAC 簽章驗證使用真實的 hmac.new()（本來就沒有 mock）。
 """
 
 import hashlib
 import hmac
 import importlib
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
 from conftest import create_test_app
@@ -21,20 +24,14 @@ SAMPLE_XML = """<?xml version="1.0" encoding="UTF-8"?>
 </feed>"""
 
 
-@pytest.fixture(scope="module")
-def shared_mock_db():
-    return MagicMock()
-
-
-@pytest.fixture(scope="module")
-def websub_app(shared_mock_db):
-    # reload 取得乾淨的 blueprint
+@pytest.fixture
+def websub_app(db):
     import routes.websub_notify_route as mod
 
     importlib.reload(mod)
 
     app = create_test_app()
-    mod.init_websub_notify_route(app, shared_mock_db)
+    mod.init_websub_notify_route(app, db)
     return app
 
 
@@ -61,7 +58,7 @@ class TestWebSubGetVerification:
 class TestWebSubPostNotification:
     """POST /websub-callback 推播處理"""
 
-    def test_valid_xml_writes_to_firestore(self, websub_client, shared_mock_db):
+    def test_valid_xml_writes_to_firestore(self, db, websub_client):
         resp = websub_client.post(
             "/websub-callback",
             data=SAMPLE_XML,
@@ -69,15 +66,19 @@ class TestWebSubPostNotification:
         )
         assert resp.status_code == 204
 
-        # 驗證寫入新 collection（直接 doc.set，不再用 transaction）
-        shared_mock_db.collection.assert_called_with("live_redirect_notifications")
-        doc_mock = shared_mock_db.collection.return_value.document.return_value
-        doc_mock.set.assert_called()
+        # 從 Firestore emulator 讀回驗證寫入
+        docs = list(db.collection("live_redirect_notifications").limit(10).stream())
+        assert len(docs) >= 1
 
-        # 驗證 doc ID 格式為 {date}_{videoId}
-        doc_id = shared_mock_db.collection.return_value.document.call_args[0][0]
-        assert "dQw4w9WgXcQ" in doc_id
-        assert "_" in doc_id
+        # 驗證 doc ID 包含 videoId
+        doc_ids = [doc.id for doc in docs]
+        matching = [d for d in doc_ids if "dQw4w9WgXcQ" in d]
+        assert len(matching) >= 1
+
+        # 驗證 doc 內容
+        data = docs[0].to_dict()
+        assert data["videoId"] == "dQw4w9WgXcQ"
+        assert data["channelId"] == "UCuAXFkgsw1L7xaCfnd5JJOw"
 
     def test_invalid_signature_returns_403(self, websub_client):
         """設定 WEBSUB_SECRET 後，錯誤簽名應被拒絕"""
@@ -90,7 +91,7 @@ class TestWebSubPostNotification:
             )
             assert resp.status_code == 403
 
-    def test_valid_signature_passes(self, websub_client, shared_mock_db):
+    def test_valid_signature_passes(self, db, websub_client):
         with patch.dict("os.environ", {"WEBSUB_SECRET": "my-secret"}):
             xml_bytes = SAMPLE_XML.encode()
             sig = "sha1=" + hmac.new(b"my-secret", xml_bytes, hashlib.sha1).hexdigest()

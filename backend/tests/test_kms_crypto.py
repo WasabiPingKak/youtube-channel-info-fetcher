@@ -4,7 +4,6 @@ kms_crypto 測試：KMS 加解密工具，mock Google Cloud KMS client
 
 import base64
 import os
-import sys
 from unittest.mock import MagicMock, patch
 
 import pytest
@@ -66,18 +65,10 @@ class TestIsKmsConfigured:
 
 @pytest.fixture
 def mock_kms_client():
-    """提供一個 mock KMS client，並注入到 sys.modules"""
+    """提供一個 mock KMS client，使用 patch 取代 sys.modules 直接操作"""
     mock_client = MagicMock()
-    mock_kms_module = MagicMock()
-    mock_kms_module.KeyManagementServiceClient.return_value = mock_client
-
-    original = sys.modules.get("google.cloud.kms")
-    sys.modules["google.cloud.kms"] = mock_kms_module
-    yield mock_client
-    if original is not None:
-        sys.modules["google.cloud.kms"] = original
-    else:
-        sys.modules.pop("google.cloud.kms", None)
+    with patch("google.cloud.kms.KeyManagementServiceClient", return_value=mock_client):
+        yield mock_client
 
 
 @pytest.fixture

@@ -8,4 +8,5 @@ env = [
     "ECPAY_HASH_KEY=TestHashKey1234A",
     "ECPAY_HASH_IV=TestHashIV12345A",
     "ADMIN_API_KEY=test-admin-api-key",
+    "FIRESTORE_EMULATOR_HOST=localhost:8080",
 ]

@@ -24,6 +24,7 @@ PyJWT==2.12.0
 pycryptodome==3.23.0
 defusedxml==0.7.1
 pyright==1.1.408
+responses>=0.25.0
 ruff==0.12.0
 
 # OpenTelemetry

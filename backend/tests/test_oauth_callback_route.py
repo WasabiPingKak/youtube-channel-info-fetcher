@@ -1,20 +1,23 @@
 """
 OAuth callback 路由測試：state 驗證、token 交換、JWT 發放、cookie 設定
+
+Firestore（oauth_states）改用 emulator，
+保留 exchange_code_for_tokens / get_channel_id / save_channel_auth 的 patch（route orchestration）。
 """
 
 from datetime import UTC, datetime
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import pytest
-from conftest import create_test_app
+from conftest import create_test_app, seed_oauth_state
 
 from routes.oauth_callback_route import init_oauth_callback_route
 
 
 @pytest.fixture
-def app(mock_db):
+def app(db):
     app = create_test_app(FRONTEND_BASE_URL="http://localhost:5173")
-    init_oauth_callback_route(app, mock_db)
+    init_oauth_callback_route(app, db)
     return app
 
 
@@ -26,9 +29,9 @@ def client(app):
 class TestOAuthCallbackDebugMode:
     """OAUTH_DEBUG_MODE 啟用時的行為"""
 
-    def test_debug_mode_returns_debug_response(self, mock_db):
+    def test_debug_mode_returns_debug_response(self, db):
         app = create_test_app(OAUTH_DEBUG_MODE=True)
-        init_oauth_callback_route(app, mock_db)
+        init_oauth_callback_route(app, db)
 
         client = app.test_client()
         resp = client.get("/oauth/callback?state=abc&code=xyz")
@@ -43,90 +46,68 @@ class TestOAuthCallbackStateValidation:
         resp = client.get("/oauth/callback?code=test_code")
         assert resp.status_code == 400
 
-    def test_nonexistent_state_returns_403(self, client, mock_db):
-        state_doc = MagicMock()
-        state_doc.exists = False
-        mock_db.collection.return_value.document.return_value.get.return_value = state_doc
-
+    def test_nonexistent_state_returns_403(self, client):
         resp = client.get("/oauth/callback?code=test_code&state=bad_state")
         assert resp.status_code == 403
 
-    def test_expired_state_returns_403(self, client, mock_db):
+    def test_expired_state_returns_403(self, db, client):
         expired_time = datetime(2020, 1, 1, tzinfo=UTC)
-        state_doc = MagicMock()
-        state_doc.exists = True
-        state_doc.to_dict.return_value = {"created_at": expired_time}
-        state_ref = MagicMock()
-        state_ref.get.return_value = state_doc
-        mock_db.collection.return_value.document.return_value = state_ref
+        seed_oauth_state(db, "expired_state", created_at=expired_time)
 
         resp = client.get("/oauth/callback?code=test_code&state=expired_state")
         assert resp.status_code == 403
 
-    def test_expired_state_gets_deleted(self, client, mock_db):
+    def test_expired_state_gets_deleted(self, db, client):
         """過期 state 應從 Firestore 刪除"""
         expired_time = datetime(2020, 1, 1, tzinfo=UTC)
-        state_doc = MagicMock()
-        state_doc.exists = True
-        state_doc.to_dict.return_value = {"created_at": expired_time}
-        state_ref = MagicMock()
-        state_ref.get.return_value = state_doc
-        mock_db.collection.return_value.document.return_value = state_ref
+        seed_oauth_state(db, "expired_state_del", created_at=expired_time)
 
-        client.get("/oauth/callback?code=test_code&state=expired_state")
-        state_ref.delete.assert_called_once()
+        client.get("/oauth/callback?code=test_code&state=expired_state_del")
+
+        doc = db.collection("oauth_states").document("expired_state_del").get()
+        assert not doc.exists
 
 
 class TestOAuthCallbackCodeExchange:
     """Token 交換流程"""
 
-    def _setup_valid_state(self, mock_db):
-        """設定合法的 state mock"""
-        now = datetime.now(UTC)
-        state_doc = MagicMock()
-        state_doc.exists = True
-        state_doc.to_dict.return_value = {"created_at": now}
-        state_ref = MagicMock()
-        state_ref.get.return_value = state_doc
-        mock_db.collection.return_value.document.return_value = state_ref
-
-    def test_missing_code_returns_400(self, client, mock_db):
-        self._setup_valid_state(mock_db)
+    def test_missing_code_returns_400(self, db, client):
+        seed_oauth_state(db, "valid_state")
         resp = client.get("/oauth/callback?state=valid_state")
         assert resp.status_code == 400
 
     @patch("routes.oauth_callback_route.exchange_code_for_tokens")
-    def test_no_access_token_returns_400(self, mock_exchange, client, mock_db):
-        self._setup_valid_state(mock_db)
+    def test_no_access_token_returns_400(self, mock_exchange, db, client):
+        seed_oauth_state(db, "valid_state")
         mock_exchange.return_value = {"refresh_token": "rt"}
 
-        resp = client.get("/oauth/callback?state=valid&code=test_code")
+        resp = client.get("/oauth/callback?state=valid_state&code=test_code")
         assert resp.status_code == 400
 
     @patch("routes.oauth_callback_route.exchange_code_for_tokens")
-    def test_no_refresh_token_returns_400(self, mock_exchange, client, mock_db):
-        self._setup_valid_state(mock_db)
+    def test_no_refresh_token_returns_400(self, mock_exchange, db, client):
+        seed_oauth_state(db, "valid_state")
         mock_exchange.return_value = {"access_token": "at"}
 
-        resp = client.get("/oauth/callback?state=valid&code=test_code")
+        resp = client.get("/oauth/callback?state=valid_state&code=test_code")
         assert resp.status_code == 400
 
     @patch("routes.oauth_callback_route.exchange_code_for_tokens")
-    def test_exchange_failure_returns_500(self, mock_exchange, client, mock_db):
-        self._setup_valid_state(mock_db)
+    def test_exchange_failure_returns_500(self, mock_exchange, db, client):
+        seed_oauth_state(db, "valid_state")
         mock_exchange.side_effect = Exception("Google API error")
 
-        resp = client.get("/oauth/callback?state=valid&code=test_code")
+        resp = client.get("/oauth/callback?state=valid_state&code=test_code")
         assert resp.status_code == 500
 
     @patch("routes.oauth_callback_route.get_channel_id")
     @patch("routes.oauth_callback_route.exchange_code_for_tokens")
-    def test_no_channel_id_returns_400(self, mock_exchange, mock_channel, client, mock_db):
-        self._setup_valid_state(mock_db)
+    def test_no_channel_id_returns_400(self, mock_exchange, mock_channel, db, client):
+        seed_oauth_state(db, "valid_state")
         mock_exchange.return_value = {"access_token": "at", "refresh_token": "rt"}
         mock_channel.return_value = None
 
-        resp = client.get("/oauth/callback?state=valid&code=test_code")
+        resp = client.get("/oauth/callback?state=valid_state&code=test_code")
         assert resp.status_code == 400
 
 
@@ -137,21 +118,14 @@ class TestOAuthCallbackSuccess:
     @patch("routes.oauth_callback_route.get_channel_id")
     @patch("routes.oauth_callback_route.exchange_code_for_tokens")
     def test_successful_flow_sets_cookie_and_redirects(
-        self, mock_exchange, mock_channel, mock_save, client, mock_db
+        self, mock_exchange, mock_channel, mock_save, db, client
     ):
-        # 設定合法 state
-        now = datetime.now(UTC)
-        state_doc = MagicMock()
-        state_doc.exists = True
-        state_doc.to_dict.return_value = {"created_at": now}
-        state_ref = MagicMock()
-        state_ref.get.return_value = state_doc
-        mock_db.collection.return_value.document.return_value = state_ref
+        seed_oauth_state(db, "valid_state")
 
         mock_exchange.return_value = {"access_token": "at_123", "refresh_token": "rt_123"}
         mock_channel.return_value = "UCxxxxxxxxxxxxxxxxxxxxxx"
 
-        resp = client.get("/oauth/callback?state=valid&code=auth_code")
+        resp = client.get("/oauth/callback?state=valid_state&code=auth_code")
 
         # 應該 redirect
         assert resp.status_code == 302
@@ -163,4 +137,8 @@ class TestOAuthCallbackSuccess:
         assert "HttpOnly" in set_cookie[0]
 
         # 應該儲存 channel auth
-        mock_save.assert_called_once_with(mock_db, "UCxxxxxxxxxxxxxxxxxxxxxx", "rt_123")
+        mock_save.assert_called_once_with(db, "UCxxxxxxxxxxxxxxxxxxxxxx", "rt_123")
+
+        # state 應該已被刪除（一次性使用）
+        doc = db.collection("oauth_states").document("valid_state").get()
+        assert not doc.exists
