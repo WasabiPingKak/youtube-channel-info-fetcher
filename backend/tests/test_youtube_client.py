@@ -2,7 +2,7 @@
 youtube/client.py 測試：YouTube service 建立、channel ID 解析、uploads playlist
 """
 
-from unittest.mock import MagicMock, patch
+from unittest.mock import ANY, MagicMock, patch
 
 import googleapiclient.errors
 
@@ -18,7 +18,7 @@ class TestGetYoutubeService:
         result = get_youtube_service("test-key")
 
         assert result == mock_service
-        mock_build.assert_called_once_with("youtube", "v3", developerKey="test-key")
+        mock_build.assert_called_once_with("youtube", "v3", developerKey="test-key", http=ANY)
 
     @patch("services.youtube.client.googleapiclient.discovery.build")
     def test_http_error_returns_none(self, mock_build):

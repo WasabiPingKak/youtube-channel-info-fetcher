@@ -2,22 +2,53 @@ import logging
 
 import googleapiclient.discovery
 import googleapiclient.errors
+import httplib2
 
 from utils.breaker_instances import youtube_breaker
 from utils.circuit_breaker import circuit_breaker
+from utils.request_id import get_request_id
 from utils.retry import retry_on_transient_error
+
+try:
+    from opentelemetry import trace
+
+    _tracer = trace.get_tracer(__name__)
+except ImportError:
+    _tracer = None
+
+
+class _TracedHttp(httplib2.Http):
+    """注入 X-Request-ID 到 google-api-python-client 的 httplib2 請求。"""
+
+    def request(
+        self, uri, method="GET", body=None, headers=None, redirections=5, connection_type=None
+    ):
+        if headers is None:
+            headers = {}
+        rid = get_request_id()
+        if rid != "-":
+            headers["X-Request-ID"] = rid
+        return super().request(uri, method, body, headers, redirections, connection_type)
 
 
 @circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
 def _execute_api_request(request) -> dict:
-    """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護"""
+    """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護 + OTel span"""
+    if _tracer:
+        with _tracer.start_as_current_span(
+            "youtube.api",
+            attributes={"rpc.service": "youtube", "rpc.method": request.methodId},
+        ):
+            return request.execute()
     return request.execute()
 
 
 def get_youtube_service(api_key) -> googleapiclient.discovery.Resource | None:
     try:
-        return googleapiclient.discovery.build("youtube", "v3", developerKey=api_key)
+        return googleapiclient.discovery.build(
+            "youtube", "v3", developerKey=api_key, http=_TracedHttp()
+        )
     except googleapiclient.errors.HttpError as e:
         logging.error("🔥 [get_youtube_service] 建立 YouTube API 服務失敗: %s", e, exc_info=True)
         return None

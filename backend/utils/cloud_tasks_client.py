@@ -114,6 +114,13 @@ def dispatch_task(
     if admin_key:
         headers["Authorization"] = f"Bearer {admin_key}"
 
+    # 傳播 X-Request-ID，讓 worker log 能關聯回原始請求
+    from utils.request_id import get_request_id
+
+    rid = get_request_id()
+    if rid != "-":
+        headers["X-Request-ID"] = rid
+
     task = tasks_v2.Task(
         http_request=tasks_v2.HttpRequest(
             http_method=tasks_v2.HttpMethod.POST if method == "POST" else tasks_v2.HttpMethod.GET,
