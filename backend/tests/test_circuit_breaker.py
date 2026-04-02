@@ -230,6 +230,214 @@ class TestCircuitBreakerDecorator:
         assert call_count == 0  # retry 根本沒被執行
 
 
+class TestCircuitBreakerConcurrency:
+    """Thread-safety 並行測試"""
+
+    def test_concurrent_failures_reach_open(self):
+        """多執行緒同時 record_failure，最終狀態應為 OPEN 且 failure_count 正確"""
+        import threading
+
+        cb = make_breaker(failure_threshold=5)
+        num_threads = 20
+        barrier = threading.Barrier(num_threads)
+
+        def worker():
+            barrier.wait()
+            cb.record_failure()
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert cb.state == CircuitState.OPEN
+        assert cb.get_status()["failure_count"] == num_threads
+
+    def test_concurrent_successes_reset_count(self):
+        """多執行緒同時 record_success，failure_count 應歸零且保持 CLOSED"""
+        import threading
+
+        cb = make_breaker(failure_threshold=10)
+        for _ in range(5):
+            cb.record_failure()
+
+        num_threads = 20
+        barrier = threading.Barrier(num_threads)
+
+        def worker():
+            barrier.wait()
+            cb.record_success()
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert cb.state == CircuitState.CLOSED
+        assert cb.get_status()["failure_count"] == 0
+
+    @patch("utils.circuit_breaker.time.monotonic")
+    def test_half_open_allows_exactly_max_calls(self, mock_monotonic):
+        """HALF_OPEN 下多執行緒搶 allow_request，通過數不應超過 half_open_max_calls"""
+        import threading
+
+        max_calls = 3
+        cb = make_breaker(
+            failure_threshold=2,
+            recovery_timeout=5.0,
+            half_open_max_calls=max_calls,
+        )
+        mock_monotonic.return_value = 0.0
+        cb.record_failure()
+        cb.record_failure()
+        assert cb.state == CircuitState.OPEN
+
+        # 冷卻到期 → HALF_OPEN
+        mock_monotonic.return_value = 10.0
+
+        num_threads = 30
+        barrier = threading.Barrier(num_threads)
+        allowed = []
+        lock = threading.Lock()
+
+        def worker():
+            barrier.wait()
+            result = cb.allow_request()
+            with lock:
+                allowed.append(result)
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        passed = sum(1 for r in allowed if r)
+        assert passed == max_calls, f"預期 {max_calls} 個通過，實際 {passed}"
+
+    def test_concurrent_mixed_operations_no_crash(self):
+        """混合 record_success / record_failure / allow_request / get_status，不應 crash"""
+        import random
+        import threading
+
+        cb = make_breaker(failure_threshold=3, recovery_timeout=0.01)
+        num_threads = 50
+        barrier = threading.Barrier(num_threads)
+        errors: list[Exception] = []
+        lock = threading.Lock()
+
+        def worker():
+            barrier.wait()
+            try:
+                for _ in range(100):
+                    op = random.randint(0, 3)
+                    if op == 0:
+                        cb.record_failure()
+                    elif op == 1:
+                        cb.record_success()
+                    elif op == 2:
+                        cb.allow_request()
+                    else:
+                        cb.get_status()
+            except Exception as e:
+                with lock:
+                    errors.append(e)
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        assert errors == [], f"並行操作發生例外: {errors}"
+        # 最終狀態應為合法值
+        assert cb.state in (CircuitState.CLOSED, CircuitState.OPEN, CircuitState.HALF_OPEN)
+
+    def test_concurrent_decorator_calls(self):
+        """多執行緒透過 decorator 呼叫，失敗計數與熔斷行為應一致"""
+        import threading
+
+        cb = make_breaker(failure_threshold=5)
+        call_count = 0
+        count_lock = threading.Lock()
+
+        @circuit_breaker(cb)
+        def failing_fn():
+            nonlocal call_count
+            with count_lock:
+                call_count += 1
+            raise RuntimeError("boom")
+
+        num_threads = 20
+        barrier = threading.Barrier(num_threads)
+        open_errors: list[int] = []
+        runtime_errors: list[int] = []
+        errors_lock = threading.Lock()
+
+        def worker():
+            barrier.wait()
+            try:
+                failing_fn()
+            except CircuitOpenError:
+                with errors_lock:
+                    open_errors.append(1)
+            except RuntimeError:
+                with errors_lock:
+                    runtime_errors.append(1)
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        # 所有執行緒都應收到 RuntimeError 或 CircuitOpenError
+        assert len(runtime_errors) + len(open_errors) == num_threads
+        # 熔斷後應有部分被拒絕
+        assert cb.state == CircuitState.OPEN
+        # 至少 failure_threshold 個呼叫實際執行了
+        assert call_count >= cb.failure_threshold
+
+    @patch("utils.circuit_breaker.time.monotonic")
+    def test_allow_request_toctou_no_overcount(self, mock_monotonic):
+        """驗證 allow_request() 中 state 讀取與 _half_open_calls 遞增之間
+        不會因 TOCTOU 讓通過數超過 half_open_max_calls"""
+        import threading
+
+        max_calls = 1
+        cb = make_breaker(
+            failure_threshold=1,
+            recovery_timeout=1.0,
+            half_open_max_calls=max_calls,
+        )
+        mock_monotonic.return_value = 0.0
+        cb.record_failure()  # → OPEN
+
+        mock_monotonic.return_value = 10.0  # → HALF_OPEN
+
+        num_threads = 50
+        barrier = threading.Barrier(num_threads)
+        results: list[bool] = []
+        results_lock = threading.Lock()
+
+        def worker():
+            barrier.wait()
+            r = cb.allow_request()
+            with results_lock:
+                results.append(r)
+
+        threads = [threading.Thread(target=worker) for _ in range(num_threads)]
+        for t in threads:
+            t.start()
+        for t in threads:
+            t.join()
+
+        passed = sum(1 for r in results if r)
+        assert passed <= max_calls, f"TOCTOU 漏洞：預期最多 {max_calls} 個通過，實際 {passed}"
+
+
 class TestRegistry:
     """Registry 功能測試"""
 
