@@ -1,7 +1,7 @@
 """頻道索引查詢服務"""
 
 import logging
-from datetime import datetime
+from datetime import date, datetime
 
 from dateutil import parser as date_parser
 from google.cloud import firestore
@@ -9,7 +9,7 @@ from google.cloud import firestore
 logger = logging.getLogger(__name__)
 
 
-def try_parse_date(val):
+def try_parse_date(val) -> date | None:
     """統一解析 joinedAt 為 date 物件，錯誤時回傳 None"""
     if isinstance(val, datetime):
         return val.date()

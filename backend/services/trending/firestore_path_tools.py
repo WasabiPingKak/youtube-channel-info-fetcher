@@ -19,7 +19,7 @@ def document_exists(db: Client, path: str) -> bool:
         return False
 
 
-def write_document(db: Client, path: str, data: dict):
+def write_document(db: Client, path: str, data: dict) -> None:
     try:
         parts = path.split("/")
         doc_ref = db.collection(parts[0])

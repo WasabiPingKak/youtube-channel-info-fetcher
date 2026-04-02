@@ -6,7 +6,7 @@ from google.cloud import firestore
 
 
 @firestore.transactional
-def _update_active_time_in_transaction(transaction, doc_ref, channel_id, new_stat):
+def _update_active_time_in_transaction(transaction, doc_ref, channel_id, new_stat) -> bool:
     """Transaction 內讀取 batch 文件並更新 active_time_all"""
     doc = doc_ref.get(transaction=transaction)
     if not doc.exists:
@@ -28,7 +28,7 @@ def write_active_time_all_to_channel_index_batch(
     slot_counter: list[int],  # [凌, 早, 午, 晚]
     total_count: int,
     updated_at: datetime,
-):
+) -> None:
     try:
         new_stat = {
             "凌": slot_counter[0],

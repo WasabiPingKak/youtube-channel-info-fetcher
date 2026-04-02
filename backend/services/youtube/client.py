@@ -10,12 +10,12 @@ from utils.retry import retry_on_transient_error
 
 @circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
-def _execute_api_request(request):
+def _execute_api_request(request) -> dict:
     """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護"""
     return request.execute()
 
 
-def get_youtube_service(api_key):
+def get_youtube_service(api_key) -> googleapiclient.discovery.Resource | None:
     try:
         return googleapiclient.discovery.build("youtube", "v3", developerKey=api_key)
     except googleapiclient.errors.HttpError as e:
@@ -23,7 +23,7 @@ def get_youtube_service(api_key):
         return None
 
 
-def get_channel_id(youtube, input_channel):
+def get_channel_id(youtube, input_channel) -> str | None:
     if input_channel.startswith("UC"):
         return input_channel
 
@@ -44,7 +44,7 @@ def get_channel_id(youtube, input_channel):
         return None
 
 
-def get_uploads_playlist_id(youtube, channel_id):
+def get_uploads_playlist_id(youtube, channel_id) -> str | None:
     try:
         request = youtube.channels().list(part="contentDetails", id=channel_id)
         response = _execute_api_request(request)

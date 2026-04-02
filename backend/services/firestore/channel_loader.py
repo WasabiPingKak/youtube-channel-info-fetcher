@@ -7,7 +7,7 @@ from google.cloud import firestore
 from utils.breaker_instances import firestore_breaker
 
 
-def load_all_channels_from_index_list(db: firestore.Client):
+def load_all_channels_from_index_list(db: firestore.Client) -> list[dict]:
     if not firestore_breaker.allow_request():
         logging.warning("🔴 Firestore 熔斷中，略過載入 index_list")
         return []
@@ -31,7 +31,7 @@ def load_all_channels_from_index_list(db: firestore.Client):
         return []
 
 
-def load_videos_for_channel(db: firestore.Client, channel_id):
+def load_videos_for_channel(db: firestore.Client, channel_id) -> list[dict]:
     if not firestore_breaker.allow_request():
         logging.warning("🔴 Firestore 熔斷中，略過載入影片：%s", channel_id)
         return []

@@ -9,12 +9,12 @@ from utils.retry import retry_on_transient_error
 
 @circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
-def _execute_api_request(request):
+def _execute_api_request(request) -> dict:
     """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護"""
     return request.execute()
 
 
-def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int | None = None):
+def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int | None = None) -> list[str]:
     video_ids = []
     next_page_token = None
     page_count = 0
@@ -54,7 +54,7 @@ def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int | None = No
     return video_ids
 
 
-def fetch_video_details(youtube, video_ids):
+def fetch_video_details(youtube, video_ids) -> list[dict]:
     video_details = []
     logging.info(f"🔍 開始抓取 {len(video_ids)} 支影片的詳細資料")
     for i in range(0, len(video_ids), 50):

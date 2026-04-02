@@ -11,7 +11,7 @@ from utils.retry import retry_on_transient_error
 
 @circuit_breaker(youtube_breaker)
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
-def _fetch_channel_snippet(api_key: str, channel_id: str):
+def _fetch_channel_snippet(api_key: str, channel_id: str) -> dict:
     """帶 retry + 熔斷保護的頻道資訊 API 請求"""
     yt = build("youtube", "v3", developerKey=api_key)
     return yt.channels().list(part="snippet", id=channel_id).execute()

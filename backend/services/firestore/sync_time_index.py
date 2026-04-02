@@ -1,4 +1,5 @@
 import logging
+from datetime import datetime
 
 from dateutil.parser import parse
 from google.api_core.exceptions import GoogleAPIError
@@ -8,7 +9,7 @@ from google.cloud.firestore import Client
 logger = logging.getLogger(__name__)
 
 
-def get_last_video_sync_time(db: Client, channel_id: str):
+def get_last_video_sync_time(db: Client, channel_id: str) -> datetime | None:
     try:
         index_ref = db.collection("channel_sync_index").document("index_list")
         doc = index_ref.get()
