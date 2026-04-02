@@ -10,3 +10,17 @@ env = [
     "ADMIN_API_KEY=test-admin-api-key",
     "FIRESTORE_EMULATOR_HOST=localhost:8080",
 ]
+
+[tool.coverage.run]
+source = ["routes", "services", "utils", "schemas"]
+omit = ["tests/*", "tools/*"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+skip_covered = true
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "if __name__ == .__main__.",
+]

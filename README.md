@@ -1,4 +1,6 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/WasabiPingKak/youtube-channel-info-fetcher)
+[![CI](https://github.com/WasabiPingKak/youtube-channel-info-fetcher/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/WasabiPingKak/youtube-channel-info-fetcher/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/endpoint?url=https://gist.githubusercontent.com/WasabiPingKak/COVERAGE_GIST_ID/raw/coverage-badge.json)](https://github.com/WasabiPingKak/youtube-channel-info-fetcher/actions/workflows/ci.yml)
 
 # VTMap 頻道旅圖｜Vtuber TrailMap
 
