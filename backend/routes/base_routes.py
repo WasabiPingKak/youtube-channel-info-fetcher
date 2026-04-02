@@ -17,7 +17,7 @@ def init_base_routes(app, db: firestore.Client | None = None):
     def index():
         return "✅ YouTube API Service with Firestore Cache is running."
 
-    @base_bp.route("/healthz")
+    @base_bp.route("/health")
     @base_bp.doc(
         summary="深度健康檢查",
         description="確認 Firestore 與 Cloud Tasks 連線正常",

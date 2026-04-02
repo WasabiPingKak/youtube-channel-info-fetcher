@@ -105,7 +105,7 @@ npm run lint                     # Lint src/
 - **Dual environments**: staging / production，各自 `.env` + 獨立 Firestore 資料庫
 - **Pydantic validation**: `@bp.input(Schema)` 驗證，422 由 `schemas/__init__.py` error_processor 處理
 - **錯誤處理**: `utils/exceptions.py` exception hierarchy + `app.py` 全域 handler，路由層不需 try/except
-- **Health check**: `/healthz` 檢查 Firestore + Cloud Tasks，任一失敗 503
+- **Health check**: `/health` 檢查 Firestore + Cloud Tasks，任一失敗 503
 - **Rate limiting**: `memory://` storage，多 Cloud Run instance 各自計算（全域需改 Redis）
 - **OpenTelemetry**: `utils/otel_setup.py`，Cloud Run 自動啟用，本地跳過
 - **Circuit Breaker**: `utils/circuit_breaker.py` + `utils/breaker_instances.py`，YouTube API 與 Firestore 各自獨立熔斷

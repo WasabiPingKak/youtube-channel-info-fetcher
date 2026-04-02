@@ -1,5 +1,5 @@
 """
-base_routes 測試：healthz 端點的 Firestore + Cloud Tasks 健康檢查
+base_routes 測試：health 端點的 Firestore + Cloud Tasks 健康檢查
 """
 
 import importlib
@@ -27,7 +27,7 @@ def healthy_app(mock_db):
 
 
 class TestHealthz:
-    """/healthz 深度健康檢查"""
+    """/health 深度健康檢查"""
 
     def test_all_healthy(self, healthy_app, mock_db):
         mock_db.collection.return_value.limit.return_value.get.return_value = []
@@ -35,7 +35,7 @@ class TestHealthz:
 
         with patch("routes.base_routes.check_cloud_tasks_health", return_value=cloud_tasks_ok):
             client = healthy_app.test_client()
-            resp = client.get("/healthz")
+            resp = client.get("/health")
 
         assert resp.status_code == 200
         data = resp.get_json()
@@ -51,7 +51,7 @@ class TestHealthz:
 
         with patch("routes.base_routes.check_cloud_tasks_health", return_value=cloud_tasks_ok):
             client = healthy_app.test_client()
-            resp = client.get("/healthz")
+            resp = client.get("/health")
 
         assert resp.status_code == 503
         data = resp.get_json()
@@ -64,7 +64,7 @@ class TestHealthz:
 
         with patch("routes.base_routes.check_cloud_tasks_health", return_value=cloud_tasks_bad):
             client = healthy_app.test_client()
-            resp = client.get("/healthz")
+            resp = client.get("/health")
 
         assert resp.status_code == 503
         data = resp.get_json()
@@ -83,7 +83,7 @@ class TestHealthz:
 
         with patch("routes.base_routes.check_cloud_tasks_health", return_value=cloud_tasks_ok):
             client = app.test_client()
-            resp = client.get("/healthz")
+            resp = client.get("/health")
 
         assert resp.status_code == 503
         data = resp.get_json()
@@ -96,7 +96,7 @@ class TestHealthz:
 
         with patch("routes.base_routes.check_cloud_tasks_health", return_value=cloud_tasks_bad):
             client = healthy_app.test_client()
-            resp = client.get("/healthz")
+            resp = client.get("/health")
 
         assert resp.status_code == 503
         data = resp.get_json()

@@ -41,7 +41,7 @@ def check_health() -> dict:
     檢查 Cloud Tasks 服務是否可用。
 
     透過 GetQueue 驗證 queue 存在且 API 已啟用。
-    結果會快取，避免每次 healthz 都打 API。
+    結果會快取，避免每次 health check 都打 API。
 
     Returns:
         {"healthy": bool, "reason": str | None}

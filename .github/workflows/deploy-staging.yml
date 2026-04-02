@@ -168,9 +168,9 @@ jobs:
         run: |
           SERVICE_URL=$(gcloud run services describe youtube-api-staging-service \
             --region "${{ env.GCP_REGION }}" --format='value(status.url)')
-          echo "Smoke test target: ${SERVICE_URL}/healthz"
+          echo "Smoke test target: ${SERVICE_URL}/health"
           curl --fail --retry 3 --retry-delay 10 --retry-all-errors --max-time 30 \
-            "${SERVICE_URL}/healthz"
+            "${SERVICE_URL}/health"
 
   # ── 部署 Frontend ─────────────────────────────────
   deploy-frontend:
