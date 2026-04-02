@@ -26,7 +26,10 @@ npm run test:watch   # Run tests in watch mode
 cd backend
 pip install -r requirements.txt    # Install dependencies
 python app.py                      # Run APIFlask server locally
-pytest                             # Run tests
+
+# 測試（需先啟動 Firestore emulator）
+firebase emulators:start --only firestore --project demo-test &
+pytest                             # Run tests（無 emulator 時部分測試會 skip）
 pytest --cov                       # Run tests with coverage
 ```
 
