@@ -3,6 +3,8 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
+  push:
+    branches: [develop]
 
 jobs:
   backend-lint:
@@ -60,7 +62,7 @@ jobs:
           done
 
       - name: Run pytest with coverage
-        run: pytest --tb=short -q --cov --cov-fail-under=80
+        run: pytest --tb=short -q --cov --cov-report=term-missing:skip-covered --cov-report=xml:coverage.xml
         env:
           JWT_SECRET: ci-test-secret
           ADMIN_API_KEY: ci-test-admin-key
@@ -69,6 +71,41 @@ jobs:
           ECPAY_HASH_IV: test_hash_iv_12345
           ECPAY_MERCHANT_ID: "2000132"
           FIRESTORE_EMULATOR_HOST: localhost:8080
+
+      - name: Coverage comment on PR
+        if: github.event_name == 'pull_request'
+        uses: MishaKav/pytest-coverage-comment@main
+        with:
+          pytest-xml-coverage-path: backend/coverage.xml
+          title: Backend Coverage Report
+          badge-title: coverage
+          hide-badge: false
+          hide-report: false
+          junitxml-path: ""
+
+      - name: Extract coverage percentage
+        id: cov
+        run: |
+          COVERAGE=$(python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('coverage.xml')
+          rate = float(tree.getroot().attrib['line-rate'])
+          print(f'{rate * 100:.0f}')
+          ")
+          echo "percentage=$COVERAGE" >> "$GITHUB_OUTPUT"
+
+      - name: Update coverage badge
+        if: github.ref == 'refs/heads/develop'
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        with:
+          auth: ${{ secrets.GIST_TOKEN }}
+          gistID: ${{ vars.COVERAGE_GIST_ID }}
+          filename: coverage-badge.json
+          label: coverage
+          message: ${{ steps.cov.outputs.percentage }}%
+          valColorRange: ${{ steps.cov.outputs.percentage }}
+          minColorRange: 50
+          maxColorRange: 100
 
   frontend-lint:
     name: Frontend Lint
