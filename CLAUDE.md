@@ -2,81 +2,13 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
-## Project Overview
+## Project Structure
 
-VTMap (Vtuber TrailMap) is a YouTube channel analysis and live-streaming management tool for Vtuber creators. It categorizes videos by topic (雜談/遊戲/音樂/節目), provides analytics, and offers a live redirect helper for streamers.
-
-**Live site**: https://www.vtubertrailmap.com/
-
-## Development Commands
-
-### Frontend (frontend_react/)
-```bash
-cd frontend_react
-npm install          # Install dependencies
-npm run dev          # Start dev server (Vite)
-npm run build        # Production build
-npm run preview      # Preview production build
-npm test             # Run tests (Vitest)
-npm run test:watch   # Run tests in watch mode
-```
-
-### Backend (backend/)
-```bash
-cd backend
-pip install -r requirements.txt    # Install dependencies
-python app.py                      # Run APIFlask server locally
-
-# 測試（需先啟動 Firestore emulator）
-firebase emulators:start --only firestore --project demo-test &
-pytest                             # Run tests（無 emulator 時部分測試會 skip）
-pytest --cov                       # Run tests with coverage
-```
-
-### Linting & Formatting
-```bash
-# Pre-commit hooks（Ruff + pyright + ESLint + .env 保護）
-pip install pre-commit           # 安裝 pre-commit framework
-pre-commit install               # 啟用 git hook
-pre-commit run --all-files       # 手動跑全部檢查
-
-# Backend — Ruff
-cd backend
-ruff check . --config ruff.toml       # Lint
-ruff check . --config ruff.toml --fix # Lint + 自動修正
-ruff format . --config ruff.toml      # Format
-
-# Backend — pyright（靜態型別檢查）
-cd backend
-pyright                          # 依 pyrightconfig.json 設定檢查
-
-# Frontend — ESLint
-cd frontend_react
-npm run lint                     # Lint src/
-```
-
-### Deployment (CI/CD)
-
-部署由 GitHub Actions 自動執行，不需本地腳本：
-
-- **Staging**: push 到 `develop` → `.github/workflows/deploy-staging.yml`
-- **Production**: push 到 `main` → `.github/workflows/deploy-production.yml`
-
-每個 workflow 包含品質閘門（lint + test）通過後才部署 Backend（Cloud Run）與 Frontend（Firebase Hosting）。
-
-## Architecture
-
-### Tech Stack
-- **Frontend**: React 19 + TypeScript, Vite, Tailwind CSS, Zustand (state), TanStack Query (data fetching), shadcn/ui components
-- **Backend**: APIFlask + Python (Application Factory pattern), Google Cloud Firestore, YouTube Data API v3, Flask-Limiter (rate limiting), Pydantic (request validation), OpenAPI 3.1 (auto-generated via APIFlask)
-- **Infrastructure**: Google Cloud Run (backend), Firebase Hosting (frontend), Cloud Tasks (async job dispatch), Cloud Trace (distributed tracing via OpenTelemetry)
-
-### Project Structure
 ```
 ├── backend/
 │   ├── app.py                 # APIFlask app entry point (create_app factory)
-│   ├── schemas/               # Pydantic request/response schemas (common, video, settings, category_editor, admin)
-│   ├── routes/                # API route modules (37 endpoints)
+│   ├── schemas/               # Pydantic request/response schemas
+│   ├── routes/                # API route modules（自動掃描註冊）
 │   ├── services/              # Business logic layer
 │   │   ├── youtube/           # YouTube API integration
 │   │   ├── firestore/         # Database operations
@@ -95,65 +27,92 @@ npm run lint                     # Lint src/
 │   │   ├── types/             # TypeScript types
 │   │   └── utils/             # Utility functions
 │   └── public/                # Static assets
+│
+├── docs/
+│   └── adr/                   # Architecture Decision Records
+└── .github/workflows/         # CI/CD pipelines
 ```
 
-### Key Patterns
-- **Route 自動註冊**: `utils/route_loader.py` 掃描 `routes/` 自動註冊，新增 route 只需建檔
-- **OpenAPI**: APIFlask 自動產生 spec，`/docs` Swagger UI，`/openapi.json`
-- **Frontend `@/` alias**: maps to `src/`
-- **React Query**: 12-hour cache with localStorage
-- **Dual environments**: staging / production，各自 `.env` + 獨立 Firestore 資料庫
-- **Pydantic validation**: `@bp.input(Schema)` 驗證，422 由 `schemas/__init__.py` error_processor 處理
-- **錯誤處理**: `utils/exceptions.py` exception hierarchy + `app.py` 全域 handler，路由層不需 try/except
-- **Health check**: `/health` 檢查 Firestore + Cloud Tasks，任一失敗 503
-- **Rate limiting**: `memory://` storage，多 Cloud Run instance 各自計算（全域需改 Redis）
-- **OpenTelemetry**: `utils/otel_setup.py`，Cloud Run 自動啟用，本地跳過
-- **Circuit Breaker**: `utils/circuit_breaker.py` + `utils/breaker_instances.py`，YouTube API 與 Firestore 各自獨立熔斷
+## Development Commands
 
-### Data Flow
-```
-Frontend → Firebase Hosting → Cloud Run Backend → YouTube API / Firestore
-                                              ↓
-                              WebSub (push notifications for new videos)
-```
-
-### Firestore Database Architecture
-
-專案使用雙資料庫環境隔離設計：
-
-- **Production**: 使用 `(default)` 資料庫
-- **Staging**: 使用 `staging` 資料庫
-
-環境變數 `FIRESTORE_DATABASE` 控制連線的資料庫：
-- `.env.production` 設定 `FIRESTORE_DATABASE=(default)`
-- `.env.staging` 設定 `FIRESTORE_DATABASE=staging`
-
-#### 資料庫遷移
-
-`tools/migrate_prod_to_staging.py` — Production → Staging 資料複製（自動脫敏 OAuth token、禁止反向操作）：
+### Backend (backend/)
 ```bash
 cd backend
-python tools/migrate_prod_to_staging.py --full --days 90          # 常用：保留 90 天
-python tools/migrate_prod_to_staging.py --full --days 90 --dry-run # 預覽不寫入
+pip install -r requirements.txt
+python app.py                      # Run APIFlask server locally
+
+# 測試（需先啟動 Firestore emulator）
+firebase emulators:start --only firestore --project demo-test &
+pytest                             # Run tests（無 emulator 時部分測試會 skip）
+pytest --cov                       # Run tests with coverage
 ```
 
-### 備份策略
+### Frontend (frontend_react/)
+```bash
+cd frontend_react
+npm install
+npm run dev          # Start dev server (Vite)
+npm run build        # Production build
+npm test             # Run tests (Vitest)
+npm run test:watch   # Run tests in watch mode
+```
 
-Production `(default)` 資料庫：Firestore 原生排程備份，每日一次，保留 7 天。還原只能到新資料庫。Staging 不備份（可從 Production 用 migrate 腳本重建）。
+### Linting & Formatting
+```bash
+# Pre-commit hooks
+pre-commit run --all-files
 
-### Refresh Token 加密
+# Backend — Ruff
+cd backend
+ruff check . --config ruff.toml       # Lint
+ruff check . --config ruff.toml --fix # Lint + 自動修正
+ruff format . --config ruff.toml      # Format
 
-OAuth refresh_token 使用 Google Cloud KMS 加密後存入 Firestore（`utils/kms_crypto.py`）：
-- **KMS Key**: `vtmap-keyring/refresh-token-key`（asia-east1），環境變數 `KMS_KEY_RING` + `KMS_KEY_ID`
-- 部署環境 KMS 未設定 → `kms_encrypt` raise，禁止明文。本地開發允許 fallback
-- `kms_decrypt` 自動辨識未加密舊資料，不中斷服務
-- 批次遷移：`tools/migrate_tokens_to_kms.py`（預設 dry-run，`--apply` 執行）
+# Backend — pyright
+cd backend
+pyright
+
+# Frontend — ESLint
+cd frontend_react
+npm run lint
+```
+
+## Key Patterns
+
+以下慣例直接影響開發方式，修改程式碼時務必遵守。技術決策背景請參閱 [`docs/adr/`](docs/adr/README.md)。
+
+### Route 自動註冊
+
+`utils/route_loader.py` 掃描 `routes/` 下所有模組，自動呼叫 `init_*` 開頭的函式。新增 route 只需在 `routes/` 建檔並定義 `init_<name>_route(app, db)` 或 `init_<name>_route(app)`，不需修改 `app.py`。
+
+### 錯誤處理
+
+路由層不需 try/except，直接 raise 對應例外即可：
+
+- `NotFoundError(message)` → 404
+- `AuthorizationError(message)` → 403
+- `ExternalServiceError(message)` → 502
+- `ConfigurationError(message)` → 500
+
+全域 handler 在 `utils/exceptions.py` 統一轉為 JSON 回應。
+
+### Pydantic 驗證
+
+使用 APIFlask 的 `@bp.input(Schema)` decorator 做請求驗證，ValidationError 由 `schemas/__init__.py` 統一轉為 422。Schema 定義在 `schemas/` 目錄。
+
+### Frontend
+
+- `@/` alias 指向 `src/`
+- Zustand 管理 client state，TanStack Query 管理 server state（12 小時快取 + localStorage 持久化）
+- 所有頁面 lazy load + Suspense
 
 ## Code Style
+
 - **Language**: Use Traditional Chinese (繁體中文) for user-facing text and comments
 - **Indent**: 4 spaces
 - **Max line length**: 100 characters
 - Explain modifications before making them when substantial changes are involved
 
 ## Git Conventions
+
 - **Do not** include `Co-Authored-By` in commit messages
