@@ -44,8 +44,11 @@ def _emulator_app():
         # Emulator 不需要真實 credentials，用 AnonymousCredentials 避免 DefaultCredentialsError
         from google.auth.credentials import AnonymousCredentials
 
-        cred = firebase_admin.credentials.Base(AnonymousCredentials())
-        firebase_admin.initialize_app(cred, options={"projectId": "demo-test"})
+        class _EmulatorCredential(firebase_admin.credentials.Base):
+            def get_credential(self):
+                return AnonymousCredentials()
+
+        firebase_admin.initialize_app(_EmulatorCredential(), options={"projectId": "demo-test"})
 
 
 @pytest.fixture(scope="session")
