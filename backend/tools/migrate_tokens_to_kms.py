@@ -44,11 +44,13 @@ from utils.kms_crypto import is_kms_configured, kms_encrypt
 
 # 載入環境變數
 load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env.local")
-project_root = Path(__file__).resolve().parents[2]
-firebase_key_path = (project_root / os.getenv("FIREBASE_KEY_PATH", "")).resolve()
 
-os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
+_firebase_key_env = os.getenv("FIREBASE_KEY_PATH", "")
+if _firebase_key_env:
+    project_root = Path(__file__).resolve().parents[2]
+    firebase_key_path = (project_root / _firebase_key_env).resolve()
+    os.environ["FIREBASE_KEY_PATH"] = str(firebase_key_path)
+    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = str(firebase_key_path)
 
 # Logging 設定
 logging.basicConfig(
