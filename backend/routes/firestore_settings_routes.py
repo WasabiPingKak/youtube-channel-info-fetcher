@@ -1,4 +1,5 @@
 import logging
+from typing import Any
 
 from apiflask import APIBlueprint
 from flask import jsonify
@@ -27,7 +28,12 @@ def init_firestore_settings_routes(app, db: firestore.Client):
 
         # 設定不存在，若 init_default=True 則自動建立預設結構
         if body.init_default:
-            default_settings = {"雜談": {}, "遊戲": {}, "音樂": {}, "節目": {}}
+            default_settings: dict[str, dict[str, Any]] = {
+                "雜談": {},
+                "遊戲": {},
+                "音樂": {},
+                "節目": {},
+            }
             save_category_settings(db, body.channel_id, default_settings)
             logging.info(f"✅ 自動建立預設分類設定，channel_id={body.channel_id}")
             return jsonify({"success": True, "settings": default_settings}), 200

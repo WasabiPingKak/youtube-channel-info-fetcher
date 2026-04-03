@@ -23,7 +23,7 @@ def _fetch_with_retry(params: dict) -> list[dict]:
     """帶 retry + 熔斷保護的 YouTube API 請求"""
     resp = requests.get(YOUTUBE_API_URL, params=params, timeout=10)
     resp.raise_for_status()
-    return resp.json().get("items", [])
+    return resp.json().get("items", [])  # type: ignore[no-any-return]
 
 
 def batch_fetch_video_details(video_ids: list[str]) -> list[dict]:

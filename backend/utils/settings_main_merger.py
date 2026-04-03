@@ -20,11 +20,11 @@ def merge_main_categories_with_user_config(db: Client, settings: dict[str, Any])
 
         default_ref = db.collection("global_settings").document("default_categories_config_v2")
         default_doc = default_ref.get()
-        if not default_doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not default_doc.exists:  # type: ignore[union-attr]
             logger.warning("⚠️ 找不到 default_categories_config_v2，跳過合併")
             return settings
 
-        default_config = default_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        default_config = default_doc.to_dict() or {}  # type: ignore[union-attr]
         logger.debug("📥 成功載入 default_categories_config_v2")
 
         # 🔍 使用者設定為扁平主分類格式

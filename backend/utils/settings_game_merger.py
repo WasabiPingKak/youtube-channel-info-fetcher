@@ -11,7 +11,7 @@ try:
 except Exception as e:
     logger.error("❌ 匯入 fetch_global_alias_map 失敗: %s", e, exc_info=True)
 
-    def fetch_global_alias_map() -> dict[str, list[str]]:
+    def fetch_global_alias_map() -> dict[str, list[str]]:  # type: ignore[misc]
         return {}
 
 

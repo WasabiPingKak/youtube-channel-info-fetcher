@@ -22,3 +22,26 @@ exclude_lines = [
     "if TYPE_CHECKING:",
     "if __name__ == .__main__.",
 ]
+
+[tool.mypy]
+python_version = "3.12"
+exclude = ["tests", "tools"]
+warn_return_any = true
+warn_unused_configs = true
+check_untyped_defs = true
+
+[[tool.mypy.overrides]]
+module = [
+    "firebase_admin.*",
+    "google.cloud.*",
+    "google.auth.*",
+    "googleapiclient.*",
+    "opentelemetry.*",
+    "defusedxml.*",
+    "apiflask.*",
+    "flask_cors.*",
+    "flask_limiter.*",
+    "isodate.*",
+    "httplib2.*",
+]
+ignore_missing_imports = true

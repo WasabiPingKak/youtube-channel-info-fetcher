@@ -10,7 +10,7 @@ def load_category_settings(db: firestore.Client, channel_id: str) -> dict | None
     )
     doc = doc_ref.get()
     if doc.exists:
-        return doc.to_dict()
+        return doc.to_dict()  # type: ignore[no-any-return]
     return None
 
 

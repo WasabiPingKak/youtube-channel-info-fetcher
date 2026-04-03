@@ -126,7 +126,7 @@ def append_channel_to_batch(db: firestore.Client, channel_id: str, info_data: di
 
             last_batch_id = f"batch_{max_batch_number or 1}"
             last_batch_ref = root_ref.document(last_batch_id)
-            last_batch_data = last_batch_ref.get().to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            last_batch_data = last_batch_ref.get().to_dict() or {}  # type: ignore[union-attr]
             current_channels = last_batch_data.get("channels", [])
             logging.info(f"[Batch] 📌 準備寫入：{last_batch_id}（目前 {len(current_channels)} 筆）")
 

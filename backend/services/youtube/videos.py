@@ -11,7 +11,7 @@ from utils.retry import retry_on_transient_error
 @retry_on_transient_error(max_retries=3, base_delay=1.0)
 def _execute_api_request(request) -> dict:
     """包裝 googleapiclient request.execute()，加入 retry + 熔斷保護"""
-    return request.execute()
+    return request.execute()  # type: ignore[no-any-return]
 
 
 def get_video_ids_from_playlist(youtube, playlist_id, max_pages: int | None = None) -> list[str]:

@@ -27,7 +27,7 @@ def write_channel_index(db: firestore.Client, channel_id: str, name: str, thumbn
 
     try:
         snapshot = doc_ref.get()
-        existing = snapshot.to_dict() if snapshot.exists else None  # type: ignore[reportAttributeAccessIssue]
+        existing = snapshot.to_dict() if snapshot.exists else None  # type: ignore[union-attr]
 
         if existing == index_data:
             logging.info(f"[Index] ✅ 資料無變化，略過更新：{channel_id}")

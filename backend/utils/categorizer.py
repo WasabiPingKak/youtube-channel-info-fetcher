@@ -136,7 +136,7 @@ def match_category_and_game(
         # ────────────────────────────────────────────────
         game_entries = category_settings.get("遊戲", {})
         matched_game_name: str | None = None
-        hit_keywords: list[str] = []
+        game_hit_keywords: list[str] = []
 
         if isinstance(game_entries, dict):
             for game_name, keywords in game_entries.items():
@@ -150,9 +150,9 @@ def match_category_and_game(
                 if local_hits:
                     matched_game_name = game_name
                     matched_keywords.extend(local_hits)
-                    hit_keywords = local_hits
+                    game_hit_keywords = local_hits
                     matched_pairs.append(
-                        {"main": "遊戲", "keyword": game_name, "hitKeywords": hit_keywords}
+                        {"main": "遊戲", "keyword": game_name, "hitKeywords": game_hit_keywords}
                     )
                     logging.debug("🎮 命中遊戲 [%s] via keywords %s", game_name, local_hits)
                     break

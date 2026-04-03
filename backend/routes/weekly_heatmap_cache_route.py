@@ -39,7 +39,7 @@ def init_weekly_heatmap_cache_route(app, db: firestore.Client):
         pending_data = pending_doc.to_dict() if pending_doc.exists else {}
 
         weekly_list = weekly_data.get("channels", [])
-        pending_list = pending_data.get("channels", [])  # type: ignore[reportOptionalMemberAccess]
+        pending_list = pending_data.get("channels", [])  # type: ignore[union-attr]
 
         # 👉 轉為 dict[channelId] → pending 覆蓋 weekly
         channel_map = {ch["channelId"]: ch for ch in weekly_list if "channelId" in ch}

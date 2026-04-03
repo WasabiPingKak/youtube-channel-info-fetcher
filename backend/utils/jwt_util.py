@@ -49,7 +49,7 @@ def should_renew(decoded: dict) -> bool:
     """檢查 JWT 是否即將過期，需要續期"""
     exp = decoded.get("exp", 0)
     now = datetime.now(UTC).timestamp()
-    return (exp - now) < JWT_RENEW_THRESHOLD_SECONDS
+    return (exp - now) < JWT_RENEW_THRESHOLD_SECONDS  # type: ignore[no-any-return]
 
 
 def verify_jwt(token: str) -> dict | None:

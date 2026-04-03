@@ -1,5 +1,8 @@
+from __future__ import annotations
+
 import logging
 import os
+from typing import TYPE_CHECKING
 
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
@@ -9,6 +12,10 @@ from utils.breaker_instances import youtube_breaker
 from utils.circuit_breaker import circuit_breaker
 from utils.retry import retry_on_transient_error
 
+if TYPE_CHECKING:
+    from opentelemetry.trace import Tracer
+
+_tracer: Tracer | None
 try:
     from opentelemetry import trace
 
@@ -28,8 +35,8 @@ def _fetch_channel_snippet(api_key: str, channel_id: str) -> dict:
             "youtube.api",
             attributes={"rpc.service": "youtube", "rpc.method": "youtube.channels.list"},
         ):
-            return req.execute()
-    return req.execute()
+            return req.execute()  # type: ignore[no-any-return]
+    return req.execute()  # type: ignore[no-any-return]
 
 
 def fetch_channel_basic_info(channel_id: str) -> dict:

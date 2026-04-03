@@ -12,8 +12,8 @@ def classify_videos_to_games(
     將影片根據 matcher_func 結果分類至遊戲名稱下，並統計分類過程
     - matcher_func(title, type, settings) → {'game': str | None}
     """
-    game_map = {}
-    stats = {
+    game_map: dict[str, list[dict[str, Any]]] = {}
+    stats: dict[str, Any] = {
         "videos_processed": 0,
         "videos_classified": 0,
         "games_found": {},

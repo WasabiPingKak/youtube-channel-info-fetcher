@@ -66,7 +66,7 @@ def create_app(config=None):
 
     # ── Proxy Fix（Cloud Run 位於 Load Balancer 後方）──
     # 信任 1 層 proxy 的 X-Forwarded-For / X-Forwarded-Proto
-    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)
+    app.wsgi_app = ProxyFix(app.wsgi_app, x_for=1, x_proto=1)  # type: ignore[method-assign]
 
     # ── Rate Limiter ──
     app.config.setdefault("RATELIMIT_STORAGE_URI", os.getenv("RATE_LIMIT_STORAGE_URL", "memory://"))

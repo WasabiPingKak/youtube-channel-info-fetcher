@@ -58,7 +58,7 @@ def require_auth(db: firestore.Client):
                 _revoke_cache[channel_id] = revoked_at
 
             iat = decoded.get("iat", 0)
-            if revoked_at and revoked_at.timestamp() > iat:
+            if revoked_at and revoked_at.timestamp() > iat:  # type: ignore[union-attr]
                 logging.warning(f"🔒 token 已被撤銷，channel_id = {channel_id}")
                 return jsonify({"error": "Token revoked"}), 403
 

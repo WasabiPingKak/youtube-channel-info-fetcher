@@ -134,7 +134,7 @@ def handle_ecpay_return(form: dict, db: firestore.Client) -> str | tuple[str, in
     doc_ref = db.collection("donations_by_amount").document(bucket_key)
     try:
         doc_snapshot = doc_ref.get()
-        existing = doc_snapshot.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        existing = doc_snapshot.to_dict() or {}  # type: ignore[union-attr]
         existing_items = existing.get("items", [])
 
         if any(item.get("OrderInfo", {}).get("TradeNo") == trade_no for item in existing_items):

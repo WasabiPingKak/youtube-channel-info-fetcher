@@ -114,7 +114,7 @@ def init_websub_subscribe_route(app, db: Client):
                 return jsonify(result), 400
 
             doc = db.collection("channel_sync_index").document("index_list").get()
-            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = doc.to_dict() or {}  # type: ignore[union-attr]
             channels = data.get("channels", [])
 
             if not channels:
@@ -129,7 +129,7 @@ def init_websub_subscribe_route(app, db: Client):
                 if channel_id:
                     valid_params.append({"channel_id": channel_id})
                 else:
-                    result["skipped"] += 1
+                    result["skipped"] += 1  # type: ignore[operator]
 
             result["total_channels"] = len(channels)
 

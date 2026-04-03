@@ -45,8 +45,8 @@ def build_trending_for_date_range(
                 continue
 
             target_date = datetime.strptime(date_str, "%Y-%m-%d").date()
-            game_map = {}
-            stats = {
+            game_map: dict[str, list[dict[str, Any]]] = {}
+            stats: dict[str, Any] = {
                 "date": date_str,
                 "channels": len(active_channels),
                 "videos_processed": 0,
