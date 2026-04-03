@@ -69,23 +69,21 @@ KNOWN_COLLECTIONS = [
 ]
 
 
-def _cleanup_collections(db):
-    """清理 emulator 中所有已知 collection 的文件"""
-    for name in KNOWN_COLLECTIONS:
-        docs = list(db.collection(name).limit(500).stream())
-        for doc in docs:
-            # 清理 subcollection（如 channel_data/{id}/channel_info）
-            for subcol in doc.reference.collections():
-                for subdoc in subcol.stream():
-                    subdoc.reference.delete()
-            doc.reference.delete()
+def _clear_emulator():
+    """使用 emulator REST API 清除所有資料（比逐筆刪除可靠，不漏 virtual parent）"""
+    import urllib.request
+
+    host = os.environ.get("FIRESTORE_EMULATOR_HOST")
+    url = f"http://{host}/emulator/v1/projects/demo-test/databases/(default)/documents"
+    req = urllib.request.Request(url, method="DELETE")
+    urllib.request.urlopen(req, timeout=5)
 
 
 @pytest.fixture
 def db(_emulator_db):
     """Function-scoped：提供真實 Firestore client，測試結束後自動清理"""
     yield _emulator_db
-    _cleanup_collections(_emulator_db)
+    _clear_emulator()
 
 
 # ═══════════════════════════════════════════════════════

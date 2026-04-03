@@ -12,7 +12,6 @@ env = [
 ]
 
 [tool.coverage.run]
-source = ["routes", "services", "utils", "schemas"]
 omit = ["tests/*", "tools/*"]
 
 [tool.coverage.report]
