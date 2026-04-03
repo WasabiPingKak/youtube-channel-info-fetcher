@@ -1,6 +1,6 @@
 """管理員與內部 API 的 request schema"""
 
-from enum import Enum
+from enum import StrEnum
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -46,7 +46,7 @@ class RefreshCacheRequest(BaseModel):
     force_category_counts: bool = False
 
 
-class MaintenanceMode(str, Enum):
+class MaintenanceMode(StrEnum):
     DRY_RUN = "dry-run"
     EXECUTE = "execute"
 
