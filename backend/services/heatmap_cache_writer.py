@@ -77,7 +77,7 @@ def write_weekly_heatmap_cache(db: Client) -> bool:
         @firestore.transactional
         def _merge_and_clear(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
-            pending_data = (pending_doc.to_dict() or {}) if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
+            pending_data = (pending_doc.to_dict() or {}) if pending_doc.exists else {}  # type: ignore[union-attr]
             pending_channels = pending_data.get("channels", [])
 
             logging.info(f"🔄 讀取 pending 快取：{len(pending_channels)} 筆")
@@ -151,8 +151,8 @@ def append_to_pending_cache(db: firestore.Client, channel_id: str) -> None:
         @firestore.transactional
         def _append_in_transaction(transaction):
             pending_doc = pending_ref.get(transaction=transaction)
-            pending_data = pending_doc.to_dict() if pending_doc.exists else {}  # type: ignore[reportAttributeAccessIssue]
-            current_channels = pending_data.get("channels", [])  # type: ignore[reportOptionalMemberAccess]
+            pending_data = pending_doc.to_dict() if pending_doc.exists else {}  # type: ignore[union-attr]
+            current_channels = pending_data.get("channels", [])  # type: ignore[union-attr]
 
             filtered = [c for c in current_channels if c.get("channelId") != channel_id]
             filtered.append(new_entry)

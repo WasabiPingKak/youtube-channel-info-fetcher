@@ -31,7 +31,7 @@ def _serialize_timestamp(ts: Any) -> str | None:
     if ts is None:
         return None
     if hasattr(ts, "isoformat"):
-        return ts.isoformat()
+        return ts.isoformat()  # type: ignore[no-any-return]
     return str(ts)
 
 

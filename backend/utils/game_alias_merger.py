@@ -32,29 +32,31 @@ def merge_game_aliases(
 
     # 2️⃣ 再補上使用者設定（補充 keywords）
     for entry in user_config:
-        game = entry.get("game")
+        game_name: str = entry.get("game", "")
         keywords = entry.get("keywords")
 
-        if not game or not isinstance(keywords, list):
+        if not game_name or not isinstance(keywords, list):
             logger.warning(f"⚠️ 無效的使用者設定（跳過）: {entry}")
             continue
 
-        existing_entry = merged.get(game)
+        existing_entry = merged.get(game_name)
         if existing_entry:
-            logger.debug("🔁 合併使用者設定 → [%s]", game)
+            logger.debug("🔁 合併使用者設定 → [%s]", game_name)
         else:
-            logger.debug("🆕 新增使用者自訂遊戲 → [%s]", game)
+            logger.debug("🆕 新增使用者自訂遊戲 → [%s]", game_name)
 
-        normalized_existing = {normalize(kw): kw for kw in merged.get(game, {}).get("keywords", [])}
+        normalized_existing = {
+            normalize(kw): kw for kw in merged.get(game_name, {}).get("keywords", [])
+        }
 
         for kw in keywords:
             key = normalize(kw)
             if key not in normalized_existing:
                 normalized_existing[key] = kw
-                logger.debug(f"➕ 使用者補充 [{game}] → {kw}")
+                logger.debug(f"➕ 使用者補充 [{game_name}] → {kw}")
 
         # 寫回 merged 結構
-        merged[game] = {"game": game, "keywords": list(normalized_existing.values())}
+        merged[game_name] = {"game": game_name, "keywords": list(normalized_existing.values())}
 
     logger.debug("✅ merge_game_aliases() 完成，總遊戲數量：%d", len(merged))
     return list(merged.values())

@@ -44,7 +44,7 @@ def init_firestore() -> Client:
         logger.info("Firestore client 連線中 (database: %s)", database_id)
         db = firestore.client(database_id=database_id)
         logger.info("✅ Firestore 客戶端連線至資料庫: %s", database_id)
-        return db
+        return db  # type: ignore[no-any-return]
 
     except Exception:
         logger.error("🔥 初始化 Firebase 時發生錯誤", exc_info=True)

@@ -34,10 +34,10 @@ def init_my_settings_route(app, db: firestore.Client):
         doc_ref = db.collection("channel_index").document(channel_id)
         doc = doc_ref.get()
 
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:  # type: ignore[union-attr]
             return jsonify({"error": "Channel not found"}), 404
 
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}  # type: ignore[union-attr]
         return jsonify(
             {
                 "success": True,
@@ -83,7 +83,7 @@ def init_my_settings_route(app, db: firestore.Client):
         @firestore.transactional
         def _update_batch_in_transaction(transaction):
             fresh_doc = target_doc_ref.get(transaction=transaction)
-            fresh_channels = fresh_doc.to_dict().get("channels", [])  # type: ignore[reportOptionalMemberAccess]
+            fresh_channels = fresh_doc.to_dict().get("channels", [])  # type: ignore[union-attr]
             for i, item in enumerate(fresh_channels):
                 if item.get("channel_id") == body.channelId:
                     fresh_channels[i]["enabled"] = body.enabled

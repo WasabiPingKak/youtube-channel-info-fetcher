@@ -166,7 +166,7 @@ def filter_channel_info(
     details: dict[str, dict[str, Any]], channel_info: dict[str, dict[str, str]]
 ) -> dict[str, dict[str, str]]:
     """僅保留出現在 details 中的頻道資訊"""
-    channel_ids = set()
+    channel_ids: set[str] = set()
     for theme_channels in details.values():
         channel_ids.update(theme_channels.keys())
     return {cid: channel_info[cid] for cid in channel_ids if cid in channel_info}

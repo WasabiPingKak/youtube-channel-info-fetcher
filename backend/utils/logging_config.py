@@ -82,7 +82,7 @@ def setup_logging():
         )
     else:
         # 本地開發 — 保留可讀格式
-        formatter = logging.Formatter(
+        formatter = logging.Formatter(  # type: ignore[assignment]
             "%(asctime)s %(levelname)s [%(name)s] [request_id=%(request_id)s] %(message)s"
         )
 

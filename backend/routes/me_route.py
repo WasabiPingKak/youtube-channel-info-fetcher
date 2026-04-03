@@ -63,7 +63,7 @@ def init_me_route(app, db: firestore.Client):
         doc_ref = db.collection("channel_index").document(channel_id)
         doc = doc_ref.get()
 
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:  # type: ignore[union-attr]
             logging.error(f"❌ Firestore 找不到頻道：{channel_id}")
             response_data = {
                 "success": True,
@@ -73,7 +73,7 @@ def init_me_route(app, db: firestore.Client):
                 "thumbnail": None,
             }
         else:
-            data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+            data = doc.to_dict() or {}  # type: ignore[union-attr]
             response_data = {
                 "success": True,
                 "channelId": channel_id,

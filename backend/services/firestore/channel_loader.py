@@ -15,15 +15,15 @@ def load_all_channels_from_index_list(db: firestore.Client) -> list[dict]:
     try:
         ref = db.collection("channel_sync_index").document("index_list")
         doc = ref.get()
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:  # type: ignore[union-attr]
             logging.warning("⚠️ index_list 文件不存在")
             return []
 
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}  # type: ignore[union-attr]
         channels = data.get("channels", [])
         logging.info(f"📥 從 index_list 載入 {len(channels)} 個頻道")
         firestore_breaker.record_success()
-        return channels
+        return channels  # type: ignore[no-any-return]
 
     except GoogleAPIError as e:
         firestore_breaker.record_failure()

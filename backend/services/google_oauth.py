@@ -38,7 +38,7 @@ def exchange_code_for_tokens(code: str) -> dict:
         )
 
     logging.info("[OAuth] ✅ 成功取得 access_token")
-    return response.json()
+    return response.json()  # type: ignore[no-any-return]
 
 
 def get_channel_id(access_token: str) -> str | None:
@@ -56,4 +56,4 @@ def get_channel_id(access_token: str) -> str | None:
     items = response.json().get("items", [])
     if not items:
         return None
-    return items[0]["id"]
+    return items[0]["id"]  # type: ignore[no-any-return]

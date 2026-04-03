@@ -8,5 +8,5 @@ def parse_firestore_date(raw) -> datetime | None:
         except ValueError:
             return None
     elif hasattr(raw, "to_datetime"):
-        return raw.to_datetime()
+        return raw.to_datetime()  # type: ignore[no-any-return]
     return None

@@ -40,7 +40,7 @@ def init_base_routes(app, db: firestore.Client | None = None):
         checks["cloud_tasks"] = check_cloud_tasks_health()
 
         # --- Circuit Breakers（資訊性質，不影響 healthy 判定）---
-        checks["circuit_breakers"] = get_all_breaker_statuses()
+        checks["circuit_breakers"] = get_all_breaker_statuses()  # type: ignore[assignment]
 
         # 彙整結果（circuit_breakers 不參與 healthy 判定）
         health_checks = {k: v for k, v in checks.items() if k != "circuit_breakers"}

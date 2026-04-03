@@ -32,10 +32,10 @@ def load_trending_videos_by_date_range(db: Client, days: int = 30) -> list[dict[
     for date_str in dates:
         doc_ref = db.collection("trending_games_daily").document(date_str)
         doc = doc_ref.get()
-        if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not doc.exists:  # type: ignore[union-attr]
             logger.info(f"⚠️ 找不到日期 {date_str} 的資料，跳過")
             continue
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}  # type: ignore[union-attr]
         logger.info(f"🔄 讀取 {date_str}，共 {len(data)} 種主題")
         for game, video_list in data.items():
             if not isinstance(video_list, list):

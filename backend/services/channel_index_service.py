@@ -36,8 +36,8 @@ def get_all_enabled_channels_data(db: firestore.Client) -> dict:
     sync_doc = sync_ref.get()
     sync_map = {}
 
-    if sync_doc.exists:  # type: ignore[reportAttributeAccessIssue]
-        sync_list = sync_doc.to_dict().get("channels", [])  # type: ignore[reportOptionalMemberAccess]
+    if sync_doc.exists:  # type: ignore[union-attr]
+        sync_list = sync_doc.to_dict().get("channels", [])  # type: ignore[union-attr]
         for item in sync_list:
             cid = item.get("channel_id")
             sync_time = item.get("lastVideoSyncAt")

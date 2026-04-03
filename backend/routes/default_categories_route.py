@@ -19,8 +19,8 @@ def init_default_categories_route(app, db: firestore.Client):
         doc_ref = db.collection("global_settings").document("default_categories_config_v2")
         doc = doc_ref.get()
 
-        if doc.exists:  # type: ignore[reportAttributeAccessIssue]
-            return jsonify({"success": True, "config": doc.to_dict() or {}})  # type: ignore[reportAttributeAccessIssue]
+        if doc.exists:  # type: ignore[union-attr]
+            return jsonify({"success": True, "config": doc.to_dict() or {}})  # type: ignore[union-attr]
         else:
             return error_response("找不到預設分類設定", 404)
 

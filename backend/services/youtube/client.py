@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING, Any
 
 import googleapiclient.discovery
 import googleapiclient.errors
@@ -9,6 +12,10 @@ from utils.circuit_breaker import circuit_breaker
 from utils.request_id import get_request_id
 from utils.retry import retry_on_transient_error
 
+if TYPE_CHECKING:
+    from opentelemetry.trace import Tracer
+
+_tracer: Tracer | None
 try:
     from opentelemetry import trace
 
@@ -40,8 +47,8 @@ def _execute_api_request(request) -> dict:
             "youtube.api",
             attributes={"rpc.service": "youtube", "rpc.method": request.methodId},
         ):
-            return request.execute()
-    return request.execute()
+            return request.execute()  # type: ignore[no-any-return]
+    return request.execute()  # type: ignore[no-any-return]
 
 
 def get_youtube_service(api_key) -> googleapiclient.discovery.Resource | None:
@@ -54,7 +61,7 @@ def get_youtube_service(api_key) -> googleapiclient.discovery.Resource | None:
         return None
 
 
-def get_channel_id(youtube, input_channel) -> str | None:
+def get_channel_id(youtube: Any, input_channel: str) -> str | None:
     if input_channel.startswith("UC"):
         return input_channel
 
@@ -63,7 +70,7 @@ def get_channel_id(youtube, input_channel) -> str | None:
         request = youtube.search().list(part="snippet", q=username, type="channel", maxResults=1)
         response = _execute_api_request(request)
         if response["items"]:
-            return response["items"][0]["snippet"]["channelId"]
+            return response["items"][0]["snippet"]["channelId"]  # type: ignore[no-any-return]
         else:
             logging.warning("⚠️ [get_channel_id] 找不到頻道: %s", input_channel)
             return None
@@ -83,7 +90,7 @@ def get_uploads_playlist_id(youtube, channel_id) -> str | None:
         if not items:
             logging.warning("⚠️ [get_uploads_playlist_id] 找不到頻道內容，頻道 ID: %s", channel_id)
             return None
-        return items[0]["contentDetails"]["relatedPlaylists"]["uploads"]
+        return items[0]["contentDetails"]["relatedPlaylists"]["uploads"]  # type: ignore[no-any-return]
     except googleapiclient.errors.HttpError as e:
         logging.error(
             "🔥 [get_uploads_playlist_id] 無法取得上傳清單（頻道 ID: %s）: %s",

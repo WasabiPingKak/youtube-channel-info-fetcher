@@ -68,9 +68,9 @@ ruff check . --config ruff.toml       # Lint
 ruff check . --config ruff.toml --fix # Lint + 自動修正
 ruff format . --config ruff.toml      # Format
 
-# Backend — pyright
+# Backend — mypy
 cd backend
-pyright
+mypy .
 
 # Frontend — ESLint
 cd frontend_react

@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 # Firestore 路徑常數
 def get_batch_doc_ref(db: Client, channel_id: str, batch_index: int) -> firestore.DocumentReference:
-    return (
+    return (  # type: ignore[no-any-return]
         db.collection("channel_data")
         .document(channel_id)
         .collection("videos_batch")

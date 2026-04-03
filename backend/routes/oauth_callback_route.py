@@ -38,12 +38,12 @@ def init_oauth_callback_route(app, db: firestore.Client):
 
         state_ref = db.collection("oauth_states").document(state)
         state_doc = state_ref.get()
-        if not state_doc.exists:  # type: ignore[reportAttributeAccessIssue]
+        if not state_doc.exists:  # type: ignore[union-attr]
             logging.warning("⚠️ OAuth state 不存在或已使用")
             return "Invalid OAuth state", 403
 
         # 檢查是否過期
-        state_data = state_doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        state_data = state_doc.to_dict() or {}  # type: ignore[union-attr]
         created_at = state_data.get("created_at")
         if created_at:
             now = datetime.now(UTC)

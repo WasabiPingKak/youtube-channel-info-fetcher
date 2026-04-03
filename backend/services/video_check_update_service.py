@@ -28,7 +28,7 @@ def check_channel_update_status(db: firestore.Client, channel_id: str) -> dict:
     last_video_sync_at = None
     should_update = False
 
-    if not doc.exists:  # type: ignore[reportAttributeAccessIssue]
+    if not doc.exists:  # type: ignore[union-attr]
         logger.info(f"📄 [check-update] 尚未存在 index_list，初始化頻道 {channel_id}")
         index_ref.set(
             {
@@ -45,7 +45,7 @@ def check_channel_update_status(db: firestore.Client, channel_id: str) -> dict:
         )
         should_update = True
     else:
-        data = doc.to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        data = doc.to_dict() or {}  # type: ignore[union-attr]
         channels = data.get("channels", [])
         found = False
         for ch in channels:

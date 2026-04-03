@@ -30,9 +30,9 @@ def process_video_ids(db: Client, notify_videos: list[dict], now: datetime) -> d
     yesterday_str = (now - timedelta(days=1)).date().isoformat()
 
     # 🔹 Step 1：載入昨天與今天的快取
-    today_cache = db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+    today_cache = db.collection("live_redirect_cache").document(today_str).get().to_dict() or {}  # type: ignore[union-attr]
     yesterday_cache = (
-        db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}  # type: ignore[reportAttributeAccessIssue]
+        db.collection("live_redirect_cache").document(yesterday_str).get().to_dict() or {}  # type: ignore[union-attr]
     )
     raw_old_channels = today_cache.get("channels", []) + yesterday_cache.get("channels", [])
 

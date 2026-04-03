@@ -13,7 +13,7 @@ def document_exists(db: Client, path: str) -> bool:
         for i in range(1, len(parts) - 1, 2):
             doc_ref = doc_ref.document(parts[i]).collection(parts[i + 1])
         doc = doc_ref.document(parts[-1]).get()
-        return doc.exists  # type: ignore[reportAttributeAccessIssue]
+        return doc.exists  # type: ignore[union-attr]
     except GoogleAPIError as e:
         logger.warning("⚠️ 無法檢查文件是否存在 [%s]: %s", path, e)
         return False
