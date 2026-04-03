@@ -41,7 +41,9 @@ def _emulator_app():
             "請執行：firebase emulators:start --only firestore --project demo-test"
         )
     if not firebase_admin._apps:
-        firebase_admin.initialize_app(options={"projectId": "demo-test"})
+        # Emulator 不需要真實 credentials，傳入 mock 避免 DefaultCredentialsError
+        mock_cred = MagicMock(spec=firebase_admin.credentials.Base)
+        firebase_admin.initialize_app(mock_cred, options={"projectId": "demo-test"})
 
 
 @pytest.fixture(scope="session")
