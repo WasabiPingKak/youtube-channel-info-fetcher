@@ -27,6 +27,7 @@ mypy>=1.15
 types-pytz
 types-cachetools
 types-python-dateutil
+google-api-python-client-stubs
 responses>=0.25.0
 ruff==0.12.0
 

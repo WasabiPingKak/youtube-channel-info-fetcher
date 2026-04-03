@@ -29,13 +29,13 @@ exclude = ["tests", "tools"]
 warn_return_any = true
 warn_unused_configs = true
 check_untyped_defs = true
+warn_unused_ignores = true
 
 [[tool.mypy.overrides]]
 module = [
     "firebase_admin.*",
     "google.cloud.*",
     "google.auth.*",
-    "googleapiclient.*",
     "opentelemetry.*",
     "defusedxml.*",
     "apiflask.*",

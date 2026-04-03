@@ -31,7 +31,7 @@ def get_pending_video_ids(db: Client, force: bool, now) -> list[dict]:
     # 向後相容：讀取舊 collection 中未處理的通知（過渡期後移除）
     for date_str in [yesterday_str, today_str]:
         doc = db.collection(OLD_COLLECTION).document(date_str).get()  # type: ignore[assignment]
-        data = doc.to_dict() or {}  # type: ignore[union-attr]
+        data = doc.to_dict() or {}
         for v in data.get("videos", []):
             video_id = v.get("videoId")
             if not video_id:

@@ -35,8 +35,8 @@ def _fetch_channel_snippet(api_key: str, channel_id: str) -> dict:
             "youtube.api",
             attributes={"rpc.service": "youtube", "rpc.method": "youtube.channels.list"},
         ):
-            return req.execute()  # type: ignore[no-any-return]
-    return req.execute()  # type: ignore[no-any-return]
+            return dict(req.execute())
+    return dict(req.execute())
 
 
 def fetch_channel_basic_info(channel_id: str) -> dict:

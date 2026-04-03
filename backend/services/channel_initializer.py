@@ -83,7 +83,7 @@ def run_channel_initialization(db: firestore.Client, channel_id: str) -> None:
         }
 
         # ✅ 初始化設定（如尚未存在）
-        init_config_if_absent(db, channel_id, info_data["name"])
+        init_config_if_absent(db, channel_id, str(info_data.get("name", "")))
 
         append_channel_to_batch(db, channel_id, info_data)
 
