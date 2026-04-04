@@ -1,0 +1,17 @@
+-r requirements.txt
+
+# 測試
+pytest==8.4.2
+pytest-cov==7.1.0
+pytest-env==1.1.5
+responses>=0.25.0
+
+# 靜態分析
+mypy>=1.15
+ruff==0.12.0
+
+# Type stubs
+types-pytz
+types-cachetools
+types-python-dateutil
+google-api-python-client-stubs
