@@ -38,7 +38,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### Backend (backend/)
 ```bash
 cd backend
-pip install -r requirements.txt
+pip install -r requirements-dev.txt  # 含 runtime + 開發工具（pytest、mypy、ruff 等）
 python app.py                      # Run APIFlask server locally
 
 # 測試（需先啟動 Firestore emulator）
