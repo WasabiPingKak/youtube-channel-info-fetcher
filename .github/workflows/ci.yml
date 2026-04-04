@@ -3,8 +3,6 @@ name: CI
 on:
   pull_request:
     branches: [develop, main]
-  push:
-    branches: [develop]
 
 jobs:
   backend-lint:
@@ -82,30 +80,6 @@ jobs:
           hide-badge: false
           hide-report: false
           junitxml-path: ""
-
-      - name: Extract coverage percentage
-        id: cov
-        run: |
-          COVERAGE=$(python -c "
-          import xml.etree.ElementTree as ET
-          tree = ET.parse('coverage.xml')
-          rate = float(tree.getroot().attrib['line-rate'])
-          print(f'{rate * 100:.0f}')
-          ")
-          echo "percentage=$COVERAGE" >> "$GITHUB_OUTPUT"
-
-      - name: Update coverage badge
-        if: github.ref == 'refs/heads/develop'
-        uses: schneegans/dynamic-badges-action@v1.7.0
-        with:
-          auth: ${{ secrets.GIST_TOKEN }}
-          gistID: ${{ vars.COVERAGE_GIST_ID }}
-          filename: coverage-badge.json
-          label: coverage
-          message: ${{ steps.cov.outputs.percentage }}%
-          valColorRange: ${{ steps.cov.outputs.percentage }}
-          minColorRange: 50
-          maxColorRange: 100
 
   frontend-lint:
     name: Frontend Lint
