@@ -89,3 +89,29 @@ class TestFallbackHandler:
         resp = client.get("/raise-unexpected")
         assert resp.status_code == 500
         assert resp.get_json() == {"error": "伺服器內部錯誤"}
+
+
+class TestHtmlErrorResponse:
+    """瀏覽器請求（Accept: text/html）應回傳純文字而非 JSON"""
+
+    BROWSER_HEADERS = {"Accept": "text/html,application/xhtml+xml,*/*;q=0.8"}
+
+    def test_not_found_returns_plain_text(self, client):
+        resp = client.get("/raise-not-found", headers=self.BROWSER_HEADERS)
+        assert resp.status_code == 404
+        assert resp.data.decode() == "找不到頻道資訊"
+
+    def test_config_error_returns_plain_text(self, client):
+        resp = client.get("/raise-config-error", headers=self.BROWSER_HEADERS)
+        assert resp.status_code == 500
+        assert resp.data.decode() == "未設定 API Key"
+
+    def test_google_api_error_returns_plain_text(self, client):
+        resp = client.get("/raise-google-api-error", headers=self.BROWSER_HEADERS)
+        assert resp.status_code == 500
+        assert resp.data.decode() == "Firestore 操作失敗"
+
+    def test_unexpected_error_returns_plain_text(self, client):
+        resp = client.get("/raise-unexpected", headers=self.BROWSER_HEADERS)
+        assert resp.status_code == 500
+        assert resp.data.decode() == "伺服器內部錯誤"

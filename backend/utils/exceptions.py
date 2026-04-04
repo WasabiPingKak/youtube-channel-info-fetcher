@@ -2,6 +2,20 @@
 
 import logging
 
+from flask import request
+
+
+def _wants_html() -> bool:
+    """判斷請求端是否偏好 HTML 回應（如瀏覽器 OAuth redirect）"""
+    return request.accept_mimetypes.accept_html
+
+
+def _error_response(message: str, status_code: int):
+    """依 Accept header 回傳 JSON 或純文字錯誤"""
+    if _wants_html():
+        return message, status_code
+    return {"error": message}, status_code
+
 
 class AppError(Exception):
     """應用層例外基底類別，所有自訂例外都繼承此類別。
@@ -66,7 +80,7 @@ def register_error_handlers(app):
     @app.errorhandler(CircuitOpenError)
     def handle_circuit_open(e):
         logging.warning("🔴 熔斷器已開啟：%s", e.breaker_name)
-        return {"error": "服務暫時不可用，請稍後再試"}, 503
+        return _error_response("服務暫時不可用，請稍後再試", 503)
 
     @app.errorhandler(AppError)
     def handle_app_error(e):
@@ -74,19 +88,19 @@ def register_error_handlers(app):
             logging.exception(e.log_message or str(e))
         else:
             logging.warning(e.log_message or str(e))
-        return {"error": e.message}, e.status_code
+        return _error_response(e.message, e.status_code)
 
     @app.errorhandler(GoogleAPIError)
     def handle_google_api_error(e):
         logging.exception("Firestore 操作失敗")
-        return {"error": "Firestore 操作失敗"}, 500
+        return _error_response("Firestore 操作失敗", 500)
 
     @app.errorhandler(HttpError)
     def handle_youtube_api_error(e):
         logging.exception("YouTube API 呼叫失敗")
-        return {"error": "YouTube API 呼叫失敗"}, 502
+        return _error_response("YouTube API 呼叫失敗", 502)
 
     @app.errorhandler(500)
     def handle_internal_error(e):
         logging.exception("未處理的伺服器錯誤")
-        return {"error": "伺服器內部錯誤"}, 500
+        return _error_response("伺服器內部錯誤", 500)
