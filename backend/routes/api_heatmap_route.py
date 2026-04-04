@@ -14,6 +14,7 @@ def init_api_heatmap_route(app, db: firestore.Client):
     @bp.doc(summary="取得頻道活躍熱力圖", description="回傳指定頻道的影片活躍時段統計矩陣")
     def get_video_heatmap(channel_id):
         if not is_valid_channel_id(channel_id):
+            logging.warning(f"[heatmap] channel_id 格式不合法：{channel_id}")
             return jsonify({"error": "channel_id 格式不合法"}), 400
 
         # Firestore 路徑：channel_data/{channel_id}/heat_map/channel_video_heatmap
