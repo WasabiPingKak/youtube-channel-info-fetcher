@@ -9,6 +9,7 @@ import LiveRedirectHelpModal from "@/components/live_redirect/LiveRedirectHelpMo
 import { PiAirplaneLandingFill } from "react-icons/pi";
 import { FaInfoCircle } from "react-icons/fa";
 import LiveTopicFilterPanel from "@/components/live_redirect/LiveTopicFilterPanel";
+import LiveRedirectSkeleton from "@/components/live_redirect/LiveRedirectSkeleton";
 import { getLiveTopicStats } from "@/utils/topicStats";
 import { getBadgesFromLiveChannel } from "@/utils/badgeUtils";
 import type { Badge } from "@/types/video";
@@ -54,7 +55,7 @@ export default function LiveRedirectPage() {
     return (
       <MainLayout>
         <div className="max-w-5xl mx-auto px-4 py-6">
-          {isLoading && <div className="text-gray-500 dark:text-gray-300">載入中...</div>}
+          {isLoading && <LiveRedirectSkeleton />}
           {isError && <div className="text-red-600 dark:text-red-400">資料載入失敗，請稍後再試。</div>}
         </div>
       </MainLayout>
