@@ -21,6 +21,7 @@ def exchange_code_for_tokens(code: str) -> dict:
     # ✅ 印出將送出的 payload（除掉 secret）
     logging.info("[OAuth] 🔄 正在交換 token，傳送 payload：")
     safe_payload = payload.copy()
+    safe_payload["code"] = "*****"
     safe_payload["client_secret"] = "*****"
     logging.info(safe_payload)
 
