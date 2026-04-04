@@ -1,5 +1,7 @@
 # routes/channel_index_detail_route.py
 
+import logging
+
 from apiflask import APIBlueprint
 from flask import jsonify
 from google.cloud import firestore
@@ -18,6 +20,7 @@ def init_channel_index_detail_route(app, db: firestore.Client):
     )
     def get_channel_index_detail(channel_id):
         if not is_valid_channel_id(channel_id):
+            logging.warning(f"[channel_index_detail] channel_id 格式不合法：{channel_id}")
             return error_response("channel_id 格式不合法", 400)
 
         root_ref = db.collection("channel_index_batch")
@@ -42,6 +45,7 @@ def init_channel_index_detail_route(app, db: firestore.Client):
                         }
                     )
 
+        logging.warning(f"[channel_index_detail] 找不到該頻道：{channel_id}")
         return error_response("找不到該頻道", 404)
 
     app.register_blueprint(bp)

@@ -35,6 +35,7 @@ def init_my_settings_route(app, db: firestore.Client):
         doc = doc_ref.get()
 
         if not doc.exists:  # type: ignore[union-attr]
+            logger.warning(f"[my_settings] 頻道不存在：{channel_id}")
             return jsonify({"error": "Channel not found"}), 404
 
         data = doc.to_dict() or {}  # type: ignore[union-attr]
@@ -77,6 +78,7 @@ def init_my_settings_route(app, db: firestore.Client):
                 break
 
         if not target_doc_ref:
+            logger.warning(f"[my_settings] 更新失敗，頻道不存在：{body.channelId}")
             return jsonify({"error": "Channel not found"}), 404
 
         # Transaction 內讀取最新版本再修改

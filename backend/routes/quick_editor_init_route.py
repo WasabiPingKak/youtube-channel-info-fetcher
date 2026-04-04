@@ -1,5 +1,7 @@
 # routes/quick_editor_init_route.py
 
+import logging
+
 from apiflask import APIBlueprint
 from flask import jsonify
 from google.cloud import firestore
@@ -33,6 +35,9 @@ def init_quick_editor_init_route(app, db: firestore.Client):
             )
             meta = meta_ref.get().to_dict() or {}
             if not meta.get("isAdmin"):
+                logging.warning(
+                    f"[quick_editor] 非管理員嘗試存取他人頻道：JWT={auth_channel_id}, 請求={channel_id}"
+                )
                 return error_response("無權限存取此頻道", 403)
 
         base_ref = db.collection("channel_data").document(channel_id).collection("settings")

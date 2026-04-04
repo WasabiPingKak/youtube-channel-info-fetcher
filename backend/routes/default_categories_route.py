@@ -1,5 +1,7 @@
 # routes/default_categories_route.py
 
+import logging
+
 from apiflask import APIBlueprint
 from flask import jsonify
 from google.cloud import firestore
@@ -22,6 +24,7 @@ def init_default_categories_route(app, db: firestore.Client):
         if doc.exists:  # type: ignore[union-attr]
             return jsonify({"success": True, "config": doc.to_dict() or {}})  # type: ignore[union-attr]
         else:
+            logging.warning("[default_categories] 找不到預設分類設定")
             return error_response("找不到預設分類設定", 404)
 
     app.register_blueprint(bp)
