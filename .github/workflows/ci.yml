@@ -51,7 +51,7 @@ jobs:
       - name: Install Firebase CLI
         run: npm install -g firebase-tools
 
-      - run: pip install -r requirements.txt
+      - run: pip install -r requirements-dev.txt
 
       - name: Start Firestore emulator
         run: |
