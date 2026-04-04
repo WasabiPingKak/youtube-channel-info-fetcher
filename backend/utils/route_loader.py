@@ -18,7 +18,11 @@ def register_all_routes(app, db: firestore.Client):
     registered = []
 
     for module_info in pkgutil.iter_modules(routes.__path__, prefix="routes."):
-        module = importlib.import_module(module_info.name)
+        try:
+            module = importlib.import_module(module_info.name)
+        except Exception:
+            logger.error("❌ 載入路由模組 %s 失敗", module_info.name, exc_info=True)
+            raise
 
         for name, func in inspect.getmembers(module, inspect.isfunction):
             if not name.startswith("init_"):
