@@ -38,10 +38,10 @@ export function getTreemapOption({ data, selectedCategory }: TreemapProps) {
     series: [
       {
         type: "treemap",
-        left: 0,
-        top: 0,
-        right: 0,
-        bottom: 0,
+        left: 12,
+        top: 12,
+        right: 12,
+        bottom: 12,
         data,
         leafDepth: 2,
         roam: false,
