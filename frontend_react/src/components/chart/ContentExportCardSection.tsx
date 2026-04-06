@@ -7,10 +7,11 @@ import VideoUploadHeatmap from "./VideoUploadHeatmap";
 import type { ClassifiedVideoItem } from "@/types/category";
 
 interface ContentExportCardSectionProps {
+  channelId: string;
   videos: ClassifiedVideoItem[];
 }
 
-const ContentExportCardSection = ({ videos }: ContentExportCardSectionProps) => {
+const ContentExportCardSection = ({ channelId, videos }: ContentExportCardSectionProps) => {
   const exportRef = useRef(null);
   const [showModal, setShowModal] = useState(false);
   const [activeTab, setActiveTab] = useState("treemap");
@@ -45,7 +46,7 @@ const ContentExportCardSection = ({ videos }: ContentExportCardSectionProps) => 
 
       {/* 顯示內容區塊 */}
       {activeTab === "treemap" && <ContentTreemapSection videos={videos} />}
-      {activeTab === "heatmap" && <VideoUploadHeatmap videos={videos} />}
+      {activeTab === "heatmap" && <VideoUploadHeatmap channelId={channelId} videos={videos} />}
 
       {/* 匯出卡片（固定 offscreen） */}
       <div

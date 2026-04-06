@@ -1,5 +1,5 @@
-import React, { useEffect } from "react";
-import { useSearchParams, useNavigate } from "react-router-dom";
+import React, { useEffect, useRef } from "react";
+import { useSearchParams, Navigate } from "react-router-dom";
 import {
   showPermissionDeniedToast,
 } from "@/components/common/ToastManager";
@@ -15,26 +15,10 @@ const VideoExplorerPage = () => {
   const [searchParams] = useSearchParams();
   const channelId = searchParams.get("channel") || ADMIN_CHANNEL_ID;
 
-  const { data: me, isLoading: meLoading, error: meError } = useMyChannelId();
+  const { data: me, isLoading: meLoading } = useMyChannelId();
   const { data: channelInfo, isLoading: infoLoading } = useChannelIndex(channelId);
 
-  const navigate = useNavigate();
-
-  // 🔒 權限判斷：非本人 + 非公開 → 導回首頁
-  useEffect(() => {
-    if (!meLoading && !infoLoading) {
-      const isOwner = me?.channelId === channelId;
-      const isPublic = channelInfo?.enabled !== false;
-      const allowAccess = isPublic || isOwner;
-
-      if (!allowAccess) {
-        showPermissionDeniedToast("您沒有權限查看這個頻道頁面");
-        navigate("/");
-      }
-    }
-  }, [meLoading, infoLoading, me, meError, channelInfo, channelId, navigate]);
-
-  // 🌀 初次載入中
+  // 載入中
   if (meLoading || infoLoading) {
     return (
       <MainLayout>
@@ -59,10 +43,27 @@ const VideoExplorerPage = () => {
   const isPublic = channelInfo?.enabled !== false;
 
   if (!isPublic && !isOwner) {
-    return null; // toast + redirect 已處理
+    return <PermissionRedirect />;
   }
 
   return <VideoExplorerContent channelId={channelId} />;
+};
+
+/**
+ * 權限不足時顯示 toast 並導向首頁。
+ * 用 useEffect 確保 toast 只觸發一次，用 Navigate 處理跳轉。
+ */
+const PermissionRedirect = () => {
+  const toastShown = useRef(false);
+
+  useEffect(() => {
+    if (!toastShown.current) {
+      showPermissionDeniedToast("您沒有權限查看這個頻道頁面");
+      toastShown.current = true;
+    }
+  }, []);
+
+  return <Navigate to="/" replace />;
 };
 
 export default VideoExplorerPage;

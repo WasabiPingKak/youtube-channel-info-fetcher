@@ -7,18 +7,13 @@ import {
   useChartControlState,
   useAutoUpdateVideos,
 } from "../hooks";
-import type { SortField } from "../utils/sortClassifiedVideos";
 
 import {
   TopLevelTabs,
   SubCategoryTabs,
-  VideoCard,
 } from "../components/common";
 
-import {
-  VideoTableHeader,
-  MobileSortDropdown,
-} from "../components/VideoExplorer";
+import { VideoListSection } from "../components/VideoExplorer";
 
 import CategoryChartSection from "../components/chart/CategoryChartSection";
 import ContentExportCardSection from "../components/chart/ContentExportCardSection";
@@ -69,7 +64,7 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
 
   return (
     <MainLayout>
-      <ContentExportCardSection videos={videos} />
+      <ContentExportCardSection channelId={channelId} videos={videos} />
 
       <TopLevelTabs activeType={videoType} onTypeChange={(type: string) => setVideoType(type as "live" | "videos" | "shorts")} />
       <SubCategoryTabs
@@ -87,47 +82,16 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
         activeCategory={activeCategory}
       />
 
-      <div className="px-4 py-2 text-sm text-gray-600 dark:text-gray-300">
-        {activeCategory
-          ? `共顯示 ${filteredVideos.length} 部影片`
-          : "請選擇分類"}
-      </div>
-
-      {loading && (
-        <p className="px-4 text-gray-500 dark:text-gray-300">載入中...</p>
-      )}
-      {error && (
-        <p className="px-4 text-red-600 dark:text-red-400">
-          錯誤：{error.message}
-        </p>
-      )}
-      {!loading && !error && filteredVideos.length === 0 && activeCategory && (
-        <p className="px-4 text-gray-500 dark:text-gray-400">
-          目前無影片。若是剛連結頻道的新用戶，資料庫初始化可能需等待數十分鐘。<br />
-          若連結已超過一天仍無任何資料，請聯絡管理者協助處理。
-        </p>
-      )}
-
-      <VideoTableHeader
+      <VideoListSection
+        videos={filteredVideos}
+        loading={loading}
+        error={error}
+        activeCategory={activeCategory}
         sortField={sortField}
         sortOrder={sortOrder}
-        onSortChange={(field: string) => handleSort(field as SortField)}
+        onSort={handleSort}
+        durationUnit={durationUnit}
       />
-
-      <MobileSortDropdown
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSortChange={(field: string) => handleSort(field as SortField)}
-        onToggleOrder={() => handleSort(sortField)}
-      />
-
-      {filteredVideos.map((video) => (
-        <VideoCard
-          key={video.videoId}
-          video={video}
-          durationUnit={durationUnit}
-        />
-      ))}
     </MainLayout>
   );
 };
