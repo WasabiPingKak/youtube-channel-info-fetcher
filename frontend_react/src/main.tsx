@@ -49,6 +49,7 @@ import("@tanstack/react-query-persist-client").then(({ persistQueryClient }) => 
       queryClient,
       persister: localStoragePersister,
       maxAge: 1000 * 60 * 60 * 12,
+      buster: __BUILD_TIMESTAMP__,
     });
   });
 });
