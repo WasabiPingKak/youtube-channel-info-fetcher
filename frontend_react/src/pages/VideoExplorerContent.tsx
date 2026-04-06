@@ -1,4 +1,4 @@
-import React, { useMemo, useEffect } from "react";
+import React, { useEffect } from "react";
 import { toast } from "react-hot-toast";
 
 import {
@@ -6,9 +6,8 @@ import {
   useVideoBrowseState,
   useChartControlState,
   useAutoUpdateVideos,
-  useVideoSortControl,
 } from "../hooks";
-import type { SortField } from "../hooks/useVideoSortControl";
+import type { SortField } from "../utils/sortClassifiedVideos";
 
 import {
   TopLevelTabs,
@@ -21,19 +20,12 @@ import {
   MobileSortDropdown,
 } from "../components/VideoExplorer";
 
-import { sortVideos } from "../utils/sortVideos";
 import CategoryChartSection from "../components/chart/CategoryChartSection";
 import ContentExportCardSection from "../components/chart/ContentExportCardSection";
 
 import MainLayout from "../components/layout/MainLayout";
 
 const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
-  const {
-    sortField,
-    sortOrder,
-    handleSortChange,
-  } = useVideoSortControl("publishDate");
-
   const { videos, loading, error } = useClassifiedVideos(channelId, "videos");
 
   const {
@@ -41,13 +33,11 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
     setVideoType,
     activeCategory,
     setActiveCategory,
+    sortField,
+    sortOrder,
+    handleSort,
     filteredVideos,
   } = useVideoBrowseState(videos);
-
-  const sortedVideos = useMemo(
-    () => sortVideos(filteredVideos, sortField, sortOrder),
-    [filteredVideos, sortField, sortOrder]
-  );
 
   const {
     chartType,
@@ -121,17 +111,17 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
       <VideoTableHeader
         sortField={sortField}
         sortOrder={sortOrder}
-        onSortChange={(field: string) => handleSortChange(field as SortField)}
+        onSortChange={(field: string) => handleSort(field as SortField)}
       />
 
       <MobileSortDropdown
         sortField={sortField}
         sortOrder={sortOrder}
-        onSortChange={(field: string) => handleSortChange(field as SortField)}
-        onToggleOrder={() => handleSortChange(sortField)}
+        onSortChange={(field: string) => handleSort(field as SortField)}
+        onToggleOrder={() => handleSort(sortField)}
       />
 
-      {sortedVideos.map((video) => (
+      {filteredVideos.map((video) => (
         <VideoCard
           key={video.videoId}
           video={video}

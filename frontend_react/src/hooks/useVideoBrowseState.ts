@@ -1,105 +1,49 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ClassifiedVideoItem } from "@/types/category";
-
-const SORT_FIELDS = {
-  TITLE: "title",
-  PUBLISH_DATE: "publishDate",
-  DURATION: "duration",
-  GAME: "game",
-  KEYWORDS: "keywords",
-} as const;
-
-type SortField = typeof SORT_FIELDS[keyof typeof SORT_FIELDS];
+import {
+    filterClassifiedVideos,
+    type VideoType,
+} from "@/utils/filterClassifiedVideos";
+import {
+    sortClassifiedVideos,
+    SORT_FIELDS,
+    type SortField,
+    type SortOrder,
+} from "@/utils/sortClassifiedVideos";
 
 export const useVideoBrowseState = (videos: ClassifiedVideoItem[]) => {
-  const [videoType, setVideoType] = useState<"live" | "videos" | "shorts">("live");
-  const [activeCategory, setActiveCategory] = useState("全部");
-  const [sortField, setSortField] = useState<SortField>(SORT_FIELDS.PUBLISH_DATE);
-  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
+    const [videoType, setVideoType] = useState<VideoType>("live");
+    const [activeCategory, setActiveCategory] = useState("全部");
+    const [sortField, setSortField] = useState<SortField>(SORT_FIELDS.PUBLISH_DATE);
+    const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
-  const VIDEO_TYPE_MAP: Record<typeof videoType, string> = {
-    live: "直播檔",
-    videos: "影片",
-    shorts: "Shorts",
-  };
+    const filteredVideos = useMemo(() => {
+        const filtered = filterClassifiedVideos(videos, videoType, activeCategory);
+        return sortClassifiedVideos(filtered, sortField, sortOrder);
+    }, [videos, videoType, activeCategory, sortField, sortOrder]);
 
-  const filteredVideos = useMemo(() => {
-    const expectedType = VIDEO_TYPE_MAP[videoType];
-
-    const base = videos.filter((video) => {
-      const matchesType = video.type === expectedType;
-      if (activeCategory === "全部") return matchesType;
-      const matchesCategory =
-        activeCategory &&
-        video.matchedPairs?.some((pair) => pair.main === activeCategory);
-      return matchesType && matchesCategory;
-    });
-
-    const direction = sortOrder === "asc" ? 1 : -1;
-
-    const getVal = (video: ClassifiedVideoItem, field: SortField): string | number => {
-      switch (field) {
-        case SORT_FIELDS.TITLE:
-          return video.title;
-        case SORT_FIELDS.PUBLISH_DATE:
-          return video.publishDate;
-        case SORT_FIELDS.DURATION:
-          return video.duration;
-        case SORT_FIELDS.GAME:
-          return video.game || "-";
-        case SORT_FIELDS.KEYWORDS:
-          return (video.matchedKeywords?.length ?? 0) > 0
-            ? video.matchedKeywords!.join(", ")
-            : "-";
-        default:
-          return "";
-      }
+    const handleSort = (field: SortField) => {
+        if (field === sortField) {
+            setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
+        } else {
+            setSortField(field);
+            setSortOrder(field === SORT_FIELDS.PUBLISH_DATE ? "desc" : "asc");
+        }
     };
 
-    return [...base].sort((a, b) => {
-      const valA = getVal(a, sortField);
-      const valB = getVal(b, sortField);
+    useEffect(() => {
+        setActiveCategory("全部");
+    }, [videoType]);
 
-      if (sortField === SORT_FIELDS.PUBLISH_DATE) {
-        return (new Date(valA as string).getTime() - new Date(valB as string).getTime()) * direction;
-      }
-      if (sortField === SORT_FIELDS.DURATION) {
-        return ((valA as number) - (valB as number)) * direction;
-      }
-
-      const isMissingA = valA === "-";
-      const isMissingB = valB === "-";
-      if (isMissingA && isMissingB) return 0;
-      if (isMissingA) return sortOrder === "asc" ? 1 : -1;
-      if (isMissingB) return sortOrder === "asc" ? -1 : 1;
-
-      return (valA as string).localeCompare(valB as string, "zh-Hant-u-co-stroke") * direction;
-    });
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- VIDEO_TYPE_MAP 是元件內常數，不需列為依賴
-  }, [videos, videoType, activeCategory, sortField, sortOrder]);
-
-  const handleSort = (field: SortField) => {
-    if (field === sortField) {
-      setSortOrder((prev) => (prev === "asc" ? "desc" : "asc"));
-    } else {
-      setSortField(field);
-      setSortOrder(field === SORT_FIELDS.PUBLISH_DATE ? "desc" : "asc");
-    }
-  };
-
-  useEffect(() => {
-    setActiveCategory("全部");
-  }, [videoType]);
-
-  return {
-    SORT_FIELDS,
-    videoType,
-    setVideoType,
-    activeCategory,
-    setActiveCategory,
-    sortField,
-    sortOrder,
-    handleSort,
-    filteredVideos,
-  };
+    return {
+        SORT_FIELDS,
+        videoType,
+        setVideoType,
+        activeCategory,
+        setActiveCategory,
+        sortField,
+        sortOrder,
+        handleSort,
+        filteredVideos,
+    };
 };
