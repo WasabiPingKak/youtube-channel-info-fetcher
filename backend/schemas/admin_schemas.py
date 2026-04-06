@@ -44,6 +44,17 @@ class RefreshCacheRequest(BaseModel):
     dry_run: bool = False
     full_scan: bool = False
     force_category_counts: bool = False
+    channel_ids: list[str] | None = Field(default=None, description="指定要刷新的頻道 ID 列表")
+
+    @field_validator("channel_ids")
+    @classmethod
+    def validate_channel_ids(cls, v: list[str] | None) -> list[str] | None:
+        if v is None:
+            return v
+        for cid in v:
+            if not is_valid_channel_id(cid):
+                raise ValueError(f"頻道 ID 格式不合法：{cid}")
+        return v
 
 
 class MaintenanceMode(StrEnum):

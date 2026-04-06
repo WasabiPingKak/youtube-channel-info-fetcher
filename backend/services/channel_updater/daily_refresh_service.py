@@ -109,6 +109,7 @@ def run_daily_channel_refresh(
     dry_run: bool = False,
     full_scan: bool = False,
     force_category_counts: bool = False,
+    channel_ids: list[str] | None = None,
 ) -> dict:
     index_ref = db.collection("channel_sync_index").document("index_list")
     index_doc = index_ref.get()
@@ -119,7 +120,19 @@ def run_daily_channel_refresh(
     index_data = index_doc.to_dict() or {}  # type: ignore[union-attr]
     all_channels = index_data.get("channels", [])
 
-    selected = select_channels_for_scan(all_channels, limit=limit, include_recent=include_recent)
+    # 指定頻道時直接使用，跳過排序篩選
+    if channel_ids:
+        target_set = set(channel_ids)
+        selected = [ch for ch in all_channels if ch.get("channel_id") in target_set]
+        # 補上不在 index 裡的頻道（允許手動指定新頻道）
+        existing_ids = {ch["channel_id"] for ch in selected}
+        for cid in channel_ids:
+            if cid not in existing_ids:
+                selected.append({"channel_id": cid})
+    else:
+        selected = select_channels_for_scan(
+            all_channels, limit=limit, include_recent=include_recent
+        )
     selected_ids = [ch["channel_id"] for ch in selected]
 
     if dry_run:
