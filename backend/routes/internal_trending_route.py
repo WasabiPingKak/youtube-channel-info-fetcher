@@ -57,7 +57,8 @@ def init_internal_trending_route(app, db: Client):
             f"🌀 啟動每日快取刷新任務 | "
             f"limit={limit} | include_recent={body.include_recent} | "
             f"dry_run={body.dry_run} | full_scan={body.full_scan} | "
-            f"force_category_counts={body.force_category_counts}"
+            f"force_category_counts={body.force_category_counts} | "
+            f"channel_ids={body.channel_ids}"
         )
 
         result = run_daily_channel_refresh(
@@ -67,6 +68,7 @@ def init_internal_trending_route(app, db: Client):
             dry_run=body.dry_run,
             full_scan=body.full_scan,
             force_category_counts=body.force_category_counts,
+            channel_ids=body.channel_ids,
         )
         return jsonify(result)
 
