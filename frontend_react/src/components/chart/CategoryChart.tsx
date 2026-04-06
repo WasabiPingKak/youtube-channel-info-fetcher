@@ -2,6 +2,7 @@ import React, { useMemo } from "react";
 import ChartWithLegend from "./ChartWithLegend";
 import ChartTypeBar from "./ChartTypeBar";
 import type { ClassifiedVideoItem } from "@/types/category";
+import { convertDurationUnit } from "@/utils/chartDataUtils";
 
 interface CategoryChartProps {
   countData: { category: string; count: number }[];
@@ -23,14 +24,10 @@ const CategoryChart = ({
   videos = [],
 }: CategoryChartProps) => {
   const convertedDurationData = useMemo(() => {
-    return durationData.map((d: { category: string; duration: number }) => {
-      const secs = d.duration || 0;
-      const value =
-        durationUnit === "hours"
-          ? +(secs / 3600).toFixed(1)
-          : Math.round(secs / 60);
-      return { ...d, duration: value };
-    });
+    return durationData.map((d) => ({
+      ...d,
+      duration: convertDurationUnit(d.duration || 0, durationUnit),
+    }));
   }, [durationData, durationUnit]);
 
   const durationUnitLabel = durationUnit === "hours" ? "小時" : "分鐘";
