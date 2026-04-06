@@ -49,20 +49,17 @@ const VideoUploadHeatmap = ({ channelId, videos }: VideoUploadHeatmapProps) => {
 
   if (isLoading) {
     return (
-      <div className="py-4">
-        <div
-          className="bg-gray-100 border border-gray-200 shadow p-4 animate-pulse"
-          style={{ height: 600 }}
-        >
-          <div className="text-sm text-gray-400">載入中…</div>
-        </div>
+      <div className="rounded-xl border border-gray-100 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 p-4 animate-pulse"
+        style={{ height: 520 }}
+      >
+        <div className="text-sm text-gray-400 dark:text-gray-500">載入中…</div>
       </div>
     );
   }
 
   if (isError) {
     return (
-      <div className="px-4 py-4 text-red-500">
+      <div className="text-sm text-red-500 dark:text-red-400 py-4">
         無法載入「上片活躍時段」資料
       </div>
     );

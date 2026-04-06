@@ -17,11 +17,11 @@ const formatHourLabel = (hour: number) => {
 
 const getHeatLevelClass = (count: number, max: number) => {
   const ratio = count / max;
-  if (ratio === 0) return "bg-gray-100";
-  if (ratio <= 0.2) return "bg-purple-100";
-  if (ratio <= 0.4) return "bg-purple-300";
-  if (ratio <= 0.7) return "bg-purple-500";
-  return "bg-purple-700";
+  if (ratio === 0) return "bg-gray-100 dark:bg-zinc-800";
+  if (ratio <= 0.2) return "bg-indigo-100 dark:bg-indigo-950";
+  if (ratio <= 0.4) return "bg-indigo-300 dark:bg-indigo-800";
+  if (ratio <= 0.7) return "bg-indigo-400 dark:bg-indigo-600";
+  return "bg-indigo-600 dark:bg-indigo-500";
 };
 
 interface HoverInfo {
@@ -50,25 +50,25 @@ interface HeatmapContainerProps {
 }
 
 const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: HeatmapContainerProps) => {
-  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null); // ← Modal 狀態
+  const [selectedSlot, setSelectedSlot] = useState<SelectedSlot | null>(null);
 
   return (
     <div
-      className="bg-white shadow p-4 border border-gray-200 relative"
-      style={{ height: 600 }}
+      className="rounded-xl border border-gray-100 dark:border-zinc-700 bg-white dark:bg-zinc-800/50 p-4 relative"
+      style={{ height: 520 }}
     >
       <div className="flex flex-col h-full">
-        {/* 說明文字：時區 */}
-        <div className="text-sm text-gray-500 mb-1">
-          時間皆為 <span className="font-medium text-gray-700">台灣時間 (GMT+8)</span>
+        {/* 時區說明 */}
+        <div className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+          台灣時間 (GMT+8)
         </div>
 
         {/* header：星期標題 */}
         <div className="flex">
-          <div className="w-24" />
-          <div className="flex-1 grid grid-cols-7 gap-x-2">
+          <div className="w-20" />
+          <div className="flex-1 grid grid-cols-7 gap-x-1">
             {WEEKDAYS.map((label) => (
-              <div key={label} className="text-center text-sm font-medium text-gray-600">
+              <div key={label} className="text-center text-xs font-medium text-gray-500 dark:text-gray-400">
                 {label}
               </div>
             ))}
@@ -78,11 +78,11 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
         {/* body：Y 軸 + 熱力格子 */}
         <div className="flex flex-1 mt-1 overflow-hidden">
           {/* Y 軸時間 */}
-          <div className="w-24 flex flex-col text-sm text-gray-600">
+          <div className="w-20 flex flex-col text-xs text-gray-400 dark:text-gray-500">
             {Array.from({ length: 24 }, (_, i) => (
               <div
                 key={i}
-                className="flex-1 flex items-center justify-end pr-4"
+                className="flex-1 flex items-center justify-end pr-3"
               >
                 {HOUR_MARKS.includes(i) ? formatHourLabel(i) : ""}
               </div>
@@ -90,7 +90,7 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
           </div>
 
           {/* 7×24 熱力格子 */}
-          <div className="flex-1 grid grid-cols-7 grid-rows-24 gap-y-[2px] gap-x-2">
+          <div className="flex-1 grid grid-cols-7 grid-rows-24 gap-[2px]">
             {Array.from({ length: 24 }, (_, hour) =>
               WEEKDAYS.map((label, idx) => {
                 const dayKey = DAY_KEYS[idx];
@@ -103,7 +103,7 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
                     className={`${getHeatLevelClass(
                       count,
                       maxCount
-                    )} w-full h-full border border-white hover:brightness-110 transition`}
+                    )} w-full h-full rounded-sm hover:ring-1 hover:ring-indigo-400 dark:hover:ring-indigo-500 transition cursor-pointer`}
                     onMouseEnter={() =>
                       setHoverInfo({ label, hour, videoIds, count })
                     }
@@ -117,6 +117,17 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
               })
             )}
           </div>
+        </div>
+
+        {/* 圖例 */}
+        <div className="flex items-center justify-end gap-1 mt-2 text-xs text-gray-400 dark:text-gray-500">
+          <span>少</span>
+          <div className="w-3 h-3 rounded-sm bg-gray-100 dark:bg-zinc-800" />
+          <div className="w-3 h-3 rounded-sm bg-indigo-100 dark:bg-indigo-950" />
+          <div className="w-3 h-3 rounded-sm bg-indigo-300 dark:bg-indigo-800" />
+          <div className="w-3 h-3 rounded-sm bg-indigo-400 dark:bg-indigo-600" />
+          <div className="w-3 h-3 rounded-sm bg-indigo-600 dark:bg-indigo-500" />
+          <span>多</span>
         </div>
 
         {/* hover tooltip */}
