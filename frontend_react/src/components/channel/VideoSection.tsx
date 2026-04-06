@@ -4,6 +4,7 @@ import type { SortField } from "@/utils/sortClassifiedVideos";
 import { useVideoBrowseState } from "@/hooks";
 import { VideoCard } from "../common";
 import { ChevronUp, ChevronDown } from "lucide-react";
+import { getCategoryColorScheme } from "@/utils/categoryColors";
 
 interface VideoSectionProps {
     videos: ClassifiedVideoItem[];
@@ -67,16 +68,41 @@ const VideoSection = ({
                     ))}
                 </div>
 
-                {/* 分類 dropdown */}
-                <select
-                    value={activeCategory}
-                    onChange={(e) => setActiveCategory(e.target.value)}
-                    className="text-sm border border-gray-200 dark:border-zinc-600 rounded-lg px-3 py-1.5 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300"
-                >
-                    {CATEGORIES.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
-                    ))}
-                </select>
+                {/* 分類 chips */}
+                <div className="flex flex-wrap gap-1.5">
+                    {CATEGORIES.map((cat) => {
+                        const isActive = activeCategory === cat;
+                        if (cat === "全部") {
+                            return (
+                                <button
+                                    key={cat}
+                                    onClick={() => setActiveCategory(cat)}
+                                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                                        isActive
+                                            ? "bg-gray-700 text-white dark:bg-gray-200 dark:text-gray-900"
+                                            : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700"
+                                    }`}
+                                >
+                                    {cat}
+                                </button>
+                            );
+                        }
+                        const colors = getCategoryColorScheme(cat);
+                        return (
+                            <button
+                                key={cat}
+                                onClick={() => setActiveCategory(cat)}
+                                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                                    isActive
+                                        ? `${colors.bg} ${colors.text}`
+                                        : `${colors.bgMuted} ${colors.textMuted} ${colors.bgMutedDark} ${colors.textMutedDark} hover:opacity-80`
+                                }`}
+                            >
+                                {cat}
+                            </button>
+                        );
+                    })}
+                </div>
 
                 {/* 排序 dropdown + 升降冪 */}
                 <div className="flex items-center gap-1 ml-auto">
