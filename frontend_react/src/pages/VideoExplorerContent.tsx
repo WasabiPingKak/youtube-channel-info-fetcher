@@ -1,47 +1,38 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { toast } from "react-hot-toast";
 
-import {
-  useClassifiedVideos,
-  useVideoBrowseState,
-  useChartControlState,
-  useAutoUpdateVideos,
-} from "../hooks";
-
-import {
-  TopLevelTabs,
-  SubCategoryTabs,
-} from "../components/common";
-
-import { VideoListSection } from "../components/VideoExplorer";
-
-import CategoryChartSection from "../components/chart/CategoryChartSection";
-import ContentExportCardSection from "../components/chart/ContentExportCardSection";
+import { useClassifiedVideos, useAutoUpdateVideos } from "../hooks";
+import type { VideoType } from "../utils/filterClassifiedVideos";
 
 import MainLayout from "../components/layout/MainLayout";
+import ChannelInfoCard from "../components/common/ChannelInfoCard";
+import ChannelPageTabs from "../components/channel/ChannelPageTabs";
+import type { ChannelTab } from "../components/channel/ChannelPageTabs";
+import OverviewSection from "../components/channel/OverviewSection";
+import VideoSection from "../components/channel/VideoSection";
+import HeatmapSection from "../components/channel/HeatmapSection";
 
 const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
   const { videos, loading, error } = useClassifiedVideos(channelId, "videos");
 
-  const {
-    videoType,
-    setVideoType,
-    activeCategory,
-    setActiveCategory,
-    sortField,
-    sortOrder,
-    handleSort,
-    filteredVideos,
-  } = useVideoBrowseState(videos);
-
-  const {
-    chartType,
-    setChartType,
-    durationUnit,
-    setDurationUnit,
-  } = useChartControlState();
+  const [activeTab, setActiveTab] = useState<ChannelTab>("overview");
+  const [videoType, setVideoType] = useState<VideoType>("live");
+  const [pendingCategory, setPendingCategory] = useState<string | null>(null);
 
   useAutoUpdateVideos(channelId);
+
+  // 圖表 → 影片 tab 聯動
+  const handleCategoryClick = useCallback((category: string) => {
+    setPendingCategory(category);
+    setActiveTab("videos");
+  }, []);
+
+  // 切到影片 tab 後清除 pending
+  useEffect(() => {
+    if (activeTab !== "videos") {
+      setPendingCategory(null);
+    }
+  }, [activeTab]);
 
   useEffect(() => {
     if (loading && !videos.length) {
@@ -64,34 +55,33 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
 
   return (
     <MainLayout>
-      <ContentExportCardSection channelId={channelId} videos={videos} />
+      <ChannelInfoCard channelId={channelId} />
+      <ChannelPageTabs activeTab={activeTab} onTabChange={setActiveTab} />
 
-      <TopLevelTabs activeType={videoType} onTypeChange={(type: string) => setVideoType(type as "live" | "videos" | "shorts")} />
-      <SubCategoryTabs
-        activeCategory={activeCategory}
-        onCategoryChange={setActiveCategory}
-      />
+      {activeTab === "overview" && (
+        <OverviewSection
+          videos={videos}
+          videoType={videoType}
+          setVideoType={setVideoType}
+          onCategoryClick={handleCategoryClick}
+        />
+      )}
 
-      <CategoryChartSection
-        videos={videos}
-        videoType={videoType}
-        chartType={chartType}
-        setChartType={setChartType}
-        durationUnit={durationUnit}
-        setDurationUnit={setDurationUnit}
-        activeCategory={activeCategory}
-      />
+      {activeTab === "videos" && (
+        <VideoSection
+          videos={videos}
+          loading={loading}
+          error={error}
+          initialCategory={pendingCategory}
+        />
+      )}
 
-      <VideoListSection
-        videos={filteredVideos}
-        loading={loading}
-        error={error}
-        activeCategory={activeCategory}
-        sortField={sortField}
-        sortOrder={sortOrder}
-        onSort={handleSort}
-        durationUnit={durationUnit}
-      />
+      {activeTab === "heatmap" && (
+        <HeatmapSection
+          channelId={channelId}
+          videos={videos}
+        />
+      )}
     </MainLayout>
   );
 };
