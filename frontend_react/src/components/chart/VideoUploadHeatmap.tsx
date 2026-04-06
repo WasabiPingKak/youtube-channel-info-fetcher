@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import HeatmapContainer from "./HeatmapContainer";
 import type { ClassifiedVideoItem } from "@/types/category";
@@ -10,7 +9,7 @@ interface HeatmapResponse {
   matrix?: Record<string, Record<string, string[]>>;
 }
 
-const fetchHeatmapData = async (channelId: string | null): Promise<HeatmapResponse> => {
+const fetchHeatmapData = async (channelId: string): Promise<HeatmapResponse> => {
   const url = `${API_BASE}/api/heatmap/${channelId}`;
 
   const res = await fetch(url, {
@@ -26,19 +25,17 @@ const fetchHeatmapData = async (channelId: string | null): Promise<HeatmapRespon
 };
 
 interface VideoUploadHeatmapProps {
+  channelId: string;
   videos: ClassifiedVideoItem[];
 }
 
-const VideoUploadHeatmap = ({ videos }: VideoUploadHeatmapProps) => {
-  const [searchParams] = useSearchParams();
-  const channelId = searchParams.get("channel");
+const VideoUploadHeatmap = ({ channelId, videos }: VideoUploadHeatmapProps) => {
 
   const [hoverInfo, setHoverInfo] = useState<{ label: string; hour: number; videoIds: string[]; count: number } | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["upload-heatmap", channelId],
     queryFn: () => fetchHeatmapData(channelId),
-    enabled: !!channelId,
   });
 
   const maxCount = useMemo(() => {
@@ -49,14 +46,6 @@ const VideoUploadHeatmap = ({ videos }: VideoUploadHeatmapProps) => {
       )
     );
   }, [data]);
-
-  if (!channelId) {
-    return (
-      <div className="px-4 py-4 text-red-500">
-        未提供 channel 參數，無法載入活躍時段資料。
-      </div>
-    );
-  }
 
   if (isLoading) {
     return (
