@@ -63,15 +63,17 @@ def write_batches_to_firestore(db: Client, channel_id: str, new_videos: list[dic
             logger.info("📭 無有效影片可寫入")
             return {"batches_written": 0, "videos_written": 0}
 
-        # 取得目前最大的 batch index（只讀 1 筆，不帶內容）
+        # 取得目前最大的 batch index（列出所有 doc ID，不需複合索引）
         batch_col = db.collection("channel_data").document(channel_id).collection("videos_batch")
-        last_docs = (
-            batch_col.select([])
-            .order_by("__name__", direction=firestore.Query.DESCENDING)
-            .limit(1)
-            .get()
-        )
-        max_index = int(last_docs[0].id.replace("batch_", "")) if last_docs else -1
+        all_batch_docs = batch_col.select([]).get()
+        max_index = -1
+        for doc in all_batch_docs:
+            try:
+                idx = int(doc.id.replace("batch_", ""))
+                if idx > max_index:
+                    max_index = idx
+            except ValueError:
+                continue
 
         last_index = max_index
         merged_count = 0
