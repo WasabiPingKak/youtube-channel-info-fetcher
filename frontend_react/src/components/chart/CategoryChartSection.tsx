@@ -2,6 +2,11 @@ import React, { useMemo, useState } from "react";
 import CategoryChart from "./CategoryChart";
 import ChartSwitcher from "./ChartSwitcher";
 import type { ClassifiedVideoItem } from "@/types/category";
+import {
+  CHART_TYPE_MAP,
+  filterChartVideos,
+  aggregateVideoMetrics,
+} from "@/utils/chartDataUtils";
 
 interface CategoryChartSectionProps {
   videos: ClassifiedVideoItem[];
@@ -23,65 +28,17 @@ const CategoryChartSection = ({
   activeCategory,
 }: CategoryChartSectionProps) => {
   const [showAllKeywords, setShowAllKeywords] = useState(false);
-  const VIDEO_TYPE_MAP: Record<string, string> = { live: "直播檔", videos: "影片", shorts: "Shorts" };
-  const typeLabel = VIDEO_TYPE_MAP[videoType];
+  const typeLabel = CHART_TYPE_MAP[videoType];
 
-  const filteredVideos = useMemo(() => {
-    return videos.filter((video) => {
-      if (video.type !== typeLabel) return false;
-      if (activeCategory === "全部") return true;
-      if (activeCategory === "遊戲") return Boolean(video.game);
-      return video.matchedCategories?.includes(activeCategory);
-    });
-  }, [videos, typeLabel, activeCategory]);
+  const filteredVideos = useMemo(
+    () => filterChartVideos(videos, typeLabel, activeCategory),
+    [videos, typeLabel, activeCategory],
+  );
 
-  const { countData, durationData } = useMemo(() => {
-    const counts: Record<string, { category: string; count: number; duration: number }> = {};
-    videos.forEach((video: ClassifiedVideoItem) => {
-      if (video.type !== typeLabel) return;
-
-      const isGame = activeCategory === "遊戲";
-      const isAll = activeCategory === "全部";
-      const isSpecific = !isGame && !isAll;
-
-      if (isGame && video.game) {
-        const key = video.game;
-        if (!counts[key]) counts[key] = { category: key, count: 0, duration: 0 };
-        counts[key].count += 1;
-        counts[key].duration += video.duration || 0;
-      } else if (isSpecific && Array.isArray(video.matchedPairs)) {
-        const seen = new Set();
-        video.matchedPairs.forEach(({ keyword, main }: { keyword: string; main: string; hitKeywords: string[] }) => {
-          if (main !== activeCategory) return;
-          if (!showAllKeywords && seen.has(keyword)) return;
-          seen.add(keyword);
-          if (!counts[keyword]) counts[keyword] = { category: keyword, count: 0, duration: 0 };
-          counts[keyword].count += 1;
-          counts[keyword].duration += video.duration || 0;
-        });
-      } else if (isAll && Array.isArray(video.matchedCategories)) {
-        video.matchedCategories.forEach((cat: string) => {
-          if (!counts[cat]) counts[cat] = { category: cat, count: 0, duration: 0 };
-          counts[cat].count += 1;
-          counts[cat].duration += video.duration || 0;
-        });
-      }
-    });
-
-    const sorted = Object.values(counts).sort((a, b) => {
-      if (a.category === "未分類") return 1;
-      if (b.category === "未分類") return -1;
-      return b.count - a.count;
-    });
-
-    return {
-      countData: sorted.map((d) => ({ category: d.category, count: d.count })),
-      durationData: sorted.map((d) => ({
-        category: d.category,
-        duration: d.duration || 0,
-      })),
-    };
-  }, [videos, typeLabel, activeCategory, showAllKeywords]);
+  const { countData, durationData } = useMemo(
+    () => aggregateVideoMetrics(videos, typeLabel, activeCategory, showAllKeywords),
+    [videos, typeLabel, activeCategory, showAllKeywords],
+  );
 
   const sectionTitle =
     activeCategory && activeCategory !== "遊戲"
