@@ -10,6 +10,7 @@ interface CategoryChartProps {
   chartType: "pie" | "bar";
   durationUnit: "minutes" | "hours";
   videos?: ClassifiedVideoItem[];
+  onCategoryClick?: (category: string) => void;
 }
 
 /**
@@ -22,6 +23,7 @@ const CategoryChart = ({
   chartType,
   durationUnit,
   videos = [],
+  onCategoryClick,
 }: CategoryChartProps) => {
   const convertedDurationData = useMemo(() => {
     return durationData.map((d) => ({
@@ -58,6 +60,7 @@ const CategoryChart = ({
           dataKey="count"
           unit="部"
           videos={videos}
+          onCategoryClick={onCategoryClick}
         />
       </div>
       <div>
@@ -69,6 +72,7 @@ const CategoryChart = ({
           dataKey="duration"
           unit={durationUnitLabel}
           videos={videos}
+          onCategoryClick={onCategoryClick}
         />
       </div>
     </div>

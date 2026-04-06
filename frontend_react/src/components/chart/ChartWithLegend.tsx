@@ -11,13 +11,14 @@ interface ChartWithLegendProps {
   dataKey: string;
   unit?: string;
   videos?: { videoId: string; duration?: number }[];
+  onCategoryClick?: (category: string) => void;
 }
 
 /**
  * ChartWithLegend
  * 圓餅 + 圖例卡片（改為桌機與手機皆為雙行對齊）
  */
-const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }: ChartWithLegendProps) => {
+const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [], onCategoryClick }: ChartWithLegendProps) => {
   const safeData = Array.isArray(data) ? data : [];
 
   if (safeData.length === 0) {
@@ -64,7 +65,11 @@ const ChartWithLegend = ({ data = [], dataKey, unit = "部", videos = [] }: Char
             const percent = total > 0 ? ((value / total) * 100).toFixed(1) : "0.0";
             const color = COLORS[idx % COLORS.length];
             return (
-              <div key={idx} className="py-1 border-b border-gray-100 dark:border-zinc-700 text-sm px-1">
+              <div
+                key={idx}
+                className={`py-1 border-b border-gray-100 dark:border-zinc-700 text-sm px-1 ${onCategoryClick ? "cursor-pointer hover:bg-gray-100 dark:hover:bg-zinc-700 rounded" : ""}`}
+                onClick={() => onCategoryClick?.(item.category as string)}
+              >
                 {/* 第一行：分類名稱 + 色塊 */}
                 <div className="flex items-center gap-1 text-gray-900 dark:text-gray-100">
                   <span
