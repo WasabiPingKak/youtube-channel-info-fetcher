@@ -1,7 +1,7 @@
-// src/components/VideoCard/VideoCard.jsx
 import React from "react";
 import VideoCardDesktop from "./VideoCardDesktop";
 import VideoCardMobile from "./VideoCardMobile";
+import { useIsMobile } from "@/hooks/useIsMobile";
 import type { ClassifiedVideoItem } from "@/types/category";
 
 interface Props {
@@ -10,7 +10,7 @@ interface Props {
 }
 
 const VideoCard = ({ video, durationUnit }: Props) => {
-  const isMobile = window.innerWidth < 768;
+  const isMobile = useIsMobile();
 
   return isMobile ? (
     <VideoCardMobile video={video} durationUnit={durationUnit} />

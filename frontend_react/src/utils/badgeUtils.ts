@@ -14,13 +14,15 @@ interface MatchedPair {
  */
 export function getBadgesFromClassifiedVideo(video: ClassifiedVideoItem): Badge[] {
   const matchedPairs: MatchedPair[] = video?.matchedPairs ?? [];
-  const matchedKeywords: string[] = video?.matchedKeywords ?? [];
 
   if (matchedPairs.length > 0) {
     return matchedPairs.map((pair) => ({
       main: pair.main as Badge["main"],
       keyword: pair.keyword,
-      tooltip: pair.main === "遊戲" ? matchedKeywords.join(", ") : undefined,
+      tooltip:
+        pair.main === "遊戲" && pair.hitKeywords?.length
+          ? pair.hitKeywords.join(", ")
+          : undefined,
     }));
   }
 
