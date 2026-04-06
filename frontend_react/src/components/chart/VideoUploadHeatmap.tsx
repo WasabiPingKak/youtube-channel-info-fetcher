@@ -31,7 +31,7 @@ interface VideoUploadHeatmapProps {
 
 const VideoUploadHeatmap = ({ channelId, videos }: VideoUploadHeatmapProps) => {
 
-  const [hoverInfo, setHoverInfo] = useState<{ label: string; hour: number; videoIds: string[]; count: number } | null>(null);
+  const [hoverInfo, setHoverInfo] = useState<{ label: string; hour: number; videoIds: string[]; count: number; x: number; y: number } | null>(null);
 
   const { data, isLoading, isError } = useQuery({
     queryKey: ["upload-heatmap", channelId],

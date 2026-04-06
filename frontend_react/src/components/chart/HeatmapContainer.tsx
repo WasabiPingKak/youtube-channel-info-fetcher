@@ -29,6 +29,8 @@ interface HoverInfo {
   hour: number;
   videoIds: string[];
   count: number;
+  x: number;
+  y: number;
 }
 
 interface SelectedSlot {
@@ -104,9 +106,10 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
                       count,
                       maxCount
                     )} w-full h-full rounded-sm hover:ring-1 hover:ring-indigo-400 dark:hover:ring-indigo-500 transition cursor-pointer`}
-                    onMouseEnter={() =>
-                      setHoverInfo({ label, hour, videoIds, count })
-                    }
+                    onMouseEnter={(e) => {
+                      const rect = (e.target as HTMLElement).getBoundingClientRect();
+                      setHoverInfo({ label, hour, videoIds, count, x: rect.left + rect.width / 2, y: rect.top });
+                    }}
                     onMouseLeave={() => setHoverInfo(null)}
                     onClick={() => {
                       if (videoIds.length === 0) return;
@@ -130,13 +133,14 @@ const HeatmapContainer = ({ data, maxCount, hoverInfo, setHoverInfo, videos }: H
           <span>多</span>
         </div>
 
-        {/* hover tooltip */}
-        {hoverInfo && (
+        {/* hover tooltip — 只在有影片時顯示 */}
+        {hoverInfo && hoverInfo.count > 0 && (
           <HeatmapTooltip
             label={hoverInfo.label}
             hour={hoverInfo.hour}
-            videoIds={hoverInfo.videoIds}
-            videos={videos}
+            count={hoverInfo.count}
+            x={hoverInfo.x}
+            y={hoverInfo.y}
           />
         )}
 

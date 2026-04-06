@@ -1,63 +1,37 @@
 import React from "react";
-import type { ClassifiedVideoItem } from "@/types/category";
-
-const getVideosByIds = (videoIds: string[], videos: ClassifiedVideoItem[]): ClassifiedVideoItem[] =>
-  videoIds.map((id: string) => videos.find((v: ClassifiedVideoItem) => v.videoId === id)).filter((v): v is ClassifiedVideoItem => Boolean(v));
+import { createPortal } from "react-dom";
 
 interface HeatmapTooltipProps {
   label: string;
   hour: number;
-  videoIds: string[];
-  videos: ClassifiedVideoItem[];
+  count: number;
+  x: number;
+  y: number;
 }
 
-const HeatmapTooltip = ({ label, hour, videoIds, videos }: HeatmapTooltipProps) => {
-  const displayedVideos = getVideosByIds(videoIds.slice(0, 3), videos);
-  const remainingCount = videoIds.length - displayedVideos.length;
+const formatHourLabel = (hour: number) => {
+  const ampm = hour < 12 ? "上午" : "下午";
+  let h = hour % 12;
+  if (h === 0) h = 12;
+  return `${ampm}${h}點`;
+};
 
-  const formatHourLabel = (hour: number) => {
-    const ampm = hour < 12 ? "上午" : "下午";
-    let h = hour % 12;
-    if (h === 0) h = 12;
-    return `${ampm}${h}點`;
-  };
-
-  return (
-    <div className="absolute z-10 bg-white border shadow-lg rounded p-3 w-[640px] text-sm text-gray-800 pointer-events-none">
-      <div className="font-semibold mb-2">
-        星期{label} {formatHourLabel(hour)}
-      </div>
-      <div className="space-y-3">
-        {videoIds.length === 0 ? (
-          <div className="text-gray-500">這個時段沒有影片</div>
-        ) : (
-          <>
-            {displayedVideos.map((video) => (
-              <div key={video.videoId} className="flex gap-3">
-                <img
-                  src={`https://i.ytimg.com/vi/${video.videoId}/hqdefault.jpg`}
-                  alt="thumbnail"
-                  className="w-32 h-20 rounded object-cover border"
-                />
-                <div className="flex-1">
-                  <div className="text-sm font-medium line-clamp-2">
-                    {video.title}
-                  </div>
-                  <div className="text-[12px] text-gray-500 mt-1">
-                    {new Date(video.publishDate).toLocaleString("zh-TW")}
-                  </div>
-                </div>
-              </div>
-            ))}
-            {remainingCount > 0 && (
-              <div className="text-blue-500 text-sm mt-1">
-                +{remainingCount} 更多
-              </div>
-            )}
-          </>
-        )}
-      </div>
-    </div>
+const HeatmapTooltip = ({ label, hour, count, x, y }: HeatmapTooltipProps) => {
+  return createPortal(
+    <div
+      className="fixed z-50 pointer-events-none px-2.5 py-1.5 rounded-lg shadow-lg text-xs
+        bg-gray-800 text-gray-100 dark:bg-zinc-700 dark:text-gray-200"
+      style={{
+        left: x,
+        top: y - 8,
+        transform: "translate(-50%, -100%)",
+      }}
+    >
+      <span className="font-medium">星期{label} {formatHourLabel(hour)}</span>
+      <span className="mx-1.5 text-gray-400">·</span>
+      <span>{count} 部影片</span>
+    </div>,
+    document.body,
   );
 };
 
