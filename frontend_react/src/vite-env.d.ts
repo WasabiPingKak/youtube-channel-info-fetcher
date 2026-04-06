@@ -11,6 +11,8 @@ interface ImportMeta {
   readonly env: ImportMetaEnv;
 }
 
+declare const __BUILD_TIMESTAMP__: string;
+
 interface Window {
   queryClient?: import("@tanstack/react-query").QueryClient;
 }
