@@ -1,5 +1,6 @@
 // transformVideosToTreemapData.ts
 
+import { getCategoryHex } from "@/utils/categoryColors";
 import { getCategoryColor } from "./getCategoryColor";
 
 interface VideoItem {
@@ -91,7 +92,7 @@ export function transformVideosToTreemapData(videos: VideoItem[]): TreemapNode[]
       value: children.reduce((sum, c) => sum + c.value, 0),
       videoCount: children.reduce((sum, c) => sum + c.videoCount, 0),
       lastUpdatedDaysAgo: Math.min(...children.map(c => c.lastUpdatedDaysAgo)),
-      itemStyle: { color: getCategoryColor(category, 0) },
+      itemStyle: { color: getCategoryHex(category) },
       children,
     });
   }
