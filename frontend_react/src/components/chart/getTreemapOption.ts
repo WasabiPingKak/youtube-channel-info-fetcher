@@ -43,9 +43,9 @@ export function getTreemapOption({ data, selectedCategory }: TreemapProps) {
         right: 12,
         bottom: 12,
         data,
-        leafDepth: 2,
+        leafDepth: selectedCategory ? 1 : 2,
         roam: false,
-        nodeClick: selectedCategory ? false : "zoom",
+        nodeClick: false,
         breadcrumb: { show: false },
         label: {
           show: true,
@@ -54,7 +54,7 @@ export function getTreemapOption({ data, selectedCategory }: TreemapProps) {
           formatter: "{b}",
         },
         upperLabel: {
-          show: true,
+          show: !selectedCategory,
           height: 28,
           color: upperLabelColor,
           fontSize: 12,

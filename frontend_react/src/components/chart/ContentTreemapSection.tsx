@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import ReactECharts from "echarts-for-react";
 import { transformVideosToTreemapData } from "./transformVideosToTreemapData";
 import { getTreemapOption } from "./getTreemapOption";
-import { ArrowLeft } from "lucide-react";
+import { getCategoryColorScheme } from "@/utils/categoryColors";
 import type { ClassifiedVideoItem } from "@/types/category";
 
 interface ContentTreemapSectionProps {
@@ -19,6 +19,12 @@ const ContentTreemapSection = ({ videos }: ContentTreemapSectionProps) => {
     return transformed;
   }, [videos]);
 
+  // 可用的分類名稱（從資料中取，保留順序）
+  const categoryNames = useMemo(
+    () => fullTreemapData.map((node) => node.name),
+    [fullTreemapData],
+  );
+
   const filteredTreemapData = useMemo(() => {
     if (!selectedCategory) return fullTreemapData;
     const categoryNode = fullTreemapData.find((node) => node.name === selectedCategory);
@@ -32,22 +38,39 @@ const ContentTreemapSection = ({ videos }: ContentTreemapSectionProps) => {
     selectedCategory,
   });
 
-  const handleChartClick = (e: { data?: { children?: unknown[]; name?: string } }) => {
-    if (!selectedCategory && e?.data?.children) {
-      setSelectedCategory(e.data.name ?? null);
-    }
-  };
-
   return (
     <div>
-      {selectedCategory && (
-        <button
-          onClick={() => setSelectedCategory(null)}
-          className="flex items-center gap-1 mb-2 text-sm text-blue-600 dark:text-blue-400 hover:underline"
-        >
-          <ArrowLeft size={14} />
-          返回總覽
-        </button>
+      {/* 分類 chip 列 */}
+      {categoryNames.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-3">
+          <button
+            onClick={() => setSelectedCategory(null)}
+            className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+              selectedCategory === null
+                ? "bg-gray-700 text-white dark:bg-gray-200 dark:text-gray-900"
+                : "bg-gray-100 text-gray-600 dark:bg-zinc-800 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-zinc-700"
+            }`}
+          >
+            全部
+          </button>
+          {categoryNames.map((name) => {
+            const isActive = selectedCategory === name;
+            const colors = getCategoryColorScheme(name);
+            return (
+              <button
+                key={name}
+                onClick={() => setSelectedCategory(name)}
+                className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                  isActive
+                    ? `${colors.bg} ${colors.text}`
+                    : `${colors.bgMuted} ${colors.textMuted} ${colors.bgMutedDark} ${colors.textMutedDark} hover:opacity-80`
+                }`}
+              >
+                {name}
+              </button>
+            );
+          })}
+        </div>
       )}
 
       {!hasContent ? (
@@ -59,7 +82,6 @@ const ContentTreemapSection = ({ videos }: ContentTreemapSectionProps) => {
           <ReactECharts
             option={option}
             style={{ height: 420 }}
-            onEvents={{ click: handleChartClick }}
           />
         </div>
       )}
