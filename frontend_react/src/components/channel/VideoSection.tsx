@@ -5,6 +5,7 @@ import { useVideoBrowseState } from "@/hooks";
 import { VideoCard } from "../common";
 import { ChevronUp, ChevronDown } from "lucide-react";
 import { getCategoryColorScheme } from "@/utils/categoryColors";
+import { VideoListSkeleton } from "@/components/skeleton/VideoCardSkeleton";
 
 interface VideoSectionProps {
     videos: ClassifiedVideoItem[];
@@ -135,7 +136,7 @@ const VideoSection = ({
 
             {/* 狀態訊息 */}
             {loading && (
-                <p className="text-gray-500 dark:text-gray-300 py-4">載入中...</p>
+                <VideoListSkeleton />
             )}
             {error && (
                 <p className="text-red-600 dark:text-red-400 py-4">

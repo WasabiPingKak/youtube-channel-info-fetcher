@@ -12,6 +12,7 @@ import ActiveTimeTabSection from "../components/channels/ActiveTimeTabSection";
 import FlagGroupingToggle from "../components/channels/FlagGroupingToggle";
 import GroupedChannelList from "../components/channels/GroupedChannelList";
 import { groupChannelsByCountry } from "../utils/groupChannelsByCountry";
+import { ChannelGridSkeleton } from "../components/skeleton/ChannelCardSkeleton";
 
 type ChannelWithCounts = ChannelIndexEntry & {
   lastUploadAt?: string;
@@ -267,6 +268,10 @@ const ChannelSelectorPage = () => {
               </div>
             )}
           </>
+        )}
+
+        {isLoading && !isActivityTab && (
+          <ChannelGridSkeleton />
         )}
 
         {!isLoading && !isActivityTab && channels.length === 0 && (

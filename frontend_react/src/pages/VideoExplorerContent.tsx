@@ -5,6 +5,7 @@ import { useClassifiedVideos, useAutoUpdateVideos } from "../hooks";
 import type { VideoType } from "../utils/filterClassifiedVideos";
 
 import MainLayout from "../components/layout/MainLayout";
+import { VideoListSkeleton } from "../components/skeleton/VideoCardSkeleton";
 import ChannelInfoCard from "../components/common/ChannelInfoCard";
 import ChannelPageTabs from "../components/channel/ChannelPageTabs";
 import type { ChannelTab } from "../components/channel/ChannelPageTabs";
@@ -46,8 +47,10 @@ const VideoExplorerContent = ({ channelId }: { channelId: string }) => {
   if (loading && !videos.length) {
     return (
       <MainLayout>
-        <div className="px-4 py-10 text-center text-gray-500 dark:text-gray-300">
-          影片資料載入中...
+        <ChannelInfoCard channelId={channelId} />
+        <ChannelPageTabs activeTab={activeTab} onTabChange={setActiveTab} />
+        <div className="px-4 py-4">
+          <VideoListSkeleton />
         </div>
       </MainLayout>
     );
