@@ -22,6 +22,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 │   ├── src/
 │   │   ├── pages/             # Page components
 │   │   ├── components/        # Feature-grouped UI components
+│   │   │   ├── channel/       # 頻道頁面 section（Overview/Video/Heatmap tabs）
+│   │   │   ├── chart/         # 圖表元件（圓餅/長條/Treemap/Heatmap）
+│   │   │   ├── channels/      # 頻道列表頁面元件
+│   │   │   ├── common/        # 共用元件（VideoCard, ChannelInfoCard 等）
+│   │   │   └── skeleton/      # Skeleton 載入佔位元件
 │   │   ├── hooks/             # Custom React hooks
 │   │   ├── stores/            # Zustand state stores
 │   │   ├── types/             # TypeScript types
